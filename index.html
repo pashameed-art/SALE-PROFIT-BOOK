@@ -63,7 +63,7 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.8</div>
+  <div class="version">Version 4.9</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar">
@@ -111,6 +111,13 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
     <div class="field">
       <label>Sale ₹</label>
       <input id="sale" type="number" min="0" step="0.01" inputmode="decimal" placeholder="1500" oninput="calculate()">
+    </div>
+    <div class="field">
+      <label>Paid By</label>
+      <select id="paidBy">
+        <option value="GPay" selected>GPay</option>
+        <option value="Cash">Cash</option>
+      </select>
     </div>
 
     <div class="field">
@@ -234,8 +241,8 @@ function restoreData(event){
 }
 function exportCSV(){
   const rows=[
-    ["Date","Time","State / Place","Item Name","Meter","Purchase / Meter","Sale","Purchase","Profit"],
-    ...entries.map(x=>[x.date,x.time||"",x.place,x.item,x.meter,x.rate,x.sale,x.purchase,x.profit])
+    ["Date","Time","State / Place","Item Name","Meter","Purchase / Meter","Sale","Paid By","Purchase","Profit"],
+    ...entries.map(x=>[x.date,x.time||"",x.place,x.item,x.meter,x.rate,x.sale,x.paidBy||"GPay",x.purchase,x.profit])
   ];
   const csv=rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
   const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
@@ -308,9 +315,9 @@ function saveEntry(){
   const wasEditing=!!editingId;
   if(editingId){
     const idx=entries.findIndex(x=>x.id===editingId);
-    if(idx>=0) entries[idx]={...entries[idx],date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,meter,rate,sale,purchase,profit:sale-purchase};
+    if(idx>=0) entries[idx]={...entries[idx],date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,meter,rate,sale,paidBy:$('paidBy').value,purchase,profit:sale-purchase};
   }else{
-    entries.unshift({id:Date.now(),date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,meter,rate,sale,purchase,profit:sale-purchase,time:localTime()});
+    entries.unshift({id:Date.now(),date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,meter,rate,sale,paidBy:$('paidBy').value,purchase,profit:sale-purchase,time:localTime()});
   }
   editingId=null;$('saveBtn').textContent='Save Entry';
   localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));
@@ -321,7 +328,7 @@ function saveEntry(){
 function newEntry(){
   editingId=null;$('saveBtn').textContent='Save Entry';
   $('historyCard').classList.add('hidden');$('entryCard').classList.remove('hidden');
-  $('item').value='';$('meter').value='';$('sale').value='';$('purchase').value='';$('profit').value='';
+  $('item').value='';$('meter').value='';$('sale').value='';$('paidBy').value='GPay';$('purchase').value='';$('profit').value='';
   if(!$('date').value)$('date').value=today();
 }
 function showHistory(){
@@ -345,7 +352,7 @@ function renderHistory(){
       <div class="history-head"><span>${esc(x.item)}</span><span>${money(x.profit)}</span></div>
       <div class="meta">${esc(x.date)} • ${esc(x.place)} • ${x.meter} m</div>
       <div class="time-line">Time: ${esc(x.time||'—')}</div>
-      <div style="margin-top:9px">Sale ${money(x.sale)} − Purchase ${money(x.purchase)}</div>
+      <div style="margin-top:9px">Sale ${money(x.sale)} • ${esc(x.paidBy||'GPay')} − Purchase ${money(x.purchase)}</div>
       <div class="meta">Purchase / Meter: ${money(x.rate)}</div>
       <div class="history-actions">
         <button class="edit-btn" onclick="editEntry(${x.id})">Edit</button>
@@ -368,7 +375,7 @@ function editEntry(id){
   const x=entries.find(e=>e.id===id);if(!x)return;
   editingId=id;$('entryCard').classList.remove('hidden');$('historyCard').classList.add('hidden');
   $('place').value=x.place||'Kerala';$('date').value=x.date||today();
-  $('item').value=x.item;$('meter').value=x.meter;$('sale').value=x.sale;
+  $('item').value=x.item;$('meter').value=x.meter;$('sale').value=x.sale;$('paidBy').value=x.paidBy||'GPay';
   calculate();$('saveBtn').textContent='Update Entry';window.scrollTo({top:0,behavior:'smooth'});
 }
 function deleteEntry(id){
@@ -399,7 +406,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.8').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.9').catch(()=>{});}
 </script>
 </body>
 </html>
