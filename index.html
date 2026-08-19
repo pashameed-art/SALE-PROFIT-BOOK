@@ -11,13 +11,13 @@
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
 header{background:var(--teal);color:#fff;padding:28px 24px 24px}
-h1{margin:0;font-size:30px} .version{margin-top:20px;font-weight:700;font-size:16px}.subtitle{margin-top:8px;font-size:20px;font-weight:700}
+h1{margin:0;font-size:26px} .version{margin-top:16px;font-weight:700;font-size:14px}.subtitle{margin-top:7px;font-size:17px;font-weight:700}
 main{max-width:720px;margin:auto;padding:18px 24px 50px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
 .row1{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-label{display:block;font-size:17px;font-weight:700;color:var(--muted);margin:0 0 8px}
-input,select{width:100%;height:56px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:0 18px;font:700 18px Arial;color:var(--text)}
-button{height:56px;border:0;border-radius:14px;padding:0 18px;font:700 18px Arial;cursor:pointer}
+label{display:block;font-size:15px;font-weight:700;color:var(--muted);margin:0 0 8px}
+input,select{width:100%;height:52px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:0 18px;font:700 16px Arial;color:var(--text)}
+button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Arial;cursor:pointer}
 .secondary{background:var(--light);color:#08665e;width:100%}.primary{background:var(--teal);color:#fff;width:100%}
 .new-entry{margin-top:14px}.card{background:#fff;border-radius:24px;padding:28px;margin-top:18px;box-shadow:0 4px 18px #0000000b}
 .field{margin-top:18px}.field:first-child{margin-top:0}
@@ -32,12 +32,12 @@ button{height:56px;border:0;border-radius:14px;padding:0 18px;font:700 18px Aria
 .modal-box{background:#fff;width:min(520px,100%);border-radius:22px;padding:24px}
 .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
 .summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px;width:100%}
-.stat{background:var(--light);border-radius:16px;padding:12px 8px;text-align:center;min-width:0;overflow:hidden}.stat b{display:block;font-size:18px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat{background:var(--light);border-radius:16px;padding:12px 8px;text-align:center;min-width:0;overflow:hidden}.stat b{display:block;font-size:16px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:520px){main{padding:14px 24px 40px}.row1,.row2{gap:10px}h1{font-size:29px}.subtitle{font-size:19px}input,select{font-size:17px}.card{padding:26px 28px}}
 
 .dua-card{background:#fff;border-radius:22px;padding:22px 24px;margin-top:18px;text-align:center;box-shadow:0 4px 18px #0000000b}
-.dua-title{font-size:18px;font-weight:800;color:#0f766e;margin-bottom:10px}
-.dua-text{font-size:16px;line-height:1.65;font-weight:700;overflow-wrap:anywhere;color:#34403f}
+.dua-title{font-size:16px;font-weight:800;color:#0f766e;margin-bottom:10px}
+.dua-text{font-size:15px;line-height:1.55;font-weight:700;overflow-wrap:anywhere;color:#34403f}
 .edit-btn{background:#e9f3f2;color:#08665e;width:auto;height:40px;font-size:14px}
 .history-actions{display:flex;gap:8px;margin-top:10px}
 .time-line{font-size:14px;color:#708080;margin-top:4px}
@@ -45,16 +45,16 @@ button{height:56px;border:0;border-radius:14px;padding:0 18px;font:700 18px Aria
 @media(max-width:520px){
   .summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .stat{padding:13px 10px}
-  .stat b{font-size:18px}
+  .stat b{font-size:16px}
   .dua-card{padding:20px 18px}
-  .dua-text{font-size:16px;line-height:1.65}
+  .dua-text{font-size:15px;line-height:1.55}
 }
 </style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.3</div>
+  <div class="version">Version 4.4</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 
@@ -267,7 +267,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.3').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.4').catch(()=>{});}
 </script>
 </body>
 </html>
