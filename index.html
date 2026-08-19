@@ -54,7 +54,7 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.4</div>
+  <div class="version">Version 4.5</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 
@@ -113,7 +113,15 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
     </div>
   </section>
 
-  <section id="historyCard" class="hidden">
+  
+  <div class="row2" style="margin-top:14px">
+    <button class="secondary" onclick="backupData()">Backup</button>
+    <button class="secondary" onclick="document.getElementById('restoreFile').click()">Restore</button>
+  </div>
+  <input id="restoreFile" type="file" accept=".json,application/json" style="display:none" onchange="restoreData(event)">
+  <button class="secondary" style="width:100%;margin-top:10px" onclick="exportCSV()">Export CSV</button>
+
+<section id="historyCard" class="hidden">
     <div class="summary">
       <div class="stat">Meter<b id="sumMeter">0</b></div>
       <div class="stat">Sale<b id="sumSale">₹0</b></div>
@@ -158,6 +166,40 @@ const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:
 const today=()=>{const d=new Date();return d.toISOString().slice(0,10)};
 
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+
+function backupData(){
+  const data={version:"4.5",items,entries,exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="sale-profit-book-backup.json";a.click();URL.revokeObjectURL(a.href);
+}
+function restoreData(event){
+  const file=event.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      if(!Array.isArray(data.items)||!Array.isArray(data.entries))throw new Error();
+      items=data.items;entries=data.entries;
+      localStorage.setItem(ITEMS_KEY,JSON.stringify(items));
+      localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));
+      populateItems();renderItems();renderHistory();alert("Backup restored successfully.");
+    }catch(e){alert("Invalid backup file.");}
+    event.target.value="";
+  };
+  reader.readAsText(file);
+}
+function exportCSV(){
+  const rows=[
+    ["Date","Time","State / Place","Item Name","Meter","Purchase / Meter","Sale","Purchase","Profit"],
+    ...entries.map(x=>[x.date,x.time||"",x.place,x.item,x.meter,x.rate,x.sale,x.purchase,x.profit])
+  ];
+  const csv=rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="sale-profit-book.csv";a.click();URL.revokeObjectURL(a.href);
+}
 
 function init(){
   $('date').value=today();
@@ -267,7 +309,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.4').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.5').catch(()=>{});}
 </script>
 </body>
 </html>
