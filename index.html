@@ -1,1 +1,101 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0f766e"><link rel="manifest" href="manifest.json"><title>Sale Profit Book</title><style>:root{--p:#0f766e;--bg:#f4f7f7;--card:#fff;--muted:#6b7c7a}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,'Noto Sans Tamil',sans-serif;color:#17302e}header{background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;padding:22px 16px}h1{margin:0;font-size:24px}.sub{opacity:.85;font-size:13px}main{max-width:760px;margin:auto;padding:14px}.card{background:#fff;border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 3px 14px #0001}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}input{width:100%;padding:12px;border:1px solid #d7e0df;border-radius:11px}.full{grid-column:1/-1}button{border:0;border-radius:11px;padding:12px;cursor:pointer}.primary{background:var(--p);color:#fff;font-weight:700;width:100%;margin-top:12px}.tabs{display:flex;gap:8px;margin-bottom:12px}.tabs button{flex:1;background:#dfeceb}.tabs .active{background:var(--p);color:#fff}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.sum{padding:12px;border-radius:13px;background:#f0f6f5}.sum span{font-size:11px;color:var(--muted)}.sum b{display:block;font-size:17px}.profit{color:#087443;font-weight:800}.row{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid #edf1f0}.item{font-weight:700}.meta{font-size:12px;color:var(--muted)}.danger{background:#fff0ee;color:#b42318}@media(max-width:520px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}</style></head><body><header><h1>Sale Profit Book</h1><div class="sub">Sale • Purchase • Profit</div><div style="font-size:12px;opacity:.8;margin-top:6px">Version 2.0</div></header><main><div class="tabs"><button class="active" onclick="tab('entry',this)">New Entry</button><button onclick="tab('history',this)">History</button></div><section id="entry"><div class="card"><div class="grid"><div><label>Date</label><input id="date" type="date"></div><div><label>State / Place</label><input id="place" value="Kerala"></div><div class="full"><label>Item Name</label><input id="item" placeholder="BSL 3.5"></div><div><label>Sale ₹</label><input id="sale" type="number" min="0"></div><div><label>Purchase ₹</label><input id="purchase" type="number" min="0"></div></div><button class="primary" onclick="save()">+ Save Entry</button></div><div class="card"><h3>Today's Summary</h3><div class="summary"><div class="sum"><span>Sale</span><b id="ts">₹0</b></div><div class="sum"><span>Purchase</span><b id="tp">₹0</b></div><div class="sum"><span>Profit</span><b class="profit" id="tf">₹0</b></div></div></div></section><section id="history" style="display:none"><div class="card"><div class="grid"><div><label>From</label><input id="from" type="date" oninput="render()"></div><div><label>To</label><input id="to" type="date" oninput="render()"></div><div class="full"><label>Search</label><input id="search" oninput="render()" placeholder="Item / Place"></div></div></div><div class="card"><div class="summary"><div class="sum"><span>Sale</span><b id="hs">₹0</b></div><div class="sum"><span>Purchase</span><b id="hp">₹0</b></div><div class="sum"><span>Profit</span><b class="profit" id="hf">₹0</b></div></div></div><div class="card" id="list"></div></section></main><script>const K='saleProfitBook_v1';let d=JSON.parse(localStorage.getItem(K)||'[]');const $=x=>document.getElementById(x),today=()=>new Date().toISOString().slice(0,10),money=n=>'₹'+Number(n).toLocaleString('en-IN',{maximumFractionDigits:2});$('date').value=today();function totals(a){return a.reduce((r,x)=>({s:r.s+x.s,p:r.p+x.p,f:r.f+x.f}),{s:0,p:0,f:0})}function save(){let item=$('item').value.trim(),s=+$('sale').value,p=+$('purchase').value;if(!item||s<0||p<0)return alert('Item Name, Sale, Purchase correctly.');d.push({id:Date.now(),date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,s,p,f:s-p});localStorage.setItem(K,JSON.stringify(d));$('item').value=$('sale').value=$('purchase').value='';update();alert('Entry saved ✓')}function update(){let t=totals(d.filter(x=>x.date===today()));$('ts').textContent=money(t.s);$('tp').textContent=money(t.p);$('tf').textContent=money(t.f);render()}function render(){let f=$('from')?.value,t=$('to')?.value,q=($('search')?.value||'').toLowerCase(),a=d.filter(x=>(!f||x.date>=f)&&(!t||x.date<=t)&&(!q||(x.item+' '+x.place).toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id),z=totals(a);$('hs').textContent=money(z.s);$('hp').textContent=money(z.p);$('hf').textContent=money(z.f);$('list').innerHTML=a.length?a.map(x=>`<div class="row"><div><div class="item">${esc(x.item)}</div><div class="meta">${x.date} • ${esc(x.place)}</div><div>${money(x.s)} − ${money(x.p)} = <span class="profit">${money(x.f)}</span></div></div><button class="danger" onclick="del(${x.id})">Delete</button></div>`).join(''):'<div style="text-align:center;color:#6b7c7a;padding:20px">No records found</div>'}function del(id){if(confirm('Delete this entry?')){d=d.filter(x=>x.id!==id);localStorage.setItem(K,JSON.stringify(d));update()}}function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}function tab(x,b){$('entry').style.display=x==='entry'?'block':'none';$('history').style.display=x==='history'?'block':'none';document.querySelectorAll('.tabs button').forEach(q=>q.classList.remove('active'));b.classList.add('active');render()}update();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<meta name="description" content="Sale, Purchase and Profit tracker">
+<link rel="manifest" href="manifest.json">
+<title>Sale Profit Book</title>
+<style>
+:root{--p:#0f766e;--bg:#f4f7f7;--card:#fff;--text:#17302e;--muted:#6b7c7a;--danger:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}
+header{background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;padding:22px 16px 18px;position:sticky;top:0;z-index:5}h1{margin:0;font-size:24px}.sub{opacity:.9;font-size:13px;margin-top:4px}.version{font-size:12px;opacity:.8;margin-top:7px}
+main{max-width:760px;margin:auto;padding:14px}.tabs{display:flex;gap:8px;margin-bottom:12px}.tabs button{flex:1;background:#dfeceb;color:#17302e}.tabs .active{background:var(--p);color:#fff}
+.card{background:var(--card);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 3px 14px #0000000d}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}input{width:100%;padding:12px;border:1px solid #d7e0df;border-radius:11px;background:#fff;font:inherit;color:var(--text)}
+button{border:0;border-radius:11px;padding:12px 14px;font:inherit;cursor:pointer}.primary{background:var(--p);color:#fff;font-weight:700;width:100%;margin-top:12px}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.sum{padding:12px;border-radius:13px;background:#f0f6f5}.sum span{font-size:11px;color:var(--muted)}.sum b{display:block;font-size:17px;margin-top:3px}.profit{color:#087443;font-weight:800}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid #edf1f0}.row:last-child{border-bottom:0}.item{font-weight:700}.meta{font-size:12px;color:var(--muted)}.danger{background:#fff0ee;color:var(--danger);padding:7px 9px;font-size:12px}.empty{text-align:center;color:var(--muted);padding:20px}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.summary{grid-template-columns:repeat(3,1fr)}.sum b{font-size:15px}}
+</style>
+</head>
+<body>
+<header>
+<h1>Sale Profit Book</h1>
+<div class="sub">Sale • Purchase • Profit</div>
+<div class="version">Version 2.1</div>
+</header>
+<main>
+<div class="tabs">
+<button class="active" onclick="showTab('entry',this)">New Entry</button>
+<button onclick="showTab('history',this)">History</button>
+</div>
+<section id="entry">
+<div class="card">
+<div class="grid">
+<div><label>Date</label><input id="date" type="date"></div>
+<div><label>State / Place</label><input id="place" value="Kerala"></div>
+<div class="full"><label>Item Name</label><input id="item" placeholder="e.g. BSL 3.5"></div>
+<div><label>Sale ₹</label><input id="sale" type="number" min="0" step="0.01" inputmode="decimal"></div>
+<div><label>Purchase ₹</label><input id="purchase" type="number" min="0" step="0.01" inputmode="decimal"></div>
+</div>
+<button class="primary" onclick="saveEntry()">+ Save Entry</button>
+</div>
+<div class="card">
+<h3 style="margin-top:0">Today's Summary</h3>
+<div class="summary">
+<div class="sum"><span>Sale</span><b id="todaySale">₹0</b></div>
+<div class="sum"><span>Purchase</span><b id="todayPurchase">₹0</b></div>
+<div class="sum"><span>Profit</span><b class="profit" id="todayProfit">₹0</b></div>
+</div>
+</div>
+</section>
+<section id="history" style="display:none">
+<div class="card">
+<div class="grid">
+<div><label>From</label><input id="from" type="date" oninput="renderHistory()"></div>
+<div><label>To</label><input id="to" type="date" oninput="renderHistory()"></div>
+<div class="full"><label>Search</label><input id="search" oninput="renderHistory()" placeholder="Search item / place"></div>
+</div>
+</div>
+<div class="card">
+<div class="summary">
+<div class="sum"><span>Sale</span><b id="historySale">₹0</b></div>
+<div class="sum"><span>Purchase</span><b id="historyPurchase">₹0</b></div>
+<div class="sum"><span>Profit</span><b class="profit" id="historyProfit">₹0</b></div>
+</div>
+</div>
+<div class="card"><div id="list"></div></div>
+</section>
+</main>
+<script>
+const STORAGE_KEY='saleProfitBook_v1';
+let entries=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+const $=id=>document.getElementById(id);
+const today=()=>new Date().toISOString().slice(0,10);
+const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+$('date').value=today();
+function totals(arr){return arr.reduce((r,x)=>({sale:r.sale+x.sale,purchase:r.purchase+x.purchase,profit:r.profit+x.profit}),{sale:0,purchase:0,profit:0})}
+function saveEntry(){
+ const item=$('item').value.trim(),sale=+$('sale').value,purchase=+$('purchase').value;
+ if(!item||sale<0||purchase<0){alert('Please enter Item Name, Sale and Purchase correctly.');return}
+ entries.push({id:Date.now(),date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,sale,purchase,profit:sale-purchase});
+ localStorage.setItem(STORAGE_KEY,JSON.stringify(entries));
+ $('item').value='';$('sale').value='';$('purchase').value='';
+ updateToday();alert('Entry saved successfully.');
+}
+function updateToday(){const t=totals(entries.filter(x=>x.date===today()));$('todaySale').textContent=money(t.sale);$('todayPurchase').textContent=money(t.purchase);$('todayProfit').textContent=money(t.profit);renderHistory()}
+function renderHistory(){
+ const from=$('from').value,to=$('to').value,q=($('search').value||'').toLowerCase();
+ const arr=entries.filter(x=>(!from||x.date>=from)&&(!to||x.date<=to)&&(!q||(x.item+' '+x.place).toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+ const t=totals(arr);$('historySale').textContent=money(t.sale);$('historyPurchase').textContent=money(t.purchase);$('historyProfit').textContent=money(t.profit);
+ $('list').innerHTML=arr.length?arr.map(x=>`<div class="row"><div><div class="item">${esc(x.item)}</div><div class="meta">${x.date} • ${esc(x.place)}</div><div>${money(x.sale)} − ${money(x.purchase)} = <span class="profit">${money(x.profit)}</span></div></div><button class="danger" onclick="deleteEntry(${x.id})">Delete</button></div>`).join(''):'<div class="empty">No records found</div>';
+}
+function deleteEntry(id){if(confirm('Delete this entry?')){entries=entries.filter(x=>x.id!==id);localStorage.setItem(STORAGE_KEY,JSON.stringify(entries));updateToday()}}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function showTab(tab,btn){$('entry').style.display=tab==='entry'?'block':'none';$('history').style.display=tab==='history'?'block':'none';document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderHistory()}
+updateToday();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=2.1',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});}
+</script>
+</body>
+</html>
