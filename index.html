@@ -31,22 +31,30 @@ button{height:56px;border:0;border-radius:14px;padding:0 18px;font:700 18px Aria
 .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
 .modal-box{background:#fff;width:min(520px,100%);border-radius:22px;padding:24px}
 .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
-.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
-.stat{background:var(--light);border-radius:16px;padding:14px;text-align:center}.stat b{display:block;font-size:20px;margin-top:4px}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px;width:100%}
+.stat{background:var(--light);border-radius:16px;padding:12px 8px;text-align:center;min-width:0;overflow:hidden}.stat b{display:block;font-size:18px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:520px){main{padding:14px 24px 40px}.row1,.row2{gap:10px}h1{font-size:29px}.subtitle{font-size:19px}input,select{font-size:17px}.card{padding:26px 28px}}
 
 .dua-card{background:#fff;border-radius:22px;padding:22px 24px;margin-top:18px;text-align:center;box-shadow:0 4px 18px #0000000b}
-.dua-title{font-size:19px;font-weight:800;color:#0f766e;margin-bottom:10px}
-.dua-text{font-size:18px;line-height:1.7;font-weight:700;color:#34403f}
+.dua-title{font-size:18px;font-weight:800;color:#0f766e;margin-bottom:10px}
+.dua-text{font-size:16px;line-height:1.65;font-weight:700;overflow-wrap:anywhere;color:#34403f}
 .edit-btn{background:#e9f3f2;color:#08665e;width:auto;height:40px;font-size:14px}
 .history-actions{display:flex;gap:8px;margin-top:10px}
 .time-line{font-size:14px;color:#708080;margin-top:4px}
+
+@media(max-width:520px){
+  .summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .stat{padding:13px 10px}
+  .stat b{font-size:18px}
+  .dua-card{padding:20px 18px}
+  .dua-text{font-size:16px;line-height:1.65}
+}
 </style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.2</div>
+  <div class="version">Version 4.3</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 
@@ -259,7 +267,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.2').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.3').catch(()=>{});}
 </script>
 </body>
 </html>

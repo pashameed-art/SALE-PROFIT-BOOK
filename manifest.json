@@ -1,9 +1,9 @@
 {
   "name":"Sale Profit Book",
   "short_name":"Profit Book",
-  "start_url":"./index.html?v=4.2",
+  "start_url":"./index.html?v=4.3",
   "display":"standalone",
   "background_color":"#f5f8f8",
   "theme_color":"#0f766e",
-  "version":"4.2"
+  "version":"4.3"
 }
