@@ -49,16 +49,33 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
   .dua-card{padding:20px 18px}
   .dua-text{font-size:15px;line-height:1.55}
 }
+
+.nav-bar{max-width:720px;margin:14px auto 0;padding:0 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.nav-bar button{height:46px;background:#e9f3f2;color:#08665e;font-size:15px}
+.nav-bar button.nav-active{background:#117d73;color:#fff}
+.page{display:none}.page.active{display:block}
+.report-box,.backup-box{background:#fff;border-radius:20px;padding:20px;margin-top:16px}
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.report-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
+@media(max-width:520px){.nav-bar{padding:0 24px;gap:6px}.nav-bar button{font-size:14px}.report-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.5</div>
+  <div class="version">Version 4.6</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
+<nav class="nav-bar">
+  <button class="nav-active" onclick="showPage('home',this)">Home</button>
+  <button onclick="openItemModal();setActive(this)">Add Item</button>
+  <button onclick="showPage('report',this)">Report</button>
+  <button onclick="showPage('backup',this)">Backup</button>
+</nav>
+
 
 <main>
+<div id="homePage" class="page active">
   <!-- ROW 1 -->
   <div class="row1">
     <div>
@@ -112,15 +129,6 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
       <button id="saveBtn" class="primary" onclick="saveEntry()">Save Entry</button>
     </div>
   </section>
-
-  
-  <div class="row2" style="margin-top:14px">
-    <button class="secondary" onclick="backupData()">Backup</button>
-    <button class="secondary" onclick="document.getElementById('restoreFile').click()">Restore</button>
-  </div>
-  <input id="restoreFile" type="file" accept=".json,application/json" style="display:none" onchange="restoreData(event)">
-  <button class="secondary" style="width:100%;margin-top:10px" onclick="exportCSV()">Export CSV</button>
-
 <section id="historyCard" class="hidden">
     <div class="summary">
       <div class="stat">Meter<b id="sumMeter">0</b></div>
@@ -134,6 +142,29 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
     </div>
     <div id="historyList"></div>
   </section>
+</div>
+
+<div id="reportPage" class="page">
+  <div class="report-box">
+    <h2 style="margin-top:0">Report</h2>
+    <div class="report-grid">
+      <div><label>Date From</label><input id="reportFrom" type="date"></div>
+      <div><label>Date To</label><input id="reportTo" type="date"></div>
+    </div>
+    <button class="primary" style="margin-top:12px" onclick="generateReport()">Generate Report</button>
+    <div id="reportResult"></div>
+  </div>
+</div>
+
+<div id="backupPage" class="page">
+  <div class="backup-box">
+    <h2 style="margin-top:0">Backup</h2>
+    <button class="secondary" onclick="backupData()">Backup</button>
+    <button class="secondary" style="margin-top:10px" onclick="document.getElementById('restoreFile').click()">Restore</button>
+    <input id="restoreFile" type="file" accept=".json,application/json" style="display:none" onchange="restoreData(event)">
+    <button class="secondary" style="margin-top:10px" onclick="exportCSV()">Export CSV</button>
+  </div>
+</div>
 </main>
 
 <div id="itemModal" class="modal">
@@ -199,6 +230,36 @@ function exportCSV(){
   const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);
   a.download="sale-profit-book.csv";a.click();URL.revokeObjectURL(a.href);
+}
+
+
+function setActive(btn){
+ document.querySelectorAll('.nav-bar button').forEach(b=>b.classList.remove('nav-active'));
+ btn.classList.add('nav-active');
+}
+function showPage(page,btn){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ $(page+'Page').classList.add('active');
+ setActive(btn);
+ if(page==='report'){
+   const d=today(); if(!$('reportFrom').value)$('reportFrom').value=d.slice(0,8)+'01'; if(!$('reportTo').value)$('reportTo').value=d;
+ }
+}
+function generateReport(){
+ const from=$('reportFrom').value,to=$('reportTo').value;
+ if(!from||!to){alert('Select Date From and Date To.');return}
+ const list=entries.filter(x=>x.date>=from&&x.date<=to);
+ const total=list.reduce((a,x)=>({meter:a.meter+Number(x.meter||0),sale:a.sale+x.sale,purchase:a.purchase+x.purchase,profit:a.profit+x.profit}),{meter:0,sale:0,purchase:0,profit:0});
+ const map={}; list.forEach(x=>{if(!map[x.item])map[x.item]={meter:0,sale:0,purchase:0,profit:0};map[x.item].meter+=Number(x.meter||0);map[x.item].sale+=x.sale;map[x.item].purchase+=x.purchase;map[x.item].profit+=x.profit});
+ $('reportResult').innerHTML=`
+ <div class="report-summary">
+  <div class="stat">Meter<b>${total.meter.toFixed(2)}</b></div>
+  <div class="stat">Sale<b>${money(total.sale)}</b></div>
+  <div class="stat">Purchase<b>${money(total.purchase)}</b></div>
+  <div class="stat">Profit<b>${money(total.profit)}</b></div>
+ </div>
+ <div class="history-card"><b>Entries: ${list.length}</b></div>
+ <div class="history-card"><b>Item-wise Report</b>${Object.entries(map).map(([name,v])=>`<div class="item-row"><div><b>${esc(name)}</b><div class="meta">${v.meter.toFixed(2)} m • Sale ${money(v.sale)} • Purchase ${money(v.purchase)}</div></div><b>${money(v.profit)}</b></div>`).join('')||'<div class="empty">No records found</div>'}</div>`;
 }
 
 function init(){
@@ -309,7 +370,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.5').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.6').catch(()=>{});}
 </script>
 </body>
 </html>
