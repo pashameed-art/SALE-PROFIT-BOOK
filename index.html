@@ -37,7 +37,7 @@ button{border:0;border-radius:11px;padding:12px 14px;font:inherit;cursor:pointer
     }
     if (window.caches) {
       const keys = await caches.keys();
-      await Promise.all(keys.filter(k => k !== 'sale-profit-book-v3.3').map(k => caches.delete(k)));
+      await Promise.all(keys.filter(k => k !== 'sale-profit-book-v3.4').map(k => caches.delete(k)));
     }
   } catch(e) {}
 })();
@@ -46,7 +46,7 @@ button{border:0;border-radius:11px;padding:12px 14px;font:inherit;cursor:pointer
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 3.3</div><div class="sub">Sale • Purchase • Profit</div>
+<div class="version">Version 3.4</div><div class="sub">Sale • Purchase • Profit</div>
 
 </header>
 <main>
