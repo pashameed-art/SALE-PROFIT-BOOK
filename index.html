@@ -31,7 +31,7 @@ button{height:56px;border:0;border-radius:14px;padding:0 18px;font:700 18px Aria
 .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
 .modal-box{background:#fff;width:min(520px,100%);border-radius:22px;padding:24px}
 .modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
-.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
 .stat{background:var(--light);border-radius:16px;padding:14px;text-align:center}.stat b{display:block;font-size:20px;margin-top:4px}
 @media(max-width:520px){main{padding:14px 24px 40px}.row1,.row2{gap:10px}h1{font-size:29px}.subtitle{font-size:19px}input,select{font-size:17px}.card{padding:26px 28px}}
 </style>
@@ -39,7 +39,7 @@ button{height:56px;border:0;border-radius:14px;padding:0 18px;font:700 18px Aria
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.0</div>
+  <div class="version">Version 4.1</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 
@@ -100,7 +100,8 @@ button{height:56px;border:0;border-radius:14px;padding:0 18px;font:700 18px Aria
 
   <section id="historyCard" class="hidden">
     <div class="summary">
-      <div class="stat">Sales<b id="sumSale">₹0</b></div>
+      <div class="stat">Meter<b id="sumMeter">0</b></div>
+      <div class="stat">Sale<b id="sumSale">₹0</b></div>
       <div class="stat">Purchase<b id="sumPurchase">₹0</b></div>
       <div class="stat">Profit<b id="sumProfit">₹0</b></div>
     </div>
@@ -185,7 +186,8 @@ function showHistory(){
 }
 function renderHistory(){
   const list=$('historyList');
-  const total=entries.reduce((a,x)=>({sale:a.sale+x.sale,purchase:a.purchase+x.purchase,profit:a.profit+x.profit}),{sale:0,purchase:0,profit:0});
+  const total=entries.reduce((a,x)=>({meter:a.meter+Number(x.meter||0),sale:a.sale+x.sale,purchase:a.purchase+x.purchase,profit:a.profit+x.profit}),{meter:0,sale:0,purchase:0,profit:0});
+  $('sumMeter').textContent=Number(total.meter.toFixed(2)).toLocaleString('en-IN');
   $('sumSale').textContent=money(total.sale);$('sumPurchase').textContent=money(total.purchase);$('sumProfit').textContent=money(total.profit);
   if(!entries.length){list.innerHTML='<div class="history-card empty">No records found</div>';return}
   list.innerHTML=entries.map(x=>`
@@ -225,7 +227,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.0').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.1').catch(()=>{});}
 </script>
 </body>
 </html>

@@ -1,10 +1,10 @@
 {
   "name":"Sale Profit Book",
   "short_name":"Profit Book",
-  "start_url":"./index.html?v=4.0",
+  "start_url":"./index.html?v=4.1",
   "display":"standalone",
   "background_color":"#f5f8f8",
   "theme_color":"#0f766e",
   "description":"Sale, Purchase and Profit Book",
-  "version":"4.0"
+  "version":"4.1"
 }
