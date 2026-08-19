@@ -1,228 +1,231 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f766e">
-<meta name="description" content="Sale, Purchase and Profit tracker">
-<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
 <title>Sale Profit Book</title>
 <style>
-:root{--p:#0f766e;--bg:#f4f7f7;--card:#fff;--text:#17302e;--muted:#6b7c7a;--danger:#b42318}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}
-header{background:linear-gradient(135deg,#0f766e,#115e59);color:#fff;padding:22px 16px 18px;position:sticky;top:0;z-index:5}h1{margin:0;font-size:24px}.sub{opacity:.9;font-size:13px;margin-top:4px}.version{font-size:12px;opacity:.8;margin-top:7px}
-main{max-width:760px;margin:auto;padding:14px}.tabs{display:flex;gap:8px;margin-bottom:12px}.tabs button{flex:1;background:#dfeceb;color:#17302e}.tabs .active{background:var(--p);color:#fff}
-.card{background:var(--card);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 3px 14px #0000000d}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}
-label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}input{width:100%;padding:12px;border:1px solid #d7e0df;border-radius:11px;background:#fff;font:inherit;color:var(--text)} input[readonly]{background:#f1f5f4;font-weight:700}
-button{border:0;border-radius:11px;padding:12px 14px;font:inherit;cursor:pointer}.primary{background:var(--p);color:#fff;font-weight:700;width:100%;margin-top:12px}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.sum{padding:12px;border-radius:13px;background:#f0f6f5}.sum span{font-size:11px;color:var(--muted)}.sum b{display:block;font-size:17px;margin-top:3px}.profit{color:#087443;font-weight:800}
-.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid #edf1f0}.row:last-child{border-bottom:0}.item{font-weight:700}.meta{font-size:12px;color:var(--muted)}.danger{background:#fff0ee;color:var(--danger);padding:7px 9px;font-size:12px}.empty{text-align:center;color:var(--muted);padding:20px}.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toolbar button{width:100%}.secondary{background:#e7f3f1;color:#075e58}.blue{background:#eaf0ff;color:#1d4ed8}.actions{display:flex;gap:6px;flex-shrink:0}.actions button{padding:7px 9px;font-size:12px}.modal{position:fixed;inset:0;background:#0008;display:none;align-items:flex-end;justify-content:center;z-index:20}.modal.show{display:flex}.sheet{background:#fff;width:100%;max-width:760px;border-radius:20px 20px 0 0;padding:18px;max-height:90vh;overflow:auto}.notice{font-size:12px;color:var(--muted);line-height:1.5}
-@media(max-width:520px){.entry-grid{grid-template-columns:1fr 1fr}.entry-grid .full{grid-column:1/-1}.grid:not(.entry-grid){grid-template-columns:1fr}.summary{grid-template-columns:repeat(3,1fr)}.sum b{font-size:15px}}
-
-.top-layout{margin-bottom:14px}
-.state-date{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.top-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.new-entry-btn{width:100%;margin-top:0}
-.entry-grid{grid-template-columns:1fr}
-
-.top-layout{margin-bottom:14px}
-.state-date{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.top-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.new-entry-btn{width:100%;margin-top:0}
+:root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+header{background:var(--teal);color:#fff;padding:28px 24px 24px}
+h1{margin:0;font-size:30px} .version{margin-top:20px;font-weight:700;font-size:16px}.subtitle{margin-top:8px;font-size:20px;font-weight:700}
+main{max-width:720px;margin:auto;padding:18px 24px 50px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.row1{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{display:block;font-size:17px;font-weight:700;color:var(--muted);margin:0 0 8px}
+input,select{width:100%;height:56px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:0 18px;font:700 18px Arial;color:var(--text)}
+button{height:56px;border:0;border-radius:14px;padding:0 18px;font:700 18px Arial;cursor:pointer}
+.secondary{background:var(--light);color:#08665e;width:100%}.primary{background:var(--teal);color:#fff;width:100%}
+.new-entry{margin-top:14px}.card{background:#fff;border-radius:24px;padding:28px;margin-top:18px;box-shadow:0 4px 18px #0000000b}
+.field{margin-top:18px}.field:first-child{margin-top:0}
+.auto{background:#eef4f3}.profit{font-weight:800}
+.hidden{display:none}
+.history-card{background:#fff;border-radius:20px;padding:18px;margin-top:12px}
+.history-head{display:flex;justify-content:space-between;gap:10px;font-weight:800}.meta{color:var(--muted);font-size:14px;margin-top:5px}
+.item-list{margin-top:12px}.item-row{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding:12px 0}
+.danger{background:#fbeaea;color:#a33;width:auto;height:40px;font-size:14px}
+.empty{text-align:center;color:var(--muted);padding:20px}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+.modal-box{background:#fff;width:min(520px,100%);border-radius:22px;padding:24px}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.stat{background:var(--light);border-radius:16px;padding:14px;text-align:center}.stat b{display:block;font-size:20px;margin-top:4px}
+@media(max-width:520px){main{padding:14px 24px 40px}.row1,.row2{gap:10px}h1{font-size:29px}.subtitle{font-size:19px}input,select{font-size:17px}.card{padding:26px 28px}}
 </style>
-
-<script>
-(async function forceFreshApp(){
-  try {
-    if ('serviceWorker' in navigator) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      for (const reg of regs) await reg.unregister();
-    }
-    if (window.caches) {
-      const keys = await caches.keys();
-      await Promise.all(keys.filter(k => k !== 'sale-profit-book-v3.5').map(k => caches.delete(k)));
-    }
-  } catch(e) {}
-})();
-</script>
 </head>
 <body>
 <header>
-<h1>Sale Profit Book</h1>
-<div class="version">Version 3.5</div><div class="sub">Sale • Purchase • Profit</div>
-
+  <h1>Sale Profit Book</h1>
+  <div class="version">Version 4.0</div>
+  <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
+
 <main>
-<div class="top-layout">
-  <div class="state-date">
+  <!-- ROW 1 -->
+  <div class="row1">
+    <div>
+      <label>State / Place</label>
+      <input id="place" value="Kerala" autocomplete="off">
     </div>
-  <div class="top-actions">
-    <button type="button" class="secondary" onclick="openItemMaster()">Add Item</button>
-    <button type="button" class="secondary" onclick="showHistory(this)">History</button>
+    <div>
+      <label>Date</label>
+      <input id="date" type="date">
+    </div>
   </div>
-  <button type="button" class="primary new-entry-btn" onclick="newEntry(this)">New Entry</button>
-</div>
-<section id="entry">
-<div class="card">
-<div class="grid entry-grid">
-<div><label>State / Place</label><input id="place" value="Kerala" autocomplete="off"></div>
-<div><label>Date</label><input id="date" type="date"></div>
-<div class="full"><label>Item Name</label><select id="item" onchange="applyItemRate()" style="width:100%;padding:12px;border:1px solid #d7e0df;border-radius:11px;background:#fff;font:inherit"><option value="">Select Item</option></select></div>
-<div class="full"><label>Meter</label><input id="meter" type="number" min="0" step="0.01" inputmode="decimal" oninput="applyItemRate()" placeholder="3"></div>
-<div class="full"><label>Sale ₹</label><input id="sale" type="number" min="0" step="0.01" inputmode="decimal" oninput="applyItemRate()" placeholder="1500"></div>
-<div class="full"><label>Purchase ₹ <span class="meta">(Auto)</span></label><input id="purchase" type="number" readonly min="0" step="0.01" inputmode="decimal" placeholder="Auto"></div>
-<div class="full"><label>Profit ₹ <span class="meta">(Auto)</span></label><input id="profit" type="number" readonly min="0" step="0.01" inputmode="decimal" placeholder="Auto"></div>
-</div>
-<button class="primary" onclick="saveEntry()">+ Save Entry</button>
-</div>
-<div class="card">
-<h3 style="margin-top:0">Today's Summary</h3>
-<div class="summary">
-<div class="sum"><span>Sale</span><b id="todaySale">₹0</b></div>
-<div class="sum"><span>Purchase</span><b id="todayPurchase">₹0</b></div>
-<div class="sum"><span>Profit</span><b class="profit" id="todayProfit">₹0</b></div>
-</div>
-</div>
-<div class="card"><h3 style="margin-top:0">Tools</h3><div class="toolbar"><button class="secondary" onclick="openBackup()">Backup / Restore</button><button class="blue" onclick="exportCSV()">Export CSV</button></div></div>
-</section>
-<section id="history" style="display:none">
-<div class="card">
-<div class="grid">
-<div><label>From</label><input id="from" type="date" oninput="renderHistory()"></div>
-<div><label>To</label><input id="to" type="date" oninput="renderHistory()"></div>
-<div class="full"><label>Search</label><input id="search" oninput="renderHistory()" placeholder="Search item / place"></div>
-</div>
-</div>
-<div class="card">
-<div class="summary">
-<div class="sum"><span>Sale</span><b id="historySale">₹0</b></div>
-<div class="sum"><span>Purchase</span><b id="historyPurchase">₹0</b></div>
-<div class="sum"><span>Profit</span><b class="profit" id="historyProfit">₹0</b></div>
-</div>
-</div>
-<div class="card"><div id="list"></div></div>
-</section>
 
-<div id="itemModal" style="display:none;position:fixed;inset:0;background:#0008;z-index:20;padding:18px">
- <div class="card" style="max-width:520px;margin:8vh auto">
-  <h3 style="margin-top:0">Add Item</h3>
-  <div class="grid">
-   <div class="full"><label>Item Name</label><input id="masterItem" placeholder="BSL EXECUTIVE CHOICE"></div>
-   <div class="full"><label>Purchase / Meter (₹)</label><input id="masterRate" type="number" min="0" step="0.01" placeholder="225"></div>
+  <!-- ROW 2 -->
+  <div class="row2">
+    <button class="secondary" onclick="openItemModal()">Add Item</button>
+    <button class="secondary" onclick="showHistory()">History</button>
   </div>
-  <button class="primary" onclick="saveMasterItem()">Save Item</button>
-  <button class="secondary" style="width:100%;margin-top:8px" onclick="closeItemMaster()">Close</button>
-  <div id="masterList" style="margin-top:12px"></div>
- </div>
-</div>
+
+  <!-- ROW 3 -->
+  <button class="primary new-entry" onclick="newEntry()">New Entry</button>
+
+  <section id="entryCard" class="card">
+    <div class="field">
+      <label>Item Name</label>
+      <select id="item" onchange="calculate()">
+        <option value="">Select Item</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Meter</label>
+      <input id="meter" type="number" min="0" step="0.01" inputmode="decimal" placeholder="3" oninput="calculate()">
+    </div>
+
+    <div class="field">
+      <label>Sale ₹</label>
+      <input id="sale" type="number" min="0" step="0.01" inputmode="decimal" placeholder="1500" oninput="calculate()">
+    </div>
+
+    <div class="field">
+      <label>Purchase ₹ (Auto)</label>
+      <input id="purchase" class="auto" type="text" readonly placeholder="Auto">
+    </div>
+
+    <div class="field">
+      <label>Profit ₹ (Auto)</label>
+      <input id="profit" class="auto profit" type="text" readonly placeholder="Auto">
+    </div>
+
+    <div class="field">
+      <button class="primary" onclick="saveEntry()">Save Entry</button>
+    </div>
+  </section>
+
+  <section id="historyCard" class="hidden">
+    <div class="summary">
+      <div class="stat">Sales<b id="sumSale">₹0</b></div>
+      <div class="stat">Purchase<b id="sumPurchase">₹0</b></div>
+      <div class="stat">Profit<b id="sumProfit">₹0</b></div>
+    </div>
+    <div id="historyList"></div>
+  </section>
 </main>
-<div id="editModal" class="modal"><div class="sheet"><h3>Edit Entry</h3><div class="grid"><div><label>Date</label><input id="eDate" type="date"></div><div><label>State / Place</label><input id="ePlace"></div><div class="full"><label>Item Name</label><input id="eItem"></div><div><label>Meter</label><input id="eMeter" type="number" min="0" step="0.01"></div><div><label>Sale ₹</label><input id="eSale" type="number" min="0" step="0.01"></div><div><label>Purchase ₹ <span class="meta">(Auto)</span></label><input id="ePurchase" type="number" readonly></div></div><div class="toolbar" style="margin-top:12px"><button class="secondary" onclick="closeEdit()">Cancel</button><button class="primary" style="margin:0" onclick="updateEntry()">Save Changes</button></div></div></div>
-<div id="backupModal" class="modal"><div class="sheet"><h3>Backup / Restore</h3><p class="notice">Create a backup file to keep your entries safe. Restore a previously exported backup on this device.</p><div class="toolbar"><button class="secondary" onclick="backupJSON()">Download Backup</button><button class="blue" onclick="document.getElementById('restoreFile').click()">Restore Backup</button></div><input id="restoreFile" type="file" accept="application/json" style="display:none" onchange="restoreJSON(event)"><button class="danger" style="width:100%;margin-top:10px" onclick="closeBackup()">Close</button></div></div>
-<script>
-const STORAGE_KEY='saleProfitBook_v1';
-let entries=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
-const $=id=>document.getElementById(id);
-const today=()=>new Date().toISOString().slice(0,10);
-const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
-$('date').value=today();
-function totals(arr){return arr.reduce((r,x)=>({sale:r.sale+x.sale,purchase:r.purchase+x.purchase,profit:r.profit+x.profit}),{sale:0,purchase:0,profit:0})}
 
-const ITEM_KEY="saleProfitBook_items_v24";
-let itemsMaster=JSON.parse(localStorage.getItem(ITEM_KEY)||"[]");
-function saveItems(){localStorage.setItem(ITEM_KEY,JSON.stringify(itemsMaster));}
-function openItemMaster(){ $("itemModal").style.display="block"; renderMasterList(); }
-function closeItemMaster(){ $("itemModal").style.display="none"; }
-function saveMasterItem(){
- const name=$("masterItem").value.trim(), rate=Number($("masterRate").value);
- if(!name || !(rate>0)){alert("Enter Item Name and Purchase / Meter.");return;}
- const i=itemsMaster.findIndex(x=>x.name.toLowerCase()===name.toLowerCase());
- if(i>=0) itemsMaster[i].rate=rate; else itemsMaster.push({name,rate});
- saveItems(); $("masterItem").value=""; $("masterRate").value="";
- populateItems(); renderMasterList(); alert("Item saved ✓");
-}
-function deleteMasterItem(name){
- if(confirm("Delete this item?")){itemsMaster=itemsMaster.filter(x=>x.name!==name);saveItems();populateItems();renderMasterList();}
-}
-function renderMasterList(){
- const el=$("masterList"); if(!el)return;
- el.innerHTML=itemsMaster.length
- ? itemsMaster.map(x=>`<div class="row"><div><b>${esc(x.name)}</b><div class="meta">₹${Number(x.rate).toLocaleString("en-IN")} / meter</div></div><button class="danger" onclick="deleteMasterItem(${JSON.stringify(x.name)})">Delete</button></div>`).join("")
- : '<div class="empty">No items added</div>';
+<div id="itemModal" class="modal">
+  <div class="modal-box">
+    <h2 style="margin-top:0">Add Item</h2>
+    <div class="field">
+      <label>Item Name</label>
+      <input id="newItemName" placeholder="BSL EXECUTIVE CHOICE">
+    </div>
+    <div class="field">
+      <label>Purchase / Meter ₹</label>
+      <input id="newItemRate" type="number" min="0" step="0.01" inputmode="decimal" placeholder="225">
+    </div>
+    <div class="modal-actions">
+      <button class="primary" onclick="saveItem()">Save Item</button>
+      <button class="secondary" onclick="closeItemModal()">Close</button>
+    </div>
+    <div id="itemList" class="item-list"></div>
+  </div>
+</div>
+
+<script>
+const ITEMS_KEY='spb_v4_items';
+const ENTRIES_KEY='spb_v4_entries';
+let items=JSON.parse(localStorage.getItem(ITEMS_KEY)||'[]');
+let entries=JSON.parse(localStorage.getItem(ENTRIES_KEY)||'[]');
+
+const $=id=>document.getElementById(id);
+const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+const today=()=>{const d=new Date();return d.toISOString().slice(0,10)};
+
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+function init(){
+  $('date').value=today();
+  populateItems();
+  renderItems();
+  renderHistory();
 }
 function populateItems(){
- const s=$("item"); if(!s)return;
- const old=s.value;
- s.innerHTML='<option value="">Select Item</option>'+itemsMaster.map(x=>`<option value="${esc(x.name)}">${esc(x.name)} — ₹${Number(x.rate).toLocaleString("en-IN")}/m</option>`).join("");
- if(itemsMaster.some(x=>x.name===old))s.value=old;
+  const old=$('item').value;
+  $('item').innerHTML='<option value="">Select Item</option>'+
+    items.map(x=>`<option value="${esc(x.name)}">${esc(x.name)} — ${money(x.rate)}/m</option>`).join('');
+  if(items.some(x=>x.name===old)) $('item').value=old;
 }
-function getSelectedRate(){
- const name=$("item").value;
- const x=itemsMaster.find(i=>i.name===name);
- return x ? Number(x.rate) : 0;
+function getRate(){
+  const x=items.find(i=>i.name===$('item').value);
+  return x?Number(x.rate):0;
 }
-function applyItemRate(){
- const rate=getSelectedRate();
- const meter=Number($("meter").value)||0;
- const sale=Number($("sale").value)||0;
- const purchase=(rate>0 && meter>0) ? Math.round(meter*rate*100)/100 : 0;
- $("purchase").value = purchase ? String(purchase) : "";
- const profit=sale>0 && purchase>0 ? Math.round((sale-purchase)*100)/100 : 0;
- $("profit").value = profit ? String(profit) : "";
+function calculate(){
+  const rate=getRate(), meter=Number($('meter').value)||0, sale=Number($('sale').value)||0;
+  const purchase=rate>0&&meter>0?Math.round(rate*meter*100)/100:0;
+  const profit=purchase>0?Math.round((sale-purchase)*100)/100:0;
+  $('purchase').value=purchase?purchase:'';
+  $('profit').value=(sale>0&&purchase>0)?profit:'';
 }
-
 function saveEntry(){
- const item=$("item").value.trim();
- const meter=Number($("meter").value)||0;
- const sale=Number($("sale").value)||0;
- const purchase=Number($("purchase").value)||0;
- const rate=getSelectedRate();
- if(!item || !(meter>0) || sale<0 || !(rate>0)){alert("Select an item, enter Meter and Sale.");return;}
- const calculated=Math.round(meter*rate*100)/100;
- if(Math.abs(purchase-calculated)>0.01){alert("Purchase is calculated automatically. Please select Item and enter Meter.");return;}
- entries.push({
-   id:Date.now(),date:$("date").value||today(),place:$("place").value.trim()||"Kerala",
-   item,meter,rate,sale,purchase:calculated,profit:sale-calculated
- });
- localStorage.setItem(STORAGE_KEY,JSON.stringify(entries));
- $("item").value="";$("meter").value="";$("sale").value="";$("purchase").value="";
- updateToday();alert("Entry saved successfully.");
+  const item=$('item').value, meter=Number($('meter').value)||0, sale=Number($('sale').value)||0;
+  const rate=getRate(), purchase=rate*meter;
+  if(!item){alert('Please select an Item Name.');return}
+  if(!(meter>0)){alert('Please enter Meter.');return}
+  if(!(sale>=0)){alert('Please enter Sale amount.');return}
+  if(!(rate>0)){alert('Please add a Purchase / Meter rate for this item.');return}
+  const entry={id:Date.now(),date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,meter,rate,sale,purchase,profit:sale-purchase};
+  entries.unshift(entry);localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));
+  alert('Entry saved successfully.');
+  newEntry();
+  renderHistory();
 }
-function updateToday(){const t=totals(entries.filter(x=>x.date===today()));$('todaySale').textContent=money(t.sale);$('todayPurchase').textContent=money(t.purchase);$('todayProfit').textContent=money(t.profit);renderHistory()}
+function newEntry(){
+  $('historyCard').classList.add('hidden');$('entryCard').classList.remove('hidden');
+  $('item').value='';$('meter').value='';$('sale').value='';$('purchase').value='';$('profit').value='';
+  if(!$('date').value)$('date').value=today();
+}
+function showHistory(){
+  $('entryCard').classList.add('hidden');$('historyCard').classList.remove('hidden');renderHistory();
+}
 function renderHistory(){
- const from=$('from').value,to=$('to').value,q=($('search').value||'').toLowerCase();
- const arr=entries.filter(x=>(!from||x.date>=from)&&(!to||x.date<=to)&&(!q||(x.item+' '+x.place).toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
- const t=totals(arr);$('historySale').textContent=money(t.sale);$('historyPurchase').textContent=money(t.purchase);$('historyProfit').textContent=money(t.profit);
- $('list').innerHTML=arr.length?arr.map(x=>`<div class="row"><div><div class="item">${esc(x.item)}</div><div class="meta">${x.date} • ${esc(x.place)}</div><div>${x.meter ? esc(x.meter)+" m • " : ""}${money(x.sale)} − ${money(x.purchase)} = <span class="profit">${money(x.profit)}</span></div></div><div class="actions"><button class="blue" onclick="editEntry(${x.id})">Edit</button><button class="danger" onclick="deleteEntry(${x.id})">Delete</button></div></div>`).join(''):'<div class="empty">No records found</div>';
+  const list=$('historyList');
+  const total=entries.reduce((a,x)=>({sale:a.sale+x.sale,purchase:a.purchase+x.purchase,profit:a.profit+x.profit}),{sale:0,purchase:0,profit:0});
+  $('sumSale').textContent=money(total.sale);$('sumPurchase').textContent=money(total.purchase);$('sumProfit').textContent=money(total.profit);
+  if(!entries.length){list.innerHTML='<div class="history-card empty">No records found</div>';return}
+  list.innerHTML=entries.map(x=>`
+    <div class="history-card">
+      <div class="history-head"><span>${esc(x.item)}</span><span>${money(x.profit)}</span></div>
+      <div class="meta">${esc(x.date)} • ${esc(x.place)} • ${x.meter} m</div>
+      <div style="margin-top:9px">Sale ${money(x.sale)} − Purchase ${money(x.purchase)}</div>
+      <div class="meta">Purchase / Meter: ${money(x.rate)}</div>
+      <button class="danger" style="margin-top:10px" onclick="deleteEntry(${x.id})">Delete</button>
+    </div>`).join('');
 }
-function deleteEntry(id){if(confirm('Delete this entry?')){entries=entries.filter(x=>x.id!==id);localStorage.setItem(STORAGE_KEY,JSON.stringify(entries));updateToday()}}
-function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-let editingId=null;
-function editEntry(id){const x=entries.find(e=>e.id===id);if(!x)return;editingId=id;$('eDate').value=x.date;$('ePlace').value=x.place;$('eItem').value=x.item;$('eMeter').value=x.meter||'';$('eSale').value=x.sale;$('ePurchase').value=x.purchase;$('editModal').classList.add('show')}
-function closeEdit(){$('editModal').classList.remove('show');editingId=null}
-function updateEntry(){const x=entries.find(e=>e.id===editingId);if(!x)return;const item=$('eItem').value.trim(),meter=Number($('eMeter').value)||0,sale=+$('eSale').value,rate=(itemsMaster.find(i=>i.name===item)||{}).rate||0,purchase=Math.round(meter*rate*100)/100;if(!item||meter<=0||sale<0||rate<=0){alert('Please enter Item Name, Sale and Purchase correctly.');return}x.date=$('eDate').value||today();x.place=$('ePlace').value.trim()||'Kerala';x.item=item;x.meter=meter;x.rate=rate;x.sale=sale;x.purchase=purchase;x.profit=sale-purchase;localStorage.setItem(STORAGE_KEY,JSON.stringify(entries));closeEdit();updateToday();alert('Entry updated successfully.')}
-function openBackup(){$('backupModal').classList.add('show')}
-function closeBackup(){$('backupModal').classList.remove('show')}
-function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function backupJSON(){downloadBlob(new Blob([JSON.stringify({app:'Sale Profit Book',version:'2.8',exportedAt:new Date().toISOString(),entries},null,2)],{type:'application/json'}),'sale-profit-book-backup.json')}
-function restoreJSON(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const obj=JSON.parse(r.result);if(!Array.isArray(obj.entries))throw 0;if(confirm('Restore this backup? Current entries will be replaced.')){entries=obj.entries;localStorage.setItem(STORAGE_KEY,JSON.stringify(entries));updateToday();alert('Backup restored successfully.');closeBackup()}}catch(e){alert('Invalid backup file.')}};r.readAsText(f);ev.target.value=''}
-function exportCSV(){const rows=[['Date','State / Place','Item Name','Meter','Purchase / Meter','Sale','Purchase','Profit'],...entries.map(x=>[x.date,x.place,x.item,x.meter||'',x.rate||'',x.sale,x.purchase,x.profit])];const csv=rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),'sale-profit-book.csv')}
-function showHistory(btn){
-  $('entry').style.display='none';
-  $('history').style.display='block';
-  render();
+function deleteEntry(id){
+  if(!confirm('Delete this entry?'))return;
+  entries=entries.filter(x=>x.id!==id);localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));renderHistory();
 }
-function newEntry(btn){
- $('entry').style.display='block'; $('history').style.display='none';
- $('item').value=''; $('meter').value=''; $('sale').value=''; $('purchase').value=''; $('profit').value='';
- $('date').value=today(); if(!$('place').value.trim()) $('place').value='Kerala';
- document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
- $('item').focus();
+function openItemModal(){$('itemModal').style.display='flex';renderItems()}
+function closeItemModal(){$('itemModal').style.display='none'}
+function saveItem(){
+  const name=$('newItemName').value.trim(),rate=Number($('newItemRate').value);
+  if(!name||!(rate>0)){alert('Enter Item Name and Purchase / Meter.');return}
+  const old=items.find(x=>x.name.toLowerCase()===name.toLowerCase());
+  if(old)old.rate=rate;else items.push({name,rate});
+  localStorage.setItem(ITEMS_KEY,JSON.stringify(items));
+  $('newItemName').value='';$('newItemRate').value='';populateItems();renderItems();calculate();
 }
-function showTab(tab,btn){$('entry').style.display=tab==='entry'?'block':'none';$('history').style.display=tab==='history'?'block':'none';document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderHistory()}
-populateItems(); updateToday();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=2.8?v=2.5',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});}
+function renderItems(){
+  const list=$('itemList');
+  if(!items.length){list.innerHTML='<div class="empty">No items added</div>';return}
+  list.innerHTML=items.map(x=>`
+    <div class="item-row">
+      <div><b>${esc(x.name)}</b><div class="meta">${money(x.rate)} / meter</div></div>
+      <button class="danger" onclick="deleteItem(${JSON.stringify(x.name)})">Delete</button>
+    </div>`).join('');
+}
+function deleteItem(name){
+  if(!confirm('Delete this item?'))return;
+  items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
+}
+init();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.0').catch(()=>{});}
 </script>
 </body>
 </html>
