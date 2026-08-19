@@ -1,11 +1,11 @@
 {
   "name":"Sale Profit Book",
   "short_name":"Profit Book",
-  "start_url":"./index.html?v=2.1",
+  "start_url":"./index.html?v=2.8",
   "display":"standalone",
   "background_color":"#f4f7f7",
   "theme_color":"#0f766e",
   "description":"Sale, Purchase and Profit tracker",
   "lang":"en",
-  "version":"2.7"
+  "version":"2.8"
 }
