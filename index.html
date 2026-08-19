@@ -22,11 +22,10 @@ button{border:0;border-radius:11px;padding:12px 14px;font:inherit;cursor:pointer
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 2.5</div><div class="sub">Sale • Purchase • Profit</div>
+<div class="version">Version 2.6</div><div class="sub">Sale • Purchase • Profit</div>
 
 </header>
 <main>
-<div style="margin-bottom:10px"><button class="secondary" onclick="openItemMaster()">＋ Add Item</button></div>
 <div class="tabs">
 <button class="active" onclick="showTab('entry',this)">New Entry</button>
 <button onclick="showTab('history',this)">History</button>
@@ -36,10 +35,11 @@ button{border:0;border-radius:11px;padding:12px 14px;font:inherit;cursor:pointer
 <div class="grid entry-grid">
 <div><label>State / Place</label><input id="place" value="Kerala" autocomplete="off"></div>
 <div><label>Date</label><input id="date" type="date"></div>
-<div class="full"><label>Item Name</label><select id="item" onchange="applyItemRate()"><option value="">Select Item</option></select></div>
+<div class="full"><label>Item Name</label><select id="item" onchange="applyItemRate()" style="width:100%;padding:12px;border:1px solid #d7e0df;border-radius:11px;background:#fff;font:inherit"><option value="">Select Item</option></select></div>
 <div class="full"><label>Meter</label><input id="meter" type="number" min="0" step="0.01" inputmode="decimal" oninput="applyItemRate()" placeholder="3"></div>
-<div class="full"><label>Sale ₹</label><input id="sale" type="number" min="0" step="0.01" inputmode="decimal" placeholder="1500"></div>
+<div class="full"><label>Sale ₹</label><input id="sale" type="number" min="0" step="0.01" inputmode="decimal" oninput="applyItemRate()" placeholder="1500"></div>
 <div class="full"><label>Purchase ₹ <span class="meta">(Auto)</span></label><input id="purchase" type="number" readonly min="0" step="0.01" inputmode="decimal" placeholder="Auto"></div>
+<div class="full"><label>Profit ₹ <span class="meta">(Auto)</span></label><input id="profit" type="number" readonly min="0" step="0.01" inputmode="decimal" placeholder="Auto"></div>
 </div>
 <button class="primary" onclick="saveEntry()">+ Save Entry</button>
 </div>
@@ -131,7 +131,11 @@ function getSelectedRate(){
 function applyItemRate(){
  const rate=getSelectedRate();
  const meter=Number($("meter").value)||0;
- $("purchase").value = rate>0 && meter>0 ? String(Math.round(meter*rate*100)/100) : "";
+ const sale=Number($("sale").value)||0;
+ const purchase=(rate>0 && meter>0) ? Math.round(meter*rate*100)/100 : 0;
+ $("purchase").value = purchase ? String(purchase) : "";
+ const profit=sale>0 && purchase>0 ? Math.round((sale-purchase)*100)/100 : 0;
+ $("profit").value = profit ? String(profit) : "";
 }
 
 function saveEntry(){
