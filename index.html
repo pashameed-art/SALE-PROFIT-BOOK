@@ -31,7 +31,7 @@ button{border:0;border-radius:11px;padding:12px 14px;font:inherit;cursor:pointer
     }
     if (window.caches) {
       const keys = await caches.keys();
-      await Promise.all(keys.filter(k => k !== 'sale-profit-book-v2.8').map(k => caches.delete(k)));
+      await Promise.all(keys.filter(k => k !== 'sale-profit-book-v2.9').map(k => caches.delete(k)));
     }
   } catch(e) {}
 })();
@@ -40,13 +40,13 @@ button{border:0;border-radius:11px;padding:12px 14px;font:inherit;cursor:pointer
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 2.8</div><div class="sub">Sale • Purchase • Profit</div>
+<div class="version">Version 2.9</div><div class="sub">Sale • Purchase • Profit</div>
 
 </header>
 <main>
 <div class="tabs">
-<button class="active" onclick="newEntry(this)">New Entry</button>
-<button onclick="showTab('history',this)">History</button>
+<button class="active" onclick="openItemMaster();this.classList.add('active')">Add Item</button>
+<button onclick="newEntry(this)">New Entry</button>
 </div>
 <section id="entry">
 <div class="card">
