@@ -26,6 +26,11 @@ button{border:0;border-radius:11px;padding:12px 14px;font:inherit;cursor:pointer
 .top-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .new-entry-btn{width:100%;margin-top:0}
 .entry-grid{grid-template-columns:1fr}
+
+.top-layout{margin-bottom:14px}
+.state-date{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.top-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.new-entry-btn{width:100%;margin-top:0}
 </style>
 
 <script>
@@ -37,7 +42,7 @@ button{border:0;border-radius:11px;padding:12px 14px;font:inherit;cursor:pointer
     }
     if (window.caches) {
       const keys = await caches.keys();
-      await Promise.all(keys.filter(k => k !== 'sale-profit-book-v3.4').map(k => caches.delete(k)));
+      await Promise.all(keys.filter(k => k !== 'sale-profit-book-v3.5').map(k => caches.delete(k)));
     }
   } catch(e) {}
 })();
@@ -46,7 +51,7 @@ button{border:0;border-radius:11px;padding:12px 14px;font:inherit;cursor:pointer
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 3.4</div><div class="sub">Sale • Purchase • Profit</div>
+<div class="version">Version 3.5</div><div class="sub">Sale • Purchase • Profit</div>
 
 </header>
 <main>
@@ -64,7 +69,6 @@ button{border:0;border-radius:11px;padding:12px 14px;font:inherit;cursor:pointer
 <div class="grid entry-grid">
 <div><label>State / Place</label><input id="place" value="Kerala" autocomplete="off"></div>
 <div><label>Date</label><input id="date" type="date"></div>
-<div class="full" style="margin-top:2px"></div>
 <div class="full"><label>Item Name</label><select id="item" onchange="applyItemRate()" style="width:100%;padding:12px;border:1px solid #d7e0df;border-radius:11px;background:#fff;font:inherit"><option value="">Select Item</option></select></div>
 <div class="full"><label>Meter</label><input id="meter" type="number" min="0" step="0.01" inputmode="decimal" oninput="applyItemRate()" placeholder="3"></div>
 <div class="full"><label>Sale ₹</label><input id="sale" type="number" min="0" step="0.01" inputmode="decimal" oninput="applyItemRate()" placeholder="1500"></div>
