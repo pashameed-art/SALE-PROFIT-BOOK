@@ -58,20 +58,24 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
 .report-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .report-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
 @media(max-width:520px){.nav-bar{padding:0 24px;gap:6px}.nav-bar button{font-size:14px}.report-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.entry-actions{margin-top:14px}.entry-actions button{width:100%}.history-filters{background:#fff;border-radius:20px;padding:16px;margin-top:14px}.filter-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.filter-buttons button{height:44px;font-size:14px}@media(max-width:520px){.filter-buttons{grid-template-columns:repeat(2,1fr)}}</style>
+.entry-actions{margin-top:14px}.entry-actions button{width:100%}.history-filters{background:#fff;border-radius:20px;padding:16px;margin-top:14px}.filter-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.filter-buttons button{height:44px;font-size:14px}@media(max-width:520px){.filter-buttons{grid-template-columns:repeat(2,1fr)}}
+.entry-three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:18px}.entry-three label{font-size:14px}.entry-three input,.entry-three select{width:100%}.nav-five{grid-template-columns:repeat(5,1fr)}.install-wrap{max-width:720px;margin:10px auto 0;padding:0 24px}.install-btn{width:100%;display:none}.expense-list{margin-top:14px}.expense-row{background:#fff;border-radius:18px;padding:15px;margin-top:10px}.expense-actions{display:flex;gap:8px;margin-top:10px}.expense-actions button{height:40px;font-size:14px}@media(max-width:520px){.nav-five{grid-template-columns:repeat(5,minmax(0,1fr))}.nav-five button{font-size:12px;padding:0 4px}.entry-three{gap:7px}.entry-three label{font-size:13px}.entry-three input,.entry-three select{font-size:14px;padding:0 8px}.install-wrap{padding:0 24px}}
+</style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.9</div>
+  <div class="version">Version 4.10</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
-<nav class="nav-bar">
+<nav class="nav-bar nav-five">
   <button class="nav-active" onclick="showPage('home',this)">Home</button>
   <button onclick="openItemModal();setActive(this)">Add Item</button>
   <button onclick="showPage('report',this)">Report</button>
+  <button onclick="showPage('expense',this)">Expense</button>
   <button onclick="showPage('backup',this)">Backup</button>
 </nav>
+<div class="install-wrap"><button id="installBtn" class="secondary install-btn" onclick="installPWA()">Install App</button></div>
 
 
 <main>
@@ -174,6 +178,19 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
   </div>
 </div>
 
+<div id="expensePage" class="page">
+  <div class="backup-box">
+    <h2 style="margin-top:0">Expense</h2>
+    <div class="report-grid">
+      <div><label>Date</label><input id="expenseDate" type="date"></div>
+      <div><label>Amount ₹</label><input id="expenseAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="500"></div>
+    </div>
+    <div class="field"><label>Expense Name</label><input id="expenseName" placeholder="Petrol / Tea / Room"></div>
+    <button id="expenseSaveBtn" class="primary" style="margin-top:12px" onclick="saveExpense()">Save Expense</button>
+    <div id="expenseList" class="expense-list"></div>
+  </div>
+</div>
+
 <div id="backupPage" class="page">
   <div class="backup-box">
     <h2 style="margin-top:0">Backup</h2>
@@ -207,6 +224,9 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
 <script>
 const ITEMS_KEY='spb_v4_items';
 const ENTRIES_KEY='spb_v4_entries';
+const EXPENSES_KEY='spb_v4_expenses';
+let expenses=JSON.parse(localStorage.getItem(EXPENSES_KEY)||'[]');
+let editingExpenseId=null;
 let items=JSON.parse(localStorage.getItem(ITEMS_KEY)||'[]');
 let entries=JSON.parse(localStorage.getItem(ENTRIES_KEY)||'[]');
 
@@ -218,7 +238,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;',
 
 
 function backupData(){
-  const data={version:"4.5",items,entries,exportedAt:new Date().toISOString()};
+  const data={version:"4.10",items,entries,expenses,exportedAt:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);
   a.download="sale-profit-book-backup.json";a.click();URL.revokeObjectURL(a.href);
@@ -230,9 +250,10 @@ function restoreData(event){
     try{
       const data=JSON.parse(reader.result);
       if(!Array.isArray(data.items)||!Array.isArray(data.entries))throw new Error();
+      expenses=Array.isArray(data.expenses)?data.expenses:[];
       items=data.items;entries=data.entries;
       localStorage.setItem(ITEMS_KEY,JSON.stringify(items));
-      localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));
+      localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));
       populateItems();renderItems();renderHistory();alert("Backup restored successfully.");
     }catch(e){alert("Invalid backup file.");}
     event.target.value="";
@@ -242,7 +263,11 @@ function restoreData(event){
 function exportCSV(){
   const rows=[
     ["Date","Time","State / Place","Item Name","Meter","Purchase / Meter","Sale","Paid By","Purchase","Profit"],
-    ...entries.map(x=>[x.date,x.time||"",x.place,x.item,x.meter,x.rate,x.sale,x.paidBy||"GPay",x.purchase,x.profit])
+    ...entries.map(x=>[x.date,x.time||"",x.place,x.item,x.meter,x.rate,x.sale,x.paidBy||"GPay",x.purchase,x.profit]),
+    [],
+    ["EXPENSES"],
+    ["Date","Expense Name","Amount"],
+    ...expenses.map(x=>[x.date,x.name,x.amount])
   ];
   const csv=rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
   const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
@@ -250,6 +275,37 @@ function exportCSV(){
   a.download="sale-profit-book.csv";a.click();URL.revokeObjectURL(a.href);
 }
 
+
+
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;$('installBtn').style.display='block';});
+window.addEventListener('appinstalled',()=>{$('installBtn').style.display='none';deferredInstallPrompt=null;});
+async function installPWA(){
+  if(!deferredInstallPrompt){alert('Install option is not available in this browser right now.');return}
+  deferredInstallPrompt.prompt(); await deferredInstallPrompt.userChoice; deferredInstallPrompt=null;$('installBtn').style.display='none';
+}
+function saveExpense(){
+  const date=$('expenseDate').value||today(),name=$('expenseName').value.trim(),amount=Number($('expenseAmount').value)||0;
+  if(!name||!(amount>0)){alert('Enter Expense Name and Amount.');return}
+  if(editingExpenseId){
+    const i=expenses.findIndex(x=>x.id===editingExpenseId);
+    if(i>=0)expenses[i]={...expenses[i],date,name,amount};
+  }else expenses.unshift({id:Date.now(),date,name,amount});
+  localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));editingExpenseId=null;$('expenseSaveBtn').textContent='Save Expense';
+  $('expenseName').value='';$('expenseAmount').value='';renderExpenses();
+}
+function renderExpenses(){
+  const el=$('expenseList'); if(!expenses.length){el.innerHTML='<div class="empty">No expenses found</div>';return}
+  el.innerHTML=expenses.map(x=>`<div class="expense-row"><b>${esc(x.name)}</b><div class="meta">${esc(x.date)} • ${money(x.amount)}</div><div class="expense-actions"><button class="edit-btn" onclick="editExpense(${x.id})">Edit</button><button class="danger" onclick="deleteExpense(${x.id})">Delete</button></div></div>`).join('');
+}
+function editExpense(id){
+  const x=expenses.find(e=>e.id===id);if(!x)return;
+  editingExpenseId=id;$('expenseDate').value=x.date;$('expenseName').value=x.name;$('expenseAmount').value=x.amount;$('expenseSaveBtn').textContent='Update Expense';window.scrollTo({top:0,behavior:'smooth'});
+}
+function deleteExpense(id){
+  if(!confirm('Delete this expense?'))return;
+  expenses=expenses.filter(x=>x.id!==id);localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));renderExpenses();
+}
 
 function setActive(btn){
  document.querySelectorAll('.nav-bar button').forEach(b=>b.classList.remove('nav-active'));
@@ -259,6 +315,7 @@ function showPage(page,btn){
  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
  $(page+'Page').classList.add('active');
  setActive(btn);
+ if(page==='expense'){ $('expenseDate').value=$('expenseDate').value||today(); renderExpenses(); }
  if(page==='report'){
    const d=today(); if(!$('reportFrom').value)$('reportFrom').value=d.slice(0,8)+'01'; if(!$('reportTo').value)$('reportTo').value=d;
  }
@@ -406,7 +463,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.9').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.10').catch(()=>{});}
 </script>
 </body>
 </html>
