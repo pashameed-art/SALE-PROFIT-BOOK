@@ -58,12 +58,12 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
 .report-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .report-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
 @media(max-width:520px){.nav-bar{padding:0 24px;gap:6px}.nav-bar button{font-size:14px}.report-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
-</style>
+.entry-actions{margin-top:14px}.entry-actions button{width:100%}</style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.6</div>
+  <div class="version">Version 4.7</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar">
@@ -89,13 +89,11 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
   </div>
 
   <!-- ROW 2 -->
-  <div class="row2">
-    <button class="secondary" onclick="openItemModal()">Add Item</button>
+  <!-- ROW 3 -->
+  <div class="row2 entry-actions">
+    <button class="primary" onclick="newEntry()">New Entry</button>
     <button class="secondary" onclick="showHistory()">History</button>
   </div>
-
-  <!-- ROW 3 -->
-  <button class="primary new-entry" onclick="newEntry()">New Entry</button>
 
   <section id="entryCard" class="card">
     <div class="field">
@@ -370,7 +368,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.6').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.7').catch(()=>{});}
 </script>
 </body>
 </html>
