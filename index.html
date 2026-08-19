@@ -58,12 +58,12 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
 .report-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .report-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
 @media(max-width:520px){.nav-bar{padding:0 24px;gap:6px}.nav-bar button{font-size:14px}.report-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.entry-actions{margin-top:14px}.entry-actions button{width:100%}</style>
+.entry-actions{margin-top:14px}.entry-actions button{width:100%}.history-filters{background:#fff;border-radius:20px;padding:16px;margin-top:14px}.filter-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.filter-buttons button{height:44px;font-size:14px}@media(max-width:520px){.filter-buttons{grid-template-columns:repeat(2,1fr)}}</style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.7</div>
+  <div class="version">Version 4.8</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar">
@@ -138,7 +138,20 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
       <div class="dua-title">Dua</div>
       <div class="dua-text">யா அல்லாஹ்! எங்கள் வாழ்வில் பரக்கத்தையும், ஹலாலான ரிஸ்க்கையும் வழங்குவாயாக.<br>எங்கள் காரியங்களை எளிதாக்கி, நன்மையைத் தந்து, தீமையிலிருந்து எங்களைப் பாதுகாப்பாயாக.</div>
     </div>
-    <div id="historyList"></div>
+    <div class="history-filters">
+  <input id="historySearch" placeholder="Search Item Name" oninput="renderHistory()">
+  <div class="report-grid">
+    <div><label>Date From</label><input id="historyFrom" type="date" onchange="renderHistory()"></div>
+    <div><label>Date To</label><input id="historyTo" type="date" onchange="renderHistory()"></div>
+  </div>
+  <div class="filter-buttons">
+    <button class="secondary" onclick="setHistoryFilter('today')">Today</button>
+    <button class="secondary" onclick="setHistoryFilter('week')">This Week</button>
+    <button class="secondary" onclick="setHistoryFilter('month')">This Month</button>
+    <button class="secondary" onclick="clearHistoryFilter()">Clear</button>
+  </div>
+</div>
+<div id="historyList"></div>
   </section>
 </div>
 
@@ -315,12 +328,19 @@ function showHistory(){
   $('entryCard').classList.add('hidden');$('historyCard').classList.remove('hidden');renderHistory();
 }
 function renderHistory(){
-  const list=$('historyList');
-  const total=entries.reduce((a,x)=>({meter:a.meter+Number(x.meter||0),sale:a.sale+x.sale,purchase:a.purchase+x.purchase,profit:a.profit+x.profit}),{meter:0,sale:0,purchase:0,profit:0});
+  const q=($('historySearch')?.value||'').trim().toLowerCase();
+  const from=$('historyFrom')?.value||'';
+  const to=$('historyTo')?.value||'';
+  const list=entries.filter(x=>{
+    const text=(x.item||'').toLowerCase();
+    return (!q||text.includes(q))&&(!from||x.date>=from)&&(!to||x.date<=to);
+  });
+  const total=list.reduce((a,x)=>({meter:a.meter+Number(x.meter||0),sale:a.sale+x.sale,purchase:a.purchase+x.purchase,profit:a.profit+x.profit}),{meter:0,sale:0,purchase:0,profit:0});
   $('sumMeter').textContent=Number(total.meter.toFixed(2)).toLocaleString('en-IN');
   $('sumSale').textContent=money(total.sale);$('sumPurchase').textContent=money(total.purchase);$('sumProfit').textContent=money(total.profit);
-  if(!entries.length){list.innerHTML='<div class="history-card empty">No records found</div>';return}
-  list.innerHTML=entries.map(x=>`
+  const listEl=$('historyList');
+  if(!list.length){listEl.innerHTML='<div class="history-card empty">No records found</div>';return}
+  listEl.innerHTML=list.map(x=>`
     <div class="history-card">
       <div class="history-head"><span>${esc(x.item)}</span><span>${money(x.profit)}</span></div>
       <div class="meta">${esc(x.date)} • ${esc(x.place)} • ${x.meter} m</div>
@@ -332,6 +352,17 @@ function renderHistory(){
         <button class="danger" onclick="deleteEntry(${x.id})">Delete</button>
       </div>
     </div>`).join('');
+}
+function setHistoryFilter(type){
+  const d=new Date(), pad=n=>String(n).padStart(2,'0');
+  const fmt=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;
+  let from=d,to=d;
+  if(type==='week'){const day=d.getDay();from=new Date(d);from.setDate(d.getDate()-(day||7)+1)}
+  if(type==='month'){from=new Date(d.getFullYear(),d.getMonth(),1)}
+  $('historyFrom').value=fmt(from);$('historyTo').value=fmt(to);renderHistory();
+}
+function clearHistoryFilter(){
+  $('historySearch').value='';$('historyFrom').value='';$('historyTo').value='';renderHistory();
 }
 function editEntry(id){
   const x=entries.find(e=>e.id===id);if(!x)return;
@@ -368,7 +399,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.7').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.8').catch(()=>{});}
 </script>
 </body>
 </html>
