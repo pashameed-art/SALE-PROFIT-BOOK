@@ -34,12 +34,19 @@ button{height:56px;border:0;border-radius:14px;padding:0 18px;font:700 18px Aria
 .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
 .stat{background:var(--light);border-radius:16px;padding:14px;text-align:center}.stat b{display:block;font-size:20px;margin-top:4px}
 @media(max-width:520px){main{padding:14px 24px 40px}.row1,.row2{gap:10px}h1{font-size:29px}.subtitle{font-size:19px}input,select{font-size:17px}.card{padding:26px 28px}}
+
+.dua-card{background:#fff;border-radius:22px;padding:22px 24px;margin-top:18px;text-align:center;box-shadow:0 4px 18px #0000000b}
+.dua-title{font-size:19px;font-weight:800;color:#0f766e;margin-bottom:10px}
+.dua-text{font-size:18px;line-height:1.7;font-weight:700;color:#34403f}
+.edit-btn{background:#e9f3f2;color:#08665e;width:auto;height:40px;font-size:14px}
+.history-actions{display:flex;gap:8px;margin-top:10px}
+.time-line{font-size:14px;color:#708080;margin-top:4px}
 </style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.1</div>
+  <div class="version">Version 4.2</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 
@@ -94,7 +101,7 @@ button{height:56px;border:0;border-radius:14px;padding:0 18px;font:700 18px Aria
     </div>
 
     <div class="field">
-      <button class="primary" onclick="saveEntry()">Save Entry</button>
+      <button id="saveBtn" class="primary" onclick="saveEntry()">Save Entry</button>
     </div>
   </section>
 
@@ -104,6 +111,10 @@ button{height:56px;border:0;border-radius:14px;padding:0 18px;font:700 18px Aria
       <div class="stat">Sale<b id="sumSale">₹0</b></div>
       <div class="stat">Purchase<b id="sumPurchase">₹0</b></div>
       <div class="stat">Profit<b id="sumProfit">₹0</b></div>
+    </div>
+<div class="dua-card">
+      <div class="dua-title">Dua</div>
+      <div class="dua-text">யா அல்லாஹ்! எங்கள் வாழ்வில் பரக்கத்தையும், ஹலாலான ரிஸ்க்கையும் வழங்குவாயாக.<br>எங்கள் காரியங்களை எளிதாக்கி, நன்மையைத் தந்து, தீமையிலிருந்து எங்களைப் பாதுகாப்பாயாக.</div>
     </div>
     <div id="historyList"></div>
   </section>
@@ -163,6 +174,8 @@ function calculate(){
   $('purchase').value=purchase?purchase:'';
   $('profit').value=(sale>0&&purchase>0)?profit:'';
 }
+function localTime(){const d=new Date();return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});}
+let editingId=null;
 function saveEntry(){
   const item=$('item').value, meter=Number($('meter').value)||0, sale=Number($('sale').value)||0;
   const rate=getRate(), purchase=rate*meter;
@@ -170,13 +183,21 @@ function saveEntry(){
   if(!(meter>0)){alert('Please enter Meter.');return}
   if(!(sale>=0)){alert('Please enter Sale amount.');return}
   if(!(rate>0)){alert('Please add a Purchase / Meter rate for this item.');return}
-  const entry={id:Date.now(),date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,meter,rate,sale,purchase,profit:sale-purchase};
-  entries.unshift(entry);localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));
-  alert('Entry saved successfully.');
+  const wasEditing=!!editingId;
+  if(editingId){
+    const idx=entries.findIndex(x=>x.id===editingId);
+    if(idx>=0) entries[idx]={...entries[idx],date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,meter,rate,sale,purchase,profit:sale-purchase};
+  }else{
+    entries.unshift({id:Date.now(),date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,meter,rate,sale,purchase,profit:sale-purchase,time:localTime()});
+  }
+  editingId=null;$('saveBtn').textContent='Save Entry';
+  localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));
+  alert(wasEditing?'Entry updated successfully.':'Entry saved successfully.');
   newEntry();
   renderHistory();
 }
 function newEntry(){
+  editingId=null;$('saveBtn').textContent='Save Entry';
   $('historyCard').classList.add('hidden');$('entryCard').classList.remove('hidden');
   $('item').value='';$('meter').value='';$('sale').value='';$('purchase').value='';$('profit').value='';
   if(!$('date').value)$('date').value=today();
@@ -194,10 +215,21 @@ function renderHistory(){
     <div class="history-card">
       <div class="history-head"><span>${esc(x.item)}</span><span>${money(x.profit)}</span></div>
       <div class="meta">${esc(x.date)} • ${esc(x.place)} • ${x.meter} m</div>
+      <div class="time-line">Time: ${esc(x.time||'—')}</div>
       <div style="margin-top:9px">Sale ${money(x.sale)} − Purchase ${money(x.purchase)}</div>
       <div class="meta">Purchase / Meter: ${money(x.rate)}</div>
-      <button class="danger" style="margin-top:10px" onclick="deleteEntry(${x.id})">Delete</button>
+      <div class="history-actions">
+        <button class="edit-btn" onclick="editEntry(${x.id})">Edit</button>
+        <button class="danger" onclick="deleteEntry(${x.id})">Delete</button>
+      </div>
     </div>`).join('');
+}
+function editEntry(id){
+  const x=entries.find(e=>e.id===id);if(!x)return;
+  editingId=id;$('entryCard').classList.remove('hidden');$('historyCard').classList.add('hidden');
+  $('place').value=x.place||'Kerala';$('date').value=x.date||today();
+  $('item').value=x.item;$('meter').value=x.meter;$('sale').value=x.sale;
+  calculate();$('saveBtn').textContent='Update Entry';window.scrollTo({top:0,behavior:'smooth'});
 }
 function deleteEntry(id){
   if(!confirm('Delete this entry?'))return;
@@ -227,7 +259,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.1').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.2').catch(()=>{});}
 </script>
 </body>
 </html>
