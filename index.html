@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.62</div>
+  <div class="version">Version 4.63</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1258,17 +1258,6 @@ window.printReport=function(){
   var w=window.open('','_blank');
   if(!w){ alert('Please allow pop-ups to print the report.'); return; }
   w.document.write('<!doctype html><html><head><title>Sale Profit Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin:0 0 6px}h2,h3{margin-top:22px}.report-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.report-summary-grid>div{border:1px solid #ddd;border-radius:12px;padding:12px}.report-summary-grid b{display:block;margin-top:6px;font-size:18px}.breakdown-row,.report-entry{padding:10px 0;border-bottom:1px solid #ddd}.meta{margin-top:5px;color:#666;font-size:13px}@media print{body{padding:0}}</style></head><body><h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+box.innerHTML+'\\n
-<script id="v462-history-fix">
-(function(){
-  window.openHistoryV462=function(){
-    if(typeof showHistory==='function'){ showHistory(); return; }
-    var entry=document.getElementById('entryCard'), hist=document.getElementById('historyCard');
-    if(entry)entry.classList.add('hidden');
-    if(hist)hist.classList.remove('hidden');
-    if(typeof renderHistory==='function')renderHistory();
-  };
-})();
-</script>
 
 </body></html>');
   w.document.close(); w.focus(); setTimeout(function(){w.print();},300);
@@ -1284,7 +1273,7 @@ window.printReport=function(){
       const k=localStorage.key(i);
       storage[k]=localStorage.getItem(k);
     }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.62",createdAt:new Date().toISOString(),storage:storage};
+    const data={app:"SALE-PROFIT-BOOK",version:"4.63",createdAt:new Date().toISOString(),storage:storage};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
