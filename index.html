@@ -382,11 +382,11 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta name="app-version" content="4.49"><!-- V4.48 REPORT EXPENSE BREAKDOWN --></head>
+<meta name="app-version" content="4.49"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style></head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.49</div>
+  <div class="version">Version 4.50</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -491,6 +491,8 @@ html.modal-open, body.modal-open{
     </div>
     <button class="primary" style="margin-top:12px" onclick="generateReport()">Generate Report</button>
     <button id="reportExportBtn" class="secondary" style="margin-top:10px" onclick="exportReportCSV()">Export Report CSV</button>
+    <button id="reportShareBtn" class="secondary" style="margin-top:10px" onclick="shareReport()">Share Report</button>
+    <button id="reportPrintBtn" class="secondary" style="margin-top:10px" onclick="printReport()">Print Report</button>
     <div id="reportResult"></div>
   </div>
 </div>
@@ -1130,8 +1132,8 @@ window.exportReportCSV=function(){
   var from=document.getElementById('reportFrom')?.value||'';
   var to=document.getElementById('reportTo')?.value||'';
   if(!from||!to){ alert('Please select Date From and Date To.'); return; }
-  var sales=Array.isArray(window.sales)?window.sales:[];
-  var exps=Array.isArray(window.expenses)?window.expenses:[];
+  var sales=Array.isArray(window.entries)?window.entries:(typeof entries!=='undefined'&&Array.isArray(entries)?entries:[]);
+  var exps=Array.isArray(window.expenses)?window.expenses:(typeof expenses!=='undefined'&&Array.isArray(expenses)?expenses:[]);
   var inRange=function(d){return String(d||'')>=from && String(d||'')<=to;};
   var rows=[['Type','Date','Item / Expense','Meter','Sale','Purchase','Profit','Paid By','Amount']];
   sales.filter(function(x){return inRange(x.date);}).forEach(function(x){
@@ -1144,6 +1146,32 @@ window.exportReportCSV=function(){
   var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Sale-Profit-Report-'+from+'-to-'+to+'.csv';
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+};
+</script>
+
+<script>
+/* V4.50 — Share / Print the generated report. */
+window.shareReport=function(){
+  var box=document.getElementById('reportResult');
+  if(!box || !box.innerText.trim()){ alert('Please Generate Report first.'); return; }
+  var from=document.getElementById('reportFrom')?.value||'';
+  var to=document.getElementById('reportTo')?.value||'';
+  var text='Sale Profit Book Report\n'+from+' to '+to+'\n\n'+box.innerText.trim();
+  if(navigator.share){
+    navigator.share({title:'Sale Profit Book Report',text:text}).catch(function(){});
+  }else if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(function(){alert('Report copied.');}).catch(function(){alert('Sharing is not supported on this device.');});
+  }else{ alert('Sharing is not supported on this device.'); }
+};
+window.printReport=function(){
+  var box=document.getElementById('reportResult');
+  if(!box || !box.innerText.trim()){ alert('Please Generate Report first.'); return; }
+  var from=document.getElementById('reportFrom')?.value||'';
+  var to=document.getElementById('reportTo')?.value||'';
+  var w=window.open('','_blank');
+  if(!w){ alert('Please allow pop-ups to print the report.'); return; }
+  w.document.write('<!doctype html><html><head><title>Sale Profit Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin:0 0 6px}h2,h3{margin-top:22px}.report-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.report-summary-grid>div{border:1px solid #ddd;border-radius:12px;padding:12px}.report-summary-grid b{display:block;margin-top:6px;font-size:18px}.breakdown-row,.report-entry{padding:10px 0;border-bottom:1px solid #ddd}.meta{margin-top:5px;color:#666;font-size:13px}@media print{body{padding:0}}</style></head><body><h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+box.innerHTML+'</body></html>');
+  w.document.close(); w.focus(); setTimeout(function(){w.print();},300);
 };
 </script>
 </body>
