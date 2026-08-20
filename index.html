@@ -374,6 +374,14 @@ html.modal-open, body.modal-open{
 }
 </style>
 
+
+<style id="v448-report-breakdown">
+.report-breakdown{margin:18px 0 22px;padding:16px 18px;border:1px solid #e2e8e8;border-radius:16px;background:#f7fbfa}
+.report-breakdown .breakdown-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #e5eceb}
+.report-breakdown .breakdown-row:last-child{border-bottom:0}
+.report-breakdown .breakdown-name{font-weight:800}
+.report-breakdown .breakdown-amount{font-weight:900}
+</style>
 </head>
 <body>
 <header>
@@ -1061,6 +1069,16 @@ window.addEventListener('load',function(){
     expenseList.forEach(function(x){ expense+=num(x.amount); });
     var netProfit=profit-expense;
 
+    var expenseBreakdown={};
+    expenseList.forEach(function(x){
+      var n=String(x.name||'Expense').trim()||'Expense';
+      expenseBreakdown[n]=(expenseBreakdown[n]||0)+num(x.amount);
+    });
+    var breakdownNames=Object.keys(expenseBreakdown).sort(function(a,b){return a.localeCompare(b);});
+    var breakdownHtml=breakdownNames.length ? breakdownNames.map(function(n){
+      return '<div class=\"breakdown-row\"><span class=\"breakdown-name\">'+String(n).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]})+'</span><span class=\"breakdown-amount\">'+rsMoney(expenseBreakdown[n])+'</span></div>';
+    }).join('') : '<div class=\"empty\">No expenses for this date range.</div>';
+
     var rows='';
     salesList.forEach(function(x){
       rows += '<div class="report-entry">' +
@@ -1091,6 +1109,7 @@ window.addEventListener('load',function(){
       '<div><span>💳 GPay</span><b>'+rsMoney(gpay)+'</b></div>'+
       '<div><span>💵 Cash</span><b>'+rsMoney(cash)+'</b></div>'+
       '</div>'+
+      '<div class=\"report-breakdown\"><h3>💸 Expense Breakdown</h3>'+breakdownHtml+'</div>'+
       '<h3>📋 Entries ('+(salesList.length+expenseList.length)+')</h3>'+
       rows;
     box.classList.remove('hidden');
