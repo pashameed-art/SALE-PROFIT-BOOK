@@ -8,7 +8,7 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>Sale Profit Book • V4.75</title>
+<title>Sale Profit Book • V4.76</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.75</div>
+  <div class="version">Version 4.76</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1147,6 +1147,37 @@ function updateTodayExpenseTotal(){
 
 // V4.75 CLEAN TODAY TOTAL
 try{localStorage.setItem('__spb_build__','4.75')}catch(e){}
+
+function getTodayTotalExpense(){
+  const now = new Date();
+  const today = now.getFullYear() + '-' +
+    String(now.getMonth()+1).padStart(2,'0') + '-' +
+    String(now.getDate()).padStart(2,'0');
+
+  const list = Array.isArray(expenses) ? expenses : [];
+  return list.reduce((sum, x) => {
+    let d = String(x.date || '').trim();
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(d)) {
+      const [dd,mm,yyyy] = d.split('/');
+      d = `${yyyy}-${mm}-${dd}`;
+    } else if (/^\d{4}\/\d{2}\/\d{2}$/.test(d)) {
+      d = d.replaceAll('/','-');
+    } else if (d.length >= 10) {
+      d = d.slice(0,10);
+    }
+    return sum + (d === today ? Number(x.amount || 0) : 0);
+  }, 0);
+}
+
+function updateTodayTotalExpense(){
+  const total = getTodayTotalExpense();
+  const el = document.getElementById('todayExpenseTotal');
+  if(el) el.textContent = money(total);
+}
+
+
+// V4.76 today expense refresh
+window.addEventListener('load', function(){try{updateTodayTotalExpense();}catch(e){}});
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
@@ -1449,7 +1480,7 @@ window.printReport=function(){
       const k=localStorage.key(i);
       storage[k]=localStorage.getItem(k);
     }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.75",createdAt:new Date().toISOString(),storage:storage};
+    const data={app:"SALE-PROFIT-BOOK",version:"4.76",createdAt:new Date().toISOString(),storage:storage};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
