@@ -1,4 +1,4 @@
-const CACHE='sale-profit-book-v4.48-pwa-final';
+const CACHE='sale-profit-book-v4.48-final2';
 self.addEventListener('install',e=>e.waitUntil(
   caches.open(CACHE).then(c=>c.addAll([
     './','./index.html','./manifest.json','./icon-192.png','./icon-512.png'
