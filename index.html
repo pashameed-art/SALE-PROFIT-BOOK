@@ -133,7 +133,7 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.21</div>
+  <div class="version">Version 4.23</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -193,10 +193,10 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
     </div></div>
 
     <div class="purchase-profit-row"><div class="field">
-      <label>Purchase ₹ (Auto)</label>
+      <label>Purchase ₹</label>
       <input id="purchase" class="auto" type="text" readonly placeholder="Auto">
     </div><div class="field">
-      <label>Profit ₹ (Auto)</label>
+      <label>Profit ₹</label>
       <input id="profit" class="auto profit" type="text" readonly placeholder="Auto">
     </div></div>
 
@@ -204,12 +204,7 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
       <button id="saveBtn" class="primary" onclick="saveEntry()">Save Entry</button>
     </div>
   </section>
-<div class="summary">
-      <div class="stat">Meter<b id="sumMeter">0</b></div>
-      <div class="stat">Sale<b id="sumSale">₹0</b></div>
-      <div class="stat">Purchase<b id="sumPurchase">₹0</b></div>
-      <div class="stat">Profit<b id="sumProfit">₹0</b></div>
-    </div>
+
 <section id="historyCard" class="hidden">
     
 <div class="dua-card">
@@ -542,7 +537,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.21').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.23').catch(()=>{});}
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
