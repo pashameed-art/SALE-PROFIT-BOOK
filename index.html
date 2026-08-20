@@ -8,7 +8,7 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>Sale Profit Book • V4.77</title>
+<title>Sale Profit Book • V4.78</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.77</div>
+  <div class="version">Version 4.78</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -780,10 +780,7 @@ function clearExpenseForm(){
 }
 function renderExpenses(){
   const el=$('expenseList');
-  const totalEl=$('todayExpenseTotal');
-  const td=today();
-  const todayTotal=expenses.filter(x=>String(x.date||'')===td).reduce((s,x)=>s+(Number(x.amount)||0),0);
-  if(totalEl) totalEl.innerHTML=`<span>Today's Total Expense</span><strong>${money(todayTotal)}</strong>`;
+  updateTodayExpenseTotal();
   if(!expenses.length){
     el.innerHTML='<div class="expense-empty-note">No expenses found<br><small>Add an expense above. Edit / Delete will appear here after saving.</small></div>';
     return;
@@ -823,7 +820,7 @@ function showPage(page,btn){
  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
  $(page+'Page').classList.add('active');
  setActive(btn);
- if(page==='expense'){ $('expenseDate').value=$('expenseDate').value||today(); renderExpenses();
+ if(page==='expense'){ if(!editingExpenseId) $('expenseDate').value=today(); renderExpenses();
   updateTodayExpenseTotal(); }
  if(page==='report'){
    const d=today(); if(!$('reportFrom').value)$('reportFrom').value=d.slice(0,8)+'01'; if(!$('reportTo').value)$('reportTo').value=d;
@@ -947,8 +944,9 @@ function newEntry(){
   editingId=null;$('saveBtn').textContent='Save Entry';
   $('historyCard').classList.add('hidden');$('entryCard').classList.remove('hidden');
   $('item').value='';$('meter').value='';$('sale').value='';$('paidBy').value='GPay';$('purchase').value='';$('profit').value='';
-  if(!$('date').value)$('date').value=today();
+  $('date').value=today();
 }
+
 function showHistory(){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   const homePage=document.getElementById('homePage');
@@ -1134,15 +1132,17 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 })();
 
 // V4.75 CLEAN TODAY TOTAL
-try{localStorage.setItem('__spb_build__','4.75')}catch(e){}
+try{localStorage.setItem('__spb_build__','4.78')}catch(e){}
 
 
 
-// V4.76 today expense refresh
+// V4.78 today/expense date refresh
 window.addEventListener('load', function(){try{updateTodayTotalExpense();}catch(e){}});
 
 // V4.77 expense date change refresh
 window.addEventListener('DOMContentLoaded',function(){const d=document.getElementById('expenseDate');if(d)d.addEventListener('change',updateTodayExpenseTotal);});
+// V4.78 auto-date final
+window.addEventListener('load',function(){try{$('date').value=today();if(!editingExpenseId)$('expenseDate').value=today();updateTodayExpenseTotal();}catch(e){}});
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
