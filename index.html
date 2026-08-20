@@ -8,7 +8,7 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>Sale Profit Book • V4.79</title>
+<title>Sale Profit Book • V4.80</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -399,11 +399,14 @@ html.modal-open, body.modal-open{
 @media(max-width:520px){.backup-actions-v455{grid-template-columns:1fr 1fr}}
 </style>
 
+<style id="v480-expense-summary">
+.expense-section-title{font-size:20px;font-weight:900;margin:24px 4px 10px;color:#164e4a}.old-expense-title{margin-top:28px}.expense-old-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:14px;padding:15px 16px;margin-top:8px;font-size:18px;font-weight:800}.expense-old-row strong{font-size:19px}.expense-row{background:#fff;border-radius:18px;padding:15px;margin-top:10px}.expense-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.expense-actions button{width:100%;height:42px;font-size:14px}
+</style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.79</div>
+  <div class="version">Version 4.80</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -781,18 +784,38 @@ function clearExpenseForm(){
 function renderExpenses(){
   const el=$('expenseList');
   updateTodayExpenseTotal();
-  if(!expenses.length){
-    el.innerHTML='<div class="expense-empty-note">No expenses found<br><small>Add an expense above. Edit / Delete will appear here after saving.</small></div>';
-    return;
+  const all=Array.isArray(expenses)?expenses:[];
+  const t=today();
+  const todayExpenses=all.filter(x=>expenseDateKey(x.date)===t);
+  const oldMap={};
+  all.filter(x=>expenseDateKey(x.date)!==t).forEach(x=>{
+    const d=expenseDateKey(x.date)||'Unknown';
+    oldMap[d]=(oldMap[d]||0)+Number(x.amount||0);
+  });
+  const oldDates=Object.keys(oldMap).sort((a,b)=>b.localeCompare(a));
+
+  let html='';
+  if(todayExpenses.length){
+    html += `<div class="expense-section-title">💸 Today Expense</div>`;
+    html += todayExpenses.map(x=>`<div class="expense-row">
+      <b>${esc(x.name)}</b>
+      <div class="meta">${esc(expenseDateKey(x.date))} • ${money(x.amount)}</div>
+      <div class="expense-actions">
+        <button class="edit-btn" onclick="editExpense(${x.id})">Edit</button>
+        <button class="danger" onclick="deleteExpense(${x.id})">Delete</button>
+      </div>
+    </div>`).join('');
+  } else {
+    html += '<div class="expense-empty-note">No expenses for today.</div>';
   }
-  el.innerHTML=expenses.map(x=>`<div class="expense-row">
-    <b>${esc(x.name)}</b>
-    <div class="meta">${esc(x.date)} • ${money(x.amount)}</div>
-    <div class="expense-actions">
-      <button class="edit-btn" onclick="editExpense(${x.id})">Edit</button>
-      <button class="danger" onclick="deleteExpense(${x.id})">Delete</button>
-    </div>
-  </div>`).join('');
+
+  if(oldDates.length){
+    html += `<div class="expense-section-title old-expense-title">📅 Previous Expenses</div>`;
+    html += oldDates.map(d=>`<div class="expense-old-row">
+      <span>${esc(d)}</span><strong>${money(oldMap[d])}</strong>
+    </div>`).join('');
+  }
+  el.innerHTML=html;
 }
 function editExpense(id){
   const x=expenses.find(e=>e.id===id);if(!x)return;
@@ -1112,7 +1135,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.72: build marker / cache refresh helper.
 (function(){
-  const BUILD = '4.79';
+  const BUILD = '4.80';
   try {
     const old = localStorage.getItem('__spb_build__');
     if(old && old !== BUILD && 'serviceWorker' in navigator){
@@ -1127,24 +1150,24 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.74 FULL APP UPDATE
 (function(){
-  const BUILD = '4.79';
+  const BUILD = '4.80';
   try { localStorage.setItem('__spb_build__', BUILD); } catch(e) {}
 })();
 
 // V4.75 CLEAN TODAY TOTAL
-try{localStorage.setItem('__spb_build__','4.79')}catch(e){}
+try{localStorage.setItem('__spb_build__','4.80')}catch(e){}
 
 
 
-// V4.79 today/expense date refresh
+// V4.80 today/expense date refresh
 window.addEventListener('load', function(){try{updateTodayTotalExpense();}catch(e){}});
 
 // V4.77 expense date change refresh
 window.addEventListener('DOMContentLoaded',function(){const d=document.getElementById('expenseDate');if(d)d.addEventListener('change',updateTodayExpenseTotal);});
-// V4.79 auto-date final
+// V4.80 auto-date final
 window.addEventListener('load',function(){try{$('date').value=today();if(!editingExpenseId)$('expenseDate').value=today();updateTodayExpenseTotal();}catch(e){}});
 
-// V4.79 LOCAL DATE FINAL FIX
+// V4.80 LOCAL DATE FINAL FIX
 (function(){
   function applyLocalToday(){
     try {
