@@ -378,7 +378,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.46</div>
+  <div class="version">Version 4.47</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1013,7 +1013,7 @@ window.addEventListener('load',function(){
 
 
 <script>
-/* V4.43 REPORTS — final implementation */
+/* V4.47 REPORTS — expense and sales data fix */
 (function(){
   function num(v){ return Number(v)||0; }
   function rsMoney(v){
@@ -1039,10 +1039,12 @@ window.addEventListener('load',function(){
     if(!from || !to){ alert('Please select Date From and Date To.'); return; }
     if(from>to){ alert('Date From cannot be after Date To.'); return; }
 
-    var salesList=(Array.isArray(window.entries)?window.entries:[]).filter(function(x){
+    var salesData=(typeof entries!=='undefined' && Array.isArray(entries)) ? entries : [];
+    var salesList=salesData.filter(function(x){
       return String(x.date||'')>=from && String(x.date||'')<=to;
     });
-    var expenseList=(Array.isArray(window.expenses)?window.expenses:[]).filter(function(x){
+    var expenseData=(typeof expenses!=='undefined' && Array.isArray(expenses)) ? expenses : [];
+    var expenseList=expenseData.filter(function(x){
       return String(x.date||'')>=from && String(x.date||'')<=to;
     });
 
