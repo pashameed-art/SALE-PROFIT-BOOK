@@ -94,12 +94,24 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
  .entry-three input,.entry-three select{font-size:14px;padding:0 6px}
  .summary-grid{grid-template-columns:repeat(4,1fr);gap:5px}
 }
+
+.purchase-profit-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.summary-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important}
+.summary-grid>*{min-width:0}
+.summary-grid .stat{padding:10px 6px}
+.summary-grid .stat b{display:block;font-size:16px}
+@media(max-width:520px){
+  .purchase-profit-row{grid-template-columns:1fr 1fr}
+  .summary-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:4px!important}
+  .summary-grid .stat{font-size:12px;padding:8px 3px}
+  .summary-grid .stat b{font-size:14px}
+}
 </style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.15</div>
+  <div class="version">Version 4.16</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -501,7 +513,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.15').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.16').catch(()=>{});}
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
