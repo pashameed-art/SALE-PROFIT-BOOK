@@ -416,7 +416,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.83</div>
+  <div class="version">Version 4.82</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -507,7 +507,7 @@ html.modal-open, body.modal-open{
     </button>
     <div class="dua-card">
       <div class="dua-title">Dua</div>
-      <div class="dua-text">Ya Allah! Bless our lives with barakah and halal sustenance.<br>Make our affairs easy, grant us goodness, and protect us from harm.</div>
+      <div class="dua-text">யா அல்லாஹ்! எங்கள் வாழ்வில் பரக்கத்தையும், ஹலாலான ரிஸ்க்கையும் வழங்குவாயாக.<br>எங்கள் காரியங்களை எளிதாக்கி, நன்மையைத் தந்து, தீமையிலிருந்து எங்களைப் பாதுகாப்பாயாக.</div>
     </div>
     <div class="history-filters">
   <input id="historySearch" placeholder="Search Item Name" oninput="renderHistory()">
@@ -597,31 +597,31 @@ html.modal-open, body.modal-open{
 
 <section id="mansoorPage" class="page hidden">
   <div class="card">
-    <h2>🤝 Mansoor — Give & Take</h2>
+    <h2>🤝 Mansoor கொடுக்கல் வாங்கல்</h2>
     <div class="mansoor-balance">
-      <div>Current Balance Due</div>
-      <strong id="mansoorBalance">₹43,334</strong><small style="display:block;margin-top:4px">Up to 19-08-2026</small>
+      <div>தற்போது பெற வேண்டியது</div>
+      <strong id="mansoorBalance">₹43,334</strong><small style="display:block;margin-top:4px">19-08-2026 வரை</small>
     </div>
 
     <div class="form-grid">
       <div class="field">
-        <label>Type</label>
+        <label>வகை</label>
         <select id="mansoorType">
-          <option value="taken">Money Received</option>
-          <option value="given">Money Given</option>
+          <option value="taken">பணம் வாங்கியது</option>
+          <option value="given">பணம் தந்தது</option>
         </select>
       </div>
       <div class="field">
-        <label>Date</label>
+        <label>தேதி</label>
         <input id="mansoorDate" type="date">
       </div>
       <div class="field">
-        <label>Amount ₹</label>
+        <label>தொகை ₹</label>
         <input id="mansoorAmount" type="number" inputmode="decimal" min="0" step="1" placeholder="Amount">
       </div>
       <div class="field">
-        <label>Note</label>
-        <input id="mansoorNote" type="text" placeholder="Note (Optional)">
+        <label>குறிப்பு</label>
+        <input id="mansoorNote" type="text" placeholder="குறிப்பு (விருப்பம்)">
       </div>
     </div>
 
@@ -632,7 +632,7 @@ html.modal-open, body.modal-open{
   </div>
 
   <div class="card">
-    <h3>Transaction History</h3>
+    <h3>வரவு / கொடுப்பு History</h3>
     <div id="mansoorHistory"></div>
   </div>
 
@@ -1338,7 +1338,7 @@ window.addEventListener('load',function(){
     const date=document.getElementById('mansoorDate').value || localToday();
     const amount=Number(document.getElementById('mansoorAmount').value);
     const note=document.getElementById('mansoorNote').value.trim();
-    if(!date||!amount||amount<=0){alert('Please enter the date and amount.');return;}
+    if(!date||!amount||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return;}
     const a=getMansoor();
     if(mansoorEditId!==null){
       const i=a.findIndex(x=>x.id===mansoorEditId);
@@ -1364,7 +1364,7 @@ window.addEventListener('load',function(){
   };
 
   window.deleteMansoor=function(id){
-    if(!confirm('Delete this entry?'))return;
+    if(!confirm('இந்த பதிவை Delete செய்யவா?'))return;
     setMansoor(getMansoor().filter(x=>x.id!==id));
     renderMansoor();
   };
@@ -1378,7 +1378,7 @@ window.addEventListener('load',function(){
     const b=document.getElementById('mansoorBalance'); if(b)b.textContent='₹'+balance.toLocaleString('en-IN');
 
     const h=document.getElementById('mansoorHistory'); if(!h)return;
-    if(!a.length){h.innerHTML='<div class="expense-empty-note">No entries yet.</div>';return;}
+    if(!a.length){h.innerHTML='<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';return;}
 
     const t=localToday();
     const todayRows=a.filter(x=>String(x.date)===t);
@@ -1396,13 +1396,13 @@ window.addEventListener('load',function(){
       html += '<div class="expense-section-title">📅 Today — '+fmtDate(t)+'</div>';
       html += todayRows.map(x=>`
         <div class="mansoor-row">
-          <div><b>${x.type==='taken'?'Money Received':'Money Given'}</b>
+          <div><b>${x.type==='taken'?'பணம் வாங்கியது':'பணம் தந்தது'}</b>
           <div class="meta">${fmtDate(x.date)}${x.note?' • '+esc(x.note):''}</div></div>
           <strong>${x.type==='taken'?'+':'-'}₹${Number(x.amount||0).toLocaleString('en-IN')}</strong>
           <div class="mansoor-actions"><button class="mansoor-edit" onclick="editMansoor(${x.id})">Edit</button><button class="danger mansoor-delete" onclick="deleteMansoor(${x.id})">Delete</button></div>
         </div>`).join('');
     } else {
-      html += '<div class="expense-empty-note">No transactions today.</div>';
+      html += '<div class="expense-empty-note">இன்று பதிவு இல்லை.</div>';
     }
 
     // Previous dates: one line per date, net amount only.
