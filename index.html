@@ -124,12 +124,16 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 .new-history-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
 .new-history-row button{width:100%;min-width:0}
 @media(max-width:520px){.new-history-row{grid-template-columns:1fr 1fr;gap:8px}}
+
+.new-history-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.new-history-row button{width:100%}
+#expenseName{width:100%}
+@media(max-width:520px){.new-history-row{grid-template-columns:1fr 1fr;gap:8px}}
 </style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.20</div>
+  <div class="version">Version 4.21</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -155,6 +159,11 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
       <input id="date" type="date">
     </div>
   </div>
+<div class="new-history-row">
+  <button class="primary" onclick="newEntry()">New Entry</button>
+  <button class="secondary" onclick="showHistory()">History</button>
+</div>
+
 
   <!-- ROW 2 -->
   <!-- ROW 3 -->
@@ -243,7 +252,15 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
       <div><label>Date</label><input id="expenseDate" type="date"></div>
       <div><label>Amount ₹</label><input id="expenseAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="500"></div>
     </div>
-    <div class="field"><label>Expense Name</label><input id="expenseName" placeholder="Petrol / Tea / Room"></div>
+    <div class="field"><label>Expense</label>
+    <select id="expenseName">
+      <option value="">Select Expense</option>
+      <option value="Tea">Tea</option>
+      <option value="Dinner">Dinner</option>
+      <option value="Lunch">Lunch</option>
+      <option value="Car Rent">Car Rent</option>
+    </select>
+  </div>
     <button id="expenseSaveBtn" class="primary" style="margin-top:12px" onclick="saveExpense()">Save Expense</button>
     <div id="expenseList" class="expense-list"></div>
   </div>
@@ -525,7 +542,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.20').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.21').catch(()=>{});}
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
