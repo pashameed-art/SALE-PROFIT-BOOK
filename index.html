@@ -198,6 +198,23 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
   }
 }
 
+
+/* V4.25 symbols — layout unchanged */
+.nav-symbol{
+  display:inline-block;
+  font-size:1.05em;
+  line-height:1;
+  margin-right:5px;
+  vertical-align:-1px;
+}
+.field-symbol{
+  display:inline-block;
+  color:#0f766e;
+  font-size:1.05em;
+  margin-right:4px;
+  font-weight:700;
+}
+
 </style>
 </head>
 <body>
@@ -207,11 +224,11 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
-  <button class="nav-active" onclick="showPage('home',this)">Home</button>
-  <button onclick="openItemModal();setActive(this)">Add Item</button>
-  <button onclick="showPage('expense',this)">Expense</button>
-  <button onclick="showPage('report',this)">Reports</button>
-  <button onclick="showPage('backup',this)">Backup</button>
+  <button class="nav-active" onclick="showPage('home',this)"><span class="nav-symbol" aria-hidden="true">⌂</span> Home</button>
+  <button onclick="openItemModal();setActive(this)"><span class="nav-symbol" aria-hidden="true">＋</span> Add Item</button>
+  <button onclick="showPage('expense',this)"><span class="nav-symbol" aria-hidden="true">▣</span> Expense</button>
+  <button onclick="showPage('report',this)"><span class="nav-symbol" aria-hidden="true">▥</span> Reports</button>
+  <button onclick="showPage('backup',this)"><span class="nav-symbol" aria-hidden="true">☁</span> Backup</button>
 </nav>
 <div class="install-wrap"><button id="installBtn" class="secondary install-btn" onclick="installPWA()">Install App</button></div>
 
@@ -221,11 +238,11 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
   <!-- ROW 1 -->
   <div class="row1">
     <div>
-      <label>State / Place</label>
+      <label><span class="field-symbol">⌖</span> State / Place</label>
       <input id="place" value="Kerala" autocomplete="off">
     </div>
     <div>
-      <label>Date</label>
+      <label><span class="field-symbol">▣</span> Date</label>
       <input id="date" type="date">
     </div>
   </div>
