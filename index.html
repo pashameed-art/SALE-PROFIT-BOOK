@@ -272,11 +272,69 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 }
 </style>
 
+
+<style id="v444-add-item-fix">
+/* V4.44 — Add Item modal: always fully usable on mobile */
+html.modal-open, body.modal-open{
+  overflow:hidden !important;
+}
+#itemModal{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  min-height:100vh !important;
+  box-sizing:border-box !important;
+  padding:12px !important;
+  display:none;
+  align-items:flex-start !important;
+  justify-content:center !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior:contain !important;
+}
+#itemModal .modal-box{
+  width:min(520px,100%) !important;
+  max-height:calc(100dvh - 24px) !important;
+  max-height:calc(100vh - 24px) !important;
+  margin:0 auto !important;
+  box-sizing:border-box !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  padding:20px !important;
+  padding-bottom:28px !important;
+}
+#itemModal .item-list{
+  padding-bottom:18px !important;
+}
+#itemModal .item-row{
+  min-height:58px !important;
+  gap:10px !important;
+}
+#itemModal .item-row > div{
+  min-width:0 !important;
+  overflow-wrap:anywhere !important;
+}
+#itemModal .danger{
+  flex:0 0 auto !important;
+}
+@media(max-width:520px){
+  #itemModal{padding:8px !important}
+  #itemModal .modal-box{
+    max-height:calc(100dvh - 16px) !important;
+    max-height:calc(100vh - 16px) !important;
+    border-radius:18px !important;
+    padding:18px !important;
+    padding-bottom:30px !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.43</div>
+  <div class="version">Version 4.44</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -755,8 +813,17 @@ function deleteEntry(id){
   if(!confirm('Delete this entry?'))return;
   entries=entries.filter(x=>x.id!==id);localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));renderHistory();
 }
-function openItemModal(){$('itemModal').style.display='flex';renderItems()}
-function closeItemModal(){$('itemModal').style.display='none'}
+function openItemModal(){
+  $('itemModal').style.display='flex';
+  document.documentElement.classList.add('modal-open');
+  document.body.classList.add('modal-open');
+  renderItems();
+}
+function closeItemModal(){
+  $('itemModal').style.display='none';
+  document.documentElement.classList.remove('modal-open');
+  document.body.classList.remove('modal-open');
+}
 function saveItem(){
   const name=$('newItemName').value.trim(),rate=Number($('newItemRate').value);
   if(!name||!(rate>0)){alert('Enter Item Name and Purchase / Meter.');return}
