@@ -8,7 +8,7 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>Sale Profit Book • V4.76</title>
+<title>Sale Profit Book • V4.77</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.76</div>
+  <div class="version">Version 4.77</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1062,18 +1062,6 @@ init();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
 
 // V4.75: Clean Today Total Expense — expense records only.
-function updateTodayExpenseTotal(){
-  const el = document.getElementById('todayExpenseTotal');
-  if(!el) return;
-  const d = new Date();
-  const key = d.getFullYear() + '-' +
-    String(d.getMonth()+1).padStart(2,'0') + '-' +
-    String(d.getDate()).padStart(2,'0');
-  const total = (Array.isArray(expenses)?expenses:[]).reduce((sum,x)=>{
-    return sum + (normalizeEntryDate(x.date) === key ? (Number(x.amount)||0) : 0);
-  },0);
-  el.innerHTML = `<span>💸 Today Total Expense</span><strong>${money(total)}</strong>`;
-}
 
 
 // V4.69: History "Show All" reset — does not modify stored data.
@@ -1148,39 +1136,47 @@ function updateTodayExpenseTotal(){
 // V4.75 CLEAN TODAY TOTAL
 try{localStorage.setItem('__spb_build__','4.75')}catch(e){}
 
-function getTodayTotalExpense(){
-  const now = new Date();
-  const today = now.getFullYear() + '-' +
-    String(now.getMonth()+1).padStart(2,'0') + '-' +
-    String(now.getDate()).padStart(2,'0');
-
-  const list = Array.isArray(expenses) ? expenses : [];
-  return list.reduce((sum, x) => {
-    let d = String(x.date || '').trim();
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(d)) {
-      const [dd,mm,yyyy] = d.split('/');
-      d = `${yyyy}-${mm}-${dd}`;
-    } else if (/^\d{4}\/\d{2}\/\d{2}$/.test(d)) {
-      d = d.replaceAll('/','-');
-    } else if (d.length >= 10) {
-      d = d.slice(0,10);
-    }
-    return sum + (d === today ? Number(x.amount || 0) : 0);
-  }, 0);
-}
-
-function updateTodayTotalExpense(){
-  const total = getTodayTotalExpense();
-  const el = document.getElementById('todayExpenseTotal');
-  if(el) el.textContent = money(total);
-}
 
 
 // V4.76 today expense refresh
 window.addEventListener('load', function(){try{updateTodayTotalExpense();}catch(e){}});
+
+// V4.77 expense date change refresh
+window.addEventListener('DOMContentLoaded',function(){const d=document.getElementById('expenseDate');if(d)d.addEventListener('change',updateTodayExpenseTotal);});
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
+
+// V4.77 — Today Total Expense is based on the selected Expense date.
+function expenseDateKey(v){
+  let d = String(v || '').trim();
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(d)) {
+    const [dd,mm,yyyy] = d.split('/');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  if (/^\d{4}\/\d{2}\/\d{2}$/.test(d)) return d.replaceAll('/','-');
+  return d.length >= 10 ? d.slice(0,10) : d;
+}
+
+function getSelectedExpenseDate(){
+  const input = document.getElementById('expenseDate');
+  if(input && input.value) return expenseDateKey(input.value);
+  const now = new Date();
+  return now.getFullYear() + '-' +
+    String(now.getMonth()+1).padStart(2,'0') + '-' +
+    String(now.getDate()).padStart(2,'0');
+}
+
+function updateTodayExpenseTotal(){
+  const el = document.getElementById('todayExpenseTotal');
+  if(!el) return;
+  const selected = getSelectedExpenseDate();
+  const total = (Array.isArray(expenses)?expenses:[]).reduce((sum,x)=>{
+    return sum + (expenseDateKey(x.date) === selected ? Number(x.amount || 0) : 0);
+  },0);
+  el.innerHTML = `<span>💸 Today Total Expense</span><strong>${money(total)}</strong>`;
+}
+
 function saveGoogleClientId(){
   const id=$('googleClientId').value.trim();
   if(!id){alert('Enter Google OAuth Client ID.');return}
@@ -1480,7 +1476,7 @@ window.printReport=function(){
       const k=localStorage.key(i);
       storage[k]=localStorage.getItem(k);
     }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.76",createdAt:new Date().toISOString(),storage:storage};
+    const data={app:"SALE-PROFIT-BOOK",version:"4.77",createdAt:new Date().toISOString(),storage:storage};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
