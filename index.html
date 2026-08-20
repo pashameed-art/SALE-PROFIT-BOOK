@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.67</div>
+  <div class="version">Version 4.68</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -608,6 +608,12 @@ html.modal-open, body.modal-open{
     <h3>வரவு / கொடுப்பு History</h3>
     <div id="mansoorHistory"></div>
   </div>
+
+<!-- V4.68: Today Total Expense -->
+<div id="todayExpenseTotalCard" class="card" style="margin-top:16px;">
+  <div style="font-size:20px;font-weight:800;">💸 Today Total Expense</div>
+  <div id="todayExpenseTotal" style="font-size:30px;font-weight:900;margin-top:8px;">₹0</div>
+</div>
 </section>
 
 
@@ -761,6 +767,7 @@ function saveExpense(){
   }else expenses.unshift({id:Date.now(),date,name,amount});
   localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));editingExpenseId=null;$('expenseSaveBtn').textContent='Add Expense';
   $('expenseName').value='';$('expenseAmount').value='';renderExpenses();
+  updateTodayExpenseTotal();
 }
 function clearExpenseForm(){
   editingExpenseId=null;
@@ -803,6 +810,7 @@ function deleteExpense(id){
   localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));
   if(editingExpenseId===id) clearExpenseForm();
   renderExpenses();
+  updateTodayExpenseTotal();
 }
 
 function setActive(btn){
@@ -813,7 +821,8 @@ function showPage(page,btn){
  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
  $(page+'Page').classList.add('active');
  setActive(btn);
- if(page==='expense'){ $('expenseDate').value=$('expenseDate').value||today(); renderExpenses(); }
+ if(page==='expense'){ $('expenseDate').value=$('expenseDate').value||today(); renderExpenses();
+  updateTodayExpenseTotal(); }
  if(page==='report'){
    const d=today(); if(!$('reportFrom').value)$('reportFrom').value=d.slice(0,8)+'01'; if(!$('reportTo').value)$('reportTo').value=d;
  }
@@ -998,6 +1007,21 @@ function deleteItem(name){
 }
 init();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
+
+// V4.68: show today's total from expenses only (never from sales/history entries).
+function updateTodayExpenseTotal(){
+  const el = document.getElementById('todayExpenseTotal');
+  if(!el) return;
+  const today = new Date();
+  const key = today.getFullYear() + '-' +
+    String(today.getMonth()+1).padStart(2,'0') + '-' +
+    String(today.getDate()).padStart(2,'0');
+  const total = (Array.isArray(expenses)?expenses:[]).reduce((sum,x)=>{
+    return sum + (normalizeEntryDate(x.date) === key ? Number(x.amount||0) : 0);
+  },0);
+  el.textContent = '₹' + total.toLocaleString('en-IN');
+}
+
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
@@ -1300,7 +1324,7 @@ window.printReport=function(){
       const k=localStorage.key(i);
       storage[k]=localStorage.getItem(k);
     }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.67",createdAt:new Date().toISOString(),storage:storage};
+    const data={app:"SALE-PROFIT-BOOK",version:"4.68",createdAt:new Date().toISOString(),storage:storage};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
