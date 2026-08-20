@@ -382,11 +382,11 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta name="app-version" content="4.48"><!-- V4.48 REPORT EXPENSE BREAKDOWN --></head>
+<meta name="app-version" content="4.49"><!-- V4.48 REPORT EXPENSE BREAKDOWN --></head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.48</div>
+  <div class="version">Version 4.49</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -490,6 +490,7 @@ html.modal-open, body.modal-open{
       <div><label>Date To</label><input id="reportTo" type="date"></div>
     </div>
     <button class="primary" style="margin-top:12px" onclick="generateReport()">Generate Report</button>
+    <button id="reportExportBtn" class="secondary" style="margin-top:10px" onclick="exportReportCSV()">Export Report CSV</button>
     <div id="reportResult"></div>
   </div>
 </div>
@@ -1123,5 +1124,27 @@ window.addEventListener('load',function(){
 })();
 </script>
 
+<script>
+/* V4.49 — Export the currently selected report range as CSV. */
+window.exportReportCSV=function(){
+  var from=document.getElementById('reportFrom')?.value||'';
+  var to=document.getElementById('reportTo')?.value||'';
+  if(!from||!to){ alert('Please select Date From and Date To.'); return; }
+  var sales=Array.isArray(window.sales)?window.sales:[];
+  var exps=Array.isArray(window.expenses)?window.expenses:[];
+  var inRange=function(d){return String(d||'')>=from && String(d||'')<=to;};
+  var rows=[['Type','Date','Item / Expense','Meter','Sale','Purchase','Profit','Paid By','Amount']];
+  sales.filter(function(x){return inRange(x.date);}).forEach(function(x){
+    rows.push(['Sale',x.date,x.item||'',x.meter||0,x.sale||0,x.purchase||0,x.profit||0,x.paidBy||'', '']);
+  });
+  exps.filter(function(x){return inRange(x.date);}).forEach(function(x){
+    rows.push(['Expense',x.date,x.name||'','', '', '', '', '', x.amount||0]);
+  });
+  var csv=rows.map(function(r){return r.map(function(v){var s=String(v??'');return /[",\\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(',');}).join('\\r\\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Sale-Profit-Report-'+from+'-to-'+to+'.csv';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+};
+</script>
 </body>
 </html>
