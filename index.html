@@ -8,7 +8,7 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>Sale Profit Book</title>
+<title>Sale Profit Book • V4.72</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.70</div>
+  <div class="version">Version 4.72</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1043,6 +1043,50 @@ function updateTodayExpenseTotal(){
   else bindHistoryAll();
 })();
 
+
+// V4.71: Home date defaults to today's local date when blank.
+(function(){
+  function todayISO(){
+    const d = new Date();
+    return d.getFullYear() + '-' +
+      String(d.getMonth()+1).padStart(2,'0') + '-' +
+      String(d.getDate()).padStart(2,'0');
+  }
+  function ensureHomeToday(){
+    const dateInputs = Array.from(document.querySelectorAll('input[type="date"]'));
+    if(!dateInputs.length) return;
+    // Prefer the Home date input near "State / Place".
+    let target = dateInputs.find(x => {
+      const prev = x.closest('div,section,form');
+      return prev && /Date/i.test(prev.innerText || '');
+    }) || dateInputs[0];
+    if(target && !target.value){
+      target.value = todayISO();
+      target.dispatchEvent(new Event('change', {bubbles:true}));
+    }
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', ensureHomeToday);
+  } else {
+    ensureHomeToday();
+  }
+})();
+
+
+// V4.72: build marker / cache refresh helper.
+(function(){
+  const BUILD = '4.72';
+  try {
+    const old = localStorage.getItem('__spb_build__');
+    if(old && old !== BUILD && 'serviceWorker' in navigator){
+      navigator.serviceWorker.getRegistrations().then(rs =>
+        Promise.all(rs.map(r => r.update()))
+      ).catch(()=>{});
+    }
+    localStorage.setItem('__spb_build__', BUILD);
+  } catch(e) {}
+})();
+
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
@@ -1345,7 +1389,7 @@ window.printReport=function(){
       const k=localStorage.key(i);
       storage[k]=localStorage.getItem(k);
     }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.70",createdAt:new Date().toISOString(),storage:storage};
+    const data={app:"SALE-PROFIT-BOOK",version:"4.72",createdAt:new Date().toISOString(),storage:storage};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
