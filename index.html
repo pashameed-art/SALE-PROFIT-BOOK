@@ -65,14 +65,14 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.11</div>
+  <div class="version">Version 4.12</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
   <button class="nav-active" onclick="showPage('home',this)">Home</button>
   <button onclick="openItemModal();setActive(this)">Add Item</button>
-  <button onclick="showPage('report',this)">Report</button>
   <button onclick="showPage('expense',this)">Expense</button>
+  <button onclick="showPage('report',this)">Reports</button>
   <button onclick="showPage('backup',this)">Backup</button>
 </nav>
 <div class="install-wrap"><button id="installBtn" class="secondary install-btn" onclick="installPWA()">Install App</button></div>
@@ -466,7 +466,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.11').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.12').catch(()=>{});}
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
