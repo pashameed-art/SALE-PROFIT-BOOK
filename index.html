@@ -386,16 +386,21 @@ html.modal-open, body.modal-open{
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 
-<style id="v452-backup">
-.backup-extra-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-.backup-import{display:flex;align-items:center;justify-content:center;cursor:pointer;text-align:center}
-@media(max-width:520px){.backup-extra-actions{grid-template-columns:1fr 1fr}}
+
+
+<style id="v454-backup">
+.backup-actions-v454{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.backup-actions-v454 button,.backup-restore-label-v454{min-height:52px;border:0;border-radius:14px;padding:12px 10px;font-size:16px;font-weight:800;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center}
+.backup-actions-v454 button{background:#128b80;color:#fff}
+.backup-restore-label-v454{background:#e8f4f2;color:#126d66}
+@media(max-width:520px){.backup-actions-v454{grid-template-columns:1fr 1fr}}
 </style>
+
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.53</div>
+  <div class="version">Version 4.54</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1202,41 +1207,48 @@ window.printReport=function(){
   var w=window.open('','_blank');
   if(!w){ alert('Please allow pop-ups to print the report.'); return; }
   w.document.write('<!doctype html><html><head><title>Sale Profit Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin:0 0 6px}h2,h3{margin-top:22px}.report-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.report-summary-grid>div{border:1px solid #ddd;border-radius:12px;padding:12px}.report-summary-grid b{display:block;margin-top:6px;font-size:18px}.breakdown-row,.report-entry{padding:10px 0;border-bottom:1px solid #ddd}.meta{margin-top:5px;color:#666;font-size:13px}@media print{body{padding:0}}</style></head><body><h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+box.innerHTML+'
+
+<script id="v454-backup-script">
+(function(){
+  function fullBackupV454(){
+    const storage={};
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      storage[k]=localStorage.getItem(k);
+    }
+    const data={app:"SALE-PROFIT-BOOK",version:"4.54",createdAt:new Date().toISOString(),storage};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download="SALE-PROFIT-BOOK-FULL-BACKUP-"+new Date().toISOString().slice(0,10)+".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  function restoreV454(file){
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=function(){
+      try{
+        const data=JSON.parse(reader.result);
+        if(!data || data.app!=="SALE-PROFIT-BOOK" || !data.storage) throw new Error();
+        if(!confirm("Restore Full Backup? Current app data will be replaced.")) return;
+        Object.keys(data.storage).forEach(k=>localStorage.setItem(k,data.storage[k]));
+        alert("Full Backup restored successfully.");
+        location.reload();
+      }catch(e){ alert("Invalid SALE-PROFIT-BOOK backup file."); }
+    };
+    reader.readAsText(file);
+  }
+  window.fullBackupV454=fullBackupV454;
+  window.restoreV454=restoreV454;
+})();
+</script>
+
 </body></html>');
   w.document.close(); w.focus(); setTimeout(function(){w.print();},300);
 };
 </script>
-<script>
-(function(){
-  window.exportFullBackup=function(){
-    const keys=[];
-    for(let i=0;i<localStorage.length;i++) keys.push(localStorage.key(i));
-    const data={version:'4.52',createdAt:new Date().toISOString(),storage:{}};
-    keys.forEach(k=>{try{data.storage[k]=JSON.parse(localStorage.getItem(k));}catch(e){data.storage[k]=localStorage.getItem(k);}});
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download='SALE-PROFIT-BOOK-BACKUP-'+new Date().toISOString().slice(0,10)+'.json';a.click();
-    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-  };
-  window.importFullBackup=function(file){
-    if(!file)return;
-    const r=new FileReader();
-    r.onload=function(){
-      try{
-        const data=JSON.parse(r.result);
-        if(!data.storage || typeof data.storage!=='object') throw new Error('Invalid backup');
-        if(!confirm('Restore backup? Current local data will be replaced.')) return;
-        Object.keys(data.storage).forEach(k=>{
-          const v=data.storage[k];
-          localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));
-        });
-        alert('Backup restored successfully. App will reload.');
-        location.reload();
-      }catch(e){alert('Invalid backup file.');}
-    };
-    r.readAsText(file);
-  };
-})();
-</script>
+
 </body>
 </html>
