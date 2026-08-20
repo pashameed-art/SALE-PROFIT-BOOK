@@ -217,7 +217,7 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.29</div>
+  <div class="version">Version 4.30</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -332,7 +332,19 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
       <div><label>Amount ₹</label><input id="expenseAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="500"></div>
     </div>
     <div class="field"><label>Expense</label>
-    <select id="expenseName" onchange="handleExpenseChoice(this)"><option value="">Select Expense</option><option value="Tea">Tea</option><option value="Breakfast">Breakfast</option><option value="Lunch">Lunch</option><option value="Dinner">Dinner</option><option value="Room Rent">Room Rent</option><option value="Petrol">Petrol</option><option value="Water">Water</option><option value="Juice">Juice</option><option value="Cigarette">Cigarette</option><option value="Car Rent">Car Rent</option><option value="__ADD_NEW_EXPENSE__">＋ Add New Expense</option></select>
+    <select id="expenseName" onchange="handleExpenseChoice(this)"><option value="__ADD_NEW_EXPENSE__">＋ Add New Expense</option>
+<option value="">Select Expense</option>
+<option value="Breakfast">Breakfast</option>
+<option value="Car Rent">Car Rent</option>
+<option value="Cigarette">Cigarette</option>
+<option value="Dinner">Dinner</option>
+<option value="Juice">Juice</option>
+<option value="Lunch">Lunch</option>
+<option value="Petrol">Petrol</option>
+<option value="Room Rent">Room Rent</option>
+<option value="Tea">Tea</option>
+<option value="Water">Water</option>
+</select>
   </div>
     <div class="expense-action-row">
       <button id="expenseSaveBtn" class="primary" style="margin-top:12px" onclick="saveExpense()">Add Expense</button>
@@ -700,15 +712,32 @@ window.addEventListener('load',function(){
     const s = document.getElementById('expenseName');
     if(!s) return;
     Array.from(s.options).filter(o => o.dataset.custom === '1').forEach(o => o.remove());
+
     const customs = getCustomExpenses()
       .filter(name => name && !Array.from(s.options).some(o => o.value === name))
       .sort((a,b) => a.localeCompare(b));
+
     const add = Array.from(s.options).find(o => o.value === '__ADD_NEW_EXPENSE__');
+    const placeholder = Array.from(s.options).find(o => o.value === '');
+    const builtIn = Array.from(s.options)
+      .filter(o => o.value && o.value !== '__ADD_NEW_EXPENSE__' && o.dataset.custom !== '1');
+
     customs.forEach(name => {
       const o = document.createElement('option');
-      o.value = name; o.textContent = name; o.dataset.custom = '1';
-      s.insertBefore(o, add || null);
+      o.value = name;
+      o.textContent = name;
+      o.dataset.custom = '1';
+      s.appendChild(o);
     });
+
+    const real = Array.from(s.options)
+      .filter(o => o.value && o.value !== '__ADD_NEW_EXPENSE__')
+      .sort((a,b) => a.textContent.localeCompare(b.textContent));
+
+    s.innerHTML = '';
+    s.appendChild(add);
+    s.appendChild(placeholder);
+    real.forEach(o => s.appendChild(o));
   };
   window.handleExpenseChoice = function(sel){
     if(sel.value !== '__ADD_NEW_EXPENSE__') return;
