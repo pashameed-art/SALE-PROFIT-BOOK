@@ -201,11 +201,23 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 }
 
 </style>
+
+<style>
+.expense-action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.expense-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.expense-actions button{width:100%;height:42px;font-size:14px}
+.expense-empty-note{text-align:center;color:#718080;font-weight:700;padding:12px 4px}
+@media(max-width:520px){
+  .expense-action-row{grid-template-columns:1fr 1fr;gap:8px}
+  .expense-actions{grid-template-columns:1fr 1fr;gap:7px}
+}
+</style>
+
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.25</div>
+  <div class="version">Version 4.26</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -328,7 +340,10 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
       <option value="Car Rent">Car Rent</option>
     </select>
   </div>
-    <button id="expenseSaveBtn" class="primary" style="margin-top:12px" onclick="saveExpense()">Save Expense</button>
+    <div class="expense-action-row">
+      <button id="expenseSaveBtn" class="primary" style="margin-top:12px" onclick="saveExpense()">Add Expense</button>
+      <button id="expenseClearBtn" class="secondary" style="margin-top:12px" onclick="clearExpenseForm()">Clear</button>
+    </div>
     <div id="expenseList" class="expense-list"></div>
   </div>
 </div>
@@ -437,20 +452,46 @@ function saveExpense(){
     const i=expenses.findIndex(x=>x.id===editingExpenseId);
     if(i>=0)expenses[i]={...expenses[i],date,name,amount};
   }else expenses.unshift({id:Date.now(),date,name,amount});
-  localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));editingExpenseId=null;$('expenseSaveBtn').textContent='Save Expense';
+  localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));editingExpenseId=null;$('expenseSaveBtn').textContent='Add Expense';
   $('expenseName').value='';$('expenseAmount').value='';renderExpenses();
 }
+function clearExpenseForm(){
+  editingExpenseId=null;
+  $('expenseDate').value=today();
+  $('expenseName').value='';
+  $('expenseAmount').value='';
+  $('expenseSaveBtn').textContent='Add Expense';
+}
 function renderExpenses(){
-  const el=$('expenseList'); if(!expenses.length){el.innerHTML='<div class="empty">No expenses found</div>';return}
-  el.innerHTML=expenses.map(x=>`<div class="expense-row"><b>${esc(x.name)}</b><div class="meta">${esc(x.date)} • ${money(x.amount)}</div><div class="expense-actions"><button class="edit-btn" onclick="editExpense(${x.id})">Edit</button><button class="danger" onclick="deleteExpense(${x.id})">Delete</button></div></div>`).join('');
+  const el=$('expenseList');
+  if(!expenses.length){
+    el.innerHTML='<div class="expense-empty-note">No expenses found<br><small>Add an expense above. Edit / Delete will appear here after saving.</small></div>';
+    return;
+  }
+  el.innerHTML=expenses.map(x=>`<div class="expense-row">
+    <b>${esc(x.name)}</b>
+    <div class="meta">${esc(x.date)} • ${money(x.amount)}</div>
+    <div class="expense-actions">
+      <button class="edit-btn" onclick="editExpense(${x.id})">Edit</button>
+      <button class="danger" onclick="deleteExpense(${x.id})">Delete</button>
+    </div>
+  </div>`).join('');
 }
 function editExpense(id){
   const x=expenses.find(e=>e.id===id);if(!x)return;
-  editingExpenseId=id;$('expenseDate').value=x.date;$('expenseName').value=x.name;$('expenseAmount').value=x.amount;$('expenseSaveBtn').textContent='Update Expense';window.scrollTo({top:0,behavior:'smooth'});
+  editingExpenseId=id;
+  $('expenseDate').value=x.date;
+  $('expenseName').value=x.name;
+  $('expenseAmount').value=x.amount;
+  $('expenseSaveBtn').textContent='Update Expense';
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 function deleteExpense(id){
   if(!confirm('Delete this expense?'))return;
-  expenses=expenses.filter(x=>x.id!==id);localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));renderExpenses();
+  expenses=expenses.filter(x=>x.id!==id);
+  localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));
+  if(editingExpenseId===id) clearExpenseForm();
+  renderExpenses();
 }
 
 function setActive(btn){
