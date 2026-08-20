@@ -247,7 +247,7 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.41</div>
+  <div class="version">Version 4.42</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -438,6 +438,40 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
   <div class="card">
     <h3>வரவு / கொடுப்பு History</h3>
     <div id="mansoorHistory"></div>
+  </div>
+</section>
+
+
+<section id="reportsPage" class="page">
+  <div class="card">
+    <h2>Reports</h2>
+    <div class="report-date-row">
+      <div class="field">
+        <label>📅 Date From</label>
+        <input id="reportFrom" type="date">
+      </div>
+      <div class="field">
+        <label>📅 Date To</label>
+        <input id="reportTo" type="date">
+      </div>
+    </div>
+    <button class="primary" onclick="generateReport()">Generate Report</button>
+  </div>
+
+  <div id="reportResult" class="card hidden">
+    <div class="report-summary-grid">
+      <div><span>📏 Meter</span><strong id="rMeter">0</strong></div>
+      <div><span>💰 Sale</span><strong id="rSale">₹0</strong></div>
+      <div><span>🧾 Purchase</span><strong id="rPurchase">₹0</strong></div>
+      <div><span>📈 Profit</span><strong id="rProfit">₹0</strong></div>
+      <div><span>💸 Expense</span><strong id="rExpense">₹0</strong></div>
+      <div><span>💵 Net Profit</span><strong id="rNetProfit">₹0</strong></div>
+      <div><span>💳 GPay</span><strong id="rGpay">₹0</strong></div>
+      <div><span>💵 Cash</span><strong id="rCash">₹0</strong></div>
+    </div>
+
+    <h3>📋 Entries</h3>
+    <div id="reportEntries"></div>
   </div>
 </section>
 
@@ -844,6 +878,158 @@ window.addEventListener('load',function(){
     const d=document.getElementById('mansoorDate');
     if(d)d.value=new Date().toISOString().slice(0,10);
   });
+})();
+</script>
+
+
+<script>
+(function(){
+  function readArray(keys){
+    for(const key of keys){
+      try{
+        const value = JSON.parse(localStorage.getItem(key) || 'null');
+        if(Array.isArray(value)) return value;
+      }catch(e){}
+    }
+    return [];
+  }
+
+  function n(v){ return Number(v) || 0; }
+  function money(v){ return '₹' + Math.round(n(v)).toLocaleString('en-IN'); }
+
+  function dateOf(x){
+    return String(
+      x.date || x.entryDate || x.Date || x.createdAt || x.created_date || ''
+    ).slice(0,10);
+  }
+
+  function itemNameOf(x){
+    return x.itemName || x.item || x.name || x.ItemName || 'Item';
+  }
+
+  function saleOf(x){ return n(x.sale ?? x.saleAmount ?? x.Sale); }
+  function purchaseOf(x){ return n(x.purchase ?? x.purchaseAmount ?? x.Purchase); }
+  function profitOf(x){ return n(x.profit ?? x.Profit); }
+  function meterOf(x){ return n(x.meter ?? x.Meter); }
+
+  window.showReports = function(){
+    document.querySelectorAll('.page').forEach(function(p){
+      p.classList.remove('active');
+    });
+    const page = document.getElementById('reportsPage');
+    if(page) page.classList.add('active');
+
+    document.querySelectorAll('.nav-bar button').forEach(function(b){
+      b.classList.remove('nav-active');
+    });
+
+    const today = new Date().toISOString().slice(0,10);
+    const from = document.getElementById('reportFrom');
+    const to = document.getElementById('reportTo');
+    if(from && !from.value) from.value = today;
+    if(to && !to.value) to.value = today;
+
+    const result = document.getElementById('reportResult');
+    if(result) result.classList.add('hidden');
+    window.scrollTo({top:0, behavior:'smooth'});
+  };
+
+  window.generateReport = function(){
+    const from = document.getElementById('reportFrom').value;
+    const to = document.getElementById('reportTo').value;
+
+    if(!from || !to){
+      alert('Please select Date From and Date To.');
+      return;
+    }
+    if(from > to){
+      alert('Date From cannot be after Date To.');
+      return;
+    }
+
+    const sales = readArray([
+      'entries','saleEntries','saleProfitBookEntries','sales','saleProfitBookSales'
+    ]);
+    const expenses = readArray([
+      'expenses','saleProfitBookExpenses','expenseEntries'
+    ]);
+
+    const entries = sales.filter(x => {
+      const d = dateOf(x);
+      return d && d >= from && d <= to;
+    });
+
+    const expenseEntries = expenses.filter(x => {
+      const d = dateOf(x);
+      return d && d >= from && d <= to;
+    });
+
+    let meter = 0, sale = 0, purchase = 0, profit = 0;
+    let gpay = 0, cash = 0;
+
+    entries.forEach(x => {
+      meter += meterOf(x);
+      sale += saleOf(x);
+      purchase += purchaseOf(x);
+      profit += profitOf(x);
+
+      const paid = String(
+        x.paidBy || x.payment || x.paymentMethod || x.PaidBy || ''
+      ).toLowerCase();
+
+      if(paid.includes('gpay') || paid.includes('google')){
+        gpay += saleOf(x);
+      }else if(paid.includes('cash')){
+        cash += saleOf(x);
+      }
+    });
+
+    const expenseTotal = expenseEntries.reduce(
+      (sum,x) => sum + n(x.amount ?? x.Amount ?? x.expenseAmount),
+      0
+    );
+    const netProfit = profit - expenseTotal;
+
+    document.getElementById('rMeter').textContent = meter.toLocaleString('en-IN');
+    document.getElementById('rSale').textContent = money(sale);
+    document.getElementById('rPurchase').textContent = money(purchase);
+    document.getElementById('rProfit').textContent = money(profit);
+    document.getElementById('rExpense').textContent = money(expenseTotal);
+    document.getElementById('rNetProfit').textContent = money(netProfit);
+    document.getElementById('rGpay').textContent = money(gpay);
+    document.getElementById('rCash').textContent = money(cash);
+
+    const box = document.getElementById('reportEntries');
+    if(!entries.length && !expenseEntries.length){
+      box.innerHTML = '<div class="expense-empty-note">இந்த காலத்திற்கு Entries இல்லை.</div>';
+    }else{
+      let out = '';
+
+      entries.forEach(x => {
+        out += '<div class="report-entry">' +
+          '<b>' + itemNameOf(x) + '</b>' +
+          '<div class="meta">' +
+          dateOf(x) +
+          ' • Meter ' + meterOf(x).toLocaleString('en-IN') +
+          ' • Sale ' + money(saleOf(x)) +
+          ' • Purchase ' + money(purchaseOf(x)) +
+          ' • Profit ' + money(profitOf(x)) +
+          '</div></div>';
+      });
+
+      expenseEntries.forEach(x => {
+        out += '<div class="report-entry">' +
+          '<b>Expense: ' + (x.expenseName || x.name || x.expense || 'Expense') + '</b>' +
+          '<div class="meta">' + dateOf(x) +
+          ' • ' + money(x.amount ?? x.Amount ?? x.expenseAmount) +
+          '</div></div>';
+      });
+
+      box.innerHTML = out;
+    }
+
+    document.getElementById('reportResult').classList.remove('hidden');
+  };
 })();
 </script>
 
