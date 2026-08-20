@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.64</div>
+  <div class="version">Version 4.66</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -494,6 +494,12 @@ html.modal-open, body.modal-open{
     <button class="secondary" onclick="setHistoryFilter('month')">This Month</button>
     <button class="secondary" onclick="clearHistoryFilter()">Clear</button>
   </div>
+</div>
+<div class="report-summary-grid" style="margin:14px 0">
+  <div><span>📏 Meter</span><b id="sumMeter">0.00</b></div>
+  <div><span>💰 Sale</span><b id="sumSale">₹0</b></div>
+  <div><span>🧾 Purchase</span><b id="sumPurchase">₹0</b></div>
+  <div><span>📈 Profit</span><b id="sumProfit">₹0</b></div>
 </div>
 <div id="historyList"></div>
   </section>
@@ -653,57 +659,79 @@ let expenses=JSON.parse(localStorage.getItem(EXPENSES_KEY)||'[]');
 let editingExpenseId=null;
 let items=JSON.parse(localStorage.getItem(ITEMS_KEY)||'[]');
 let entries=JSON.parse(localStorage.getItem(ENTRIES_KEY)||'[]');
-// V4.64: recover entries created by older versions without overwriting current data.
-(function recoverLegacyEntries(){
-  const legacyKeys = [
-    'spb_entries','spb_v3_entries','spb_v4_sales','spb_sales','sales',
-    'salesData','saleEntries','entries','sale_profit_entries'
-  ];
+// V4.65: robust legacy-entry recovery.
+// Scans all localStorage JSON values for entry-like records, so older key names are not missed.
+(function recoverAllLegacyEntries(){
   const current = Array.isArray(entries) ? entries : [];
-  const bySig = new Set(current.map(x => [
+  const sigOf = x => [
     normalizeEntryDate(x.date), String(x.item||'').trim().toLowerCase(),
-    Number(x.meter||0), Number(x.sale||0), String(x.place||'').trim().toLowerCase()
-  ].join('|')));
-  let recovered = [];
-  for(const key of legacyKeys){
-    if(key === ENTRIES_KEY) continue;
-    try{
-      const raw = localStorage.getItem(key);
-      if(!raw) continue;
-      const data = JSON.parse(raw);
-      const arr = Array.isArray(data) ? data :
-        (Array.isArray(data.entries) ? data.entries :
-        (Array.isArray(data.sales) ? data.sales : []));
-      for(const old of arr){
-        if(!old || typeof old !== 'object') continue;
-        const item = old.item ?? old.itemName ?? old.name ?? old.product ?? '';
-        const date = normalizeEntryDate(old.date ?? old.entryDate ?? old.saleDate ?? '');
-        if(!item || !date) continue;
-        const meter = Number(old.meter ?? old.qty ?? old.quantity ?? 0) || 0;
-        const sale = Number(old.sale ?? old.amount ?? old.total ?? 0) || 0;
-        const purchase = Number(old.purchase ?? old.purchaseAmount ?? 0) || 0;
-        const rate = Number(old.rate ?? old.purchaseRate ?? (meter ? purchase/meter : 0)) || 0;
-        const sig = [date,String(item).trim().toLowerCase(),meter,sale,
-          String(old.place ?? old.state ?? 'Kerala').trim().toLowerCase()].join('|');
-        if(bySig.has(sig)) continue;
-        const rec = {
-          id: Number(old.id) || Date.now() + recovered.length,
-          date, place: old.place ?? old.state ?? 'Kerala',
-          item: String(item), meter, rate, sale,
-          paidBy: old.paidBy ?? old.payment ?? 'GPay',
-          purchase, profit: Number(old.profit ?? (sale-purchase)),
-          time: old.time ?? ''
-        };
-        bySig.add(sig);
+    Number(x.meter||0), Number(x.sale||0),
+    String(x.place||'').trim().toLowerCase()
+  ].join('|');
+
+  const seen = new Set(current.map(sigOf));
+  const recovered = [];
+
+  function walk(value, depth){
+    if(depth > 5 || value == null) return;
+    if(Array.isArray(value)){
+      for(const v of value) walk(v, depth+1);
+      return;
+    }
+    if(typeof value !== 'object') return;
+
+    const item = value.item ?? value.itemName ?? value.productName ?? value.product ??
+                 value.name ?? value.description ?? '';
+    const rawDate = value.date ?? value.entryDate ?? value.saleDate ??
+                    value.createdDate ?? value.transactionDate ?? '';
+    const date = normalizeEntryDate(rawDate);
+
+    if(item && date){
+      const meter = Number(value.meter ?? value.qty ?? value.quantity ?? value.meters ?? 0) || 0;
+      const sale = Number(value.sale ?? value.saleAmount ?? value.amount ?? value.total ?? 0) || 0;
+      const purchase = Number(value.purchase ?? value.purchaseAmount ?? value.cost ?? 0) || 0;
+      const rate = Number(value.rate ?? value.purchaseRate ?? (meter ? purchase/meter : 0)) || 0;
+      const place = value.place ?? value.state ?? value.location ?? 'Kerala';
+      const rec = {
+        id: Number(value.id) || Date.now() + recovered.length,
+        date, place: String(place),
+        item: String(item), meter, rate, sale,
+        paidBy: value.paidBy ?? value.payment ?? value.paymentMethod ?? 'GPay',
+        purchase,
+        profit: Number(value.profit ?? (sale-purchase)),
+        time: value.time ?? value.createdTime ?? ''
+      };
+      const sig = sigOf(rec);
+      if(!seen.has(sig)){
+        seen.add(sig);
         recovered.push(rec);
       }
+    }
+
+    // Some older backups wrap entries inside an object.
+    for(const k of Object.keys(value)){
+      if(k === 'item' || k === 'itemName' || k === 'productName' ||
+         k === 'product' || k === 'name' || k === 'description') continue;
+      walk(value[k], depth+1);
+    }
+  }
+
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(!key || key===ENTRIES_KEY) continue;
+    try{
+      const raw=localStorage.getItem(key);
+      if(!raw || raw.length>2000000) continue;
+      walk(JSON.parse(raw),0);
     }catch(e){}
   }
+
   if(recovered.length){
-    entries = current.concat(recovered);
-    localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
+    entries=current.concat(recovered);
+    localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));
   }
 })();
+
 
 
 const $=id=>document.getElementById(id);
@@ -916,6 +944,9 @@ function newEntry(){
   if(!$('date').value)$('date').value=today();
 }
 function showHistory(){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const homePage=document.getElementById('homePage');
+  if(homePage) homePage.classList.add('active');
   $('historySearch').value='';
   $('historyFrom').value='';
   $('historyTo').value='';
@@ -949,7 +980,7 @@ function renderHistory(){
   $('sumSale').textContent=money(total.sale);
   $('sumPurchase').textContent=money(total.purchase);
   $('sumProfit').textContent=money(total.profit);
-  const listEl=$('historyList');
+  const listEl=$('historyList'); $('historyCount') && ($('historyCount').textContent = `Entries (${list.length})`);
   if(!list.length){
     listEl.innerHTML='<div class="history-card empty">No records found</div>';
     return;
@@ -1325,7 +1356,7 @@ window.printReport=function(){
       const k=localStorage.key(i);
       storage[k]=localStorage.getItem(k);
     }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.64",createdAt:new Date().toISOString(),storage:storage};
+    const data={app:"SALE-PROFIT-BOOK",version:"4.66",createdAt:new Date().toISOString(),storage:storage};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
