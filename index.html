@@ -217,7 +217,7 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.26</div>
+  <div class="version">Version 4.27</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -332,13 +332,7 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
       <div><label>Amount ₹</label><input id="expenseAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="500"></div>
     </div>
     <div class="field"><label>Expense</label>
-    <select id="expenseName">
-      <option value="">Select Expense</option>
-      <option value="Tea">Tea</option>
-      <option value="Dinner">Dinner</option>
-      <option value="Lunch">Lunch</option>
-      <option value="Car Rent">Car Rent</option>
-    </select>
+    <select id="expenseName"><option value="">Select Expense</option><option value="Tea">Tea</option><option value="Dinner">Dinner</option><option value="Lunch">Lunch</option><option value="Room Rent">Room Rent</option><option value="Petrol">Petrol</option><option value="Breakfast">Breakfast</option><option value="Water">Water</option><option value="Juice">Juice</option><option value="Cigarette">Cigarette</option><option value="Car Rent">Car Rent</option></select>
   </div>
     <div class="expense-action-row">
       <button id="expenseSaveBtn" class="primary" style="margin-top:12px" onclick="saveExpense()">Add Expense</button>
@@ -447,7 +441,7 @@ async function installPWA(){
 }
 function saveExpense(){
   const date=$('expenseDate').value||today(),name=$('expenseName').value.trim(),amount=Number($('expenseAmount').value)||0;
-  if(!name||!(amount>0)){alert('Enter Expense Name and Amount.');return}
+  if(!name||!(amount>0)){alert('Please select an Expense and enter the Amount.');return}
   if(editingExpenseId){
     const i=expenses.findIndex(x=>x.id===editingExpenseId);
     if(i>=0)expenses[i]={...expenses[i],date,name,amount};
