@@ -225,7 +225,7 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.36</div>
+  <div class="version">Version 4.37</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -762,9 +762,16 @@ window.addEventListener('load',function(){
   function setMansoor(a){localStorage.setItem(MKEY,JSON.stringify(a))}
 
   window.showMansoor=function(){
-    document.querySelectorAll('main > section').forEach(function(p){p.classList.add('hidden');});
+    document.querySelectorAll('.page').forEach(function(p){
+      p.classList.remove('active');
+      p.classList.add('hidden');
+    });
     var p=document.getElementById('mansoorPage');
-    if(p)p.classList.remove('hidden');
+    if(p){
+      p.classList.remove('hidden');
+      p.classList.add('active');
+    }
+    document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
     var d=document.getElementById('mansoorDate');
     if(d&&!d.value)d.value=new Date().toISOString().slice(0,10);
     if(typeof renderMansoor==='function')renderMansoor();
