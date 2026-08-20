@@ -8,7 +8,7 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>Sale Profit Book • V4.72</title>
+<title>Sale Profit Book • V4.73</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.72</div>
+  <div class="version">Version 4.73</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -830,20 +830,71 @@ function showPage(page,btn){
  }
 }
 function generateReport(){
- const from=$('reportFrom').value,to=$('reportTo').value;
+ const from=normalizeEntryDate($('reportFrom').value), to=normalizeEntryDate($('reportTo').value);
  if(!from||!to){alert('Select Date From and Date To.');return}
- const list=entries.filter(x=>x.date>=from&&x.date<=to);
- const total=list.reduce((a,x)=>({meter:a.meter+Number(x.meter||0),sale:a.sale+x.sale,purchase:a.purchase+x.purchase,profit:a.profit+x.profit}),{meter:0,sale:0,purchase:0,profit:0});
- const map={}; list.forEach(x=>{if(!map[x.item])map[x.item]={meter:0,sale:0,purchase:0,profit:0};map[x.item].meter+=Number(x.meter||0);map[x.item].sale+=x.sale;map[x.item].purchase+=x.purchase;map[x.item].profit+=x.profit});
+ if(from>to){alert('Date From cannot be after Date To.');return}
+
+ const sales=entries.filter(x=>{
+   const d=normalizeEntryDate(x.date);
+   return d>=from && d<=to;
+ });
+ const exps=(Array.isArray(expenses)?expenses:[]).filter(x=>{
+   const d=normalizeEntryDate(x.date);
+   return d>=from && d<=to;
+ });
+
+ const total=sales.reduce((a,x)=>({
+   meter:a.meter+Number(x.meter||0),
+   sale:a.sale+Number(x.sale||0),
+   purchase:a.purchase+Number(x.purchase||0),
+   profit:a.profit+Number(x.profit||0),
+   gpay:a.gpay+(String(x.paidBy||'GPay').toLowerCase()==='gpay'?Number(x.sale||0):0),
+   cash:a.cash+(String(x.paidBy||'').toLowerCase()==='cash'?Number(x.sale||0):0)
+ }),{meter:0,sale:0,purchase:0,profit:0,gpay:0,cash:0});
+
+ const expenseTotal=exps.reduce((s,x)=>s+Number(x.amount||0),0);
+ const netProfit=total.profit-expenseTotal;
+
+ const expenseMap={};
+ exps.forEach(x=>{
+   const name=String(x.name||'Other').trim()||'Other';
+   expenseMap[name]=(expenseMap[name]||0)+Number(x.amount||0);
+ });
+
+ const expenseBreakdown=Object.entries(expenseMap)
+   .sort((a,b)=>a[0].localeCompare(b[0]))
+   .map(([name,amt])=>`<div class="item-row"><div><b>${esc(name)}</b></div><b>${money(amt)}</b></div>`)
+   .join('') || '<div class="empty">No expenses found</div>';
+
+ const saleEntries=sales.map(x=>`
+   <div class="history-card">
+    <div class="history-head"><span>${esc(x.item)}</span><span>${money(x.profit)}</span></div>
+    <div class="meta">${esc(normalizeEntryDate(x.date))} • Meter ${Number(x.meter||0).toFixed(2)} • Sale ${money(x.sale)}</div>
+    <div class="meta">Purchase ${money(x.purchase)} • ${esc(x.paidBy||'GPay')}</div>
+   </div>`).join('');
+
+ const expenseEntries=exps.map(x=>`
+   <div class="history-card">
+    <div class="history-head"><span>Expense: ${esc(x.name)}</span><span>${money(x.amount)}</span></div>
+    <div class="meta">${esc(normalizeEntryDate(x.date))} • Expense</div>
+   </div>`).join('');
+
  $('reportResult').innerHTML=`
  <div class="report-summary">
-  <div class="stat">Meter<b>${total.meter.toFixed(2)}</b></div>
-  <div class="stat">Sale<b>${money(total.sale)}</b></div>
-  <div class="stat">Purchase<b>${money(total.purchase)}</b></div>
-  <div class="stat">Profit<b>${money(total.profit)}</b></div>
+  <div class="stat">📏 Meter<b>${total.meter.toFixed(2)}</b></div>
+  <div class="stat">💰 Sale<b>${money(total.sale)}</b></div>
+  <div class="stat">🧾 Purchase<b>${money(total.purchase)}</b></div>
+  <div class="stat">📈 Profit<b>${money(total.profit)}</b></div>
+  <div class="stat">💸 Expense<b>${money(expenseTotal)}</b></div>
+  <div class="stat">💵 Net Profit<b>${money(netProfit)}</b></div>
+  <div class="stat">💳 GPay<b>${money(total.gpay)}</b></div>
+  <div class="stat">💵 Cash<b>${money(total.cash)}</b></div>
  </div>
- <div class="history-card"><b>Entries: ${list.length}</b></div>
- <div class="history-card"><b>Item-wise Report</b>${Object.entries(map).map(([name,v])=>`<div class="item-row"><div><b>${esc(name)}</b><div class="meta">${v.meter.toFixed(2)} m • Sale ${money(v.sale)} • Purchase ${money(v.purchase)}</div></div><b>${money(v.profit)}</b></div>`).join('')||'<div class="empty">No records found</div>'}</div>`;
+ <div class="history-card"><b>📅 ${esc(from)} → ${esc(to)}</b><br><span class="meta">Sales: ${sales.length} • Expenses: ${exps.length}</span></div>
+ <div class="history-card"><b>💸 Expense Breakdown</b>${expenseBreakdown}</div>
+ <div class="history-card"><b>📋 Entries (${sales.length+exps.length})</b>
+   ${saleEntries}${expenseEntries || '<div class="empty">No entries found for this date range</div>'}
+ </div>`;
 }
 
 function init(){
@@ -1389,7 +1440,7 @@ window.printReport=function(){
       const k=localStorage.key(i);
       storage[k]=localStorage.getItem(k);
     }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.72",createdAt:new Date().toISOString(),storage:storage};
+    const data={app:"SALE-PROFIT-BOOK",version:"4.73",createdAt:new Date().toISOString(),storage:storage};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
