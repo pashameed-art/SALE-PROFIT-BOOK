@@ -330,11 +330,55 @@ html.modal-open, body.modal-open{
 }
 </style>
 
+
+<style id="v445-expense-bottom">
+/* V4.45 — Today's Total Expense appears at the bottom of the Expense page */
+#expensePage .expense-card,
+#expensePage .expense-list-card,
+#expensePage .expenses-list,
+#expensePage #expenseList {
+  margin-bottom: 24px !important;
+}
+#expensePage .expense-list-title,
+#expensePage .today-expense-title {
+  margin-top: 28px !important;
+  text-align: left !important;
+}
+#expensePage #expenseList {
+  order: 99 !important;
+}
+#expensePage .expense-form {
+  order: 1 !important;
+}
+</style>
+
+
+<style id="v446-today-total-expense">
+.today-expense-total{
+  margin-top:18px !important;
+  padding:16px 18px !important;
+  border-radius:16px !important;
+  background:#eaf5f3 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+}
+.today-expense-total span{
+  font-size:17px !important;
+  font-weight:800 !important;
+}
+.today-expense-total strong{
+  font-size:21px !important;
+  font-weight:900 !important;
+}
+</style>
+
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.44</div>
+  <div class="version">Version 4.46</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -468,7 +512,7 @@ html.modal-open, body.modal-open{
       <button id="expenseSaveBtn" class="primary" style="margin-top:12px" onclick="saveExpense()">Add Expense</button>
       <button id="expenseClearBtn" class="secondary" style="margin-top:12px" onclick="clearExpenseForm()">Clear</button>
     </div>
-    <div id="expenseList" class="expense-list"></div>
+    <div id="expenseList" class="expense-list"></div><div id="todayExpenseTotal" class="today-expense-total"><span>Today's Total Expense</span><strong>₹0</strong></div>
   </div>
 </div>
 
@@ -651,6 +695,10 @@ function clearExpenseForm(){
 }
 function renderExpenses(){
   const el=$('expenseList');
+  const totalEl=$('todayExpenseTotal');
+  const td=today();
+  const todayTotal=expenses.filter(x=>String(x.date||'')===td).reduce((s,x)=>s+(Number(x.amount)||0),0);
+  if(totalEl) totalEl.innerHTML=`<span>Today's Total Expense</span><strong>${money(todayTotal)}</strong>`;
   if(!expenses.length){
     el.innerHTML='<div class="expense-empty-note">No expenses found<br><small>Add an expense above. Edit / Delete will appear here after saving.</small></div>';
     return;
