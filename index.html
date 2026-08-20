@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.57</div>
+  <div class="version">Version 4.58</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -549,14 +549,14 @@ html.modal-open, body.modal-open{
   <div class="backup-box">
     <h2 style="margin-top:0">Backup</h2>
     <div class="backup-actions-v455">
-      <button type="button" class="full-backup" onclick="fullBackupV455()">📦 Full Backup</button>
-      <label class="backup-restore-label-v455 full-restore">♻️ Full Restore
+      <button type="button" class="full-backup" onclick="fullBackupV455()">📦 Full Backup (No Login)</button>
+      <label class="backup-restore-label-v455 full-restore">♻️ Full Restore (No Login)
         <input type="file" accept=".json,application/json" hidden onchange="restoreV455(this.files[0])">
       </label>
     </div>
-    <button class="primary" onclick="googleDriveBackup()">Google Drive Backup</button>
-    <button class="secondary" style="margin-top:10px" onclick="googleDriveRestore()">Google Drive Restore</button>
-    <div class="meta" style="margin-top:10px">Full Backup saves all app data. Full Restore replaces the current app data with the selected backup.</div>
+    <button class="primary" onclick="googleDriveBackup()">☁️ Google Drive Backup</button>
+    <button class="secondary" style="margin-top:10px" onclick="googleDriveRestore()">☁️ Google Drive Restore</button>
+    <div class="meta" style="margin-top:10px">📦 Full Backup / Restore works without Google login. ☁️ Google Drive Backup / Restore requires Google OAuth Client ID.</div>
     <button class="secondary" style="margin-top:10px" onclick="exportCSV()">Export CSV</button>
   </div>
 </div>
@@ -940,7 +940,7 @@ function googleDriveData(){
 }
 async function googleDriveBackup(){
   const clientId=localStorage.getItem('spb_google_client_id')||$('googleClientId')?.value.trim();
-  if(!clientId){alert('Enter and save your Google OAuth Client ID first.');return}
+  if(!clientId){alert('Google Drive Backup requires a Google OAuth Client ID.\n\nFor normal Full Backup, use 📦 Full Backup (No Login).');return}
   if(!window.google?.accounts?.oauth2){alert('Google Sign-In is still loading. Please try again.');return}
   const tokenClient=google.accounts.oauth2.initTokenClient({
     client_id:clientId,scope:'https://www.googleapis.com/auth/drive.file',
@@ -1227,7 +1227,7 @@ window.printReport=function(){
       const k=localStorage.key(i);
       storage[k]=localStorage.getItem(k);
     }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.57",createdAt:new Date().toISOString(),storage:storage};
+    const data={app:"SALE-PROFIT-BOOK",version:"4.58",createdAt:new Date().toISOString(),storage:storage};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
