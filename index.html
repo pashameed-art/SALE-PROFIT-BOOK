@@ -60,12 +60,25 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
 @media(max-width:520px){.nav-bar{padding:0 24px;gap:6px}.nav-bar button{font-size:14px}.report-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .entry-actions{margin-top:14px}.entry-actions button{width:100%}.history-filters{background:#fff;border-radius:20px;padding:16px;margin-top:14px}.filter-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.filter-buttons button{height:44px;font-size:14px}@media(max-width:520px){.filter-buttons{grid-template-columns:repeat(2,1fr)}}
 .entry-three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:18px}.entry-three label{font-size:14px}.entry-three input,.entry-three select{width:100%}.nav-five{grid-template-columns:repeat(5,1fr)}.install-wrap{max-width:720px;margin:10px auto 0;padding:0 24px}.install-btn{width:100%;display:none}.expense-list{margin-top:14px}.expense-row{background:#fff;border-radius:18px;padding:15px;margin-top:10px}.expense-actions{display:flex;gap:8px;margin-top:10px}.expense-actions button{height:40px;font-size:14px}@media(max-width:520px){.nav-five{grid-template-columns:repeat(5,minmax(0,1fr))}.nav-five button{font-size:12px;padding:0 4px}.entry-three{gap:7px}.entry-three label{font-size:13px}.entry-three input,.entry-three select{font-size:14px;padding:0 8px}.install-wrap{padding:0 24px}}
+
+.new-entry-title{background:#117d73;color:#fff;border-radius:14px;text-align:center;
+font-weight:800;font-size:20px;padding:13px 12px;margin:14px 0 12px}
+.entry-three{display:grid!important;grid-template-columns:1fr 1fr 1fr!important;gap:8px!important;
+align-items:end;width:100%;overflow:hidden}
+.entry-three>div{min-width:0!important}
+.entry-three label{font-size:13px;white-space:nowrap}
+.entry-three input,.entry-three select{width:100%;min-width:0;font-size:15px;padding:0 8px}
+@media(max-width:520px){
+ .entry-three{grid-template-columns:1fr 1fr 1fr!important;gap:6px!important}
+ .entry-three label{font-size:12px}
+ .entry-three input,.entry-three select{font-size:14px;padding:0 6px}
+}
 </style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.12</div>
+  <div class="version">Version 4.13</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -94,10 +107,7 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
 
   <!-- ROW 2 -->
   <!-- ROW 3 -->
-  <div class="row2 entry-actions">
-    <button class="primary" onclick="newEntry()">New Entry</button>
-    <button class="secondary" onclick="showHistory()">History</button>
-  </div>
+  <div class="new-entry-title">New Entry</div>
 
   <section id="entryCard" class="card">
     <div class="field">
@@ -107,7 +117,7 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
       </select>
     </div>
 
-    <div class="field">
+    <div class="entry-three"><div class="field">
       <label>Meter</label>
       <input id="meter" type="number" min="0" step="0.01" inputmode="decimal" placeholder="3" oninput="calculate()">
     </div>
@@ -122,7 +132,7 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
         <option value="GPay" selected>GPay</option>
         <option value="Cash">Cash</option>
       </select>
-    </div>
+    </div></div>
 
     <div class="field">
       <label>Purchase ₹ (Auto)</label>
@@ -466,7 +476,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.12').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.13').catch(()=>{});}
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
