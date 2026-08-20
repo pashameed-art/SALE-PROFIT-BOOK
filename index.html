@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.56</div>
+  <div class="version">Version 4.57</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1227,7 +1227,7 @@ window.printReport=function(){
       const k=localStorage.key(i);
       storage[k]=localStorage.getItem(k);
     }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.56",createdAt:new Date().toISOString(),storage:storage};
+    const data={app:"SALE-PROFIT-BOOK",version:"4.57",createdAt:new Date().toISOString(),storage:storage};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
@@ -1248,7 +1248,7 @@ window.printReport=function(){
         if(!confirm("Restore Full Backup? Current app data will be replaced."))return;
         localStorage.clear();
         Object.keys(data.storage).forEach(function(k){localStorage.setItem(k,data.storage[k]);});
-        alert("Full Backup restored successfully.");
+        alert("Full Backup restored successfully.\n\nBackup date: " + (data.createdAt ? new Date(data.createdAt).toLocaleString() : "Unknown") + "\nItems restored: " + Object.keys(data.storage).length);
         location.reload();
       }catch(e){alert("Invalid SALE-PROFIT-BOOK backup file.");}
     };
