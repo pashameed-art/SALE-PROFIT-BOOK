@@ -128,12 +128,82 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 .new-history-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.new-history-row button{width:100%}
 #expenseName{width:100%}
 @media(max-width:520px){.new-history-row{grid-template-columns:1fr 1fr;gap:8px}}
+
+.purchase-profit-row{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:10px !important;
+  align-items:start !important;
+}
+.purchase-profit-row > .field{
+  min-width:0 !important;
+  margin:0 !important;
+}
+.purchase-profit-row label{
+  white-space:nowrap !important;
+  display:block !important;
+  line-height:1.2 !important;
+}
+.purchase-profit-row input{
+  width:100% !important;
+  box-sizing:border-box !important;
+}
+@media(max-width:520px){
+  .purchase-profit-row{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+    gap:10px !important;
+  }
+}
+
+
+/* V4.25: Purchase + Profit must stay on the same horizontal line */
+.purchase-profit-row{
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  align-items:flex-start !important;
+  gap:10px !important;
+  width:100% !important;
+}
+.purchase-profit-row > .field{
+  flex:1 1 0 !important;
+  width:50% !important;
+  min-width:0 !important;
+  margin-top:0 !important;
+}
+.purchase-profit-row > .field label{
+  white-space:nowrap !important;
+  display:block !important;
+  height:22px !important;
+  line-height:22px !important;
+  margin:0 0 8px !important;
+  font-size:15px !important;
+}
+.purchase-profit-row > .field input{
+  width:100% !important;
+  min-width:0 !important;
+}
+@media(max-width:520px){
+  .purchase-profit-row{
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    gap:8px !important;
+  }
+  .purchase-profit-row > .field{
+    width:50% !important;
+  }
+  .purchase-profit-row > .field label{
+    font-size:13px !important;
+  }
+}
+
 </style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.23</div>
+  <div class="version">Version 4.25</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -537,7 +607,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.23').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.25').catch(()=>{});}
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
