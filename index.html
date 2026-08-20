@@ -217,7 +217,7 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.32</div>
+  <div class="version">Version 4.33</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -332,7 +332,19 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
       <div><label>Amount ₹</label><input id="expenseAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="500"></div>
     </div>
     <div class="field"><label>Expense</label>
-    <input id="expenseName" type="text" placeholder="Enter Expense Name" autocomplete="off">
+    <input id="expenseName" type="text" placeholder="Select or type Expense Name" list="expenseNameList" autocomplete="off">
+<datalist id="expenseNameList">
+<option value="Breakfast">
+<option value="Car Rent">
+<option value="Cigarette">
+<option value="Dinner">
+<option value="Juice">
+<option value="Lunch">
+<option value="Petrol">
+<option value="Room Rent">
+<option value="Tea">
+<option value="Water">
+</datalist>
   </div>
     <div class="expense-action-row">
       <button id="expenseSaveBtn" class="primary" style="margin-top:12px" onclick="saveExpense()">Add Expense</button>
