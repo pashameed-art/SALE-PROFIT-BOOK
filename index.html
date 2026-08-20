@@ -8,7 +8,7 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>Sale Profit Book • V4.80</title>
+<title>Sale Profit Book • V4.81</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -406,7 +406,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.80</div>
+  <div class="version">Version 4.81</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -614,11 +614,6 @@ html.modal-open, body.modal-open{
     <div id="mansoorHistory"></div>
   </div>
 
-<!-- V4.68: Today Total Expense -->
-<div id="mansoorTodayExpenseTotalCard" class="card" style="margin-top:16px;">
-  <div style="font-size:20px;font-weight:800;">💸 Today Total Expense</div>
-  <div id="mansoorTodayExpenseTotal" style="font-size:30px;font-weight:900;margin-top:8px;">₹0</div>
-</div>
 </section>
 
 
@@ -1135,7 +1130,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.72: build marker / cache refresh helper.
 (function(){
-  const BUILD = '4.80';
+  const BUILD = '4.81';
   try {
     const old = localStorage.getItem('__spb_build__');
     if(old && old !== BUILD && 'serviceWorker' in navigator){
@@ -1150,24 +1145,24 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.74 FULL APP UPDATE
 (function(){
-  const BUILD = '4.80';
+  const BUILD = '4.81';
   try { localStorage.setItem('__spb_build__', BUILD); } catch(e) {}
 })();
 
 // V4.75 CLEAN TODAY TOTAL
-try{localStorage.setItem('__spb_build__','4.80')}catch(e){}
+try{localStorage.setItem('__spb_build__','4.81')}catch(e){}
 
 
 
-// V4.80 today/expense date refresh
+// V4.81 today/expense date refresh
 window.addEventListener('load', function(){try{updateTodayTotalExpense();}catch(e){}});
 
 // V4.77 expense date change refresh
 window.addEventListener('DOMContentLoaded',function(){const d=document.getElementById('expenseDate');if(d)d.addEventListener('change',updateTodayExpenseTotal);});
-// V4.80 auto-date final
+// V4.81 auto-date final
 window.addEventListener('load',function(){try{$('date').value=today();if(!editingExpenseId)$('expenseDate').value=today();updateTodayExpenseTotal();}catch(e){}});
 
-// V4.80 LOCAL DATE FINAL FIX
+// V4.81 LOCAL DATE FINAL FIX
 (function(){
   function applyLocalToday(){
     try {
@@ -1261,7 +1256,15 @@ window.addEventListener('load',function(){
 (function(){
   const MKEY='saleProfitBookMansoorV1';
   const INITIAL_BALANCE=43334;
-
+  function localToday(){
+    const d=new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function fmtDate(v){
+    const s=String(v||'');
+    const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? `${m[3]}.${m[2]}.${m[1].slice(2)}` : s;
+  }
   function getMansoor(){
     try{return JSON.parse(localStorage.getItem(MKEY)||'[]')}catch(e){return[]}
   }
@@ -1273,17 +1276,16 @@ window.addEventListener('load',function(){
     if(p)p.classList.add('active');
     document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
     var d=document.getElementById('mansoorDate');
-    if(d&&!d.value)d.value=new Date().toISOString().slice(0,10);
-    if(typeof renderMansoor==='function')renderMansoor();
+    if(d && !mansoorEditId)d.value=localToday();
+    renderMansoor();
     window.scrollTo({top:0,behavior:'smooth'});
   };
 
   window.clearMansoor=function(){
     document.getElementById('mansoorType').value='taken';
-    document.getElementById('mansoorDate').value=new Date().toISOString().slice(0,10);
+    document.getElementById('mansoorDate').value=localToday();
     document.getElementById('mansoorAmount').value='';
     document.getElementById('mansoorNote').value='';
-  
     mansoorEditId=null;
     const b=document.querySelector('#mansoorPage button[onclick*="saveMansoor"]'); if(b)b.textContent='Save';
   };
@@ -1292,7 +1294,7 @@ window.addEventListener('load',function(){
 
   window.saveMansoor=function(){
     const type=document.getElementById('mansoorType').value;
-    const date=document.getElementById('mansoorDate').value;
+    const date=document.getElementById('mansoorDate').value || localToday();
     const amount=Number(document.getElementById('mansoorAmount').value);
     const note=document.getElementById('mansoorNote').value.trim();
     if(!date||!amount||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return;}
@@ -1327,26 +1329,58 @@ window.addEventListener('load',function(){
   };
 
   window.renderMansoor=function(){
-    const a=getMansoor().sort((x,y)=>String(y.date).localeCompare(String(x.date))||y.id-x.id);
-    const taken=a.filter(x=>x.type==='taken').reduce((s,x)=>s+x.amount,0);
-    const given=a.filter(x=>x.type==='given').reduce((s,x)=>s+x.amount,0);
+    const all=getMansoor();
+    const a=all.slice().sort((x,y)=>String(y.date).localeCompare(String(x.date))||y.id-x.id);
+    const taken=a.filter(x=>x.type==='taken').reduce((s,x)=>s+Number(x.amount||0),0);
+    const given=a.filter(x=>x.type==='given').reduce((s,x)=>s+Number(x.amount||0),0);
     const balance=INITIAL_BALANCE+taken-given;
     const b=document.getElementById('mansoorBalance'); if(b)b.textContent='₹'+balance.toLocaleString('en-IN');
 
     const h=document.getElementById('mansoorHistory'); if(!h)return;
     if(!a.length){h.innerHTML='<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';return;}
-    h.innerHTML=a.map(x=>`
-      <div class="mansoor-row">
-        <div><b>${x.type==='taken'?'பணம் வாங்கியது':'பணம் தந்தது'}</b>
-        <div class="meta">${x.date}${x.note?' • '+esc(x.note):''}</div></div>
-        <strong>${x.type==='taken'?'+':'-'}₹${Number(x.amount).toLocaleString('en-IN')}</strong>
-        <div class="mansoor-actions"><button class="mansoor-edit" onclick="editMansoor(${x.id})">Edit</button><button class="danger mansoor-delete" onclick="deleteMansoor(${x.id})">Delete</button></div>
-      </div>`).join('');
+
+    const t=localToday();
+    const todayRows=a.filter(x=>String(x.date)===t);
+    const oldMap={};
+    a.filter(x=>String(x.date)!==t).forEach(x=>{
+      const d=String(x.date||'');
+      if(!oldMap[d])oldMap[d]={taken:0,given:0};
+      if(x.type==='taken')oldMap[d].taken+=Number(x.amount||0);
+      else oldMap[d].given+=Number(x.amount||0);
+    });
+
+    let html='';
+    // Today: every transaction separately.
+    if(todayRows.length){
+      html += '<div class="expense-section-title">📅 Today — '+fmtDate(t)+'</div>';
+      html += todayRows.map(x=>`
+        <div class="mansoor-row">
+          <div><b>${x.type==='taken'?'பணம் வாங்கியது':'பணம் தந்தது'}</b>
+          <div class="meta">${fmtDate(x.date)}${x.note?' • '+esc(x.note):''}</div></div>
+          <strong>${x.type==='taken'?'+':'-'}₹${Number(x.amount||0).toLocaleString('en-IN')}</strong>
+          <div class="mansoor-actions"><button class="mansoor-edit" onclick="editMansoor(${x.id})">Edit</button><button class="danger mansoor-delete" onclick="deleteMansoor(${x.id})">Delete</button></div>
+        </div>`).join('');
+    } else {
+      html += '<div class="expense-empty-note">இன்று பதிவு இல்லை.</div>';
+    }
+
+    // Previous dates: one line per date, net amount only.
+    const oldDates=Object.keys(oldMap).sort((a,b)=>b.localeCompare(a));
+    if(oldDates.length){
+      html += '<div class="expense-section-title old-expense-title">📜 Previous History</div>';
+      html += oldDates.map(d=>{
+        const net=oldMap[d].taken-oldMap[d].given;
+        const sign=net>=0?'+':'-';
+        return `<div class="expense-old-row"><span>${fmtDate(d)}</span><strong>${sign}₹${Math.abs(net).toLocaleString('en-IN')}</strong></div>`;
+      }).join('');
+    }
+    h.innerHTML=html;
   };
 
   window.addEventListener('DOMContentLoaded',function(){
     const d=document.getElementById('mansoorDate');
-    if(d)d.value=new Date().toISOString().slice(0,10);
+    if(d)d.value=localToday();
+    renderMansoor();
   });
 })();
 </script>
