@@ -217,7 +217,7 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.27</div>
+  <div class="version">Version 4.29</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -332,7 +332,7 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
       <div><label>Amount ₹</label><input id="expenseAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="500"></div>
     </div>
     <div class="field"><label>Expense</label>
-    <select id="expenseName"><option value="">Select Expense</option><option value="Tea">Tea</option><option value="Dinner">Dinner</option><option value="Lunch">Lunch</option><option value="Room Rent">Room Rent</option><option value="Petrol">Petrol</option><option value="Breakfast">Breakfast</option><option value="Water">Water</option><option value="Juice">Juice</option><option value="Cigarette">Cigarette</option><option value="Car Rent">Car Rent</option></select>
+    <select id="expenseName" onchange="handleExpenseChoice(this)"><option value="">Select Expense</option><option value="Tea">Tea</option><option value="Breakfast">Breakfast</option><option value="Lunch">Lunch</option><option value="Dinner">Dinner</option><option value="Room Rent">Room Rent</option><option value="Petrol">Petrol</option><option value="Water">Water</option><option value="Juice">Juice</option><option value="Cigarette">Cigarette</option><option value="Car Rent">Car Rent</option><option value="__ADD_NEW_EXPENSE__">＋ Add New Expense</option></select>
   </div>
     <div class="expense-action-row">
       <button id="expenseSaveBtn" class="primary" style="margin-top:12px" onclick="saveExpense()">Add Expense</button>
@@ -685,5 +685,50 @@ window.addEventListener('load',function(){
   }
 });
 </script>
+
+<script>
+(function(){
+  const CUSTOM_EXPENSES_KEY = 'saleProfitBookCustomExpenses';
+  function getCustomExpenses(){
+    try { return JSON.parse(localStorage.getItem(CUSTOM_EXPENSES_KEY) || '[]'); }
+    catch(e){ return []; }
+  }
+  function setCustomExpenses(a){
+    localStorage.setItem(CUSTOM_EXPENSES_KEY, JSON.stringify(a));
+  }
+  window.refreshCustomExpenses = function(){
+    const s = document.getElementById('expenseName');
+    if(!s) return;
+    Array.from(s.options).filter(o => o.dataset.custom === '1').forEach(o => o.remove());
+    const customs = getCustomExpenses()
+      .filter(name => name && !Array.from(s.options).some(o => o.value === name))
+      .sort((a,b) => a.localeCompare(b));
+    const add = Array.from(s.options).find(o => o.value === '__ADD_NEW_EXPENSE__');
+    customs.forEach(name => {
+      const o = document.createElement('option');
+      o.value = name; o.textContent = name; o.dataset.custom = '1';
+      s.insertBefore(o, add || null);
+    });
+  };
+  window.handleExpenseChoice = function(sel){
+    if(sel.value !== '__ADD_NEW_EXPENSE__') return;
+    const name = prompt('Enter new expense name');
+    if(name && name.trim()){
+      const clean = name.trim();
+      const arr = getCustomExpenses();
+      if(!arr.some(x => x.toLowerCase() === clean.toLowerCase())){
+        arr.push(clean);
+        setCustomExpenses(arr);
+      }
+      refreshCustomExpenses();
+      sel.value = clean;
+    } else {
+      sel.value = '';
+    }
+  };
+  window.addEventListener('DOMContentLoaded', refreshCustomExpenses);
+})();
+</script>
+
 </body>
 </html>
