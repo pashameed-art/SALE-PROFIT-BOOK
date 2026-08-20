@@ -198,12 +198,66 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
   }
 }
 
+
+/* V4.26 field layout */
+.entry-three{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:10px !important;
+  align-items:start !important;
+}
+.entry-three > .field,
+.entry-three > div{
+  min-width:0 !important;
+}
+.entry-three label{
+  display:block !important;
+  text-align:center !important;
+  white-space:nowrap !important;
+  width:100% !important;
+}
+.entry-three input,
+.entry-three select{
+  width:100% !important;
+  box-sizing:border-box !important;
+}
+.purchase-profit-row{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:10px !important;
+  align-items:start !important;
+}
+.purchase-profit-row label{
+  display:block !important;
+  text-align:center !important;
+  white-space:nowrap !important;
+  width:100% !important;
+}
+.purchase-profit-row input{
+  width:100% !important;
+  box-sizing:border-box !important;
+}
+@media(max-width:520px){
+  .entry-three{
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:7px !important;
+  }
+  .entry-three label,.purchase-profit-row label{
+    text-align:center !important;
+    font-size:13px !important;
+  }
+  .purchase-profit-row{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+    gap:8px !important;
+  }
+}
+
 </style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.25</div>
+  <div class="version">Version 4.26</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -607,7 +661,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.25').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.26').catch(()=>{});}
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
