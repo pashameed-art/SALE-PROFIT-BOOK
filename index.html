@@ -382,25 +382,28 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta name="app-version" content="4.49"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta name="app-version" content="4.55"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 
 
 
-<style id="v454-backup">
-.backup-actions-v454{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
-.backup-actions-v454 button,.backup-restore-label-v454{min-height:52px;border:0;border-radius:14px;padding:12px 10px;font-size:16px;font-weight:800;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center}
-.backup-actions-v454 button{background:#128b80;color:#fff}
-.backup-restore-label-v454{background:#e8f4f2;color:#126d66}
-@media(max-width:520px){.backup-actions-v454{grid-template-columns:1fr 1fr}}
+
+<style id="v455-backup">
+.backup-actions-v455{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.backup-actions-v455 button,.backup-restore-label-v455{min-height:52px;border:0;border-radius:14px;padding:12px 10px;font-size:16px;font-weight:800;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.backup-actions-v455 button{background:#128b80;color:#fff}
+.backup-restore-label-v455{background:#e8f4f2;color:#126d66}
+.backup-actions-v455 .full-backup{background:#128b80;color:#fff}
+.backup-actions-v455 .full-restore{background:#e8f4f2;color:#126d66}
+@media(max-width:520px){.backup-actions-v455{grid-template-columns:1fr 1fr}}
 </style>
 
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.54</div>
+  <div class="version">Version 4.55</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -541,15 +544,19 @@ html.modal-open, body.modal-open{
   </div>
 </div>
 
+
 <div id="backupPage" class="page">
   <div class="backup-box">
     <h2 style="margin-top:0">Backup</h2>
+    <div class="backup-actions-v455">
+      <button type="button" class="full-backup" onclick="fullBackupV455()">📦 Full Backup</button>
+      <label class="backup-restore-label-v455 full-restore">♻️ Full Restore
+        <input type="file" accept=".json,application/json" hidden onchange="restoreV455(this.files[0])">
+      </label>
+    </div>
     <button class="primary" onclick="googleDriveBackup()">Google Drive Backup</button>
     <button class="secondary" style="margin-top:10px" onclick="googleDriveRestore()">Google Drive Restore</button>
-    <div class="meta" style="margin-top:10px">Google Drive requires your Google OAuth Client ID to be configured in the app.</div>
-    <button class="secondary" onclick="backupData()">Backup</button>
-    <button class="secondary" style="margin-top:10px" onclick="document.getElementById('restoreFile').click()">Restore</button>
-    <input id="restoreFile" type="file" accept=".json,application/json" style="display:none" onchange="restoreData(event)">
+    <div class="meta" style="margin-top:10px">Full Backup saves all app data. Full Restore replaces the current app data with the selected backup.</div>
     <button class="secondary" style="margin-top:10px" onclick="exportCSV()">Export CSV</button>
   </div>
 </div>
@@ -1208,46 +1215,49 @@ window.printReport=function(){
   if(!w){ alert('Please allow pop-ups to print the report.'); return; }
   w.document.write('<!doctype html><html><head><title>Sale Profit Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin:0 0 6px}h2,h3{margin-top:22px}.report-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.report-summary-grid>div{border:1px solid #ddd;border-radius:12px;padding:12px}.report-summary-grid b{display:block;margin-top:6px;font-size:18px}.breakdown-row,.report-entry{padding:10px 0;border-bottom:1px solid #ddd}.meta{margin-top:5px;color:#666;font-size:13px}@media print{body{padding:0}}</style></head><body><h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+box.innerHTML+'
 
-<script id="v454-backup-script">
+</body></html>');
+  w.document.close(); w.focus(); setTimeout(function(){w.print();},300);
+};
+</script>
+
+
+<script id="v455-backup-script">
 (function(){
-  function fullBackupV454(){
+  function fullBackupV455(){
     const storage={};
     for(let i=0;i<localStorage.length;i++){
       const k=localStorage.key(i);
       storage[k]=localStorage.getItem(k);
     }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.54",createdAt:new Date().toISOString(),storage};
+    const data={app:"SALE-PROFIT-BOOK",version:"4.55",createdAt:new Date().toISOString(),storage:storage};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
     a.href=url;
     a.download="SALE-PROFIT-BOOK-FULL-BACKUP-"+new Date().toISOString().slice(0,10)+".json";
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){URL.revokeObjectURL(url);},1000);
   }
-  function restoreV454(file){
-    if(!file) return;
+  function restoreV455(file){
+    if(!file)return;
     const reader=new FileReader();
     reader.onload=function(){
       try{
         const data=JSON.parse(reader.result);
-        if(!data || data.app!=="SALE-PROFIT-BOOK" || !data.storage) throw new Error();
-        if(!confirm("Restore Full Backup? Current app data will be replaced.")) return;
-        Object.keys(data.storage).forEach(k=>localStorage.setItem(k,data.storage[k]));
+        if(!data||data.app!=="SALE-PROFIT-BOOK"||!data.storage)throw new Error("invalid");
+        if(!confirm("Restore Full Backup? Current app data will be replaced."))return;
+        Object.keys(data.storage).forEach(function(k){localStorage.setItem(k,data.storage[k]);});
         alert("Full Backup restored successfully.");
         location.reload();
-      }catch(e){ alert("Invalid SALE-PROFIT-BOOK backup file."); }
+      }catch(e){alert("Invalid SALE-PROFIT-BOOK backup file.");}
     };
     reader.readAsText(file);
   }
-  window.fullBackupV454=fullBackupV454;
-  window.restoreV454=restoreV454;
+  window.fullBackupV455=fullBackupV455;
+  window.restoreV455=restoreV455;
 })();
-</script>
-
-</body></html>');
-  w.document.close(); w.focus(); setTimeout(function(){w.print();},300);
-};
 </script>
 
 </body>
