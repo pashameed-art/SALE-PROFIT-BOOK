@@ -73,12 +73,33 @@ align-items:end;width:100%;overflow:hidden}
  .entry-three label{font-size:12px}
  .entry-three input,.entry-three select{font-size:14px;padding:0 6px}
 }
+
+/* V4.14 requested compact layout */
+.page.active{display:block}
+.home-top-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.new-entry-title{background:#117d73;color:#fff;border-radius:14px;text-align:left;
+font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
+.entry-three{display:grid!important;grid-template-columns:1fr 1fr 1fr!important;gap:8px!important;align-items:end;width:100%}
+.entry-three>div{min-width:0!important}
+.entry-three label{font-size:13px;white-space:nowrap}
+.entry-three input,.entry-three select{width:100%;min-width:0;font-size:15px;padding:0 8px}
+.purchase-profit-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.save-clear-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.new-history-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:520px){
+ .home-top-grid{grid-template-columns:1fr 1fr}
+ .entry-three{grid-template-columns:1fr 1fr 1fr!important;gap:6px!important}
+ .entry-three label{font-size:12px}
+ .entry-three input,.entry-three select{font-size:14px;padding:0 6px}
+ .summary-grid{grid-template-columns:repeat(4,1fr);gap:5px}
+}
 </style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.13</div>
+  <div class="version">Version 4.14</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -476,7 +497,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.13').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.14').catch(()=>{});}
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
