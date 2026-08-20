@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.63</div>
+  <div class="version">Version 4.64</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -653,6 +653,58 @@ let expenses=JSON.parse(localStorage.getItem(EXPENSES_KEY)||'[]');
 let editingExpenseId=null;
 let items=JSON.parse(localStorage.getItem(ITEMS_KEY)||'[]');
 let entries=JSON.parse(localStorage.getItem(ENTRIES_KEY)||'[]');
+// V4.64: recover entries created by older versions without overwriting current data.
+(function recoverLegacyEntries(){
+  const legacyKeys = [
+    'spb_entries','spb_v3_entries','spb_v4_sales','spb_sales','sales',
+    'salesData','saleEntries','entries','sale_profit_entries'
+  ];
+  const current = Array.isArray(entries) ? entries : [];
+  const bySig = new Set(current.map(x => [
+    normalizeEntryDate(x.date), String(x.item||'').trim().toLowerCase(),
+    Number(x.meter||0), Number(x.sale||0), String(x.place||'').trim().toLowerCase()
+  ].join('|')));
+  let recovered = [];
+  for(const key of legacyKeys){
+    if(key === ENTRIES_KEY) continue;
+    try{
+      const raw = localStorage.getItem(key);
+      if(!raw) continue;
+      const data = JSON.parse(raw);
+      const arr = Array.isArray(data) ? data :
+        (Array.isArray(data.entries) ? data.entries :
+        (Array.isArray(data.sales) ? data.sales : []));
+      for(const old of arr){
+        if(!old || typeof old !== 'object') continue;
+        const item = old.item ?? old.itemName ?? old.name ?? old.product ?? '';
+        const date = normalizeEntryDate(old.date ?? old.entryDate ?? old.saleDate ?? '');
+        if(!item || !date) continue;
+        const meter = Number(old.meter ?? old.qty ?? old.quantity ?? 0) || 0;
+        const sale = Number(old.sale ?? old.amount ?? old.total ?? 0) || 0;
+        const purchase = Number(old.purchase ?? old.purchaseAmount ?? 0) || 0;
+        const rate = Number(old.rate ?? old.purchaseRate ?? (meter ? purchase/meter : 0)) || 0;
+        const sig = [date,String(item).trim().toLowerCase(),meter,sale,
+          String(old.place ?? old.state ?? 'Kerala').trim().toLowerCase()].join('|');
+        if(bySig.has(sig)) continue;
+        const rec = {
+          id: Number(old.id) || Date.now() + recovered.length,
+          date, place: old.place ?? old.state ?? 'Kerala',
+          item: String(item), meter, rate, sale,
+          paidBy: old.paidBy ?? old.payment ?? 'GPay',
+          purchase, profit: Number(old.profit ?? (sale-purchase)),
+          time: old.time ?? ''
+        };
+        bySig.add(sig);
+        recovered.push(rec);
+      }
+    }catch(e){}
+  }
+  if(recovered.length){
+    entries = current.concat(recovered);
+    localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
+  }
+})();
+
 
 const $=id=>document.getElementById(id);
 const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
@@ -1273,7 +1325,7 @@ window.printReport=function(){
       const k=localStorage.key(i);
       storage[k]=localStorage.getItem(k);
     }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.63",createdAt:new Date().toISOString(),storage:storage};
+    const data={app:"SALE-PROFIT-BOOK",version:"4.64",createdAt:new Date().toISOString(),storage:storage};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
