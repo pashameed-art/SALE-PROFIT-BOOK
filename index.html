@@ -8,7 +8,7 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>Sale Profit Book • V4.78</title>
+<title>Sale Profit Book • V4.79</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.78</div>
+  <div class="version">Version 4.79</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -688,7 +688,7 @@ let entries=JSON.parse(localStorage.getItem(ENTRIES_KEY)||'[]');
 
 const $=id=>document.getElementById(id);
 const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
-const today=()=>{const d=new Date();return d.toISOString().slice(0,10)};
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 function normalizeEntryDate(value){
   const s=String(value??'').trim();
   if(!s)return '';
@@ -1112,7 +1112,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.72: build marker / cache refresh helper.
 (function(){
-  const BUILD = '4.72';
+  const BUILD = '4.79';
   try {
     const old = localStorage.getItem('__spb_build__');
     if(old && old !== BUILD && 'serviceWorker' in navigator){
@@ -1127,22 +1127,38 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.74 FULL APP UPDATE
 (function(){
-  const BUILD = '4.74';
+  const BUILD = '4.79';
   try { localStorage.setItem('__spb_build__', BUILD); } catch(e) {}
 })();
 
 // V4.75 CLEAN TODAY TOTAL
-try{localStorage.setItem('__spb_build__','4.78')}catch(e){}
+try{localStorage.setItem('__spb_build__','4.79')}catch(e){}
 
 
 
-// V4.78 today/expense date refresh
+// V4.79 today/expense date refresh
 window.addEventListener('load', function(){try{updateTodayTotalExpense();}catch(e){}});
 
 // V4.77 expense date change refresh
 window.addEventListener('DOMContentLoaded',function(){const d=document.getElementById('expenseDate');if(d)d.addEventListener('change',updateTodayExpenseTotal);});
-// V4.78 auto-date final
+// V4.79 auto-date final
 window.addEventListener('load',function(){try{$('date').value=today();if(!editingExpenseId)$('expenseDate').value=today();updateTodayExpenseTotal();}catch(e){}});
+
+// V4.79 LOCAL DATE FINAL FIX
+(function(){
+  function applyLocalToday(){
+    try {
+      const d=today();
+      const home=document.getElementById('date');
+      const exp=document.getElementById('expenseDate');
+      if(home && !window.editingId) home.value=d;
+      if(exp && !window.editingExpenseId) exp.value=d;
+    } catch(e) {}
+  }
+  window.addEventListener('DOMContentLoaded',applyLocalToday);
+  window.addEventListener('pageshow',applyLocalToday);
+})();
+
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
