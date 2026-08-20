@@ -116,12 +116,20 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
  .summary .stat b{font-size:14px}
  .purchase-profit-row{grid-template-columns:1fr 1fr}
 }
+
+.new-history-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.new-history-row button{min-width:0}
+@media(max-width:520px){.new-history-row{grid-template-columns:1fr 1fr;gap:10px}}
+
+.new-history-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.new-history-row button{width:100%;min-width:0}
+@media(max-width:520px){.new-history-row{grid-template-columns:1fr 1fr;gap:8px}}
 </style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.17</div>
+  <div class="version">Version 4.20</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -150,8 +158,6 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 
   <!-- ROW 2 -->
   <!-- ROW 3 -->
-  <div class="new-entry-title">New Entry</div>
-
   <section id="entryCard" class="card">
     <div class="field">
       <label>Item Name</label>
@@ -195,10 +201,6 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
       <div class="stat">Purchase<b id="sumPurchase">₹0</b></div>
       <div class="stat">Profit<b id="sumProfit">₹0</b></div>
     </div>
-<div class="new-history-row">
-  <button class="primary" onclick="newEntry()">New Entry</button>
-  <button class="secondary" onclick="showHistory()">History</button>
-</div>
 <section id="historyCard" class="hidden">
     
 <div class="dua-card">
@@ -259,6 +261,7 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
     <button class="secondary" style="margin-top:10px" onclick="exportCSV()">Export CSV</button>
   </div>
 </div>
+
 </main>
 
 <div id="itemModal" class="modal">
@@ -522,7 +525,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.17').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.20').catch(()=>{});}
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
