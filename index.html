@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.58</div>
+  <div class="version">Version 4.60</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -645,328 +645,8 @@ html.modal-open, body.modal-open{
   </div>
 </div>
 
-<script>
-const ITEMS_KEY='spb_v4_items';
-const ENTRIES_KEY='spb_v4_entries';
-const EXPENSES_KEY='spb_v4_expenses';
-let expenses=JSON.parse(localStorage.getItem(EXPENSES_KEY)||'[]');
-let editingExpenseId=null;
-let items=JSON.parse(localStorage.getItem(ITEMS_KEY)||'[]');
-let entries=JSON.parse(localStorage.getItem(ENTRIES_KEY)||'[]');
-
-const $=id=>document.getElementById(id);
-const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
-const today=()=>{const d=new Date();return d.toISOString().slice(0,10)};
-
-function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 
 
-function backupData(){
-  const data={version:"4.10",items,entries,expenses,exportedAt:new Date().toISOString()};
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
-  a.download="sale-profit-book-backup.json";a.click();URL.revokeObjectURL(a.href);
-}
-function restoreData(event){
-  const file=event.target.files[0]; if(!file)return;
-  const reader=new FileReader();
-  reader.onload=()=>{
-    try{
-      const data=JSON.parse(reader.result);
-      if(!Array.isArray(data.items)||!Array.isArray(data.entries))throw new Error();
-      expenses=Array.isArray(data.expenses)?data.expenses:[];
-      items=data.items;entries=data.entries;
-      localStorage.setItem(ITEMS_KEY,JSON.stringify(items));
-      localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));
-      populateItems();renderItems();renderHistory();alert("Backup restored successfully.");
-    }catch(e){alert("Invalid backup file.");}
-    event.target.value="";
-  };
-  reader.readAsText(file);
-}
-function exportCSV(){
-  const rows=[
-    ["Date","Time","State / Place","Item Name","Meter","Purchase / Meter","Sale","Paid By","Purchase","Profit"],
-    ...entries.map(x=>[x.date,x.time||"",x.place,x.item,x.meter,x.rate,x.sale,x.paidBy||"GPay",x.purchase,x.profit]),
-    [],
-    ["EXPENSES"],
-    ["Date","Expense Name","Amount"],
-    ...expenses.map(x=>[x.date,x.name,x.amount])
-  ];
-  const csv=rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
-  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
-  a.download="sale-profit-book.csv";a.click();URL.revokeObjectURL(a.href);
-}
-
-
-
-let deferredInstallPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;$('installBtn').style.display='block';});
-window.addEventListener('appinstalled',()=>{$('installBtn').style.display='none';deferredInstallPrompt=null;});
-async function installPWA(){
-  if(!deferredInstallPrompt){alert('Install option is not available in this browser right now.');return}
-  deferredInstallPrompt.prompt(); await deferredInstallPrompt.userChoice; deferredInstallPrompt=null;$('installBtn').style.display='none';
-}
-function saveExpense(){
-  const date=$('expenseDate').value||today(),name=$('expenseName').value.trim(),amount=Number($('expenseAmount').value)||0;
-  if(!name||!(amount>0)){alert('Please enter an Expense Name and Amount.');return}
-  if(editingExpenseId){
-    const i=expenses.findIndex(x=>x.id===editingExpenseId);
-    if(i>=0)expenses[i]={...expenses[i],date,name,amount};
-  }else expenses.unshift({id:Date.now(),date,name,amount});
-  localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));editingExpenseId=null;$('expenseSaveBtn').textContent='Add Expense';
-  $('expenseName').value='';$('expenseAmount').value='';renderExpenses();
-}
-function clearExpenseForm(){
-  editingExpenseId=null;
-  $('expenseDate').value=today();
-  $('expenseName').value='';
-  $('expenseAmount').value='';
-  $('expenseSaveBtn').textContent='Add Expense';
-}
-function renderExpenses(){
-  const el=$('expenseList');
-  const totalEl=$('todayExpenseTotal');
-  const td=today();
-  const todayTotal=expenses.filter(x=>String(x.date||'')===td).reduce((s,x)=>s+(Number(x.amount)||0),0);
-  if(totalEl) totalEl.innerHTML=`<span>Today's Total Expense</span><strong>${money(todayTotal)}</strong>`;
-  if(!expenses.length){
-    el.innerHTML='<div class="expense-empty-note">No expenses found<br><small>Add an expense above. Edit / Delete will appear here after saving.</small></div>';
-    return;
-  }
-  el.innerHTML=expenses.map(x=>`<div class="expense-row">
-    <b>${esc(x.name)}</b>
-    <div class="meta">${esc(x.date)} • ${money(x.amount)}</div>
-    <div class="expense-actions">
-      <button class="edit-btn" onclick="editExpense(${x.id})">Edit</button>
-      <button class="danger" onclick="deleteExpense(${x.id})">Delete</button>
-    </div>
-  </div>`).join('');
-}
-function editExpense(id){
-  const x=expenses.find(e=>e.id===id);if(!x)return;
-  editingExpenseId=id;
-  $('expenseDate').value=x.date;
-  $('expenseName').value=x.name;
-  $('expenseAmount').value=x.amount;
-  $('expenseSaveBtn').textContent='Update Expense';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function deleteExpense(id){
-  if(!confirm('Delete this expense?'))return;
-  expenses=expenses.filter(x=>x.id!==id);
-  localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));
-  if(editingExpenseId===id) clearExpenseForm();
-  renderExpenses();
-}
-
-function setActive(btn){
- document.querySelectorAll('.nav-bar button').forEach(b=>b.classList.remove('nav-active'));
- btn.classList.add('nav-active');
-}
-function showPage(page,btn){
- document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
- $(page+'Page').classList.add('active');
- setActive(btn);
- if(page==='expense'){ $('expenseDate').value=$('expenseDate').value||today(); renderExpenses(); }
- if(page==='report'){
-   const d=today(); if(!$('reportFrom').value)$('reportFrom').value=d.slice(0,8)+'01'; if(!$('reportTo').value)$('reportTo').value=d;
- }
-}
-function generateReport(){
- const from=$('reportFrom').value,to=$('reportTo').value;
- if(!from||!to){alert('Select Date From and Date To.');return}
- const list=entries.filter(x=>x.date>=from&&x.date<=to);
- const total=list.reduce((a,x)=>({meter:a.meter+Number(x.meter||0),sale:a.sale+x.sale,purchase:a.purchase+x.purchase,profit:a.profit+x.profit}),{meter:0,sale:0,purchase:0,profit:0});
- const map={}; list.forEach(x=>{if(!map[x.item])map[x.item]={meter:0,sale:0,purchase:0,profit:0};map[x.item].meter+=Number(x.meter||0);map[x.item].sale+=x.sale;map[x.item].purchase+=x.purchase;map[x.item].profit+=x.profit});
- $('reportResult').innerHTML=`
- <div class="report-summary">
-  <div class="stat">Meter<b>${total.meter.toFixed(2)}</b></div>
-  <div class="stat">Sale<b>${money(total.sale)}</b></div>
-  <div class="stat">Purchase<b>${money(total.purchase)}</b></div>
-  <div class="stat">Profit<b>${money(total.profit)}</b></div>
- </div>
- <div class="history-card"><b>Entries: ${list.length}</b></div>
- <div class="history-card"><b>Item-wise Report</b>${Object.entries(map).map(([name,v])=>`<div class="item-row"><div><b>${esc(name)}</b><div class="meta">${v.meter.toFixed(2)} m • Sale ${money(v.sale)} • Purchase ${money(v.purchase)}</div></div><b>${money(v.profit)}</b></div>`).join('')||'<div class="empty">No records found</div>'}</div>`;
-}
-
-function init(){
-  $('date').value=today();
-  populateItems();
-  renderItems();
-  renderHistory();
-}
-function populateItems(){
-  const old=$('item').value;
-  $('item').innerHTML='<option value="">Select Item</option>'+
-    items.map(x=>`<option value="${esc(x.name)}">${esc(x.name)} — ${money(x.rate)}/m</option>`).join('');
-  if(items.some(x=>x.name===old)) $('item').value=old;
-}
-function getRate(){
-  const x=items.find(i=>i.name===$('item').value);
-  return x?Number(x.rate):0;
-}
-function calculate(){
-  const rate=getRate(), meter=Number($('meter').value)||0, sale=Number($('sale').value)||0;
-  const purchase=rate>0&&meter>0?Math.round(rate*meter*100)/100:0;
-  const profit=purchase>0?Math.round((sale-purchase)*100)/100:0;
-  $('purchase').value=purchase?purchase:'';
-  $('profit').value=(sale>0&&purchase>0)?profit:'';
-}
-function localTime(){const d=new Date();return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});}
-let editingId=null;
-function saveEntry(){
-  const item=$('item').value, meter=Number($('meter').value)||0, sale=Number($('sale').value)||0;
-  const rate=getRate(), purchase=rate*meter;
-  if(!item){alert('Please select an Item Name.');return}
-  if(!(meter>0)){alert('Please enter Meter.');return}
-  if(!(sale>=0)){alert('Please enter Sale amount.');return}
-  if(!(rate>0)){alert('Please add a Purchase / Meter rate for this item.');return}
-  const wasEditing=!!editingId;
-  if(editingId){
-    const idx=entries.findIndex(x=>x.id===editingId);
-    if(idx>=0) entries[idx]={...entries[idx],date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,meter,rate,sale,paidBy:$('paidBy').value,purchase,profit:sale-purchase};
-  }else{
-    entries.unshift({id:Date.now(),date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,meter,rate,sale,paidBy:$('paidBy').value,purchase,profit:sale-purchase,time:localTime()});
-  }
-  editingId=null;$('saveBtn').textContent='Save Entry';
-  localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));
-  alert(wasEditing?'Entry updated successfully.':'Entry saved successfully.');
-  newEntry();
-  renderHistory();
-}
-function newEntry(){
-  editingId=null;$('saveBtn').textContent='Save Entry';
-  $('historyCard').classList.add('hidden');$('entryCard').classList.remove('hidden');
-  $('item').value='';$('meter').value='';$('sale').value='';$('paidBy').value='GPay';$('purchase').value='';$('profit').value='';
-  if(!$('date').value)$('date').value=today();
-}
-function showHistory(){
-  $('entryCard').classList.add('hidden');$('historyCard').classList.remove('hidden');renderHistory();
-}
-function renderHistory(){
-  const q=($('historySearch')?.value||'').trim().toLowerCase();
-  const from=$('historyFrom')?.value||'';
-  const to=$('historyTo')?.value||'';
-  const list=entries.filter(x=>{
-    const text=(x.item||'').toLowerCase();
-    return (!q||text.includes(q))&&(!from||x.date>=from)&&(!to||x.date<=to);
-  });
-  const total=list.reduce((a,x)=>({meter:a.meter+Number(x.meter||0),sale:a.sale+x.sale,purchase:a.purchase+x.purchase,profit:a.profit+x.profit}),{meter:0,sale:0,purchase:0,profit:0});
-  $('sumMeter').textContent=Number(total.meter.toFixed(2)).toLocaleString('en-IN');
-  $('sumSale').textContent=money(total.sale);$('sumPurchase').textContent=money(total.purchase);$('sumProfit').textContent=money(total.profit);
-  const listEl=$('historyList');
-  if(!list.length){listEl.innerHTML='<div class="history-card empty">No records found</div>';return}
-  listEl.innerHTML=list.map(x=>`
-    <div class="history-card">
-      <div class="history-head"><span>${esc(x.item)}</span><span>${money(x.profit)}</span></div>
-      <div class="meta">${esc(x.date)} • ${esc(x.place)} • ${x.meter} m</div>
-      <div class="time-line">Time: ${esc(x.time||'—')}</div>
-      <div style="margin-top:9px">Sale ${money(x.sale)} • ${esc(x.paidBy||'GPay')} − Purchase ${money(x.purchase)}</div>
-      <div class="meta">Purchase / Meter: ${money(x.rate)}</div>
-      <div class="history-actions">
-        <button class="edit-btn" onclick="editEntry(${x.id})">Edit</button>
-        <button class="danger" onclick="deleteEntry(${x.id})">Delete</button>
-      </div>
-    </div>`).join('');
-}
-function setHistoryFilter(type){
-  const d=new Date(), pad=n=>String(n).padStart(2,'0');
-  const fmt=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;
-  let from=d,to=d;
-  if(type==='week'){const day=d.getDay();from=new Date(d);from.setDate(d.getDate()-(day||7)+1)}
-  if(type==='month'){from=new Date(d.getFullYear(),d.getMonth(),1)}
-  $('historyFrom').value=fmt(from);$('historyTo').value=fmt(to);renderHistory();
-}
-function clearHistoryFilter(){
-  $('historySearch').value='';$('historyFrom').value='';$('historyTo').value='';renderHistory();
-}
-function editEntry(id){
-  const x=entries.find(e=>e.id===id);if(!x)return;
-  editingId=id;$('entryCard').classList.remove('hidden');$('historyCard').classList.add('hidden');
-  $('place').value=x.place||'Kerala';$('date').value=x.date||today();
-  $('item').value=x.item;$('meter').value=x.meter;$('sale').value=x.sale;$('paidBy').value=x.paidBy||'GPay';
-  calculate();$('saveBtn').textContent='Update Entry';window.scrollTo({top:0,behavior:'smooth'});
-}
-function deleteEntry(id){
-  if(!confirm('Delete this entry?'))return;
-  entries=entries.filter(x=>x.id!==id);localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));renderHistory();
-}
-function openItemModal(){
-  $('itemModal').style.display='flex';
-  document.documentElement.classList.add('modal-open');
-  document.body.classList.add('modal-open');
-  renderItems();
-}
-function closeItemModal(){
-  $('itemModal').style.display='none';
-  document.documentElement.classList.remove('modal-open');
-  document.body.classList.remove('modal-open');
-}
-function saveItem(){
-  const name=$('newItemName').value.trim(),rate=Number($('newItemRate').value);
-  if(!name||!(rate>0)){alert('Enter Item Name and Purchase / Meter.');return}
-  const old=items.find(x=>x.name.toLowerCase()===name.toLowerCase());
-  if(old)old.rate=rate;else items.push({name,rate});
-  localStorage.setItem(ITEMS_KEY,JSON.stringify(items));
-  $('newItemName').value='';$('newItemRate').value='';populateItems();renderItems();calculate();
-}
-function renderItems(){
-  const list=$('itemList');
-  if(!items.length){list.innerHTML='<div class="empty">No items added</div>';return}
-  list.innerHTML=items.map(x=>`
-    <div class="item-row">
-      <div><b>${esc(x.name)}</b><div class="meta">${money(x.rate)} / meter</div></div>
-      <button class="danger" onclick="deleteItem(${JSON.stringify(x.name)})">Delete</button>
-    </div>`).join('');
-}
-function deleteItem(name){
-  if(!confirm('Delete this item?'))return;
-  items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
-}
-init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
-</script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>
-function saveGoogleClientId(){
-  const id=$('googleClientId').value.trim();
-  if(!id){alert('Enter Google OAuth Client ID.');return}
-  localStorage.setItem('spb_google_client_id',id);alert('Google Client ID saved.');
-}
-function googleDriveData(){
-  return JSON.stringify({version:'4.11',items,entries,expenses,exportedAt:new Date().toISOString()});
-}
-async function googleDriveBackup(){
-  const clientId=localStorage.getItem('spb_google_client_id')||$('googleClientId')?.value.trim();
-  if(!clientId){alert('Google Drive Backup requires a Google OAuth Client ID.\n\nFor normal Full Backup, use 📦 Full Backup (No Login).');return}
-  if(!window.google?.accounts?.oauth2){alert('Google Sign-In is still loading. Please try again.');return}
-  const tokenClient=google.accounts.oauth2.initTokenClient({
-    client_id:clientId,scope:'https://www.googleapis.com/auth/drive.file',
-    callback:async(resp)=>{
-      if(resp.error){alert('Google authorization failed.');return}
-      const file={name:'sale-profit-book-backup.json',mimeType:'application/json'};
-      const meta=JSON.stringify(file);
-      const boundary='-------spb'+Date.now();
-      const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+meta+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+googleDriveData()+'\r\n--'+boundary+'--';
-      const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{Authorization:'Bearer '+resp.access_token,'Content-Type':'multipart/related; boundary='+boundary},body});
-      if(r.ok)alert('Google Drive backup completed.');else alert('Google Drive backup failed.');
-    }
-  });
-  tokenClient.requestAccessToken({prompt:''});
-}
-async function googleDriveRestore(){
-  alert('Google Drive Restore will be enabled after the Google OAuth Client ID is configured and authorized.');
-}
-</script>
-<script>
-window.addEventListener('load',function(){
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(function(r){return r.update();}).catch(function(){});
-  }
-});
-</script>
 
 
 
@@ -1213,7 +893,26 @@ window.printReport=function(){
   var to=document.getElementById('reportTo')?.value||'';
   var w=window.open('','_blank');
   if(!w){ alert('Please allow pop-ups to print the report.'); return; }
-  w.document.write('<!doctype html><html><head><title>Sale Profit Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin:0 0 6px}h2,h3{margin-top:22px}.report-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.report-summary-grid>div{border:1px solid #ddd;border-radius:12px;padding:12px}.report-summary-grid b{display:block;margin-top:6px;font-size:18px}.breakdown-row,.report-entry{padding:10px 0;border-bottom:1px solid #ddd}.meta{margin-top:5px;color:#666;font-size:13px}@media print{body{padding:0}}</style></head><body><h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+box.innerHTML+'\\n</body></html>');
+  w.document.write('<!doctype html><html><head><title>Sale Profit Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin:0 0 6px}h2,h3{margin-top:22px}.report-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.report-summary-grid>div{border:1px solid #ddd;border-radius:12px;padding:12px}.report-summary-grid b{display:block;margin-top:6px;font-size:18px}.breakdown-row,.report-entry{padding:10px 0;border-bottom:1px solid #ddd}.meta{margin-top:5px;color:#666;font-size:13px}@media print{body{padding:0}}</style></head><body><h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+box.innerHTML+'\\n
+<script id="v460-cache-fix">
+(function(){
+  if(!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.getRegistrations().then(function(regs){
+      return Promise.all(regs.map(function(r){ return r.unregister(); }));
+    }).then(function(){
+      if(!('caches' in window)) return;
+      return caches.keys().then(function(keys){
+        return Promise.all(keys.map(function(k){ return caches.delete(k); }));
+      });
+    }).then(function(){
+      return navigator.serviceWorker.register('./sw.js?v=4.60');
+    }).catch(function(){});
+  });
+})();
+</script>
+
+</body></html>');
   w.document.close(); w.focus(); setTimeout(function(){w.print();},300);
 };
 </script>
@@ -1227,7 +926,7 @@ window.printReport=function(){
       const k=localStorage.key(i);
       storage[k]=localStorage.getItem(k);
     }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.58",createdAt:new Date().toISOString(),storage:storage};
+    const data={app:"SALE-PROFIT-BOOK",version:"4.60",createdAt:new Date().toISOString(),storage:storage};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
