@@ -99,7 +99,7 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.14</div>
+  <div class="version">Version 4.15</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -192,6 +192,10 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
     <button class="secondary" onclick="setHistoryFilter('month')">This Month</button>
     <button class="secondary" onclick="clearHistoryFilter()">Clear</button>
   </div>
+</div>
+<div class="new-history-row">
+  <button class="primary" onclick="newEntry()">New Entry</button>
+  <button class="secondary" onclick="showHistory()">History</button>
 </div>
 <div id="historyList"></div>
   </section>
@@ -497,7 +501,7 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.14').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.15').catch(()=>{});}
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
