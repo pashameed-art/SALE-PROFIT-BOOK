@@ -65,7 +65,7 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.10</div>
+  <div class="version">Version 4.11</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -194,6 +194,9 @@ button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Aria
 <div id="backupPage" class="page">
   <div class="backup-box">
     <h2 style="margin-top:0">Backup</h2>
+    <button class="primary" onclick="googleDriveBackup()">Google Drive Backup</button>
+    <button class="secondary" style="margin-top:10px" onclick="googleDriveRestore()">Google Drive Restore</button>
+    <div class="meta" style="margin-top:10px">Google Drive requires your Google OAuth Client ID to be configured in the app.</div>
     <button class="secondary" onclick="backupData()">Backup</button>
     <button class="secondary" style="margin-top:10px" onclick="document.getElementById('restoreFile').click()">Restore</button>
     <input id="restoreFile" type="file" accept=".json,application/json" style="display:none" onchange="restoreData(event)">
@@ -463,7 +466,38 @@ function deleteItem(name){
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
 }
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.10').catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js?v=4.11').catch(()=>{});}
 </script>
-</body>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+function saveGoogleClientId(){
+  const id=$('googleClientId').value.trim();
+  if(!id){alert('Enter Google OAuth Client ID.');return}
+  localStorage.setItem('spb_google_client_id',id);alert('Google Client ID saved.');
+}
+function googleDriveData(){
+  return JSON.stringify({version:'4.11',items,entries,expenses,exportedAt:new Date().toISOString()});
+}
+async function googleDriveBackup(){
+  const clientId=localStorage.getItem('spb_google_client_id')||$('googleClientId')?.value.trim();
+  if(!clientId){alert('Enter and save your Google OAuth Client ID first.');return}
+  if(!window.google?.accounts?.oauth2){alert('Google Sign-In is still loading. Please try again.');return}
+  const tokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:clientId,scope:'https://www.googleapis.com/auth/drive.file',
+    callback:async(resp)=>{
+      if(resp.error){alert('Google authorization failed.');return}
+      const file={name:'sale-profit-book-backup.json',mimeType:'application/json'};
+      const meta=JSON.stringify(file);
+      const boundary='-------spb'+Date.now();
+      const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+meta+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+googleDriveData()+'\r\n--'+boundary+'--';
+      const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{Authorization:'Bearer '+resp.access_token,'Content-Type':'multipart/related; boundary='+boundary},body});
+      if(r.ok)alert('Google Drive backup completed.');else alert('Google Drive backup failed.');
+    }
+  });
+  tokenClient.requestAccessToken({prompt:''});
+}
+async function googleDriveRestore(){
+  alert('Google Drive Restore will be enabled after the Google OAuth Client ID is configured and authorized.');
+}
+</script></body>
 </html>
