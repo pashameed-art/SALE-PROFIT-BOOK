@@ -213,14 +213,22 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 }
 </style>
 
+
+<style>
+.mansoor-balance{background:#eef7f5;border-radius:12px;padding:14px;text-align:center;margin-bottom:14px}
+.mansoor-balance strong{display:block;font-size:25px;margin-top:4px}
+.mansoor-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #e5e7eb}
+.mansoor-delete{padding:7px 10px}
+</style>
+
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.33</div>
+  <div class="version">Version 4.35</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
-<nav class="nav-bar nav-five">
+<nav class="nav-bar nav-five"><button class="nav-btn" onclick="showMansoor()">Mansoor</button>
   <button class="nav-active" onclick="showPage('home',this)">Home</button>
   <button onclick="openItemModal();setActive(this)">Add Item</button>
   <button onclick="showPage('expense',this)">Expense</button>
@@ -366,6 +374,49 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
     <button class="secondary" style="margin-top:10px" onclick="exportCSV()">Export CSV</button>
   </div>
 </div>
+
+
+<section id="mansoorPage" class="page hidden">
+  <div class="card">
+    <h2>🤝 Mansoor கொடுக்கல் வாங்கல்</h2>
+    <div class="mansoor-balance">
+      <div>தற்போது பெற வேண்டியது</div>
+      <strong id="mansoorBalance">₹43,334</strong><small style="display:block;margin-top:4px">19-08-2026 வரை</small>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>வகை</label>
+        <select id="mansoorType">
+          <option value="taken">பணம் வாங்கியது</option>
+          <option value="given">பணம் தந்தது</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>தேதி</label>
+        <input id="mansoorDate" type="date">
+      </div>
+      <div class="field">
+        <label>தொகை ₹</label>
+        <input id="mansoorAmount" type="number" inputmode="decimal" min="0" step="1" placeholder="Amount">
+      </div>
+      <div class="field">
+        <label>குறிப்பு</label>
+        <input id="mansoorNote" type="text" placeholder="குறிப்பு (விருப்பம்)">
+      </div>
+    </div>
+
+    <div class="expense-action-row">
+      <button class="primary" onclick="saveMansoor()">Save</button>
+      <button class="secondary" onclick="clearMansoor()">Clear</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>வரவு / கொடுப்பு History</h3>
+    <div id="mansoorHistory"></div>
+  </div>
+</section>
 
 </main>
 
@@ -699,6 +750,77 @@ window.addEventListener('load',function(){
 </script>
 
 
+
+
+<script>
+(function(){
+  const MKEY='saleProfitBookMansoorV1';
+  const INITIAL_BALANCE=43334;
+
+  function getMansoor(){
+    try{return JSON.parse(localStorage.getItem(MKEY)||'[]')}catch(e){return[]}
+  }
+  function setMansoor(a){localStorage.setItem(MKEY,JSON.stringify(a))}
+
+  window.showMansoor=function(){
+    document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+    const p=document.getElementById('mansoorPage'); if(p)p.classList.remove('hidden');
+    const d=document.getElementById('mansoorDate');
+    if(d&&!d.value)d.value=new Date().toISOString().slice(0,10);
+    renderMansoor();
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+
+  window.clearMansoor=function(){
+    document.getElementById('mansoorType').value='taken';
+    document.getElementById('mansoorDate').value=new Date().toISOString().slice(0,10);
+    document.getElementById('mansoorAmount').value='';
+    document.getElementById('mansoorNote').value='';
+  };
+
+  window.saveMansoor=function(){
+    const type=document.getElementById('mansoorType').value;
+    const date=document.getElementById('mansoorDate').value;
+    const amount=Number(document.getElementById('mansoorAmount').value);
+    const note=document.getElementById('mansoorNote').value.trim();
+    if(!date||!amount||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return;}
+    const a=getMansoor();
+    a.push({id:Date.now(),type,date,amount,note});
+    setMansoor(a);
+    clearMansoor();
+    renderMansoor();
+  };
+
+  window.deleteMansoor=function(id){
+    if(!confirm('இந்த பதிவை Delete செய்யவா?'))return;
+    setMansoor(getMansoor().filter(x=>x.id!==id));
+    renderMansoor();
+  };
+
+  window.renderMansoor=function(){
+    const a=getMansoor().sort((x,y)=>String(y.date).localeCompare(String(x.date))||y.id-x.id);
+    const taken=a.filter(x=>x.type==='taken').reduce((s,x)=>s+x.amount,0);
+    const given=a.filter(x=>x.type==='given').reduce((s,x)=>s+x.amount,0);
+    const balance=INITIAL_BALANCE+taken-given;
+    const b=document.getElementById('mansoorBalance'); if(b)b.textContent='₹'+balance.toLocaleString('en-IN');
+
+    const h=document.getElementById('mansoorHistory'); if(!h)return;
+    if(!a.length){h.innerHTML='<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';return;}
+    h.innerHTML=a.map(x=>`
+      <div class="mansoor-row">
+        <div><b>${x.type==='taken'?'பணம் வாங்கியது':'பணம் தந்தது'}</b>
+        <div class="meta">${x.date}${x.note?' • '+esc(x.note):''}</div></div>
+        <strong>${x.type==='taken'?'+':'-'}₹${Number(x.amount).toLocaleString('en-IN')}</strong>
+        <button class="danger mansoor-delete" onclick="deleteMansoor(${x.id})">Delete</button>
+      </div>`).join('');
+  };
+
+  window.addEventListener('DOMContentLoaded',function(){
+    const d=document.getElementById('mansoorDate');
+    if(d)d.value=new Date().toISOString().slice(0,10);
+  });
+})();
+</script>
 
 </body>
 </html>
