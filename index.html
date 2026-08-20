@@ -217,7 +217,7 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.30</div>
+  <div class="version">Version 4.31</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -702,7 +702,7 @@ window.addEventListener('load',function(){
 (function(){
   const CUSTOM_EXPENSES_KEY = 'saleProfitBookCustomExpenses';
   function getCustomExpenses(){
-    try { return JSON.parse(localStorage.getItem(CUSTOM_EXPENSES_KEY) || '[]'); }
+    try { return JSON.parse(localStorage.getItem(CUSTOM_EXPENSES_KEY) || '[]').filter(name => String(name).trim().toLowerCase() !== 'mansoor'); }
     catch(e){ return []; }
   }
   function setCustomExpenses(a){
