@@ -221,11 +221,20 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 .mansoor-delete{padding:7px 10px}
 </style>
 
-</head>
+
+<style>
+.report-date-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.report-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.report-summary-grid>div{padding:12px 8px;border:1px solid #e5e7eb;border-radius:10px;text-align:center}
+.report-summary-grid span{display:block;font-size:13px}
+.report-summary-grid strong{display:block;margin-top:5px;font-size:18px}
+.report-entry{padding:11px 0;border-bottom:1px solid #e5e7eb}
+@media(max-width:600px){.report-summary-grid{grid-template-columns:repeat(2,1fr)}}
+</style></head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.37</div>
+  <div class="version">Version 4.38</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -233,7 +242,7 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
   <button onclick="openItemModal();setActive(this)">Add Item</button>
   <button onclick="showPage('expense',this)">Expense</button>
   <button onclick="showPage('report',this)">Reports</button>
-  <button onclick="showPage('backup',this)">Backup</button><button class="nav-btn" onclick="showMansoor()">Mansoor</button></nav>
+  <button onclick="showPage('backup',this)">Backup</button><button class="nav-btn" onclick="showMansoor()">Mansoor</button><button class="nav-btn" onclick="showReports()">Reports</button></nav>
 <div class="install-wrap"><button id="installBtn" class="secondary install-btn" onclick="installPWA()">Install App</button></div>
 
 
@@ -417,6 +426,32 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
   </div>
 </section>
 
+
+<section id="reportsPage" class="page hidden">
+  <div class="card">
+    <h2>Reports</h2>
+    <div class="report-date-row">
+      <div class="field"><label>Date From</label><input id="reportFrom" type="date"></div>
+      <div class="field"><label>Date To</label><input id="reportTo" type="date"></div>
+    </div>
+    <button class="primary" onclick="generateReport()">Generate Report</button>
+  </div>
+
+  <div id="reportResult" class="card hidden">
+    <div class="report-summary-grid">
+      <div><span>Meter</span><strong id="rMeter">0</strong></div>
+      <div><span>Sale</span><strong id="rSale">₹0</strong></div>
+      <div><span>Purchase</span><strong id="rPurchase">₹0</strong></div>
+      <div><span>Profit</span><strong id="rProfit">₹0</strong></div>
+      <div><span>Expense</span><strong id="rExpense">₹0</strong></div>
+      <div><span>Net Profit</span><strong id="rNetProfit">₹0</strong></div>
+      <div><span>GPay</span><strong id="rGpay">₹0</strong></div>
+      <div><span>Cash</span><strong id="rCash">₹0</strong></div>
+    </div>
+    <h3>Entries</h3>
+    <div id="reportEntries"></div>
+  </div>
+</section>
 </main>
 
 <div id="itemModal" class="modal">
@@ -829,5 +864,56 @@ window.addEventListener('load',function(){
 })();
 </script>
 
-</body>
+
+<script>
+(function(){
+  function arr(keys){
+    for(const k of keys){try{const v=JSON.parse(localStorage.getItem(k)||'null');if(Array.isArray(v))return v}catch(e){}}
+    return [];
+  }
+  function num(v){return Number(v)||0}
+  function dateOf(x){return String(x.date||x.entryDate||x.Date||x.createdAt||'').slice(0,10)}
+  function money(v){return '₹'+Math.round(num(v)).toLocaleString('en-IN')}
+  window.showReports=function(){
+    document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.classList.add('hidden')});
+    const p=document.getElementById('reportsPage');if(p){p.classList.remove('hidden');p.classList.add('active')}
+    const d=new Date().toISOString().slice(0,10);
+    document.getElementById('reportFrom').value=d;
+    document.getElementById('reportTo').value=d;
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+  window.generateReport=function(){
+    const from=document.getElementById('reportFrom').value;
+    const to=document.getElementById('reportTo').value;
+    if(!from||!to){alert('Select Date From and Date To.');return}
+    const sales=arr(['entries','saleEntries','saleProfitBookEntries','sales']);
+    const expenses=arr(['expenses','saleProfitBookExpenses']);
+    const se=sales.filter(x=>dateOf(x)>=from&&dateOf(x)<=to);
+    const ex=expenses.filter(x=>dateOf(x)>=from&&dateOf(x)<=to);
+    let meter=0,sale=0,purchase=0,profit=0,gpay=0,cash=0;
+    se.forEach(x=>{
+      meter+=num(x.meter||x.Meter);
+      sale+=num(x.sale||x.saleAmount||x.Sale);
+      purchase+=num(x.purchase||x.purchaseAmount||x.Purchase);
+      profit+=num(x.profit||x.Profit);
+      const paid=String(x.paidBy||x.payment||x.paymentMethod||'').toLowerCase();
+      if(paid.includes('gpay')||paid.includes('google'))gpay+=num(x.sale||x.saleAmount||x.Sale);
+      else if(paid.includes('cash'))cash+=num(x.sale||x.saleAmount||x.Sale);
+    });
+    const expenseTotal=ex.reduce((s,x)=>s+num(x.amount||x.Amount),0);
+    const net=profit-expenseTotal;
+    document.getElementById('rMeter').textContent=meter;
+    document.getElementById('rSale').textContent=money(sale);
+    document.getElementById('rPurchase').textContent=money(purchase);
+    document.getElementById('rProfit').textContent=money(profit);
+    document.getElementById('rExpense').textContent=money(expenseTotal);
+    document.getElementById('rNetProfit').textContent=money(net);
+    document.getElementById('rGpay').textContent=money(gpay);
+    document.getElementById('rCash').textContent=money(cash);
+    const box=document.getElementById('reportEntries');
+    box.innerHTML=se.length?se.map(x=>'<div class="report-entry"><b>'+String(x.itemName||x.item||x.name||'Item')+'</b><div class="meta">'+dateOf(x)+' • Meter '+num(x.meter||x.Meter)+' • Sale '+money(x.sale||x.saleAmount||x.Sale)+' • Profit '+money(x.profit||x.Profit)+'</div></div>').join(''):'<div class="expense-empty-note">No entries for this date range.</div>';
+    document.getElementById('reportResult').classList.remove('hidden');
+  };
+})();
+</script></body>
 </html>
