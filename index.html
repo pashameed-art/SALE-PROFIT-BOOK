@@ -230,11 +230,47 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 .report-summary-grid strong{display:block;margin-top:5px;font-size:18px}
 .report-entry{padding:11px 0;border-bottom:1px solid #e5e7eb}
 @media(max-width:600px){.report-summary-grid{grid-template-columns:repeat(2,1fr)}}
-</style></head>
+</style>
+<style>
+/* V4.40 navigation: all six items on one line */
+nav{
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  width:100% !important;
+  overflow-x:auto !important;
+  gap:6px !important;
+}
+nav .nav-btn{
+  flex:1 1 0 !important;
+  min-width:0 !important;
+  white-space:nowrap !important;
+  padding:12px 7px !important;
+  font-size:14px !important;
+}
+@media(max-width:480px){
+  nav{gap:4px !important;}
+  nav .nav-btn{
+    padding:11px 4px !important;
+    font-size:12px !important;
+  }
+}
+/* Reports date fields: same row and aligned */
+.report-date-row{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:12px !important;
+  align-items:start !important;
+}
+.report-date-row .field{
+  min-width:0 !important;
+}
+</style>
+
+</head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.39</div>
+  <div class="version">Version 4.40</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five"><button class="nav-btn" onclick="showHome()">Home</button><button class="nav-btn" onclick="showAddItem()">Add Item</button><button class="nav-btn" onclick="showExpense()">Expense</button><button class="nav-btn" onclick="showReports()">Reports</button><button class="nav-btn" onclick="showBackup()">Backup</button><button class="nav-btn" onclick="showMansoor()">Mansoor</button></nav>
