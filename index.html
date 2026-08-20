@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.66</div>
+  <div class="version">Version 4.67</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -659,80 +659,24 @@ let expenses=JSON.parse(localStorage.getItem(EXPENSES_KEY)||'[]');
 let editingExpenseId=null;
 let items=JSON.parse(localStorage.getItem(ITEMS_KEY)||'[]');
 let entries=JSON.parse(localStorage.getItem(ENTRIES_KEY)||'[]');
-// V4.65: robust legacy-entry recovery.
-// Scans all localStorage JSON values for entry-like records, so older key names are not missed.
-(function recoverAllLegacyEntries(){
-  const current = Array.isArray(entries) ? entries : [];
-  const sigOf = x => [
-    normalizeEntryDate(x.date), String(x.item||'').trim().toLowerCase(),
-    Number(x.meter||0), Number(x.sale||0),
-    String(x.place||'').trim().toLowerCase()
-  ].join('|');
-
-  const seen = new Set(current.map(sigOf));
-  const recovered = [];
-
-  function walk(value, depth){
-    if(depth > 5 || value == null) return;
-    if(Array.isArray(value)){
-      for(const v of value) walk(v, depth+1);
-      return;
-    }
-    if(typeof value !== 'object') return;
-
-    const item = value.item ?? value.itemName ?? value.productName ?? value.product ??
-                 value.name ?? value.description ?? '';
-    const rawDate = value.date ?? value.entryDate ?? value.saleDate ??
-                    value.createdDate ?? value.transactionDate ?? '';
-    const date = normalizeEntryDate(rawDate);
-
-    if(item && date){
-      const meter = Number(value.meter ?? value.qty ?? value.quantity ?? value.meters ?? 0) || 0;
-      const sale = Number(value.sale ?? value.saleAmount ?? value.amount ?? value.total ?? 0) || 0;
-      const purchase = Number(value.purchase ?? value.purchaseAmount ?? value.cost ?? 0) || 0;
-      const rate = Number(value.rate ?? value.purchaseRate ?? (meter ? purchase/meter : 0)) || 0;
-      const place = value.place ?? value.state ?? value.location ?? 'Kerala';
-      const rec = {
-        id: Number(value.id) || Date.now() + recovered.length,
-        date, place: String(place),
-        item: String(item), meter, rate, sale,
-        paidBy: value.paidBy ?? value.payment ?? value.paymentMethod ?? 'GPay',
-        purchase,
-        profit: Number(value.profit ?? (sale-purchase)),
-        time: value.time ?? value.createdTime ?? ''
-      };
-      const sig = sigOf(rec);
-      if(!seen.has(sig)){
-        seen.add(sig);
-        recovered.push(rec);
-      }
-    }
-
-    // Some older backups wrap entries inside an object.
-    for(const k of Object.keys(value)){
-      if(k === 'item' || k === 'itemName' || k === 'productName' ||
-         k === 'product' || k === 'name' || k === 'description') continue;
-      walk(value[k], depth+1);
-    }
-  }
-
-  for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i);
-    if(!key || key===ENTRIES_KEY) continue;
-    try{
-      const raw=localStorage.getItem(key);
-      if(!raw || raw.length>2000000) continue;
-      walk(JSON.parse(raw),0);
-    }catch(e){}
-  }
-
-  if(recovered.length){
-    entries=current.concat(recovered);
-    localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));
+// V4.67: clean synthetic expense-as-sale records from earlier recovery.
+(function cleanSyntheticExpenseEntries(){
+  const expenseKeys = new Set((Array.isArray(expenses)?expenses:[]).map(x =>
+    [normalizeEntryDate(x.date), String(x.name||'').trim().toLowerCase(),
+     Number(x.amount||0)].join('|')
+  ));
+  const before = entries.length;
+  entries = entries.filter(x => {
+    const meter = Number(x.meter||0);
+    const purchase = Number(x.purchase||0);
+    const sale = Number(x.sale||0);
+    const key = [normalizeEntryDate(x.date), String(x.item||'').trim().toLowerCase(), sale].join('|');
+    return !(meter === 0 && purchase === 0 && expenseKeys.has(key));
+  });
+  if(entries.length !== before){
+    localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
   }
 })();
-
-
 
 const $=id=>document.getElementById(id);
 const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
@@ -1356,7 +1300,7 @@ window.printReport=function(){
       const k=localStorage.key(i);
       storage[k]=localStorage.getItem(k);
     }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.66",createdAt:new Date().toISOString(),storage:storage};
+    const data={app:"SALE-PROFIT-BOOK",version:"4.67",createdAt:new Date().toISOString(),storage:storage};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
