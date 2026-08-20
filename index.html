@@ -403,7 +403,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.69</div>
+  <div class="version">Version 4.70</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -477,13 +477,11 @@ html.modal-open, body.modal-open{
   </section>
 
 <section id="historyCard" class="hidden">
-    
-<div class="dua-card">
-      <div class="dua-title">Dua
-<button id="historyAllBtn" type="button" class="secondary" style="margin-top:10px;width:100%;">
-  📋 Show All History
-</button>
-</div>
+    <button id="historyAllBtn" type="button" class="secondary" style="margin:0 0 14px;width:100%;">
+      📋 Show All History
+    </button>
+    <div class="dua-card">
+      <div class="dua-title">Dua</div>
       <div class="dua-text">யா அல்லாஹ்! எங்கள் வாழ்வில் பரக்கத்தையும், ஹலாலான ரிஸ்க்கையும் வழங்குவாயாக.<br>எங்கள் காரியங்களை எளிதாக்கி, நன்மையைத் தந்து, தீமையிலிருந்து எங்களைப் பாதுகாப்பாயாக.</div>
     </div>
     <div class="history-filters">
@@ -1347,7 +1345,7 @@ window.printReport=function(){
       const k=localStorage.key(i);
       storage[k]=localStorage.getItem(k);
     }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.69",createdAt:new Date().toISOString(),storage:storage};
+    const data={app:"SALE-PROFIT-BOOK",version:"4.70",createdAt:new Date().toISOString(),storage:storage};
     const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
