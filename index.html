@@ -416,16 +416,16 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.85</div>
+  <div class="version">Version 4.86</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
   <button class="nav-active" onclick="showPage('home',this)">Home</button>
-  <button onclick="openItemModal();setActive(this)">Add Item</button>
   <button onclick="showPage('expense',this)">Expense</button>
+  <button onclick="showMansoor();setActive(this)">Mansoor</button>
   <button onclick="showPage('report',this)">Reports</button>
   <button onclick="showPage('backup',this)">Backup</button>
-  <button onclick="showMansoor()">Mansoor</button>
+  <button onclick="openItemModal();setActive(this)">Add Item</button>
 </nav>
 <div class="install-wrap"><button id="installBtn" class="secondary install-btn" onclick="installPWA()">Install App</button></div>
 
