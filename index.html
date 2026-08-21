@@ -416,7 +416,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.84</div>
+  <div class="version">Version 4.85</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -573,7 +573,7 @@ html.modal-open, body.modal-open{
       <button id="expenseSaveBtn" class="primary" style="margin-top:12px" onclick="saveExpense()">Add Expense</button>
       <button id="expenseClearBtn" class="secondary" style="margin-top:12px" onclick="clearExpenseForm()">Clear</button>
     </div>
-    <div id="expenseList" class="expense-list"></div><div id="todayExpenseTotal" class="today-expense-total"><span>💸 Today Total Expense</span><strong>₹0</strong></div>
+    <div id="expenseList" class="expense-list"></div>
   </div>
 </div>
 
@@ -800,38 +800,22 @@ function clearExpenseForm(){
   $('expenseSaveBtn').textContent='Add Expense';
 }
 function renderExpenses(){
-  const el=$('expenseList');
-  updateTodayExpenseTotal();
-  const all=Array.isArray(expenses)?expenses:[];
-  const t=today();
-  const todayExpenses=all.filter(x=>expenseDateKey(x.date)===t);
+  const el=$('expenseList'); if(!el)return;
+  const selected=getSelectedExpenseDate();
+  const todayExpenses=(Array.isArray(expenses)?expenses:[]).filter(x=>expenseDateKey(x.date)===selected).sort((a,b)=>(b.id||0)-(a.id||0));
   const oldMap={};
-  all.filter(x=>expenseDateKey(x.date)!==t).forEach(x=>{
-    const d=expenseDateKey(x.date)||'Unknown';
-    oldMap[d]=(oldMap[d]||0)+Number(x.amount||0);
-  });
+  (Array.isArray(expenses)?expenses:[]).filter(x=>expenseDateKey(x.date)!==selected).forEach(x=>{const d=expenseDateKey(x.date)||'Unknown';oldMap[d]=(oldMap[d]||0)+Number(x.amount||0);});
   const oldDates=Object.keys(oldMap).sort((a,b)=>b.localeCompare(a));
-
+  const total=todayExpenses.reduce((sum,x)=>sum+Number(x.amount||0),0);
   let html='';
   if(todayExpenses.length){
     html += `<div class="expense-section-title">💸 Today Expense</div>`;
-    html += todayExpenses.map(x=>`<div class="expense-row">
-      <b>${esc(x.name)}</b>
-      <div class="meta">${esc(expenseDateKey(x.date))} • ${money(x.amount)}</div>
-      <div class="expense-actions">
-        <button class="edit-btn" onclick="editExpense(${x.id})">Edit</button>
-        <button class="danger" onclick="deleteExpense(${x.id})">Delete</button>
-      </div>
-    </div>`).join('');
-  } else {
-    html += '<div class="expense-empty-note">No expenses for today.</div>';
-  }
-
+    html += todayExpenses.map(x=>`<div class="expense-row"><b>${esc(x.name)}</b><div class="meta">${esc(expenseDateKey(x.date))} • ${money(x.amount)}</div><div class="expense-actions"><button class="edit-btn" onclick="editExpense(${x.id})">Edit</button><button class="danger" onclick="deleteExpense(${x.id})">Delete</button></div></div>`).join('');
+  } else { html += '<div class="expense-empty-note">No expenses for today.</div>'; }
+  html += `<div id="todayExpenseTotal" class="today-expense-total"><span>💸 Today Total Expense</span><strong>${money(total)}</strong></div>`;
   if(oldDates.length){
     html += `<div class="expense-section-title old-expense-title">📅 Previous Expenses</div>`;
-    html += oldDates.map(d=>`<div class="expense-old-row">
-      <span>${esc(d)}</span><strong>${money(oldMap[d])}</strong>
-    </div>`).join('');
+    html += oldDates.map(d=>`<div class="expense-old-row"><span>${esc(d)}</span><strong>${money(oldMap[d])}</strong></div>`).join('');
   }
   el.innerHTML=html;
 }
@@ -1171,7 +1155,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.72: build marker / cache refresh helper.
 (function(){
-  const BUILD = '4.84';
+  const BUILD = '4.85';
   try {
     const old = localStorage.getItem('__spb_build__');
     if(old && old !== BUILD && 'serviceWorker' in navigator){
@@ -1186,12 +1170,12 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.74 FULL APP UPDATE
 (function(){
-  const BUILD = '4.84';
+  const BUILD = '4.85';
   try { localStorage.setItem('__spb_build__', BUILD); } catch(e) {}
 })();
 
 // V4.75 CLEAN TODAY TOTAL
-try{localStorage.setItem('__spb_build__','4.84')}catch(e){}
+try{localStorage.setItem('__spb_build__','4.85')}catch(e){}
 
 
 
@@ -1625,7 +1609,7 @@ window.printReport=function(){
 
 
 <script id="v484-stability-fix">
-// V4.84 — stability: refresh local dates/dashboard whenever the PWA resumes.
+// V4.85 — stability: refresh local dates/dashboard whenever the PWA resumes.
 (function(){
   function localToday(){
     const d=new Date();
