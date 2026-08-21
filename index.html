@@ -416,7 +416,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.82</div>
+  <div class="version">Version 4.84</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1171,7 +1171,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.72: build marker / cache refresh helper.
 (function(){
-  const BUILD = '4.82';
+  const BUILD = '4.84';
   try {
     const old = localStorage.getItem('__spb_build__');
     if(old && old !== BUILD && 'serviceWorker' in navigator){
@@ -1186,12 +1186,12 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.74 FULL APP UPDATE
 (function(){
-  const BUILD = '4.82';
+  const BUILD = '4.84';
   try { localStorage.setItem('__spb_build__', BUILD); } catch(e) {}
 })();
 
 // V4.75 CLEAN TODAY TOTAL
-try{localStorage.setItem('__spb_build__','4.82')}catch(e){}
+try{localStorage.setItem('__spb_build__','4.84')}catch(e){}
 
 
 
@@ -1623,5 +1623,31 @@ window.printReport=function(){
 })();
 </script>
 
+
+<script id="v484-stability-fix">
+// V4.84 — stability: refresh local dates/dashboard whenever the PWA resumes.
+(function(){
+  function localToday(){
+    const d=new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function refresh(){
+    try{
+      const t=localToday();
+      const home=document.getElementById('date');
+      const exp=document.getElementById('expenseDate');
+      // Only reset new-entry/expense forms; never overwrite an active edit.
+      if(home && !window.editingId) home.value=t;
+      if(exp && !window.editingExpenseId) exp.value=t;
+      if(typeof refreshDashboard==='function') refreshDashboard();
+      if(typeof updateTodayExpenseTotal==='function') updateTodayExpenseTotal();
+      if(typeof renderMansoor==='function' && document.getElementById('mansoorPage')?.classList.contains('active')) renderMansoor();
+    }catch(e){}
+  }
+  window.addEventListener('pageshow',refresh);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh();});
+  setTimeout(refresh,250);
+})();
+</script>
 </body>
 </html>
