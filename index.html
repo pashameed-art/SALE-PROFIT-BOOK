@@ -426,7 +426,6 @@ html.modal-open, body.modal-open{
 #newItemSuggestions .item-suggestion:last-child{border-bottom:0}
 #newItemSuggestions .item-suggestion:active{background:#eaf5f3}
 </style>
-
 <style id="v518-state-date-layout">
 .state-date-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
 .state-date-row .field{min-width:0}
@@ -434,13 +433,17 @@ html.modal-open, body.modal-open{
 @media(max-width:600px){.state-date-row{grid-template-columns:1fr 1fr;gap:10px}}
 </style>
 
+<style id="v520-entry-next-row">
+.new-history-row + #entryCard{display:block!important;margin-top:16px}
+.new-history-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:600px){.new-history-row{gap:10px}}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.18</div>
-
-
+<div class="version">Version 5.20</div>
 <div class="dashboard-net">💵 Net Profit <span id="dashNet">₹0</span></div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -453,55 +456,19 @@ html.modal-open, body.modal-open{
 <button onclick="openItemModal();setActive(this)">Add Item</button>
 </nav>
 <div class="state-date-row">
-  <div class="field">
-    <label>State / Place</label>
-    <input autocomplete="off" id="place" value="Kerala"/>
-  </div>
-  <div class="field">
-    <label>Date</label>
-    <input id="date" type="date"/>
-  </div>
+<div class="field">
+<label>State / Place</label>
+<input autocomplete="off" id="place" value="Kerala"/>
+</div>
+<div class="field">
+<label>Date</label>
+<input id="date" type="date"/>
+</div>
 </div>
 <div class="new-history-row">
 <button class="primary" onclick="goToNewEntry()">📝 New Entry</button>
 <button class="secondary" onclick="showHistory()">📜 History</button>
-</div>
-<div class="dashboard-stat"><span>💵 Cash</span><b id="dashCash">₹0</b></div>
-<div class="card stock-card" id="stockCard">
-<div class="field" style="margin-bottom:12px">
-<label>Item</label>
-<select id="stockItemSelect" onchange="renderStock()">
-<option value="">Select Item</option>
-</select>
-</div>
-<div id="stockSummary"></div>
-</div>
-<div class="card" id="dashboardCard">
-<div class="dashboard-title">📊 Today Dashboard</div>
-<!-- ROW 1 -->
-<div class="dashboard-grid">
-<div class="dashboard-stat"><span>💰 Sale</span><b id="dashSale">₹0</b></div>
-<div class="dashboard-stat"><span>🧾 Purchase</span><b id="dashPurchase">₹0</b></div>
-<div class="dashboard-stat"><span>📈 Profit</span><b id="dashProfit">₹0</b></div>
-<div class="dashboard-stat"><span>💸 Expense</span><b id="dashExpense">₹0</b></div>
-<div class="dashboard-stat"><span>💳 GPay</span><b id="dashGpay">₹0</b></div>
-
-</div>
-
-</div>
-
-
-
-
-
-
-<div class="install-wrap"><button class="secondary install-btn" id="installBtn" onclick="installPWA()">Install App</button></div>
-
-
-<main>
-<section class="card" id="entryCard">
-
-
+</div><section class="card" id="entryCard">
 <div class="field">
 <label>Item Name</label>
 <select id="item" onchange="calculate()">
@@ -533,7 +500,31 @@ html.modal-open, body.modal-open{
 <div class="field">
 <button class="primary" id="saveBtn" onclick="saveEntry()">Save Entry</button>
 </div>
-</section><section class="hidden" id="historyCard">
+</section><div class="card stock-card" id="stockCard">
+<div class="field" style="margin-bottom:12px">
+<label>Item</label>
+<select id="stockItemSelect" onchange="renderStock()">
+<option value="">Select Item</option>
+</select>
+</div>
+<div id="stockSummary"></div>
+</div><div class="card" id="dashboardCard">
+<div class="dashboard-title">📊 Today Dashboard</div>
+<!-- ROW 1 -->
+<div class="dashboard-grid">
+<div class="dashboard-stat"><span>💰 Sale</span><b id="dashSale">₹0</b></div>
+<div class="dashboard-stat"><span>🧾 Purchase</span><b id="dashPurchase">₹0</b></div>
+<div class="dashboard-stat"><span>📈 Profit</span><b id="dashProfit">₹0</b></div>
+<div class="dashboard-stat"><span>💸 Expense</span><b id="dashExpense">₹0</b></div>
+<div class="dashboard-stat"><span>💳 GPay</span><b id="dashGpay">₹0</b></div>
+</div>
+</div>
+<div class="dashboard-stat"><span>💵 Cash</span><b id="dashCash">₹0</b></div>
+
+
+<div class="install-wrap"><button class="secondary install-btn" id="installBtn" onclick="installPWA()">Install App</button></div>
+<main>
+<section class="hidden" id="historyCard">
 <button class="secondary" id="historyAllBtn" style="margin:0 0 14px;width:100%;" type="button">
       📋 Show All History
     </button>
@@ -561,8 +552,8 @@ html.modal-open, body.modal-open{
 <div><span>📈 Profit</span><b id="sumProfit">₹0</b></div>
 </div>
 <div id="historyList"></div>
-</section></div>
 </section>
+
 <div class="page" id="reportPage">
 <div class="report-box">
 <h2 style="margin-top:0">Report</h2>
@@ -858,7 +849,7 @@ function editExpense(id){
   $('expenseName').value=x.name;
   $('expenseAmount').value=x.amount;
   $('expenseSaveBtn').textContent='Update Expense';
-  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(function(){var target=document.getElementById('entryCard');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});},50);
 }
 function deleteExpense(id){
   if(!confirm('Delete this expense?'))return;
@@ -1033,10 +1024,6 @@ function saveEntry(){
 
 function goToNewEntry(){
   try{
-    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-    var home=document.getElementById('homePage');
-    if(home) home.classList.add('active');
-
     var entry=document.getElementById('entryCard');
     var history=document.getElementById('historyCard');
     if(history) history.classList.add('hidden');
@@ -1049,7 +1036,7 @@ function goToNewEntry(){
     fields.forEach(function(id){var el=document.getElementById(id); if(el) el.value='';});
     var paid=document.getElementById('paidBy'); if(paid) paid.value='GPay';
     var save=document.getElementById('saveBtn'); if(save) save.textContent='Save Entry';
-    window.scrollTo({top:0,behavior:'smooth'});
+    setTimeout(function(){var target=document.getElementById('entryCard');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});},50);
   }catch(err){
     console.error(err);
     alert('New Entry could not be opened. Please reload the app once.');
@@ -1066,7 +1053,7 @@ function openNewEntry(){
     if(history) history.classList.add('hidden');
     if(entry) entry.classList.remove('hidden');
     newEntry();
-    window.scrollTo({top:0,behavior:'smooth'});
+    setTimeout(function(){var target=document.getElementById('entryCard');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});},50);
   }catch(e){ console.error('New Entry error:',e); alert('New Entry could not be opened.'); }
 }
 
@@ -1171,7 +1158,7 @@ function editEntry(id){
   editingId=id;$('entryCard').classList.remove('hidden');$('historyCard').classList.add('hidden');
   $('place').value=x.place||'Kerala';$('date').value=x.date||today();
   $('item').value=x.item;$('meter').value=x.meter;$('sale').value=x.sale;$('paidBy').value=x.paidBy||'GPay';
-  calculate();$('saveBtn').textContent='Update Entry';window.scrollTo({top:0,behavior:'smooth'});
+  calculate();$('saveBtn').textContent='Update Entry';setTimeout(function(){var target=document.getElementById('entryCard');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});},50);
 }
 function deleteEntry(id){
   if(!confirm('Delete this entry?'))return;
@@ -1499,7 +1486,7 @@ window.addEventListener('load',function(){
     var d=document.getElementById('mansoorDate');
     if(d && !mansoorEditId)d.value=localToday();
     renderMansoor();
-    window.scrollTo({top:0,behavior:'smooth'});
+    setTimeout(function(){var target=document.getElementById('entryCard');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});},50);
   };
 
   window.clearMansoor=function(){
