@@ -382,7 +382,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta name="app-version" content="4.87"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta name="app-version" content="4.88"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 
@@ -412,17 +412,17 @@ html.modal-open, body.modal-open{
 .dashboard-net{margin-top:10px;background:#eaf6f3;border-radius:16px;padding:15px;text-align:center;font-size:18px;font-weight:900;color:#164e4a}
 @media(max-width:520px){.dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-stat b{font-size:19px}}
 </style>
-<style id="v487-mansoor-details">
+<style id="v488-mansoor-details">
 .mansoor-old-toggle{cursor:pointer;transition:transform .1s ease,background .1s ease}.mansoor-old-toggle:active{transform:scale(.99)}
 .mansoor-old-details{background:#f7fbfa;border-radius:14px;margin-top:6px;padding:4px 14px;border:1px solid #e2efed}
 .mansoor-detail-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #e1e9e8}.mansoor-detail-row:last-child{border-bottom:0}.mansoor-detail-row strong{white-space:nowrap}
-.hidden{display:none!important}
+.mansoor-detail-hidden{display:none!important}
 </style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.87</div>
+  <div class="version">Version 4.88</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1161,7 +1161,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.72: build marker / cache refresh helper.
 (function(){
-  const BUILD = '4.87';
+  const BUILD = '4.88';
   try {
     const old = localStorage.getItem('__spb_build__');
     if(old && old !== BUILD && 'serviceWorker' in navigator){
@@ -1176,12 +1176,12 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.74 FULL APP UPDATE
 (function(){
-  const BUILD = '4.87';
+  const BUILD = '4.88';
   try { localStorage.setItem('__spb_build__', BUILD); } catch(e) {}
 })();
 
 // V4.75 CLEAN TODAY TOTAL
-try{localStorage.setItem('__spb_build__','4.87')}catch(e){}
+try{localStorage.setItem('__spb_build__','4.88')}catch(e){}
 
 
 
@@ -1361,7 +1361,7 @@ window.addEventListener('load',function(){
 
   window.toggleMansoorDate=function(id){
     const el=document.getElementById(id);
-    if(el) el.classList.toggle('hidden');
+    if(el) el.classList.toggle('mansoor-detail-hidden');
   };
 
   window.renderMansoor=function(){
@@ -1387,7 +1387,6 @@ window.addEventListener('load',function(){
     });
 
     let html='';
-    // Today: every transaction separately.
     if(todayRows.length){
       html += '<div class="expense-section-title">📅 Today — '+fmtDate(t)+'</div>';
       html += todayRows.map(x=>`
@@ -1401,7 +1400,6 @@ window.addEventListener('load',function(){
       html += '<div class="expense-empty-note">இன்று பதிவு இல்லை.</div>';
     }
 
-    // Previous dates: one line per date, net amount only.
     const oldDates=Object.keys(oldMap).sort((a,b)=>b.localeCompare(a));
     if(oldDates.length){
       html += '<div class="expense-section-title old-expense-title">📜 Previous History</div>';
@@ -1411,7 +1409,7 @@ window.addEventListener('load',function(){
         const rows=oldMap[d].rows.slice().sort((x,y)=>y.id-x.id);
         const detail=rows.map(x=>`<div class="mansoor-detail-row"><div><b>${x.type==='taken'?'பணம் வாங்கியது':'பணம் தந்தது'}</b><div class="meta">${fmtDate(x.date)}${x.note?' • '+esc(x.note):' • குறிப்பு இல்லை'}</div></div><strong>${x.type==='taken'?'+':'-'}₹${Number(x.amount||0).toLocaleString('en-IN')}</strong></div>`).join('');
         const id='mansoor-old-'+d.replace(/[^0-9]/g,'');
-        return `<div class="expense-old-row mansoor-old-toggle" role="button" tabindex="0" onclick="toggleMansoorDate('${id}')" onkeydown="if(event.key==='Enter'||event.key===' ')toggleMansoorDate('${id}')"><span>📅 ${fmtDate(d)}</span><strong>${sign}₹${Math.abs(net).toLocaleString('en-IN')}</strong></div><div id="${id}" class="mansoor-old-details hidden">${detail}</div>`;
+        return `<div class="expense-old-row mansoor-old-toggle" role="button" tabindex="0" onclick="toggleMansoorDate('${id}')" onkeydown="if(event.key==='Enter'||event.key===' ')toggleMansoorDate('${id}')"><span>📅 ${fmtDate(d)}</span><strong>${sign}₹${Math.abs(net).toLocaleString('en-IN')}</strong></div><div id="${id}" class="mansoor-old-details mansoor-detail-hidden">${detail}</div>`;
       }).join('');
     }
     h.innerHTML=html;
