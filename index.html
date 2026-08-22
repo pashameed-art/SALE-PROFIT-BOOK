@@ -482,11 +482,63 @@ html.modal-open, body.modal-open{
 }
 </style>
 
+
+<style id="v523-compact-place-date">
+.state-date-row{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:12px!important;
+  width:100%!important;
+  margin:12px 0 12px!important;
+  align-items:end!important;
+}
+.state-date-row .field{
+  min-width:0!important;
+  margin:0!important;
+}
+.state-date-row label{
+  display:block!important;
+  font-size:17px!important;
+  line-height:1.1!important;
+  font-weight:800!important;
+  margin:0 0 6px 4px!important;
+  letter-spacing:.1px!important;
+}
+.state-date-row input{
+  width:100%!important;
+  box-sizing:border-box!important;
+  height:58px!important;
+  min-height:58px!important;
+  padding:0 18px!important;
+  margin:0!important;
+  border-radius:18px!important;
+  font-size:18px!important;
+  font-weight:750!important;
+}
+@media(max-width:600px){
+  .state-date-row{
+    grid-template-columns:1fr 1fr!important;
+    gap:10px!important;
+  }
+  .state-date-row label{
+    font-size:15px!important;
+    margin-left:3px!important;
+  }
+  .state-date-row input{
+    height:56px!important;
+    min-height:56px!important;
+    padding:0 14px!important;
+    font-size:17px!important;
+    border-radius:17px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.22</div>
+<div class="version">Version 5.23</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -500,7 +552,7 @@ html.modal-open, body.modal-open{
 </nav>
 <div class="state-date-row">
 <div class="field">
-<label>State / Place</label>
+<label>Place</label>
 <input autocomplete="off" id="place" value="Kerala"/>
 </div>
 <div class="field">
@@ -828,7 +880,7 @@ function restoreData(event){
 }
 function exportCSV(){
   const rows=[
-    ["Date","Time","State / Place","Item Name","Meter","Purchase / Meter","Sale","Paid By","Purchase","Profit"],
+    ["Date","Time","Place","Item Name","Meter","Purchase / Meter","Sale","Paid By","Purchase","Profit"],
     ...entries.map(x=>[x.date,x.time||"",x.place,x.item,x.meter,x.rate,x.sale,x.paidBy||"GPay",x.purchase,x.profit]),
     [],
     ["EXPENSES"],
@@ -1369,7 +1421,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=5.1
   function ensureHomeToday(){
     const dateInputs = Array.from(document.querySelectorAll('input[type="date"]'));
     if(!dateInputs.length) return;
-    // Prefer the Home date input near "State / Place".
+    // Prefer the Home date input near "Place".
     let target = dateInputs.find(x => {
       const prev = x.closest('div,section,form');
       return prev && /Date/i.test(prev.innerText || '');
