@@ -635,7 +635,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.37',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.38',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -684,20 +684,33 @@ window.addEventListener('load',function(){
 }
 </style>
 
-<style id="v537-tab-pages-style">
+<style id="v538-tab-pages-style">
+/* V5.38 — true separate tabs */
+body.page-open-mode .home-only{display:none!important}
+body.page-open-mode #entryCard,
+body.page-open-mode #stockCard,
+body.page-open-mode #dashboardCard,
+body.page-open-mode .state-date-row,
+body.page-open-mode .new-history-row,
+body.page-open-mode .install-wrap,
+body.page-open-mode #historyCard{display:none!important}
 body.page-open-mode .page{display:none!important}
-body.page-open-mode #homePage{display:block!important}
 body.page-open-mode #expensePage.active,
 body.page-open-mode #mansoorPage.active,
 body.page-open-mode #reportPage.active,
 body.page-open-mode #backupPage.active{display:block!important}
-.tab-page-back{display:inline-flex;align-items:center;gap:6px;margin:0 0 14px;padding:9px 14px;border:0;border-radius:12px;background:#e9f5f3;color:#145f59;font-weight:800;font-size:14px}
+body:not(.page-open-mode) .page{display:none!important}
+.tab-page-back{
+  display:inline-flex;align-items:center;gap:6px;
+  margin:0 0 14px;padding:9px 14px;border:0;border-radius:12px;
+  background:#e9f5f3;color:#145f59;font-weight:800;font-size:14px;
+}
 </style>
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.37</div>
+<div class="version">Version 5.38</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2105,7 +2118,7 @@ function updateTodayNetProfit(){
   function clear(){ids().forEach(function(id){var e=document.getElementById(id);if(e)e.classList.remove('active');});}
   function show(name,btn){
     document.body.classList.add('page-open-mode');clear();
-    var e=document.getElementById(pages[name]);if(e)e.classList.add('active');
+    var e=document.getElementById(pages[name]);if(e){e.classList.remove('hidden');e.classList.add('active');}
     document.querySelectorAll('nav button,.nav button,.topnav button').forEach(function(b){b.classList.remove('active');});
     if(btn)btn.classList.add('active');window.scrollTo(0,0);
     if(name==='home'&&typeof refresh==='function')refresh();
@@ -2117,7 +2130,7 @@ function updateTodayNetProfit(){
   }
   function home(){
     document.body.classList.remove('page-open-mode');clear();
-    var e=document.getElementById('homePage');if(e)e.classList.add('active');window.scrollTo(0,0);
+    window.scrollTo(0,0);
   }
   window.openHomeTab=function(b){show('home',b)};
   window.openExpenseTab=function(b){show('expense',b)};
