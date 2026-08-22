@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V5.14</title>
+<title>Sale Profit Book • V5.15</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -430,7 +430,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.14</div>
+<div class="version">Version 5.15</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -441,6 +441,11 @@ html.modal-open, body.modal-open{
 <button onclick="showPage('backup',this)">Backup</button>
 <button onclick="openItemModal();setActive(this)">Add Item</button>
 </nav>
+<div>
+<label>State / Place</label>
+<input autocomplete="off" id="place" value="Kerala"/>
+</div>
+
 <div class="install-wrap"><button class="secondary install-btn" id="installBtn" onclick="installPWA()">Install App</button></div>
 <div class="card stock-card" id="stockCard">
 <div class="field" style="margin-bottom:12px">
@@ -455,10 +460,7 @@ html.modal-open, body.modal-open{
 <div class="dashboard-title">📊 Today Dashboard</div>
 <!-- ROW 1 -->
 <div class="row1">
-<div>
-<label>State / Place</label>
-<input autocomplete="off" id="place" value="Kerala"/>
-</div>
+
 <div>
 <label>Date</label>
 <input id="date" type="date"/>
@@ -1279,7 +1281,7 @@ function deleteItem(name){
 }
 
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=5.14', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=5.15', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
 
 // V4.75: Clean Today Total Expense — expense records only.
 
@@ -1448,7 +1450,7 @@ async function googleDriveRestore(){
 <script>
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.14',{scope:'./'}).then(function(r){return r.update();}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.15',{scope:'./'}).then(function(r){return r.update();}).catch(function(){});
   }
 });
 </script>
