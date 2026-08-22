@@ -1779,6 +1779,6 @@ window.printReport=function(){
   document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh();});
   setTimeout(refresh,250);
 })();
-\n/* V4.96 — Mansoor Edit */\nwindow.editMansoorTransaction=function(index){try{\nvar list=Array.isArray(window.mansoorTransactions)?window.mansoorTransactions:(typeof mansoorTransactions!=='undefined'&&Array.isArray(mansoorTransactions)?mansoorTransactions:[]);\nvar x=list[index]; if(!x)return;\nvar d=document.getElementById('mansoorDate'),t=document.getElementById('mansoorType'),a=document.getElementById('mansoorAmount'),n=document.getElementById('mansoorNote');\nif(d)d.value=x.date||''; if(t)t.value=x.type||x.kind||'Received'; if(a)a.value=x.amount||''; if(n)n.value=x.note||x.notes||'';\nwindow.mansoorEditIndex=index;\nvar btn=document.querySelector('#mansoorPage button.primary,#mansoor button.primary'); if(btn)btn.textContent='Update Mansoor Transaction';\nif(typeof showPage==='function')showPage('mansoor',null); window.scrollTo({top:0,behavior:'smooth'});\n}catch(e){console.error(e)}};\n</script>
+</script>
 </body>
 </html>
