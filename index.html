@@ -433,7 +433,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.95</div>
+  <div class="version">Version 4.96</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -768,7 +768,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;',
 
 
 function backupData(){
-  const data={version:"4.95",items,entries,expenses,stockMovements,exportedAt:new Date().toISOString()};
+  const data={version:"4.96",items,entries,expenses,stockMovements,exportedAt:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);
   a.download="sale-profit-book-backup.json";a.click();URL.revokeObjectURL(a.href);
@@ -1703,7 +1703,7 @@ window.printReport=function(){
   var w=window.open('','_blank');
   if(!w){ alert('Please allow pop-ups to print the report.'); return; }
   w.document.write('<!doctype html><html><head><title>Sale Profit Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin:0 0 6px}h2,h3{margin-top:22px}.report-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.report-summary-grid>div{border:1px solid #ddd;border-radius:12px;padding:12px}.report-summary-grid b{display:block;margin-top:6px;font-size:18px}.breakdown-row,.report-entry{padding:10px 0;border-bottom:1px solid #ddd}.meta{margin-top:5px;color:#666;font-size:13px}@media print{body{padding:0}}
-/* V4.95 Stock */
+/* V4.96 Stock */
 .stock-card{margin-top:14px}.stock-item{background:#f8fbfb;border:1px solid #e2eaea;border-radius:16px;padding:14px;margin-top:10px}.stock-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.stock-balance{font-size:18px;font-weight:900;color:var(--primary)}.stock-movement{padding:9px 0;border-bottom:1px solid #e8eeee}.stock-movement:last-child{border-bottom:0}.stock-positive{color:#087f5b}.stock-negative{color:#b42318}.stock-ledger{margin-top:10px}.stock-muted{color:var(--muted);font-size:13px}
 </style></head><body><h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+box.innerHTML+'\\n
 
@@ -1779,6 +1779,6 @@ window.printReport=function(){
   document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh();});
   setTimeout(refresh,250);
 })();
-</script>
+\n/* V4.96 — Mansoor Edit */\nwindow.editMansoorTransaction=function(index){try{\nvar list=Array.isArray(window.mansoorTransactions)?window.mansoorTransactions:(typeof mansoorTransactions!=='undefined'&&Array.isArray(mansoorTransactions)?mansoorTransactions:[]);\nvar x=list[index]; if(!x)return;\nvar d=document.getElementById('mansoorDate'),t=document.getElementById('mansoorType'),a=document.getElementById('mansoorAmount'),n=document.getElementById('mansoorNote');\nif(d)d.value=x.date||''; if(t)t.value=x.type||x.kind||'Received'; if(a)a.value=x.amount||''; if(n)n.value=x.note||x.notes||'';\nwindow.mansoorEditIndex=index;\nvar btn=document.querySelector('#mansoorPage button.primary,#mansoor button.primary'); if(btn)btn.textContent='Update Mansoor Transaction';\nif(typeof showPage==='function')showPage('mansoor',null); window.scrollTo({top:0,behavior:'smooth'});\n}catch(e){console.error(e)}};\n</script>
 </body>
 </html>
