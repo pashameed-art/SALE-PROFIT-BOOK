@@ -392,7 +392,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta name="app-version" content="4.93"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta name="app-version" content="4.94"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 
@@ -433,7 +433,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.93</div>
+  <div class="version">Version 4.94</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1207,7 +1207,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.72: build marker / cache refresh helper.
 (function(){
-  const BUILD = '4.93';
+  const BUILD = '4.94';
   try {
     const old = localStorage.getItem('__spb_build__');
     if(old && old !== BUILD && 'serviceWorker' in navigator){
@@ -1222,7 +1222,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.74 FULL APP UPDATE
 (function(){
-  const BUILD = '4.93';
+  const BUILD = '4.94';
   try { localStorage.setItem('__spb_build__', BUILD); } catch(e) {}
 })();
 
@@ -1530,23 +1530,46 @@ window.addEventListener('load',function(){
       return '<div class=\"breakdown-row\"><span class=\"breakdown-name\">'+String(n).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]})+'</span><span class=\"breakdown-amount\">'+rsMoney(expenseBreakdown[n])+'</span></div>';
     }).join('') : '<div class=\"empty\">No expenses for this date range.</div>';
 
-    var rows='';
+    // V4.94 — Report date-wise summary with tap-to-open details.
+    var byDate={};
     salesList.forEach(function(x){
-      rows += '<div class="report-entry">' +
-        '<b>'+String(x.item||'Item').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})+'</b>' +
-        '<div class="meta">'+String(x.date||'')+
-        ' • Meter '+num(x.meter).toFixed(2)+
-        ' • Sale '+rsMoney(x.sale)+
-        ' • Purchase '+rsMoney(x.purchase)+
-        ' • Profit '+rsMoney(x.profit)+
-        ' • '+String(x.paidBy||'GPay')+'</div></div>';
+      var d=String(x.date||'');
+      if(!byDate[d]) byDate[d]={sales:[],expenses:[],sale:0,expense:0};
+      byDate[d].sales.push(x);
+      byDate[d].sale+=num(x.sale);
     });
     expenseList.forEach(function(x){
-      rows += '<div class="report-entry"><b>Expense: '+
-        String(x.name||'Expense').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})+
-        '</b><div class="meta">'+String(x.date||'')+' • '+rsMoney(x.amount)+'</div></div>';
+      var d=String(x.date||'');
+      if(!byDate[d]) byDate[d]={sales:[],expenses:[],sale:0,expense:0};
+      byDate[d].expenses.push(x);
+      byDate[d].expense+=num(x.amount);
     });
-    if(!rows) rows='<div class="empty">No entries found for this date range.</div>';
+    var reportDates=Object.keys(byDate).sort(function(a,b){return b.localeCompare(a);});
+    var esc=function(v){return String(v==null?'':v).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]||c;});};
+    var formatDate=function(d){
+      var m=String(d).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      return m ? m[3]+'.'+m[2]+'.'+m[1].slice(2) : d;
+    };
+    var dateCards=reportDates.map(function(d,i){
+      var g=byDate[d], id='reportDateDetails_'+i, details='';
+      g.sales.forEach(function(x){
+        details+='<div class="report-detail-row"><b>'+esc(x.item||'Item')+'</b><div class="report-detail-meta">Sale '+rsMoney(x.sale)+' • Meter '+num(x.meter).toFixed(2)+' • Purchase '+rsMoney(x.purchase)+' • Profit '+rsMoney(x.profit)+' • '+esc(x.paidBy||'GPay')+'</div></div>';
+      });
+      g.expenses.forEach(function(x){
+        details+='<div class="report-detail-row"><b>Expense: '+esc(x.name||'Expense')+'</b><div class="report-detail-meta">'+rsMoney(x.amount)+'</div></div>';
+      });
+      var net=g.sale-g.expense;
+      return '<div class="report-date-card" onclick="toggleReportDate(\''+id+'\',this)">'+
+        '<div class="report-date-head"><span class="report-date-title">'+formatDate(d)+'</span><span class="report-date-arrow">›</span></div>'+
+        '<div class="report-date-summary">'+
+        '<div class="report-date-stat"><span>💰 Sale Amount</span><b>'+rsMoney(g.sale)+'</b></div>'+
+        '<div class="report-date-stat"><span>💸 Expense Amount</span><b>'+rsMoney(g.expense)+'</b></div>'+
+        '</div>'+
+        '<div id="'+id+'" class="report-date-details">'+details+
+        '<div class="report-date-total"><span>Net</span><span>'+rsMoney(net)+'</span></div>'+
+        '</div></div>';
+    }).join('');
+    if(!dateCards) dateCards='<div class="empty">No entries found for this date range.</div>';
 
     box.innerHTML =
       '<h3>Report Summary</h3>'+
@@ -1560,10 +1583,15 @@ window.addEventListener('load',function(){
       '<div><span>💳 GPay</span><b>'+rsMoney(gpay)+'</b></div>'+
       '<div><span>💵 Cash</span><b>'+rsMoney(cash)+'</b></div>'+
       '</div>'+
-      '<div class=\"report-breakdown\"><h3>💸 Expense Breakdown</h3>'+breakdownHtml+'</div>'+
-      '<h3>📋 Entries ('+(salesList.length+expenseList.length)+')</h3>'+
-      rows;
+      '<h3>📅 Date-wise Summary</h3>'+dateCards;
     box.classList.remove('hidden');
+  };
+
+  window.toggleReportDate=function(id,card){
+    var el=document.getElementById(id); if(!el) return;
+    el.classList.toggle('open');
+    var arrow=card && card.querySelector('.report-date-arrow');
+    if(arrow) arrow.textContent=el.classList.contains('open')?'⌄':'›';
   };
 
   /* Keep Reports compatible with V4.41 navigation. */
