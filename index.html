@@ -8,7 +8,7 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>Sale Profit Book • V5.04</title>
+<title>Sale Profit Book • V5.05</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -393,7 +393,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta name="app-version" content="5.01"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta name="app-version" content="5.05"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 
@@ -446,7 +446,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 5.03</div>
+  <div class="version">Version 5.05</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -463,7 +463,7 @@ html.modal-open, body.modal-open{
 <main>
 <div id="homePage" class="page active">
 <div class="home-shortcuts" aria-label="Home shortcuts">
-  <button class="home-shortcut primary" onclick="openNewEntry()">📝 New Entry</button>
+  <button class="home-shortcut primary" onclick="goToNewEntry()">📝 New Entry</button>
   <button class="home-shortcut secondary" onclick="document.getElementById('stockCard')?.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>document.getElementById('stockItemSelect')?.focus(),350)">📦 Stock</button>
   <button class="home-shortcut secondary" onclick="document.getElementById('dashboardCard')?.scrollIntoView({behavior:'smooth',block:'start'})">📊 Dashboard</button>
 </div>
@@ -1060,6 +1060,32 @@ function saveEntry(){
   renderStock();
   refreshDashboard();
 }
+
+function goToNewEntry(){
+  try{
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+    var home=document.getElementById('homePage');
+    if(home) home.classList.add('active');
+
+    var entry=document.getElementById('entryCard');
+    var history=document.getElementById('historyCard');
+    if(history) history.classList.add('hidden');
+    if(entry) entry.classList.remove('hidden');
+
+    var d=document.getElementById('date');
+    if(d) d.value=(typeof today==='function') ? today() : new Date().toISOString().slice(0,10);
+
+    var fields=['item','meter','sale','purchase','profit'];
+    fields.forEach(function(id){var el=document.getElementById(id); if(el) el.value='';});
+    var paid=document.getElementById('paidBy'); if(paid) paid.value='GPay';
+    var save=document.getElementById('saveBtn'); if(save) save.textContent='Save Entry';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(err){
+    console.error(err);
+    alert('New Entry could not be opened. Please reload the app once.');
+  }
+}
+
 function openNewEntry(){
   try{
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -1304,7 +1330,7 @@ function deleteItem(name){
 }
 
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=5.05', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
 
 // V4.75: Clean Today Total Expense — expense records only.
 
@@ -1359,7 +1385,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.72: build marker / cache refresh helper.
 (function(){
-  const BUILD = '4.94';
+  const BUILD = '5.05';
   try {
     const old = localStorage.getItem('__spb_build__');
     if(old && old !== BUILD && 'serviceWorker' in navigator){
@@ -1374,7 +1400,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.74 FULL APP UPDATE
 (function(){
-  const BUILD = '4.94';
+  const BUILD = '5.05';
   try { localStorage.setItem('__spb_build__', BUILD); } catch(e) {}
 })();
 
@@ -1473,7 +1499,7 @@ async function googleDriveRestore(){
 <script>
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(function(r){return r.update();}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.05',{scope:'./'}).then(function(r){return r.update();}).catch(function(){});
   }
 });
 </script>
