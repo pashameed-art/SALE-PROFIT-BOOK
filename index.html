@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V5.18</title>
+<title>Sale Profit Book • V5.39</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -635,7 +635,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.38',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.39',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -684,22 +684,23 @@ window.addEventListener('load',function(){
 }
 </style>
 
-<style id="v538-tab-pages-style">
-/* V5.38 — true separate tabs */
-body.page-open-mode .home-only{display:none!important}
-body.page-open-mode #entryCard,
-body.page-open-mode #stockCard,
-body.page-open-mode #dashboardCard,
-body.page-open-mode .state-date-row,
-body.page-open-mode .new-history-row,
-body.page-open-mode .install-wrap,
-body.page-open-mode #historyCard{display:none!important}
+<style id="v539-tab-pages-style">
+/* V5.39 — clean independent navigation */
 body.page-open-mode .page{display:none!important}
 body.page-open-mode #expensePage.active,
 body.page-open-mode #mansoorPage.active,
 body.page-open-mode #reportPage.active,
 body.page-open-mode #backupPage.active{display:block!important}
-body:not(.page-open-mode) .page{display:none!important}
+
+/* Home-only content stays hidden while a separate tab is open */
+body.page-open-mode #entryCard,
+body.page-open-mode #stockCard,
+body.page-open-mode #dashboardCard,
+body.page-open-mode .state-date-row,
+body.page-open-mode .new-history-row,
+body.page-open-mode #historyCard,
+body.page-open-mode .install-wrap{display:none!important}
+
 .tab-page-back{
   display:inline-flex;align-items:center;gap:6px;
   margin:0 0 14px;padding:9px 14px;border:0;border-radius:12px;
@@ -710,7 +711,7 @@ body:not(.page-open-mode) .page{display:none!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.38</div>
+<div class="version">Version 5.39</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -824,7 +825,7 @@ body:not(.page-open-mode) .page{display:none!important}
 </section>
 
 
-<div class="page" id="expensePage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
+<div class="page" id="expensePage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
 <div class="backup-box">
 <h2 style="margin-top:0">Expense</h2>
 <div class="report-grid">
@@ -853,7 +854,7 @@ body:not(.page-open-mode) .page{display:none!important}
 <div class="expense-list" id="expenseList"></div>
 </div>
 </div>
-<div class="page" id="backupPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
+<div class="page" id="backupPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
 <div class="backup-box">
 <h2 style="margin-top:0">Backup</h2>
 <div class="backup-actions-v455">
@@ -868,7 +869,7 @@ body:not(.page-open-mode) .page{display:none!important}
 <button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
 </div>
 </div>
-<section class="page hidden" id="mansoorPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
+<section class="page hidden" id="mansoorPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
 <div class="card">
 <h2>🤝 Mansoor கொடுக்கல் வாங்கல்</h2>
 <div class="mansoor-balance">
@@ -906,7 +907,7 @@ body:not(.page-open-mode) .page{display:none!important}
 <div id="mansoorHistory"></div>
 </div>
 </section>
-<section class="page" id="reportPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
+<section class="page" id="reportPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
 <div class="card">
 <h2>Reports</h2>
 <div class="report-date-row">
@@ -2111,44 +2112,76 @@ function updateTodayNetProfit(){
 }
 
 </script>
-<script id="v537-tab-pages">
+<script id="v539-tab-pages">
 (function(){
-  var pages={home:'homePage',expense:'expensePage',mansoor:'mansoorPage',reports:'reportPage',backup:'backupPage'};
-  function ids(){return Object.keys(pages).map(function(k){return pages[k];});}
-  function clear(){ids().forEach(function(id){var e=document.getElementById(id);if(e)e.classList.remove('active');});}
-  function show(name,btn){
-    document.body.classList.add('page-open-mode');clear();
-    var e=document.getElementById(pages[name]);if(e){e.classList.remove('hidden');e.classList.add('active');}
-    document.querySelectorAll('nav button,.nav button,.topnav button').forEach(function(b){b.classList.remove('active');});
-    if(btn)btn.classList.add('active');window.scrollTo(0,0);
-    if(name==='home'&&typeof refresh==='function')refresh();
-    if(name==='home'&&typeof refreshDashboard==='function')refreshDashboard();
-    if(name==='expense'&&typeof renderExpenses==='function')renderExpenses();
-    if(name==='expense'&&typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal();
-    if(name==='reports'&&typeof showDateDefaults==='function')showDateDefaults();
-    if(name==='mansoor'&&typeof showMansoor==='function')showMansoor();
+  var pageIds={
+    expense:'expensePage',
+    mansoor:'mansoorPage',
+    reports:'reportPage',
+    backup:'backupPage'
+  };
+
+  function clearActive(){
+    Object.keys(pageIds).forEach(function(k){
+      var el=document.getElementById(pageIds[k]);
+      if(el) el.classList.remove('active');
+    });
   }
-  function home(){
-    document.body.classList.remove('page-open-mode');clear();
+
+  function setNavActive(btn){
+    document.querySelectorAll('nav button,.nav button,.topnav button').forEach(function(b){
+      b.classList.remove('active');
+    });
+    if(btn) btn.classList.add('active');
+  }
+
+  function openPage(name,btn){
+    document.body.classList.add('page-open-mode');
+    clearActive();
+    var el=document.getElementById(pageIds[name]);
+    if(!el) return;
+    el.classList.remove('hidden');
+    el.classList.add('active');
+    setNavActive(btn);
     window.scrollTo(0,0);
+
+    if(name==='expense'){
+      if(typeof renderExpenses==='function') renderExpenses();
+      if(typeof updateTodayExpenseTotal==='function') updateTodayExpenseTotal();
+    }
+    if(name==='reports' && typeof showDateDefaults==='function') showDateDefaults();
+    if(name==='mansoor' && typeof showMansoor==='function') showMansoor();
   }
-  window.openHomeTab=function(b){show('home',b)};
-  window.openExpenseTab=function(b){show('expense',b)};
-  window.openMansoorTab=function(b){show('mansoor',b)};
-  window.openReportsTab=function(b){show('reports',b)};
-  window.openBackupTab=function(b){show('backup',b)};
-  window.returnHomeTab=home;
+
+  function openHome(btn){
+    document.body.classList.remove('page-open-mode');
+    clearActive();
+    setNavActive(btn);
+    window.scrollTo(0,0);
+    if(typeof refresh==='function') refresh();
+    if(typeof refreshDashboard==='function') refreshDashboard();
+  }
+
+  window.openHomeTab=openHome;
+  window.openExpenseTab=function(btn){openPage('expense',btn);};
+  window.openMansoorTab=function(btn){openPage('mansoor',btn);};
+  window.openReportsTab=function(btn){openPage('reports',btn);};
+  window.openBackupTab=function(btn){openPage('backup',btn);};
+  window.returnHomeTab=function(){openHome(null);};
+
   function bind(){
     document.querySelectorAll('button').forEach(function(b){
       var t=(b.textContent||'').trim().replace(/\s+/g,' ');
-      if(t==='Home')b.onclick=function(){openHomeTab(b)};
-      else if(t==='Expense')b.onclick=function(){openExpenseTab(b)};
-      else if(t==='Mansoor')b.onclick=function(){openMansoorTab(b)};
-      else if(t==='Reports')b.onclick=function(){openReportsTab(b)};
-      else if(t==='Backup')b.onclick=function(){openBackupTab(b)};
+      if(t==='Home') b.onclick=function(){openHome(b);};
+      else if(t==='Expense') b.onclick=function(){openPage('expense',b);};
+      else if(t==='Mansoor') b.onclick=function(){openPage('mansoor',b);};
+      else if(t==='Reports') b.onclick=function(){openPage('reports',b);};
+      else if(t==='Backup') b.onclick=function(){openPage('backup',b);};
     });
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind);
+  else bind();
 })();
 </script>
 </body>
