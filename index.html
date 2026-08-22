@@ -596,7 +596,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.25</div>
+<div class="version">Version 5.26</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1938,18 +1938,52 @@ window.printReport=function(){
 </style></head><body><h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+box.innerHTML+'\\n
 
 
-<script id="v525-nav-fix">
+
+
+<script id="v526-nav-fix">
 (function(){
-  function activate(id){
-    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  function activatePage(id){
+    document.querySelectorAll('.page').forEach(function(p){
+      p.classList.remove('active');
+      p.classList.add('hidden');
+    });
     var el=document.getElementById(id);
-    if(el) el.classList.add('active');
+    if(el){
+      el.classList.remove('hidden');
+      el.classList.add('active');
+    }
   }
-  window.goHome=function(btn){activate('homePage');if(window.setActive)setActive(btn);if(window.refresh)refresh();};
-  window.goExpense=function(btn){activate('expensePage');if(window.setActive)setActive(btn);if(window.renderExpense)renderExpense();};
-  window.goMansoor=function(btn){if(window.showMansoor)showMansoor();else activate('mansoorPage');if(window.setActive)setActive(btn);};
-  window.goReports=function(btn){activate('reportPage');if(window.setActive)setActive(btn);if(window.renderReports)renderReports();};
-  window.goBackup=function(btn){activate('backupPage');if(window.setActive)setActive(btn);if(window.renderBackup)renderBackup();};
+  function activateButton(btn){
+    document.querySelectorAll('.nav-bar button').forEach(function(b){
+      b.classList.remove('nav-active');
+    });
+    if(btn) btn.classList.add('nav-active');
+  }
+
+  window.goHome=function(btn){
+    activatePage('homePage');
+    activateButton(btn);
+    if(typeof refresh==='function') refresh();
+  };
+  window.goExpense=function(btn){
+    activatePage('expensePage');
+    activateButton(btn);
+    if(typeof renderExpenses==='function') renderExpenses();
+  };
+  window.goMansoor=function(btn){
+    activatePage('mansoorPage');
+    activateButton(btn);
+    if(typeof renderMansoor==='function') renderMansoor();
+  };
+  window.goReports=function(btn){
+    activatePage('reportPage');
+    activateButton(btn);
+    if(typeof renderReports==='function') renderReports();
+  };
+  window.goBackup=function(btn){
+    activatePage('backupPage');
+    activateButton(btn);
+  };
 })();
 </script>
 
