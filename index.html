@@ -1,2855 +1,1652 @@
-<!DOCTYPE html>
-<html lang="ta">
+<!doctype html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<meta name="theme-color" content="#0B3D3E">
-<meta name="mobile-web-app-capable" content="yes">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="./manifest.json">
+
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Mass Bike">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="manifest" href="manifest.json">
-<title>MASS BIKE V3</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+Thambi+2:wght@500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<title>Sale Profit Book • V4.81</title>
 <style>
-  :root{
-    --teal:#046A45;
-    --teal-dark:#0A1410;
-    --paper:#F4F1E8;
-    --mustard:#D4AF37;
-    --mustard-dark:#B8941F;
-    --rust:#C0392B;
-    --ink:#1A1F1C;
-    --line:#DCD5C4;
-    --green:#0E8F5F;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    font-family:'Poppins',sans-serif;
-    background:var(--paper);
-    background-image:
-      radial-gradient(circle at 1px 1px, rgba(11,61,62,0.05) 1px, transparent 0);
-    background-size:20px 20px;
-    color:var(--ink);
-    -webkit-tap-highlight-color:transparent;
-  }
-  h1,h2,h3,.brand,.tabbar button,.stat .num{font-family:'Baloo Thambi 2',sans-serif;}
+:root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+header{background:var(--teal);color:#fff;padding:28px 24px 24px}
+h1{margin:0;font-size:26px} .version{margin-top:16px;font-weight:700;font-size:14px}.subtitle{margin-top:7px;font-size:17px;font-weight:700}
+main{max-width:720px;margin:auto;padding:18px 24px 50px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.row1{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{display:block;font-size:15px;font-weight:700;color:var(--muted);margin:0 0 8px}
+input,select{width:100%;height:52px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:0 18px;font:700 16px Arial;color:var(--text)}
+button{height:52px;border:0;border-radius:14px;padding:0 18px;font:700 16px Arial;cursor:pointer}
+.secondary{background:var(--light);color:#08665e;width:100%}.primary{background:var(--teal);color:#fff;width:100%}
+.new-entry{margin-top:14px}.card{background:#fff;border-radius:24px;padding:28px;margin-top:18px;box-shadow:0 4px 18px #0000000b}
+.field{margin-top:18px}.field:first-child{margin-top:0}
+.auto{background:#eef4f3}.profit{font-weight:800}
+.hidden{display:none}
+.history-card{background:#fff;border-radius:20px;padding:18px;margin-top:12px}
+.history-head{display:flex;justify-content:space-between;gap:10px;font-weight:800}.meta{color:var(--muted);font-size:14px;margin-top:5px}
+.item-list{margin-top:12px}.item-row{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding:12px 0}
+.danger{background:#fbeaea;color:#a33;width:auto;height:40px;font-size:14px}
+.empty{text-align:center;color:var(--muted);padding:20px}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+.modal-box{background:#fff;width:min(520px,100%);border-radius:22px;padding:24px}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px;width:100%}
+.stat{background:var(--light);border-radius:16px;padding:12px 8px;text-align:center;min-width:0;overflow:hidden}.stat b{display:block;font-size:16px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:520px){main{padding:14px 24px 40px}.row1,.row2{gap:10px}h1{font-size:29px}.subtitle{font-size:19px}input,select{font-size:17px}.card{padding:26px 28px}}
 
-  header{
-    background:linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
-    color:var(--paper);
-    padding:20px 16px 46px;
-    position:relative;
-    overflow:hidden;
-    box-shadow:0 4px 24px rgba(0,0,0,0.35);
-  }
-  header::after{
-    content:"";
-    position:absolute;
-    right:-30px;top:-30px;
-    width:150px;height:150px;
-    border-radius:50%;
-    background:var(--mustard);
-    opacity:0.13;
-  }
-  header::before{
-    content:"";
-    position:absolute;
-    left:20%;bottom:-60px;
-    width:110px;height:110px;
-    border-radius:50%;
-    background:var(--mustard);
-    opacity:0.07;
-  }
-  .eyebrow{
-    font-size:10.5px;
-    font-weight:700;
-    letter-spacing:2px;
-    text-transform:uppercase;
-    color:var(--mustard);
-    opacity:0.9;
-    margin-bottom:6px;
-    font-family:'Poppins',sans-serif;
-  }
-  .brand{
-    font-size:25px;
-    font-weight:800;
-    letter-spacing:0.3px;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    text-shadow:0 2px 8px rgba(0,0,0,0.15);
-  }
-  .badge{
-    width:34px;height:34px;
-    border-radius:9px;
-    background:var(--mustard);
-    color:var(--teal-dark);
-    display:inline-flex;
-    align-items:center;justify-content:center;
-    font-size:14px;
-    font-weight:800;
-    letter-spacing:0;
-    box-shadow:0 3px 8px rgba(0,0,0,0.2);
-    flex-shrink:0;
-  }
-  .brand .plate{
-    font-size:11px;
-    background:rgba(250,246,234,0.12);
-    color:var(--paper);
-    border:1px solid rgba(250,246,234,0.35);
-    padding:3px 9px;
-    border-radius:6px;
-    font-weight:700;
-    letter-spacing:1px;
-    margin-left:2px;
-  }
-  .subtitle{font-size:12.5px;opacity:0.72;margin-top:4px;letter-spacing:0.3px;font-weight:500;}
+.dua-card{background:#fff;border-radius:22px;padding:22px 24px;margin-top:18px;text-align:center;box-shadow:0 4px 18px #0000000b}
+.dua-title{font-size:16px;font-weight:800;color:#0f766e;margin-bottom:10px}
+.dua-text{font-size:15px;line-height:1.55;font-weight:700;overflow-wrap:anywhere;color:#34403f}
+.edit-btn{background:#e9f3f2;color:#08665e;width:auto;height:40px;font-size:14px}
+.history-actions{display:flex;gap:8px;margin-top:10px}
+.time-line{font-size:14px;color:#708080;margin-top:4px}
 
-  .tabbar{
-    display:grid;
-    grid-template-columns:repeat(4, 1fr);
-    gap:5px;
-    margin:-30px 12px 0;
-    background:rgba(10,20,16,0.65);
-    backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);
-    border:1px solid rgba(212,175,55,0.18);
-    border-radius:18px;
-    padding:6px;
-    position:relative;
-    z-index:2;
-    box-shadow:0 8px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
-  }
-  .tabbar button{
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    border:none;
-    background:transparent;
-    color:#C9D6D2;
-    padding:11px 6px;
-    border-radius:11px;
-    font-size:12.5px;
-    font-weight:600;
-    cursor:pointer;
-    transition:background 0.2s ease, color 0.2s ease, transform 0.1s ease;
-  }
-  .tabbar button.active{
-    background:linear-gradient(135deg, var(--mustard), var(--mustard-dark));
-    color:var(--teal-dark);
-    box-shadow:0 3px 12px rgba(212,175,55,0.4);
-  }
-  .tabbar button:active{transform:scale(0.96);}
+@media(max-width:520px){
+  .summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .stat{padding:13px 10px}
+  .stat b{font-size:16px}
+  .dua-card{padding:20px 18px}
+  .dua-text{font-size:15px;line-height:1.55}
+}
 
-  main{padding:20px 14px 60px;max-width:720px;margin:0 auto;}
-  .hide{display:none !important;}
-  section{animation:fadeIn 0.25s ease;}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.nav-bar{max-width:720px;margin:14px auto 0;padding:0 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.nav-bar button{height:46px;background:#e9f3f2;color:#08665e;font-size:15px}
+.nav-bar button.nav-active{background:#117d73;color:#fff}
+.page{display:none}.page.active{display:block}
+.report-box,.backup-box{background:#fff;border-radius:20px;padding:20px;margin-top:16px}
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.report-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
+@media(max-width:520px){.nav-bar{padding:0 24px;gap:6px}.nav-bar button{font-size:14px}.report-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.entry-actions{margin-top:14px}.entry-actions button{width:100%}.history-filters{background:#fff;border-radius:20px;padding:16px;margin-top:14px}.filter-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.filter-buttons button{height:44px;font-size:14px}@media(max-width:520px){.filter-buttons{grid-template-columns:repeat(2,1fr)}}
+.entry-three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:18px}.entry-three label{font-size:14px}.entry-three input,.entry-three select{width:100%}.nav-five{grid-template-columns:repeat(5,1fr)}.install-wrap{max-width:720px;margin:10px auto 0;padding:0 24px}.install-btn{width:100%;display:none}.expense-list{margin-top:14px}.expense-row{background:#fff;border-radius:18px;padding:15px;margin-top:10px}.expense-actions{display:flex;gap:8px;margin-top:10px}.expense-actions button{height:40px;font-size:14px}@media(max-width:520px){.nav-five{grid-template-columns:repeat(5,minmax(0,1fr))}.nav-five button{font-size:12px;padding:0 4px}.entry-three{gap:7px}.entry-three label{font-size:13px}.entry-three input,.entry-three select{font-size:14px;padding:0 8px}.install-wrap{padding:0 24px}}
 
-  .stats{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:10px;
-    margin-bottom:20px;
-  }
-  .stat{
-    background:#fff;
-    border:1px solid var(--line);
-    border-top:2.5px solid var(--mustard);
-    border-radius:20px;
-    padding:14px 8px 16px;
-    text-align:center;
-    box-shadow:0 2px 10px rgba(31,41,55,0.05);
-    transition:transform 0.15s ease;
-  }
-  .stat-icon{font-size:18px;margin-bottom:4px;opacity:0.85;}
+.new-entry-title{background:#117d73;color:#fff;border-radius:14px;text-align:center;
+font-weight:800;font-size:20px;padding:13px 12px;margin:14px 0 12px}
+.entry-three{display:grid!important;grid-template-columns:1fr 1fr 1fr!important;gap:8px!important;
+align-items:end;width:100%;overflow:hidden}
+.entry-three>div{min-width:0!important}
+.entry-three label{font-size:13px;white-space:nowrap}
+.entry-three input,.entry-three select{width:100%;min-width:0;font-size:15px;padding:0 8px}
+@media(max-width:520px){
+ .entry-three{grid-template-columns:1fr 1fr 1fr!important;gap:6px!important}
+ .entry-three label{font-size:12px}
+ .entry-three input,.entry-three select{font-size:14px;padding:0 6px}
+}
 
-  .fab{
-    position:fixed;
-    right:20px;
-    bottom:28px;
-    width:58px;height:58px;
-    border-radius:50%;
-    background:linear-gradient(135deg, var(--mustard), var(--mustard-dark));
-    color:var(--teal-dark);
-    border:none;
-    font-size:28px;
-    font-weight:800;
-    line-height:1;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    box-shadow:0 8px 24px rgba(212,175,55,0.5), 0 2px 8px rgba(0,0,0,0.3);
-    z-index:40;
-    cursor:pointer;
-    transition:transform 0.15s ease, box-shadow 0.15s ease;
-    animation:fabPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  .fab:active{transform:scale(0.9);}
-  @keyframes fabPop{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
-  .stat .num{font-size:26px;font-weight:800;color:var(--teal);letter-spacing:-0.5px;}
-  .stat .label{font-size:10.5px;color:#6b6355;margin-top:4px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;}
+/* V4.14 requested compact layout */
+.page.active{display:block}
+.home-top-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.new-entry-title{background:#117d73;color:#fff;border-radius:14px;text-align:left;
+font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
+.entry-three{display:grid!important;grid-template-columns:1fr 1fr 1fr!important;gap:8px!important;align-items:end;width:100%}
+.entry-three>div{min-width:0!important}
+.entry-three label{font-size:13px;white-space:nowrap}
+.entry-three input,.entry-three select{width:100%;min-width:0;font-size:15px;padding:0 8px}
+.purchase-profit-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.save-clear-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.new-history-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:520px){
+ .home-top-grid{grid-template-columns:1fr 1fr}
+ .entry-three{grid-template-columns:1fr 1fr 1fr!important;gap:6px!important}
+ .entry-three label{font-size:12px}
+ .entry-three input,.entry-three select{font-size:14px;padding:0 6px}
+ .summary-grid{grid-template-columns:repeat(4,1fr);gap:5px}
+}
 
-  .section-title{
-    font-size:17px;
-    font-weight:700;
-    margin:24px 0 10px;
-    color:var(--teal);
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  .section-title::before{
-    content:"";
-    width:4px;height:16px;
-    background:var(--mustard);
-    border-radius:3px;
-    display:inline-block;
-  }
+.purchase-profit-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.summary-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important}
+.summary-grid>*{min-width:0}
+.summary-grid .stat{padding:10px 6px}
+.summary-grid .stat b{display:block;font-size:16px}
+@media(max-width:520px){
+  .purchase-profit-row{grid-template-columns:1fr 1fr}
+  .summary-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:4px!important}
+  .summary-grid .stat{font-size:12px;padding:8px 3px}
+  .summary-grid .stat b{font-size:14px}
+}
 
-  .searchbar{
-    display:flex;
-    gap:8px;
-    margin-bottom:14px;
-  }
-  .searchbar input{
-    flex:1;
-    padding:12px 15px;
-    border-radius:13px;
-    border:1px solid var(--line);
-    font-size:14px;
-    font-family:inherit;
-    background:#fff;
-    box-shadow:0 2px 8px rgba(31,41,55,0.04);
-  }
-  .btn{
-    border:none;
-    border-radius:13px;
-    padding:12px 16px;
-    font-weight:700;
-    font-size:14px;
-    cursor:pointer;
-    font-family:'Poppins',sans-serif;
-    transition:transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
-  }
-  .btn-primary{background:var(--mustard);color:var(--teal-dark);box-shadow:0 3px 10px rgba(232,169,61,0.35);}
-  .btn-primary:active{background:var(--mustard-dark);transform:scale(0.97);}
-  .btn-outline{background:#fff;color:var(--teal);border:1.5px solid var(--teal);transition:border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;}
-  .btn-outline:hover{border-color:var(--mustard);}
-  .btn-outline:active{background:var(--paper);transform:scale(0.97);}
-  .btn-danger{background:var(--rust);color:#fff;box-shadow:0 3px 10px rgba(178,58,46,0.3);}
-  .btn-danger:active{transform:scale(0.97);}
-  .btn-sm{padding:8px 13px;font-size:12.5px;border-radius:10px;}
-  .btn-block{width:100%;}
+.purchase-profit-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.summary{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px;margin:14px 0}
+.new-history-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+@media(max-width:520px){
+ .summary{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:4px}
+ .summary .stat{font-size:12px;padding:8px 3px}
+ .summary .stat b{font-size:14px}
+ .purchase-profit-row{grid-template-columns:1fr 1fr}
+}
 
-  .addbar{margin-bottom:18px;}
+.new-history-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.new-history-row button{min-width:0}
+@media(max-width:520px){.new-history-row{grid-template-columns:1fr 1fr;gap:10px}}
 
-  .bike-card{
-    background:#fff;
-    border:1px solid var(--line);
-    border-radius:22px;
-    padding:14px;
-    margin-bottom:12px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    box-shadow:0 2px 12px rgba(31,41,55,0.06);
-    transition:box-shadow 0.2s ease, transform 0.2s ease;
-    animation:cardIn 0.3s ease;
-  }
-  @keyframes cardIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-  .bike-card:active{transform:scale(0.99);}
-  .bike-left{display:flex;align-items:center;gap:12px;min-width:0;}
-  .bike-icon{
-    width:48px;height:48px;
-    border-radius:13px;
-    background:linear-gradient(135deg, var(--teal), var(--teal-dark));
-    color:var(--mustard);
-    display:flex;align-items:center;justify-content:center;
-    font-size:22px;
-    flex-shrink:0;
-    box-shadow:0 3px 8px rgba(6,40,39,0.25);
-  }
-  .bike-info .name{font-weight:700;font-size:15px;color:var(--ink);}
-  .bike-info .plate-no{
-    display:inline-block;
-    margin-top:4px;
-    font-size:11.5px;
-    font-weight:700;
-    background:var(--paper);
-    border:1px solid var(--line);
-    color:var(--teal);
-    padding:2.5px 8px;
-    border-radius:6px;
-    letter-spacing:0.5px;
-  }
-  .bike-info .meta{font-size:12px;color:#8a8272;margin-top:5px;}
-  .status-badge{
-    font-size:11px;
-    font-weight:700;
-    padding:3.5px 10px;
-    border-radius:20px;
-    display:inline-block;
-  }
-  .status-available{background:#E2F1E5;color:var(--green);}
-  .status-rented{background:#FCE9D8;color:var(--mustard-dark);}
-  .status-service{background:#F6DEDB;color:var(--rust);}
+.new-history-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.new-history-row button{width:100%;min-width:0}
+@media(max-width:520px){.new-history-row{grid-template-columns:1fr 1fr;gap:8px}}
 
-  .bike-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.new-history-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.new-history-row button{width:100%}
+#expenseName{width:100%}
+@media(max-width:520px){.new-history-row{grid-template-columns:1fr 1fr;gap:8px}}
 
-  .empty{
-    text-align:center;
-    padding:44px 20px;
-    color:#8a8272;
-    font-size:14px;
-    background:#fff;
-    border:1px dashed var(--line);
-    border-radius:20px;
+.purchase-profit-row{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:10px !important;
+  align-items:start !important;
+}
+.purchase-profit-row > .field{
+  min-width:0 !important;
+  margin:0 !important;
+}
+.purchase-profit-row label{
+  white-space:nowrap !important;
+  display:block !important;
+  line-height:1.2 !important;
+}
+.purchase-profit-row input{
+  width:100% !important;
+  box-sizing:border-box !important;
+}
+@media(max-width:520px){
+  .purchase-profit-row{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+    gap:10px !important;
   }
-  .empty .big{font-size:40px;display:block;margin-bottom:8px;animation:emptyFloat 2.4s ease-in-out infinite;}
-  @keyframes emptyFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+}
 
-  /* modal */
-  .overlay{
-    position:fixed;inset:0;
-    height:100dvh;
-    background:rgba(6,40,39,0.5);
-    display:flex;align-items:flex-end;justify-content:center;
-    z-index:50;
-    animation:overlayIn 0.2s ease;
-  }
-  @keyframes overlayIn{from{opacity:0;}to{opacity:1;}}
-  .modal{
-    background:rgba(244,241,232,0.92);
-    backdrop-filter:blur(20px);
-    -webkit-backdrop-filter:blur(20px);
-    border-top:2px solid var(--mustard);
-    width:100%;max-width:480px;
-    border-radius:24px 24px 0 0;
-    padding:22px 18px 26px;
-    max-height:85dvh;
-    overflow-y:auto;
-    box-shadow:0 -10px 40px rgba(0,0,0,0.45);
-    animation:modalUp 0.25s cubic-bezier(0.2,0.8,0.3,1);
-  }
-  @keyframes modalUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-  .modal h3{margin:0 0 16px;color:var(--teal);font-size:19px;}
-  .field{margin-bottom:13px;}
-  .field label{
-    display:block;
-    font-size:12.5px;
-    font-weight:600;
-    color:#6b6355;
-    margin-bottom:5px;
-  }
-  .field input,.field select{
-    width:100%;
-    padding:12px 13px;
-    border-radius:11px;
-    border:1px solid var(--line);
-    font-size:14.5px;
-    font-family:inherit;
-    background:#fff;
-    transition:border-color 0.15s ease;
-  }
-  .field input:focus,.field select:focus,.searchbar input:focus{
-    outline:2px solid var(--mustard);
-    outline-offset:1px;
-    border-color:var(--mustard);
-  }
-  .modal-actions{display:flex;gap:10px;margin-top:18px;}
-  .modal-actions .btn{flex:1;}
 
-  footer{
-    text-align:center;
-    font-size:11.5px;
-    color:#a89f8c;
-    padding:16px;
+/* V4.25: Purchase + Profit must stay on the same horizontal line */
+.purchase-profit-row{
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  align-items:flex-start !important;
+  gap:10px !important;
+  width:100% !important;
+}
+.purchase-profit-row > .field{
+  flex:1 1 0 !important;
+  width:50% !important;
+  min-width:0 !important;
+  margin-top:0 !important;
+}
+.purchase-profit-row > .field label{
+  white-space:nowrap !important;
+  display:block !important;
+  height:22px !important;
+  line-height:22px !important;
+  margin:0 0 8px !important;
+  font-size:15px !important;
+}
+.purchase-profit-row > .field input{
+  width:100% !important;
+  min-width:0 !important;
+}
+@media(max-width:520px){
+  .purchase-profit-row{
+    display:flex !important;
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    gap:8px !important;
   }
+  .purchase-profit-row > .field{
+    width:50% !important;
+  }
+  .purchase-profit-row > .field label{
+    font-size:13px !important;
+  }
+}
 
-  @media (min-width:600px){
-    .bike-list{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-    .bike-card{margin-bottom:0;}
-  }
-
-  .summary-card{
-    background:linear-gradient(135deg, var(--teal), var(--teal-dark));
-    color:var(--paper);
-    border-radius:22px;
-    padding:18px 20px;
-    margin-bottom:16px;
-    box-shadow:0 6px 18px rgba(6,40,39,0.25);
-    position:relative;
-    overflow:hidden;
-  }
-  .summary-card::after{
-    content:"";
-    position:absolute;
-    right:-40px;top:-40px;
-    width:110px;height:110px;
-    border-radius:50%;
-    background:var(--mustard);
-    opacity:0.08;
-    pointer-events:none;
-  }
-  .summary-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:9px 0;
-    border-bottom:1px solid rgba(250,246,234,0.15);
-    font-size:14px;
-    position:relative;
-    z-index:1;
-  }
-  .summary-row:first-child{padding-top:2px;}
-  .summary-row:last-child{border-bottom:none;padding-bottom:2px;}
-  .summary-row > span:first-child{letter-spacing:0.2px;opacity:0.92;}
-  .summary-row .amt{font-weight:800;font-size:16px;}
-  .amt-pos{color:#8FE0A8;}
-  .amt-neg{color:#F3A99A;}
-
-  .due-tag{
-    font-size:10.5px;
-    font-weight:700;
-    padding:2.5px 8px;
-    border-radius:20px;
-    display:inline-block;
-    margin-left:6px;
-  }
-  .due-ok{background:#E2F1E5;color:var(--green);}
-  .due-soon{background:#FCE9D8;color:var(--mustard-dark);}
-  .due-over{background:#F6DEDB;color:var(--rust);}
-
-  .alert-card{
-    background:#FCEEE9;
-    border:1.5px solid #EFC3B7;
-    border-radius:20px;
-    padding:14px;
-    margin-bottom:12px;
-  }
-  .alert-card .alert-head{
-    display:flex;align-items:center;gap:8px;
-    font-weight:700;color:var(--rust);font-size:13.5px;
-    margin-bottom:10px;
-  }
-  .repeat-badge{
-    font-size:10.5px;
-    font-weight:700;
-    padding:2.5px 8px;
-    border-radius:20px;
-    display:inline-block;
-    background:#E2E9F7;
-    color:#2E4C9E;
-    margin-left:6px;
-  }
-  @media print{
-    header, .tabbar, .addbar, footer, .overlay{display:none !important;}
-    body{background:#fff;}
-    main{padding:0;max-width:100%;}
-    section{display:block !important;}
-    #tab-dashboard, #tab-bikes, #tab-rentals, #tab-expenses, #tab-maintenance, #tab-backup{display:none !important;}
-    .summary-card{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-    body.printing-receipt header, body.printing-receipt .tabbar, body.printing-receipt footer{display:none !important;}
-    body.printing-receipt #receiptModalOverlay{
-      position:static !important;background:none !important;display:block !important;
-    }
-    body.printing-receipt #receiptModalOverlay .modal{
-      box-shadow:none !important;max-height:none !important;border-radius:0 !important;
-    }
-    body.printing-receipt #receiptModalOverlay .modal-actions{display:none !important;}
-    body.printing-receipt main, body.printing-receipt section{display:none !important;}
-  }
 </style>
+
+<style>
+.expense-action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.expense-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.expense-actions button{width:100%;height:42px;font-size:14px}
+.expense-empty-note{text-align:center;color:#718080;font-weight:700;padding:12px 4px}
+@media(max-width:520px){
+  .expense-action-row{grid-template-columns:1fr 1fr;gap:8px}
+  .expense-actions{grid-template-columns:1fr 1fr;gap:7px}
+}
+</style>
+
+
+<style>
+.mansoor-balance{background:#eef7f5;border-radius:12px;padding:14px;text-align:center;margin-bottom:14px}
+.mansoor-balance strong{display:block;font-size:25px;margin-top:4px}
+.mansoor-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #e5e7eb}
+.mansoor-delete{padding:7px 10px}
+</style>
+
+
+<style>
+/* V4.41 stable navigation */
+.nav-bar{
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  gap:4px !important;
+  overflow-x:auto !important;
+}
+.nav-bar button{
+  flex:1 1 0 !important;
+  min-width:0 !important;
+  white-space:nowrap !important;
+  padding-left:6px !important;
+  padding-right:6px !important;
+  font-size:13px !important;
+}
+@media(max-width:480px){
+  .nav-bar button{font-size:12px !important;padding-left:3px !important;padding-right:3px !important;}
+}
+</style>
+
+
+<style>
+.report-date-row{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:12px !important;
+  align-items:start !important;
+}
+.report-date-row .field{min-width:0 !important}
+.report-summary-grid{
+  display:grid !important;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-top:12px;
+}
+.report-summary-grid>div{
+  padding:12px 8px;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  text-align:center;
+}
+.report-summary-grid span{display:block;font-size:13px}
+.report-summary-grid b{display:block;margin-top:5px;font-size:18px}
+.report-entry{padding:11px 0;border-bottom:1px solid #e5e7eb}
+@media(max-width:600px){
+  .report-summary-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+
+
+<style id="v444-add-item-fix">
+/* V4.44 — Add Item modal: always fully usable on mobile */
+html.modal-open, body.modal-open{
+  overflow:hidden !important;
+}
+#itemModal{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100dvh !important;
+  min-height:100vh !important;
+  box-sizing:border-box !important;
+  padding:12px !important;
+  display:none;
+  align-items:flex-start !important;
+  justify-content:center !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior:contain !important;
+}
+#itemModal .modal-box{
+  width:min(520px,100%) !important;
+  max-height:calc(100dvh - 24px) !important;
+  max-height:calc(100vh - 24px) !important;
+  margin:0 auto !important;
+  box-sizing:border-box !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+  padding:20px !important;
+  padding-bottom:28px !important;
+}
+#itemModal .item-list{
+  padding-bottom:18px !important;
+}
+#itemModal .item-row{
+  min-height:58px !important;
+  gap:10px !important;
+}
+#itemModal .item-row > div{
+  min-width:0 !important;
+  overflow-wrap:anywhere !important;
+}
+#itemModal .danger{
+  flex:0 0 auto !important;
+}
+@media(max-width:520px){
+  #itemModal{padding:8px !important}
+  #itemModal .modal-box{
+    max-height:calc(100dvh - 16px) !important;
+    max-height:calc(100vh - 16px) !important;
+    border-radius:18px !important;
+    padding:18px !important;
+    padding-bottom:30px !important;
+  }
+}
+</style>
+
+
+<style id="v445-expense-bottom">
+/* V4.45 — Today's Total Expense appears at the bottom of the Expense page */
+#expensePage .expense-card,
+#expensePage .expense-list-card,
+#expensePage .expenses-list,
+#expensePage #expenseList {
+  margin-bottom: 24px !important;
+}
+#expensePage .expense-list-title,
+#expensePage .today-expense-title {
+  margin-top: 28px !important;
+  text-align: left !important;
+}
+#expensePage #expenseList {
+  order: 99 !important;
+}
+#expensePage .expense-form {
+  order: 1 !important;
+}
+</style>
+
+
+<style id="v446-today-total-expense">
+.today-expense-total{
+  margin-top:18px !important;
+  padding:16px 18px !important;
+  border-radius:16px !important;
+  background:#eaf5f3 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+}
+.today-expense-total span{
+  font-size:17px !important;
+  font-weight:800 !important;
+}
+.today-expense-total strong{
+  font-size:21px !important;
+  font-weight:900 !important;
+}
+</style>
+
+
+<style id="v448-report-breakdown">
+.report-breakdown{margin:18px 0 22px;padding:16px 18px;border:1px solid #e2e8e8;border-radius:16px;background:#f7fbfa}
+.report-breakdown .breakdown-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #e5eceb}
+.report-breakdown .breakdown-row:last-child{border-bottom:0}
+.report-breakdown .breakdown-name{font-weight:800}
+.report-breakdown .breakdown-amount{font-weight:900}
+</style>
+<meta name="app-version" content="4.89"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+.mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
+</style>
+
+
+
+
+<style id="v455-backup">
+.backup-actions-v455{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.backup-actions-v455 button,.backup-restore-label-v455{min-height:52px;border:0;border-radius:14px;padding:12px 10px;font-size:16px;font-weight:800;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.backup-actions-v455 button{background:#128b80;color:#fff}
+.backup-restore-label-v455{background:#e8f4f2;color:#126d66}
+.backup-actions-v455 .full-backup{background:#128b80;color:#fff}
+.backup-actions-v455 .full-restore{background:#e8f4f2;color:#126d66}
+@media(max-width:520px){.backup-actions-v455{grid-template-columns:1fr 1fr}}
+</style>
+
+<style id="v480-expense-summary">
+.expense-section-title{font-size:20px;font-weight:900;margin:24px 4px 10px;color:#164e4a}.old-expense-title{margin-top:28px}.expense-old-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:14px;padding:15px 16px;margin-top:8px;font-size:18px;font-weight:800}.expense-old-row strong{font-size:19px}.expense-row{background:#fff;border-radius:18px;padding:15px;margin-top:10px}.expense-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.expense-actions button{width:100%;height:42px;font-size:14px}
+</style>
+
+<style id="v482-dashboard">
+.dashboard-title{font-size:22px;font-weight:900;margin:0 0 12px;color:#164e4a}
+.dashboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.dashboard-stat{background:#f1f8f7;border-radius:16px;padding:14px 12px;text-align:center;border:1px solid #e2efed}
+.dashboard-stat span{display:block;font-size:14px;font-weight:800;color:#607171}
+.dashboard-stat b{display:block;font-size:21px;margin-top:5px}
+.dashboard-net{margin-top:10px;background:#eaf6f3;border-radius:16px;padding:15px;text-align:center;font-size:18px;font-weight:900;color:#164e4a}
+@media(max-width:520px){.dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-stat b{font-size:19px}}
+</style>
+<style id="v488-mansoor-details">
+.mansoor-old-toggle{cursor:pointer;transition:transform .1s ease,background .1s ease}.mansoor-old-toggle:active{transform:scale(.99)}
+.mansoor-old-details{background:#f7fbfa;border-radius:14px;margin-top:6px;padding:4px 14px;border:1px solid #e2efed}
+.mansoor-detail-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #e1e9e8}.mansoor-detail-row:last-child{border-bottom:0}.mansoor-detail-row strong{white-space:nowrap}
+.mansoor-detail-hidden{display:none!important}
+</style>
+<style id="v489-mansoor-opening">.mansoor-opening-balance{margin-top:8px;background:#f7fbfa;border:1px solid #e2efed}</style>
 </head>
 <body>
-
 <header>
-  <div class="eyebrow">BIKE RENTAL MANAGEMENT</div>
-  <div class="brand"><span class="badge">MB</span> MASS BIKE <span class="plate">V3</span></div>
-  <div class="subtitle">Kadayanallur · Tamil Nadu</div>
+  <h1>Sale Profit Book</h1>
+  <div class="version">Version 4.89</div>
+  <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
+<nav class="nav-bar nav-five">
+  <button class="nav-active" onclick="showPage('home',this)">Home</button>
+  <button onclick="showPage('expense',this)">Expense</button>
+  <button onclick="showMansoor();setActive(this)">Mansoor</button>
+  <button onclick="showPage('report',this)">Reports</button>
+  <button onclick="showPage('backup',this)">Backup</button>
+  <button onclick="openItemModal();setActive(this)">Add Item</button>
+</nav>
+<div class="install-wrap"><button id="installBtn" class="secondary install-btn" onclick="installPWA()">Install App</button></div>
 
-<div class="tabbar">
-  <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
-  <button class="tab-btn" data-tab="rentals">Rentals</button>
-  <button class="tab-btn" data-tab="reports">Reports</button>
-  <button class="tab-btn" id="menuTabBtn" onclick="openMenuOverlay()">☰ Menu</button>
+
+<main>
+<div id="homePage" class="page active">
+<div class="card" id="dashboardCard">
+  <div class="dashboard-title">📊 Today Dashboard</div>
+  <div class="dashboard-grid">
+    <div class="dashboard-stat"><span>💰 Sale</span><b id="dashSale">₹0</b></div>
+    <div class="dashboard-stat"><span>🧾 Purchase</span><b id="dashPurchase">₹0</b></div>
+    <div class="dashboard-stat"><span>📈 Profit</span><b id="dashProfit">₹0</b></div>
+    <div class="dashboard-stat"><span>💸 Expense</span><b id="dashExpense">₹0</b></div>
+    <div class="dashboard-stat"><span>💳 GPay</span><b id="dashGpay">₹0</b></div>
+    <div class="dashboard-stat"><span>💵 Cash</span><b id="dashCash">₹0</b></div>
+  </div>
+  <div class="dashboard-net">💵 Net Profit <span id="dashNet">₹0</span></div>
+</div>
+  <!-- ROW 1 -->
+  <div class="row1">
+    <div>
+      <label>State / Place</label>
+      <input id="place" value="Kerala" autocomplete="off">
+    </div>
+    <div>
+      <label>Date</label>
+      <input id="date" type="date">
+    </div>
+  </div>
+<div class="new-history-row">
+  <button class="primary" onclick="newEntry()">New Entry</button>
+  <button class="secondary" onclick="showHistory()">History</button>
 </div>
 
-<!-- MENU OVERLAY (Bikes, Expenses, Maintenance, Customers, Backup) -->
-<div class="overlay hide" id="menuOverlay">
-  <div class="modal">
-    <h3>Menu</h3>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <button class="btn btn-outline btn-block" onclick="selectMenuTab('bikes')">🏍️ Bikes</button>
-      <button class="btn btn-outline btn-block" onclick="selectMenuTab('expenses')">💸 Expenses</button>
-      <button class="btn btn-outline btn-block" onclick="selectMenuTab('maintenance')">🛠️ Maintenance</button>
-      <button class="btn btn-outline btn-block" onclick="selectMenuTab('customers')">👥 Customers</button>
-      <button class="btn btn-outline btn-block" onclick="selectMenuTab('backup')">💾 Backup</button>
+
+  <!-- ROW 2 -->
+  <!-- ROW 3 -->
+  <section id="entryCard" class="card">
+    <div class="field">
+      <label>Item Name</label>
+      <select id="item" onchange="calculate()">
+        <option value="">Select Item</option>
+      </select>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline btn-block" onclick="closeMenuOverlay()">Close</button>
+
+    <div class="entry-three"><div class="field">
+      <label>Meter</label>
+      <input id="meter" type="number" min="0" step="0.01" inputmode="decimal" placeholder="3" oninput="calculate()">
     </div>
+
+    <div class="field">
+      <label>Sale ₹</label>
+      <input id="sale" type="number" min="0" step="0.01" inputmode="decimal" placeholder="1500" oninput="calculate()">
+    </div>
+    <div class="field">
+      <label>Paid By</label>
+      <select id="paidBy">
+        <option value="GPay" selected>GPay</option>
+        <option value="Cash">Cash</option>
+      </select>
+    </div></div>
+
+    <div class="purchase-profit-row"><div class="field">
+      <label>Purchase ₹</label>
+      <input id="purchase" class="auto" type="text" readonly placeholder="Auto">
+    </div><div class="field">
+      <label>Profit ₹</label>
+      <input id="profit" class="auto profit" type="text" readonly placeholder="Auto">
+    </div></div>
+
+    <div class="field">
+      <button id="saveBtn" class="primary" onclick="saveEntry()">Save Entry</button>
+    </div>
+  </section>
+
+<section id="historyCard" class="hidden">
+    <button id="historyAllBtn" type="button" class="secondary" style="margin:0 0 14px;width:100%;">
+      📋 Show All History
+    </button>
+    <div class="dua-card">
+      <div class="dua-title">Dua</div>
+      <div class="dua-text">யா அல்லாஹ்! எங்கள் வாழ்வில் பரக்கத்தையும், ஹலாலான ரிஸ்க்கையும் வழங்குவாயாக.<br>எங்கள் காரியங்களை எளிதாக்கி, நன்மையைத் தந்து, தீமையிலிருந்து எங்களைப் பாதுகாப்பாயாக.</div>
+    </div>
+    <div class="history-filters">
+  <input id="historySearch" placeholder="Search Item Name" oninput="renderHistory()">
+  <div class="report-grid">
+    <div><label>Date From</label><input id="historyFrom" type="date" onchange="renderHistory()"></div>
+    <div><label>Date To</label><input id="historyTo" type="date" onchange="renderHistory()"></div>
+  </div>
+  <div class="filter-buttons">
+    <button class="secondary" onclick="setHistoryFilter('today')">Today</button>
+    <button class="secondary" onclick="setHistoryFilter('week')">This Week</button>
+    <button class="secondary" onclick="setHistoryFilter('month')">This Month</button>
+    <button class="secondary" onclick="clearHistoryFilter()">Clear</button>
+  </div>
+</div>
+<div class="report-summary-grid" style="margin:14px 0">
+  <div><span>📏 Meter</span><b id="sumMeter">0.00</b></div>
+  <div><span>💰 Sale</span><b id="sumSale">₹0</b></div>
+  <div><span>🧾 Purchase</span><b id="sumPurchase">₹0</b></div>
+  <div><span>📈 Profit</span><b id="sumProfit">₹0</b></div>
+</div>
+<div id="historyList"></div>
+  </section>
+</div>
+
+<div id="reportPage" class="page">
+  <div class="report-box">
+    <h2 style="margin-top:0">Report</h2>
+    <div class="report-grid">
+      <div><label>Date From</label><input id="reportFrom" type="date"></div>
+      <div><label>Date To</label><input id="reportTo" type="date"></div>
+    </div>
+    <button class="primary" style="margin-top:12px" onclick="generateReport()">Generate Report</button>
+    <button id="reportExportBtn" class="secondary" style="margin-top:10px" onclick="exportReportCSV()">Export Report CSV</button>
+    <button id="reportShareBtn" class="secondary" style="margin-top:10px" onclick="shareReport()">Share Report</button>
+    <button id="reportPrintBtn" class="secondary" style="margin-top:10px" onclick="printReport()">Print Report</button>
+    <div id="reportResult"></div>
   </div>
 </div>
 
-<main>
+<div id="expensePage" class="page">
+  <div class="backup-box">
+    <h2 style="margin-top:0">Expense</h2>
+    <div class="report-grid">
+      <div><label>Date</label><input id="expenseDate" type="date"></div>
+      <div><label>Amount ₹</label><input id="expenseAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="500"></div>
+    </div>
+    <div class="field"><label>Expense</label>
+    <input id="expenseName" type="text" placeholder="Select or type Expense Name" list="expenseNameList" autocomplete="off">
+<datalist id="expenseNameList">
+<option value="Breakfast">
+<option value="Car Rent">
+<option value="Cigarette">
+<option value="Dinner">
+<option value="Juice">
+<option value="Lunch">
+<option value="Petrol">
+<option value="Room Rent">
+<option value="Tea">
+<option value="Water">
+</datalist>
+  </div>
+    <div class="expense-action-row">
+      <button id="expenseSaveBtn" class="primary" style="margin-top:12px" onclick="saveExpense()">Add Expense</button>
+      <button id="expenseClearBtn" class="secondary" style="margin-top:12px" onclick="clearExpenseForm()">Clear</button>
+    </div>
+    <div id="expenseList" class="expense-list"></div>
+  </div>
+</div>
 
-  <!-- DASHBOARD -->
-  <section id="tab-dashboard">
-    <div class="stats" style="grid-template-columns:repeat(4, 1fr);gap:8px;">
-      <div class="stat" style="padding:12px 4px 14px;"><div class="stat-icon" style="font-size:15px;">🏍️</div><div class="num" id="statTotal" style="font-size:20px;">0</div><div class="label" style="font-size:9px;">Total Bikes</div></div>
-      <div class="stat" style="padding:12px 4px 14px;"><div class="stat-icon" style="font-size:15px;">✅</div><div class="num" id="statAvail" style="font-size:20px;">0</div><div class="label" style="font-size:9px;">Available</div></div>
-      <div class="stat" style="padding:12px 4px 14px;"><div class="stat-icon" style="font-size:15px;">☀️</div><div class="num" id="statTodayIncome" style="font-size:16px;">₹0</div><div class="label" style="font-size:9px;">Today's Income</div></div>
-      <div class="stat" style="padding:12px 4px 14px;"><div class="stat-icon" style="font-size:15px;">📅</div><div class="num" id="statMonthIncome" style="font-size:16px;">₹0</div><div class="label" style="font-size:9px;">This Month</div></div>
-    </div>
-    <div class="summary-card" style="margin-bottom:16px;">
-      <div class="summary-row"><span>Total Income (All Time)</span><span class="amt amt-pos" id="dashIncome">₹0</span></div>
-      <div class="summary-row"><span>Total Expense (All Time)</span><span class="amt amt-neg" id="dashExpense">₹0</span></div>
-      <div class="summary-row"><span>Total Profit (All Time)</span><span class="amt" id="dashProfit">₹0</span></div>
-    </div>
-    <div id="longPendingSection"></div>
-    <div id="returnedPendingSection"></div>
-    <div id="serviceDueSection"></div>
-    <div class="section-title">Recently Added</div>
-    <div id="recentList"></div>
-  </section>
 
-  <!-- BIKES -->
-  <section id="tab-bikes" class="hide">
-    <div class="searchbar">
-      <input type="text" id="searchInput" placeholder="🔍 Search bike name / number...">
+<div id="backupPage" class="page">
+  <div class="backup-box">
+    <h2 style="margin-top:0">Backup</h2>
+    <div class="backup-actions-v455">
+      <button type="button" class="full-backup" onclick="fullBackupV455()">📦 Full Backup (No Login)</button>
+      <label class="backup-restore-label-v455 full-restore">♻️ Full Restore (No Login)
+        <input type="file" accept=".json,application/json" hidden onchange="restoreV455(this.files[0])">
+      </label>
     </div>
-    <div class="addbar">
-      <button class="btn btn-primary btn-block" onclick="openModal()">+ Add New Bike</button>
-    </div>
-    <div class="bike-list" id="bikeList"></div>
-  </section>
+    <button class="primary" onclick="googleDriveBackup()">☁️ Google Drive Backup</button>
+    <button class="secondary" style="margin-top:10px" onclick="googleDriveRestore()">☁️ Google Drive Restore</button>
+    <div class="meta" style="margin-top:10px">📦 Full Backup / Restore works without Google login. ☁️ Google Drive Backup / Restore requires Google OAuth Client ID.</div>
+    <button class="secondary" style="margin-top:10px" onclick="exportCSV()">Export CSV</button>
+  </div>
+</div>
 
-  <!-- RENTALS -->
-  <section id="tab-rentals" class="hide">
-    <div class="searchbar">
-      <input type="text" id="rentalSearchInput" placeholder="🔍 Search customer / bike / phone...">
-    </div>
-    <div class="addbar">
-      <button class="btn btn-primary btn-block" onclick="openRentModal()">+ New Rent Entry</button>
-    </div>
-    <div class="section-title">Active Rentals</div>
-    <div id="activeRentalList"></div>
-    <div class="section-title">Rental History</div>
-    <div id="historyRentalList"></div>
-  </section>
 
-  <!-- EXPENSES -->
-  <section id="tab-expenses" class="hide">
-    <div class="searchbar">
-      <input type="text" id="expenseSearchInput" placeholder="🔍 Search category / bike / note...">
+<section id="mansoorPage" class="page hidden">
+  <div class="card">
+    <h2>🤝 Mansoor கொடுக்கல் வாங்கல்</h2>
+    <div class="mansoor-balance">
+      <div>தற்போது பெற வேண்டியது</div>
+      <strong id="mansoorBalance">₹43,334</strong><small style="display:block;margin-top:4px">19.08.26</small>
     </div>
-    <div class="addbar">
-      <button class="btn btn-primary btn-block" onclick="openExpenseModal()">+ Add Expense</button>
-    </div>
-    <div class="summary-card">
-      <div class="summary-row"><span>Total Expenses</span><span class="amt" id="expTotal">₹0</span></div>
-    </div>
-    <div class="section-title">All Expenses</div>
-    <div id="expenseList"></div>
-  </section>
 
-  <!-- MAINTENANCE -->
-  <section id="tab-maintenance" class="hide">
-    <div class="searchbar">
-      <input type="text" id="maintSearchInput" placeholder="🔍 Search bike / type...">
-    </div>
-    <div class="addbar">
-      <button class="btn btn-primary btn-block" onclick="openMaintModal()">+ Add Maintenance Record</button>
-    </div>
-    <div class="section-title">Maintenance Log</div>
-    <div id="maintList"></div>
-  </section>
-
-  <!-- REPORTS -->
-  <section id="tab-reports" class="hide">
-    <div class="searchbar" style="gap:6px;">
-      <button class="btn btn-outline btn-sm" id="filterTodayBtn" style="flex:1;" onclick="setReportFilter('today')">Today</button>
-      <button class="btn btn-outline btn-sm" id="filterMonthBtn" style="flex:1;" onclick="setReportFilter('month')">This Month</button>
-      <button class="btn btn-outline btn-sm" id="filterCustomBtn" style="flex:1;" onclick="setReportFilter('custom')">Custom</button>
-    </div>
-    <div id="customDateRange" class="hide" style="display:flex;gap:8px;margin-bottom:14px;">
-      <input type="date" id="repFromDate" style="flex:1;padding:10px;border-radius:11px;border:1px solid var(--line);">
-      <input type="date" id="repToDate" style="flex:1;padding:10px;border-radius:11px;border:1px solid var(--line);">
-      <button class="btn btn-primary btn-sm" onclick="applyCustomFilter()">Go</button>
-    </div>
-    <div id="reportPrintArea">
-      <div class="summary-card">
-        <div class="summary-row"><span id="repFilterLabel">All Time</span><span></span></div>
-        <div class="summary-row"><span>Total Income (Rentals)</span><span class="amt amt-pos" id="repIncome">₹0</span></div>
-        <div class="summary-row"><span>Total Expenses</span><span class="amt amt-neg" id="repExpenses">₹0</span></div>
-        <div class="summary-row"><span>Net Profit / Loss</span><span class="amt" id="repNet">₹0</span></div>
+    <div class="form-grid">
+      <div class="field">
+        <label>வகை</label>
+        <select id="mansoorType">
+          <option value="taken">பணம் வாங்கியது</option>
+          <option value="given">பணம் தந்தது</option>
+        </select>
       </div>
-      <div class="section-title">Monthly Report</div>
-      <div id="repMonthList"></div>
-      <div class="section-title">Bike-wise Income</div>
-      <div id="repBikeList"></div>
-      <div class="section-title">Bike-wise Fines</div>
-      <div id="repFineList"></div>
-    </div>
-    <div class="addbar" style="display:flex;gap:10px;margin-top:18px;">
-      <button class="btn btn-outline" style="flex:1;" onclick="downloadReportPDF()">📄 Download PDF</button>
-      <button class="btn btn-primary" style="flex:1;" onclick="shareReportWhatsApp()">📲 WhatsApp Share</button>
-    </div>
-  </section>
-
-  <!-- CUSTOMERS -->
-  <section id="tab-customers" class="hide">
-    <div class="searchbar">
-      <input type="text" id="customerSearchInput" placeholder="🔍 Search customer / phone...">
-    </div>
-    <div id="customerList"></div>
-  </section>
-
-  <!-- BACKUP -->
-  <section id="tab-backup" class="hide">
-    <div class="summary-card">
-      <div class="summary-row"><span>App Version</span><span class="amt">v3.1</span></div>
-      <div class="summary-row"><span>Bikes</span><span class="amt" id="bkBikes">0</span></div>
-      <div class="summary-row"><span>Rentals</span><span class="amt" id="bkRentals">0</span></div>
-      <div class="summary-row"><span>Expenses</span><span class="amt" id="bkExpenses">0</span></div>
-      <div class="summary-row"><span>Maintenance Records</span><span class="amt" id="bkMaint">0</span></div>
-    </div>
-
-    <div class="section-title">Backup Data</div>
-    <div class="empty" style="background:#fff;border-style:solid;">
-      <span class="big">⬇️</span>
-      Download all your data as a backup file. Keep it safe on your phone or Google Drive.
-      <div style="margin-top:14px;">
-        <button class="btn btn-primary btn-block" onclick="downloadBackup()">Download Backup File</button>
+      <div class="field">
+        <label>தேதி</label>
+        <input id="mansoorDate" type="date">
+      </div>
+      <div class="field">
+        <label>தொகை ₹</label>
+        <input id="mansoorAmount" type="number" inputmode="decimal" min="0" step="1" placeholder="Amount">
+      </div>
+      <div class="field">
+        <label>குறிப்பு</label>
+        <input id="mansoorNote" type="text" placeholder="குறிப்பு (விருப்பம்)">
       </div>
     </div>
 
-    <div class="section-title">Restore Data</div>
-    <div class="empty" style="background:#fff;border-style:solid;">
-      <span class="big">⬆️</span>
-      Restore from a previously downloaded backup file. This will replace all current data.
-      <div style="margin-top:14px;">
-        <input type="file" id="restoreFileInput" accept="application/json" style="display:none" onchange="restoreBackup(event)">
-        <button class="btn btn-outline btn-block" onclick="document.getElementById('restoreFileInput').click()">Choose Backup File</button>
-      </div>
+    <div class="expense-action-row">
+      <button class="primary" onclick="saveMansoor()">Save</button>
+      <button class="secondary" onclick="clearMansoor()">Clear</button>
     </div>
+  </div>
 
-    <div class="section-title">Export for Excel / Audit (CSV)</div>
-    <div class="empty" style="background:#fff;border-style:solid;">
-      <span class="big">📊</span>
-      Download as CSV files — open directly in Excel or Google Sheets for audit and analysis.
-      <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px;">
-        <button class="btn btn-outline btn-block" onclick="exportCSV('bikes')">Bikes CSV</button>
-        <button class="btn btn-outline btn-block" onclick="exportCSV('rentals')">Rentals CSV</button>
-        <button class="btn btn-outline btn-block" onclick="exportCSV('expenses')">Expenses CSV</button>
-        <button class="btn btn-outline btn-block" onclick="exportCSV('maintenance')">Maintenance CSV</button>
-      </div>
-    </div>
+  <div class="card">
+    <h3>வரவு / கொடுப்பு History</h3>
+    <div id="mansoorHistory"></div>
+  </div>
 
-    <div class="section-title">Reset All Data</div>
-    <div class="alert-card">
-      <div class="alert-head">⚠️ Start Fresh</div>
-      <div style="font-size:12.5px;color:#6b6355;margin-bottom:12px;">
-        இது Bikes, Rentals, Expenses, Maintenance — எல்லா data-வையும் நீக்கிவிடும். இதை செய்யும் முன் Backup எடுத்துக்கொள்ளுங்கள். இதை wapas பெற முடியாது.
-        <br><br>This deletes ALL Bikes, Rentals, Expenses, and Maintenance data permanently. Please download a backup first. This cannot be undone.
+</section>
+
+
+<section id="reportPage" class="page">
+  <div class="card">
+    <h2>Reports</h2>
+    <div class="report-date-row">
+      <div class="field">
+        <label>📅 Date From</label>
+        <input id="reportFrom" type="date">
       </div>
-      <button class="btn btn-danger btn-block" onclick="resetAllData()">🗑️ Delete All Data & Start Fresh</button>
+      <div class="field">
+        <label>📅 Date To</label>
+        <input id="reportTo" type="date">
+      </div>
     </div>
-  </section>
+    <button class="primary" onclick="generateReport()">Generate Report</button>
+  </div>
+
+  <div id="reportResult" class="card hidden"></div>
+</section>
 
 </main>
 
-<!-- FLOATING ACTION BUTTON (context-aware quick add) -->
-<button class="fab" id="fabBtn" onclick="handleFabClick()">+</button>
-
-<footer>
-  <div style="font-weight:700;color:var(--teal);font-size:12.5px;letter-spacing:0.3px;">MASS BIKE V3</div>
-  <div style="margin-top:3px;">Data stored locally on this device · No internet needed</div>
-</footer>
-
-<!-- MODAL -->
-<div class="overlay hide" id="modalOverlay">
-  <div class="modal">
-    <h3 id="modalTitle">Add New Bike</h3>
-    <input type="hidden" id="editId">
-    <div id="editLockNote" class="hide" style="background:#FCEEE9;border:1px solid #EFC3B7;color:var(--rust);font-size:12px;padding:8px 10px;border-radius:9px;margin-bottom:12px;">
-      ⚠️ இந்த பைக் இப்போ வாடகைக்கு போய் இருக்கு — Vehicle Number, Status மாத்த முடியாது. / Bike is on an active rental — Vehicle Number & Status can't be changed now.
+<div id="itemModal" class="modal">
+  <div class="modal-box">
+    <h2 style="margin-top:0">Add Item</h2>
+    <div class="field">
+      <label>Item Name</label>
+      <input id="newItemName" placeholder="BSL EXECUTIVE CHOICE">
     </div>
     <div class="field">
-      <label>Bike Name / Model</label>
-      <input type="text" id="fName" placeholder="e.g. Activa 6G">
-    </div>
-    <div class="field">
-      <label>Vehicle Number</label>
-      <input type="text" id="fPlate" placeholder="e.g. TN 63 AB 1234">
-    </div>
-    <div class="field">
-      <label>Model Year</label>
-      <input type="number" id="fYear" placeholder="e.g. 2022" min="1990" max="2030">
-    </div>
-    <div class="field">
-      <label>Current KM</label>
-      <input type="number" id="fCurrentKM" placeholder="e.g. 12500">
-    </div>
-    <div class="field">
-      <label>Status</label>
-      <select id="fStatus">
-        <option value="available">Available</option>
-        <option value="rented">Rented Out</option>
-        <option value="service">In Service</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Daily Rate (₹)</label>
-      <input type="number" id="fRate" placeholder="e.g. 300">
+      <label>Purchase / Meter ₹</label>
+      <input id="newItemRate" type="number" min="0" step="0.01" inputmode="decimal" placeholder="225">
     </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveBike()">Save</button>
+      <button class="primary" onclick="saveItem()">Save Item</button>
+      <button class="secondary" onclick="closeItemModal()">Close</button>
     </div>
-  </div>
-</div>
-
-<!-- RENT ENTRY MODAL -->
-<div class="overlay hide" id="rentModalOverlay">
-  <div class="modal">
-    <h3>New Rent Entry</h3>
-    <div class="field">
-      <label>Select Bike</label>
-      <select id="rBike"></select>
-    </div>
-    <div class="field">
-      <label>Customer Name</label>
-      <input type="text" id="rCustomer" placeholder="e.g. Karthik">
-    </div>
-    <div class="field">
-      <label>Customer Phone</label>
-      <input type="tel" id="rPhone" placeholder="e.g. 9876543210" maxlength="10" inputmode="numeric">
-    </div>
-    <div class="field">
-      <label>Start Date</label>
-      <input type="date" id="rStartDate">
-    </div>
-    <div class="field">
-      <label>Start KM</label>
-      <input type="number" id="rStartKM" placeholder="e.g. 12500">
-    </div>
-    <div class="field">
-      <label>Daily Rate (₹)</label>
-      <input type="number" id="rRate" placeholder="e.g. 300">
-    </div>
-    <div class="field">
-      <label>Advance Received (₹)</label>
-      <input type="number" id="rAdvance" placeholder="e.g. 200">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeRentModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveRentEntry()">Start Rental</button>
-    </div>
-  </div>
-</div>
-
-<!-- DAILY DUE REMINDER MODAL -->
-<div class="overlay hide" id="dueReminderOverlay">
-  <div class="modal">
-    <h3>🔔 Today's Reminders</h3>
-    <div id="dueReminderContent"></div>
-    <div class="modal-actions">
-      <button class="btn btn-primary btn-block" onclick="closeDueReminder()">OK, Got it</button>
-    </div>
-  </div>
-</div>
-
-<!-- EDIT ACTIVE RENTAL MODAL -->
-<div class="overlay hide" id="editActiveModalOverlay">
-  <div class="modal">
-    <h3>Edit Active Rental</h3>
-    <input type="hidden" id="editActiveId">
-    <div class="field">
-      <label>Bike</label>
-      <select id="editActiveBike"></select>
-    </div>
-    <div class="field">
-      <label>Customer Name</label>
-      <input type="text" id="editActiveCustomer">
-    </div>
-    <div class="field">
-      <label>Customer Phone</label>
-      <input type="tel" id="editActivePhone" maxlength="10" inputmode="numeric">
-    </div>
-    <div class="field">
-      <label>Start Date</label>
-      <input type="date" id="editActiveStartDate">
-    </div>
-    <div class="field">
-      <label>Start KM</label>
-      <input type="number" id="editActiveStartKM">
-    </div>
-    <div class="field">
-      <label>Daily Rate (₹)</label>
-      <input type="number" id="editActiveRate">
-    </div>
-    <div class="field">
-      <label>Advance (₹)</label>
-      <input type="number" id="editActiveAdvance">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeEditActiveModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveEditActiveRental()">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- EDIT RETURNED RENTAL MODAL -->
-<div class="overlay hide" id="editReturnedModalOverlay">
-  <div class="modal">
-    <h3>Edit Rental Record</h3>
-    <input type="hidden" id="editReturnedId">
-    <div class="field">
-      <label>Bike / Customer</label>
-      <input type="text" id="editReturnedInfo" disabled>
-    </div>
-    <div class="field">
-      <label>Total Amount (₹)</label>
-      <input type="number" id="editRetAmount">
-    </div>
-    <div class="field">
-      <label>Fine / Late Charge (₹)</label>
-      <input type="number" id="editRetFine">
-    </div>
-    <div class="field">
-      <label>Discount (₹)</label>
-      <input type="number" id="editRetDiscount">
-    </div>
-    <div class="field">
-      <label>Received (₹)</label>
-      <input type="number" id="editRetReceived">
-    </div>
-    <div class="field">
-      <label>Balance to Collect (₹)</label>
-      <input type="text" id="editRetBalance" disabled>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeEditReturnedModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveEditReturnedRental()">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- RECEIPT MODAL -->
-<div class="overlay hide" id="receiptModalOverlay">
-  <div class="modal">
-    <h3>Customer Receipt</h3>
-    <div id="receiptContent" style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;">
-      <!-- filled dynamically -->
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeReceipt()">Close</button>
-      <button class="btn btn-outline" onclick="downloadReceiptPDF()">📄 PDF</button>
-      <button class="btn btn-primary" onclick="shareReceiptWhatsApp()">📲 WhatsApp</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD PAYMENT MODAL (for ongoing / active rentals) -->
-<div class="overlay hide" id="addPaymentModalOverlay">
-  <div class="modal">
-    <h3>Record Payment</h3>
-    <input type="hidden" id="paymentRentalId">
-    <div class="field">
-      <label>Bike / Customer</label>
-      <input type="text" id="paymentInfo" disabled>
-    </div>
-    <div class="field">
-      <label>Already Paid So Far (₹)</label>
-      <input type="text" id="paymentAlreadyPaid" disabled>
-    </div>
-    <div class="field">
-      <label>Payment Amount (₹)</label>
-      <input type="number" id="paymentAmount" placeholder="e.g. 2400">
-    </div>
-    <div class="field">
-      <label>Payment Date</label>
-      <input type="date" id="paymentDate">
-    </div>
-    <div class="field">
-      <label>Note (optional)</label>
-      <input type="text" id="paymentNote" placeholder="e.g. 1st month rent">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeAddPaymentModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveAddPayment()">Save Payment</button>
-    </div>
-  </div>
-</div>
-
-<!-- RETURN ENTRY MODAL -->
-<div class="overlay hide" id="returnModalOverlay">
-  <div class="modal">
-    <h3>Return Entry</h3>
-    <input type="hidden" id="returnRentalId">
-    <div class="field">
-      <label>Bike</label>
-      <input type="text" id="retBikeName" disabled>
-    </div>
-    <div class="field">
-      <label>Customer</label>
-      <input type="text" id="retCustomer" disabled>
-    </div>
-    <div class="field">
-      <label>Return Date</label>
-      <input type="date" id="rReturnDate">
-    </div>
-    <div class="field">
-      <label>End KM</label>
-      <input type="number" id="rEndKM" placeholder="e.g. 12680">
-    </div>
-    <div class="field">
-      <label>Total Days</label>
-      <input type="text" id="retDays" disabled>
-    </div>
-    <div class="field">
-      <label>Total Amount (₹)</label>
-      <input type="number" id="retAmount">
-    </div>
-    <div class="field">
-      <label>Fine / Late Charge (₹)</label>
-      <input type="number" id="retFine" value="0" placeholder="e.g. 100">
-    </div>
-    <div class="field">
-      <label>Already Paid So Far (Advance + Payments) (₹)</label>
-      <input type="text" id="retAdvance" disabled>
-    </div>
-    <div class="field">
-      <label>Discount (₹)</label>
-      <input type="number" id="retDiscount" value="0">
-    </div>
-    <div class="field">
-      <label>Received Now (₹)</label>
-      <input type="number" id="retReceived" value="0">
-    </div>
-    <div class="field">
-      <label>Balance to Collect (₹)</label>
-      <input type="text" id="retBalance" disabled>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeReturnModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveReturnEntry()">Complete Return</button>
-    </div>
-  </div>
-</div>
-
-<!-- EXPENSE MODAL -->
-<div class="overlay hide" id="expenseModalOverlay">
-  <div class="modal">
-    <h3 id="expenseModalTitle">Add Expense</h3>
-    <input type="hidden" id="editExpenseId">
-    <div class="field">
-      <label>Bike (optional)</label>
-      <select id="eBike"><option value="">— General —</option></select>
-    </div>
-    <div class="field">
-      <label>Category</label>
-      <select id="eCategory">
-        <option value="Fuel">Fuel</option>
-        <option value="Repair">Repair</option>
-        <option value="Rent">Shop Rent</option>
-        <option value="Salary">Salary</option>
-        <option value="Other">Other</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Amount (₹)</label>
-      <input type="number" id="eAmount" placeholder="e.g. 500">
-    </div>
-    <div class="field">
-      <label>Date</label>
-      <input type="date" id="eDate">
-    </div>
-    <div class="field">
-      <label>Note (optional)</label>
-      <input type="text" id="eNote" placeholder="e.g. Petrol for delivery">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeExpenseModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveExpense()">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- MAINTENANCE MODAL -->
-<div class="overlay hide" id="maintModalOverlay">
-  <div class="modal">
-    <h3 id="maintModalTitle">Add Maintenance Record</h3>
-    <input type="hidden" id="editMaintId">
-    <div class="field">
-      <label>Bike</label>
-      <select id="mBike"></select>
-    </div>
-    <div class="field">
-      <label>Type</label>
-      <select id="mType">
-        <option value="Engine Oil">Engine Oil</option>
-        <option value="Service">Service</option>
-        <option value="Tyre">Tyre</option>
-        <option value="Battery">Battery</option>
-        <option value="Insurance">Insurance</option>
-        <option value="FC">FC</option>
-        <option value="Pollution">Pollution</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Date Done</label>
-      <input type="date" id="mDate">
-    </div>
-    <div class="field">
-      <label>Cost (₹)</label>
-      <input type="number" id="mCost" placeholder="e.g. 400">
-    </div>
-    <div class="field">
-      <label>Next Due Date (optional)</label>
-      <input type="date" id="mNextDue">
-    </div>
-    <div class="field">
-      <label>Next Due KM (optional)</label>
-      <input type="number" id="mNextDueKM" placeholder="e.g. 13500">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeMaintModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveMaint()">Save</button>
-    </div>
+    <div id="itemList" class="item-list"></div>
   </div>
 </div>
 
 <script>
-const APP_VERSION = '3.1';
-const STORAGE_KEY = 'massBikeV1_bikes';
-const INVOICE_COUNTER_KEY = 'massBikeV1_invoiceCounter';
-const RENTAL_KEY = 'massBikeV1_rentals';
-
-function loadBikes(){
-  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch(e){ return []; }
-}
-function safeSet(key, value){
-  try{
-    localStorage.setItem(key, JSON.stringify(value));
-    mirrorAutoBackup();
-    return true;
-  }catch(e){
-    alert('⚠️ Save பண்ண முடியலை! Storage full-ஆ இருக்கலாம். Data loss ஆகாம இருக்க, Backup tab-க்கு போய் உடனே Download Backup File பண்ணி பாருங்க.\n\n⚠️ Save failed! Storage may be full. Please go to Backup tab and download a backup immediately.');
-    return false;
-  }
-}
-function mirrorAutoBackup(){
-  try{
-    const snapshot = {
-      bikes: JSON.parse(localStorage.getItem(STORAGE_KEY)) || [],
-      rentals: JSON.parse(localStorage.getItem(RENTAL_KEY)) || [],
-      expenses: JSON.parse(localStorage.getItem(EXPENSE_KEY)) || [],
-      maintenance: JSON.parse(localStorage.getItem(MAINT_KEY)) || [],
-      savedAt: new Date().toISOString()
-    };
-    localStorage.setItem('massBikeV1_autobackup', JSON.stringify(snapshot));
-  }catch(e){ /* best-effort only, never block the main save */ }
-}
-function saveBikes(bikes){
-  safeSet(STORAGE_KEY, bikes);
-}
-function loadRentals(){
-  try{ return JSON.parse(localStorage.getItem(RENTAL_KEY)) || []; }
-  catch(e){ return []; }
-}
-function saveRentals(rentals){
-  safeSet(RENTAL_KEY, rentals);
-}
-function todayStr(){
-  return new Date().toISOString().slice(0,10);
-}
-function formatDMY(iso){
-  if(!iso) return '-';
-  const [y,m,d] = iso.split('-');
-  if(!y||!m||!d) return iso;
-  return `${d}.${m}.${y}`;
-}
-
-// ---- Minimal offline PDF builder (no external library / no internet needed) ----
-function pdfEscape(s){
-  return String(s).replace(/₹/g,'Rs.').replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');
-}
-function buildAndDownloadPdf(filename, lines){
-  const pageW = 420, pageH = 640;
-  let y = pageH - 55;
-  const parts = [];
-  lines.forEach(line=>{
-    const font = line.bold ? '/F2' : '/F1';
-    const size = line.size || 11;
-    const text = pdfEscape(line.text || '');
-    parts.push(`BT ${font} ${size} Tf 1 0 0 1 40 ${Math.round(y)} Tm (${text}) Tj ET`);
-    y -= (line.gap || (size + 9));
+const ITEMS_KEY='spb_v4_items';
+const ENTRIES_KEY='spb_v4_entries';
+const EXPENSES_KEY='spb_v4_expenses';
+let expenses=JSON.parse(localStorage.getItem(EXPENSES_KEY)||'[]');
+let editingExpenseId=null;
+let items=JSON.parse(localStorage.getItem(ITEMS_KEY)||'[]');
+let entries=JSON.parse(localStorage.getItem(ENTRIES_KEY)||'[]');
+// V4.67: clean synthetic expense-as-sale records from earlier recovery.
+(function cleanSyntheticExpenseEntries(){
+  const expenseKeys = new Set((Array.isArray(expenses)?expenses:[]).map(x =>
+    [normalizeEntryDate(x.date), String(x.name||'').trim().toLowerCase(),
+     Number(x.amount||0)].join('|')
+  ));
+  const before = entries.length;
+  entries = entries.filter(x => {
+    const meter = Number(x.meter||0);
+    const purchase = Number(x.purchase||0);
+    const sale = Number(x.sale||0);
+    const key = [normalizeEntryDate(x.date), String(x.item||'').trim().toLowerCase(), sale].join('|');
+    return !(meter === 0 && purchase === 0 && expenseKeys.has(key));
   });
-  const contentStream = parts.join('\n');
-
-  const objects = [
-    `<< /Type /Catalog /Pages 2 0 R >>`,
-    `<< /Type /Pages /Kids [3 0 R] /Count 1 >>`,
-    `<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /MediaBox [0 0 ${pageW} ${pageH}] /Contents 6 0 R >>`,
-    `<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>`,
-    `<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>`,
-    `<< /Length ${contentStream.length} >>\nstream\n${contentStream}\nendstream`
-  ];
-
-  let pdf = '%PDF-1.4\n';
-  const offsets = [0];
-  objects.forEach((body,i)=>{
-    offsets.push(pdf.length);
-    pdf += `${i+1} 0 obj\n${body}\nendobj\n`;
-  });
-  const xrefStart = pdf.length;
-  let xref = `xref\n0 ${objects.length+1}\n0000000000 65535 f \n`;
-  for(let i=1;i<=objects.length;i++){
-    xref += String(offsets[i]).padStart(10,'0') + ' 00000 n \n';
+  if(entries.length !== before){
+    localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
   }
-  pdf += xref;
-  pdf += `trailer\n<< /Size ${objects.length+1} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`;
-
-  const blob = new Blob([pdf], {type:'application/pdf'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-const EXPENSE_KEY = 'massBikeV1_expenses';
-const MAINT_KEY = 'massBikeV1_maintenance';
-
-function loadExpenses(){
-  try{ return JSON.parse(localStorage.getItem(EXPENSE_KEY)) || []; }
-  catch(e){ return []; }
-}
-function saveExpenses(list){
-  safeSet(EXPENSE_KEY, list);
-}
-function loadMaintList(){
-  try{ return JSON.parse(localStorage.getItem(MAINT_KEY)) || []; }
-  catch(e){ return []; }
-}
-function saveMaintList(list){
-  safeSet(MAINT_KEY, list);
-}
-
-let bikes = loadBikes();
-
-// one-time migration: assign a permanent invoice number to any rental created
-// before invoice numbers existed, so they no longer shift on restore/reorder
-(function migrateInvoiceNumbers(){
-  const existingRentals = loadRentals();
-  const missing = existingRentals.filter(r => !r.invoiceNo).sort((a,b)=>a.id-b.id);
-  if(missing.length === 0) return;
-  const updated = existingRentals.map(r => r.invoiceNo ? r : {...r, invoiceNo: getNextInvoiceNo()});
-  saveRentals(updated);
 })();
 
-let reportFilter = {type:'all', from:null, to:null};
-
-function setReportFilter(type){
-  if(type === 'custom'){
-    document.getElementById('customDateRange').classList.remove('hide');
-    return;
-  }
-  document.getElementById('customDateRange').classList.add('hide');
-  if(type === 'today'){
-    reportFilter = {type:'today', from: todayStr(), to: todayStr()};
-  } else if(type === 'month'){
-    const now = new Date();
-    const first = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
-    reportFilter = {type:'month', from: first, to: todayStr()};
-  }
-  updateFilterButtonStyles(type);
-  render();
-}
-function applyCustomFilter(){
-  const from = document.getElementById('repFromDate').value;
-  const to = document.getElementById('repToDate').value;
-  if(!from || !to){ alert('Please choose both dates'); return; }
-  if(from > to){
-    alert('⚠️ From Date, To Date-ஐ விட பிற்பாடா இருக்கக்கூடாது! / From date cannot be after To date.');
-    return;
-  }
-  reportFilter = {type:'custom', from, to};
-  updateFilterButtonStyles('custom');
-  render();
-}
-function updateFilterButtonStyles(active){
-  ['today','month','custom'].forEach(t=>{
-    const btn = document.getElementById('filter'+t.charAt(0).toUpperCase()+t.slice(1)+'Btn');
-    if(btn) btn.className = 'btn btn-sm ' + (t===active ? 'btn-primary' : 'btn-outline');
-  });
-}
-
-// self-heal: if primary bike data is empty but an auto-backup snapshot exists, restore from it
-// (prevents accidentally overwriting real data with demo seed data after a storage hiccup)
-if(bikes.length === 0){
-  try{
-    const backup = JSON.parse(localStorage.getItem('massBikeV1_autobackup'));
-    if(backup && Array.isArray(backup.bikes) && backup.bikes.length > 0){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(backup.bikes));
-      localStorage.setItem(RENTAL_KEY, JSON.stringify(backup.rentals || []));
-      localStorage.setItem(EXPENSE_KEY, JSON.stringify(backup.expenses || []));
-      localStorage.setItem(MAINT_KEY, JSON.stringify(backup.maintenance || []));
-      bikes = backup.bikes;
-      alert('Data automatically restored from safety backup (dated ' + (backup.savedAt||'').slice(0,10) + ').');
-    }
-  }catch(e){ /* no valid backup available, fall through to normal seed */ }
-}
-
-// seed sample data ONLY on a genuine first install (never repeats after that,
-// even if the user later deletes every bike — that's a real empty state, not first-run)
-const INSTALLED_FLAG_KEY = 'massBikeV1_installed';
-if(bikes.length === 0 && !localStorage.getItem(INSTALLED_FLAG_KEY)){
-  bikes = [
-    {id: Date.now()+1, name:'Activa 6G', plate:'TN 63 AB 1234', status:'available', rate:300},
-    {id: Date.now()+2, name:'Pulsar 150', plate:'TN 63 CD 5678', status:'rented', rate:400},
-    {id: Date.now()+3, name:'Access 125', plate:'TN 63 EF 9012', status:'available', rate:280},
-  ];
-  saveBikes(bikes);
-}
-try{ localStorage.setItem(INSTALLED_FLAG_KEY, '1'); }catch(e){}
-
-// tabs
-document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab-btn[data-tab]').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('menuTabBtn').classList.remove('active');
-    document.querySelectorAll('main section').forEach(s=>s.classList.add('hide'));
-    document.getElementById('tab-'+btn.dataset.tab).classList.remove('hide');
-    render();
-  });
-});
-
-// menu overlay (Bikes, Expenses, Maintenance, Customers, Backup)
-// ---- Floating Action Button: context-aware quick add ----
-function getActiveTabName(){
-  const activeBtn = document.querySelector('.tab-btn.active');
-  if(activeBtn && activeBtn.dataset.tab) return activeBtn.dataset.tab;
-  // check which section is visible (covers Menu-opened tabs)
-  const sections = ['bikes','rentals','expenses','maintenance','customers','backup','reports','dashboard'];
-  for(const s of sections){
-    const el = document.getElementById('tab-'+s);
-    if(el && !el.classList.contains('hide')) return s;
-  }
-  return 'dashboard';
-}
-function handleFabClick(){
-  const tab = getActiveTabName();
-  if(tab === 'bikes') openModal();
-  else if(tab === 'rentals') openRentModal();
-  else if(tab === 'expenses') openExpenseModal();
-  else if(tab === 'maintenance') openMaintModal();
-  else if(tab === 'dashboard' || tab === 'reports') openRentModal();
-  else openRentModal();
-}
-
-function openMenuOverlay(){
-  document.getElementById('menuOverlay').classList.remove('hide');
-}
-function closeMenuOverlay(){
-  document.getElementById('menuOverlay').classList.add('hide');
-}
-function selectMenuTab(tabName){
-  document.querySelectorAll('.tab-btn[data-tab]').forEach(b=>b.classList.remove('active'));
-  document.getElementById('menuTabBtn').classList.add('active');
-  document.querySelectorAll('main section').forEach(s=>s.classList.add('hide'));
-  document.getElementById('tab-'+tabName).classList.remove('hide');
-  closeMenuOverlay();
-  render();
-}
-document.getElementById('menuOverlay').addEventListener('click', (e)=>{
-  if(e.target.id === 'menuOverlay') closeMenuOverlay();
-});
-
-document.getElementById('searchInput').addEventListener('input', render);
-document.getElementById('rentalSearchInput').addEventListener('input', render);
-document.getElementById('expenseSearchInput').addEventListener('input', render);
-document.getElementById('maintSearchInput').addEventListener('input', render);
-document.getElementById('customerSearchInput').addEventListener('input', render);
-
-function statusLabel(s){
-  return {available:'Available', rented:'Rented Out', service:'In Service'}[s] || s;
-}
-function statusClass(s){
-  return {available:'status-available', rented:'status-rented', service:'status-service'}[s] || '';
-}
-
-function netRentalIncome(r){
-  return roundMoney((r.totalAmount||0) + (r.fine||0) - (r.discount||0));
-}
-
-function totalPaidSoFar(r){
-  const paymentsSum = (r.payments||[]).reduce((s,p)=>s+(p.amount||0), 0);
-  return roundMoney((r.advance||0) + paymentsSum);
-}
-function roundMoney(n){
-  return Math.round((n + Number.EPSILON) * 100) / 100;
-}
-
-function render(){
-  bikes = loadBikes();
-
-  // dashboard stats
-  document.getElementById('statTotal').textContent = bikes.length;
-  document.getElementById('statAvail').textContent = bikes.filter(b=>b.status==='available').length;
-
-  // long pending rentals (30+ days, unreturned)
-  const activeRentals = loadRentals().filter(r=>r.status==='active');
-  const longPending = activeRentals.filter(r=>{
-    const days = Math.round((new Date(todayStr()) - new Date(r.startDate)) / 86400000);
-    return days >= 30;
-  });
-  const bikesForPlate = bikes;
-  document.getElementById('longPendingSection').innerHTML = longPending.length
-    ? `<div class="alert-card">
-        <div class="alert-head">⚠️ Long Pending Rentals (30+ Days)</div>
-        ${longPending.map(r=>{
-          const days = Math.round((new Date(todayStr()) - new Date(r.startDate)) / 86400000);
-          const bike = bikesForPlate.find(b=>b.id===r.bikeId);
-          const balanceDue = roundMoney(days * (r.rate||0) - totalPaidSoFar(r));
-          return `<div class="summary-row" style="border-bottom:1px solid #EFC3B7;align-items:flex-start;">
-            <span>${escapeHTML(r.customerName)} · ${escapeHTML(bike?bike.plate:'-')}<br>
-              <span style="font-size:11px;color:#8a8272;font-weight:400;">Rent Date: ${formatDMY(r.startDate)} · ${days} days</span><br>
-              <span class="amt" style="color:var(--rust);font-size:13px;">₹${balanceDue}</span>
-            </span>
-            <div style="display:flex;flex-direction:column;gap:6px;">
-              <button class="btn btn-primary btn-sm" onclick="sendWhatsAppReminder(${r.id})">📲 Remind</button>
-              <button class="btn btn-outline btn-sm" onclick="callCustomer(${r.id})">📞 Call</button>
-            </div>
-          </div>`;
-        }).join('')}
-      </div>`
-    : '';
-
-  // recent list (last 3 added)
-  const recent = [...bikes].slice(-3).reverse();
-  document.getElementById('recentList').innerHTML = recent.length
-    ? recent.map(bikeCardHTML).join('')
-    : `<div class="empty"><span class="big">🏍️</span>No bikes added yet</div>`;
-
-  // bike list w/ search
-  const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
-  const filtered = bikes.filter(b =>
-    b.name.toLowerCase().includes(q) || b.plate.toLowerCase().includes(q)
-  );
-  document.getElementById('bikeList').innerHTML = filtered.length
-    ? filtered.map(bikeCardHTML).join('')
-    : `<div class="empty"><span class="big">🔍</span>No bikes found</div>`;
-
-  // rentals
-  const rentals = loadRentals();
-  const rentalQ = (document.getElementById('rentalSearchInput').value || '').trim().toLowerCase();
-  const rentalMatch = r => !rentalQ ||
-    (r.customerName||'').toLowerCase().includes(rentalQ) ||
-    (r.bikeName||'').toLowerCase().includes(rentalQ) ||
-    (r.customerPhone||'').toLowerCase().includes(rentalQ);
-  const active = rentals.filter(r=>r.status==='active' && rentalMatch(r)).sort((a,b)=>b.id-a.id);
-  const history = rentals.filter(r=>r.status==='returned' && rentalMatch(r)).sort((a,b)=>b.id-a.id);
-
-  document.getElementById('activeRentalList').innerHTML = active.length
-    ? active.map(rentalCardHTML).join('')
-    : `<div class="empty"><span class="big">🔑</span>No active rentals</div>`;
-
-  document.getElementById('historyRentalList').innerHTML = history.length
-    ? history.map(rentalCardHTML).join('')
-    : `<div class="empty"><span class="big">📋</span>No completed rentals yet</div>`;
-
-  // expenses
-  const allExpenses = loadExpenses().sort((a,b)=>b.id-a.id);
-  const expTotal = allExpenses.reduce((s,e)=>s+(e.amount||0),0);
-  document.getElementById('expTotal').textContent = '₹'+expTotal;
-  const expenseQ = (document.getElementById('expenseSearchInput').value || '').trim().toLowerCase();
-  const expenses = allExpenses.filter(e => !expenseQ ||
-    (e.category||'').toLowerCase().includes(expenseQ) ||
-    (e.bikeName||'').toLowerCase().includes(expenseQ) ||
-    (e.note||'').toLowerCase().includes(expenseQ)
-  );
-  document.getElementById('expenseList').innerHTML = expenses.length
-    ? expenses.map(expenseCardHTML).join('')
-    : `<div class="empty"><span class="big">💸</span>No expenses found</div>`;
-
-  // maintenance
-  const maintQ = (document.getElementById('maintSearchInput').value || '').trim().toLowerCase();
-  const maintRecords = loadMaintList().filter(m => !maintQ ||
-    (m.bikeName||'').toLowerCase().includes(maintQ) ||
-    (m.type||'').toLowerCase().includes(maintQ)
-  ).sort((a,b)=>b.id-a.id);
-  document.getElementById('maintList').innerHTML = maintRecords.length
-    ? maintRecords.map(maintCardHTML).join('')
-    : `<div class="empty"><span class="big">🛠️</span>No maintenance records found</div>`;
-
-  // reports (all-time, for dashboard profit)
-  const allTimeIncome = history.reduce((s,r)=>s+netRentalIncome(r),0);
-  const allMaintCost = loadMaintList().reduce((s,m)=>s+(m.cost||0),0);
-  const allTimeExpAll = expTotal + allMaintCost;
-  const allTimeNet = allTimeIncome - allTimeExpAll;
-
-  // dashboard profit stat (always all-time, unaffected by report filter)
-  const dashProfitEl = document.getElementById('dashProfit');
-  dashProfitEl.textContent = (allTimeNet<0?'-₹':'₹')+Math.abs(allTimeNet);
-  dashProfitEl.className = 'amt ' + (allTimeNet>=0 ? 'amt-pos' : 'amt-neg');
-  document.getElementById('dashIncome').textContent = '₹'+allTimeIncome;
-  document.getElementById('dashExpense').textContent = '₹'+allTimeExpAll;
-
-  // today's income / this month income
-  const todayIncome = history.filter(r=>r.returnDate===todayStr()).reduce((s,r)=>s+netRentalIncome(r),0);
-  const thisMonthPrefix = todayStr().slice(0,7);
-  const monthIncome = history.filter(r=>(r.returnDate||'').slice(0,7)===thisMonthPrefix).reduce((s,r)=>s+netRentalIncome(r),0);
-  document.getElementById('statTodayIncome').textContent = '₹'+todayIncome;
-  document.getElementById('statMonthIncome').textContent = '₹'+monthIncome;
-
-  // returned bikes with pending balance (customer took the bike back but hasn't fully paid)
-  const returnedPending = history.filter(r => (r.balance||0) > 0).sort((a,b)=> b.balance - a.balance);
-  document.getElementById('returnedPendingSection').innerHTML = returnedPending.length
-    ? `<div class="alert-card">
-        <div class="alert-head">💰 Pending Payments — Returned Bikes (${returnedPending.length})</div>
-        ${returnedPending.map(r=>{
-          const bike = bikes.find(b=>b.id===r.bikeId);
-          return `<div class="summary-row" style="border-bottom:1px solid #EFC3B7;align-items:flex-start;">
-            <span>${escapeHTML(r.customerName)} · ${escapeHTML(bike?bike.plate:r.bikeName)}<br>
-              <span style="font-size:11px;color:#8a8272;font-weight:400;">Returned: ${formatDMY(r.returnDate)}</span><br>
-              <span class="amt" style="color:var(--rust);font-size:13px;">₹${r.balance}</span>
-            </span>
-            <div style="display:flex;flex-direction:column;gap:6px;">
-              <button class="btn btn-primary btn-sm" onclick="sendWhatsAppReminder(${r.id})">📲 Remind</button>
-              <button class="btn btn-outline btn-sm" onclick="callCustomer(${r.id})">📞 Call</button>
-            </div>
-          </div>`;
-        }).join('')}
-      </div>`
-    : '';
-
-  // reports summary (respects selected date filter)
-  const inRange = (dateStr)=>{
-    if(reportFilter.type === 'all' || !dateStr) return reportFilter.type === 'all' ? true : false;
-    if(!reportFilter.from || !reportFilter.to) return true;
-    return dateStr >= reportFilter.from && dateStr <= reportFilter.to;
-  };
-  const filteredHistory = reportFilter.type === 'all' ? history : history.filter(r=>inRange(r.returnDate));
-  const filteredExpenses = reportFilter.type === 'all' ? loadExpenses() : loadExpenses().filter(e=>inRange(e.date));
-  const filteredMaint = reportFilter.type === 'all' ? loadMaintList() : loadMaintList().filter(m=>inRange(m.date));
-
-  const totalIncome = filteredHistory.reduce((s,r)=>s+netRentalIncome(r),0);
-  const filteredExpTotal = filteredExpenses.reduce((s,e)=>s+(e.amount||0),0);
-  const maintCost = filteredMaint.reduce((s,m)=>s+(m.cost||0),0);
-  const totalExpAll = filteredExpTotal + maintCost;
-  const net = totalIncome - totalExpAll;
-  document.getElementById('repIncome').textContent = '₹'+totalIncome;
-  document.getElementById('repExpenses').textContent = '₹'+totalExpAll;
-  const netEl = document.getElementById('repNet');
-  netEl.textContent = (net<0?'-₹':'₹')+Math.abs(net);
-  netEl.className = 'amt ' + (net>=0 ? 'amt-pos' : 'amt-neg');
-
-  const filterLabels = {all:'All Time', today:'Today', month:'This Month', custom:'Custom Range'};
-  document.getElementById('repFilterLabel').textContent = filterLabels[reportFilter.type] || 'All Time';
-
-  const byBike = {};
-  filteredHistory.forEach(r=>{
-    const key = r.bikeId || r.bikeName;
-    if(!byBike[key]) byBike[key] = {name: r.bikeName, bikeId: r.bikeId, amt: 0};
-    byBike[key].amt += netRentalIncome(r);
-  });
-  const bikeRows = Object.values(byBike);
-  document.getElementById('repBikeList').innerHTML = bikeRows.length
-    ? `<div class="summary-card">` + bikeRows.map(row=>{
-        const b = bikes.find(x=>x.id===row.bikeId);
-        const label = row.name + (b ? ' ('+b.plate+')' : '');
-        return `<div class="summary-row"><span>${escapeHTML(label)}</span><span class="amt amt-pos">₹${row.amt}</span></div>`;
-      }).join('') + `</div>`
-    : `<div class="empty"><span class="big">📊</span>No income data yet</div>`;
-
-  // bike-wise fine tracking (grouped by bike name + vehicle number)
-  const fineByBike = {};
-  filteredHistory.forEach(r=>{
-    if(!r.fine) return;
-    const bike = bikes.find(b=>b.id===r.bikeId);
-    const label = bike ? `${bike.name} (${bike.plate})` : r.bikeName;
-    if(!fineByBike[label]) fineByBike[label] = {total:0, count:0};
-    fineByBike[label].total += r.fine;
-    fineByBike[label].count += 1;
-  });
-  const fineRows = Object.entries(fineByBike);
-  document.getElementById('repFineList').innerHTML = fineRows.length
-    ? `<div class="summary-card">` + fineRows.map(([label,data])=>
-        `<div class="summary-row"><span>${escapeHTML(label)}<br><span style="font-size:11px;opacity:0.7;">${data.count} fine(s)</span></span><span class="amt amt-neg">₹${data.total}</span></div>`
-      ).join('') + `</div>`
-    : `<div class="empty"><span class="big">🚫</span>No fines recorded</div>`;
-
-  // monthly report: income, expense, net per month (respects the selected date filter)
-  const incomeByMonth = {};
-  filteredHistory.forEach(r=>{
-    const m = (r.returnDate || r.startDate || '').slice(0,7);
-    if(!m) return;
-    incomeByMonth[m] = (incomeByMonth[m]||0) + netRentalIncome(r);
-  });
-  const expenseByMonth = {};
-  filteredExpenses.forEach(e=>{
-    const m = (e.date||'').slice(0,7);
-    if(!m) return;
-    expenseByMonth[m] = (expenseByMonth[m]||0) + (e.amount||0);
-  });
-  filteredMaint.forEach(m=>{
-    const mo = (m.date||'').slice(0,7);
-    if(!mo) return;
-    expenseByMonth[mo] = (expenseByMonth[mo]||0) + (m.cost||0);
-  });
-  const allMonths = Array.from(new Set([...Object.keys(incomeByMonth), ...Object.keys(expenseByMonth)])).sort((a,b)=>b.localeCompare(a));
-  document.getElementById('repMonthList').innerHTML = allMonths.length
-    ? `<div class="summary-card">` + allMonths.map(month=>{
-        const inc = incomeByMonth[month] || 0;
-        const exp = expenseByMonth[month] || 0;
-        const mNet = inc - exp;
-        return `<div class="summary-row" style="border-bottom:1px solid rgba(250,246,234,0.15);flex-direction:column;align-items:flex-start;gap:4px;padding:10px 0;">
-          <span style="font-weight:700;">${monthLabel(month)}</span>
-          <span style="font-size:12.5px;opacity:0.85;">Income ₹${inc} · Expense ₹${exp} · Net <span style="color:${mNet>=0?'#8FE0A8':'#F3A99A'};font-weight:700;">₹${mNet}</span></span>
-        </div>`;
-      }).join('') + `</div>`
-    : `<div class="empty"><span class="big">📅</span>No monthly data yet</div>`;
-
-  // customer history & repeat customer tracking
-  const allRentals = loadRentals();
-  const customerMap = {};
-  allRentals.forEach(r=>{
-    const key = (r.customerName||'').trim().toLowerCase() + '|' + (r.customerPhone||'').replace(/\D/g,'');
-    if(!customerMap[key]){
-      customerMap[key] = {
-        name: r.customerName, phone: r.customerPhone,
-        rentalCount: 0, totalSpent: 0, lastDate: null
-      };
-    }
-    const c = customerMap[key];
-    c.rentalCount += 1;
-    c.totalSpent += netRentalIncome(r);
-    const thisDate = r.returnDate || r.startDate;
-    if(thisDate && (!c.lastDate || thisDate > c.lastDate)) c.lastDate = thisDate;
-  });
-  let customerList = Object.values(customerMap).sort((a,b)=> (b.lastDate||'').localeCompare(a.lastDate||''));
-  const customerQ = (document.getElementById('customerSearchInput').value || '').trim().toLowerCase();
-  if(customerQ){
-    customerList = customerList.filter(c =>
-      (c.name||'').toLowerCase().includes(customerQ) || (c.phone||'').toLowerCase().includes(customerQ)
-    );
-  }
-  document.getElementById('customerList').innerHTML = customerList.length
-    ? customerList.map(customerCardHTML).join('')
-    : `<div class="empty"><span class="big">👥</span>No customers found</div>`;
-
-  // backup counts
-  document.getElementById('bkBikes').textContent = bikes.length;
-  document.getElementById('bkRentals').textContent = loadRentals().length;
-  document.getElementById('bkExpenses').textContent = loadExpenses().length;
-  document.getElementById('bkMaint').textContent = loadMaintList().length;
-
-  // service due alert (dashboard) — date-based OR KM-based
-  const upcomingService = loadMaintList().filter(m=>{
-    let dateDue = false, kmDue = false;
-    if(m.nextDue){
-      const days = Math.round((new Date(m.nextDue) - new Date(todayStr())) / 86400000);
-      dateDue = days <= 7;
-    }
-    if(m.nextDueKM){
-      const bike = bikes.find(b=>b.id===m.bikeId);
-      if(bike && bike.currentKM){
-        kmDue = parseFloat(bike.currentKM) >= parseFloat(m.nextDueKM) - 200;
-      }
-    }
-    return dateDue || kmDue;
-  }).sort((a,b)=> (a.nextDue?new Date(a.nextDue):Infinity) - (b.nextDue?new Date(b.nextDue):Infinity));
-  document.getElementById('serviceDueSection').innerHTML = upcomingService.length
-    ? `<div class="alert-card">
-        <div class="alert-head">🛠️ Service Due</div>
-        ${upcomingService.map(m=>{
-          const bike = bikes.find(b=>b.id===m.bikeId);
-          let label = '';
-          if(m.nextDue){
-            const days = Math.round((new Date(m.nextDue) - new Date(todayStr())) / 86400000);
-            label = days < 0 ? 'Overdue' : (days===0 ? 'Due today' : 'Due in '+days+' days');
-          }
-          const kmInfo = m.nextDueKM ? ` · Due KM: ${escapeHTML(m.nextDueKM)}${bike&&bike.currentKM?' (Now: '+escapeHTML(bike.currentKM)+')':''}` : '';
-          return `<div class="summary-row" style="border-bottom:1px solid #EFC3B7;">
-            <span>${escapeHTML(m.bikeName)} · ${escapeHTML(m.type)}<br>
-              <span style="font-size:11px;color:#8a8272;font-weight:400;">${m.nextDue?'Due: '+formatDMY(m.nextDue):''}${kmInfo}</span>
-            </span>
-            <span class="amt" style="color:var(--rust);font-size:12px;">${label}</span>
-          </div>`;
-        }).join('')}
-      </div>`
-    : '';
-}
-
-function monthLabel(ym){
-  const [y,m] = ym.split('-');
-  const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return names[parseInt(m,10)-1] + ' ' + y;
-}
-
-function expenseCardHTML(e){
-  const expBike = e.bikeId ? loadBikes().find(b=>b.id===e.bikeId) : null;
-  const expBikeLabel = e.bikeName ? (e.bikeName + (expBike ? ' ('+expBike.plate+')' : '')) : '';
-  return `
-  <div class="bike-card">
-    <div class="bike-left">
-      <div class="bike-icon">💸</div>
-      <div class="bike-info">
-        <div class="name">${escapeHTML(e.category)}${expBikeLabel ? ' · '+escapeHTML(expBikeLabel) : ''}</div>
-        <div class="meta">${e.date} ${e.note ? '· '+escapeHTML(e.note) : ''}</div>
-      </div>
-    </div>
-    <div class="bike-actions">
-      <div class="name" style="color:var(--rust)">₹${e.amount}</div>
-      <button class="btn btn-outline btn-sm" onclick="editExpense(${e.id})">Edit</button>
-      <button class="btn btn-danger btn-sm" onclick="deleteExpense(${e.id})">Delete</button>
-    </div>
-  </div>`;
-}
-
-function dueStatus(nextDue){
-  if(!nextDue) return '';
-  const days = Math.round((new Date(nextDue) - new Date(todayStr())) / 86400000);
-  if(days < 0) return `<span class="due-tag due-over">Overdue</span>`;
-  if(days <= 7) return `<span class="due-tag due-soon">Due soon</span>`;
-  return `<span class="due-tag due-ok">Due ${nextDue}</span>`;
-}
-
-function maintCardHTML(m){
-  const bike = loadBikes().find(b=>b.id===m.bikeId);
-  const kmDueSoon = m.nextDueKM && bike && bike.currentKM && (parseFloat(bike.currentKM) >= parseFloat(m.nextDueKM) - 200);
-  const kmOverdue = m.nextDueKM && bike && bike.currentKM && (parseFloat(bike.currentKM) >= parseFloat(m.nextDueKM));
-  return `
-  <div class="bike-card">
-    <div class="bike-left">
-      <div class="bike-icon">🛠️</div>
-      <div class="bike-info">
-        <div class="name">${escapeHTML(m.bikeName)}${bike ? ' ('+escapeHTML(bike.plate)+')' : ''} · ${escapeHTML(m.type)}</div>
-        <div class="meta">Done: ${formatDMY(m.date)} ${m.nextDue ? dueStatus(m.nextDue) : ''}
-          ${m.nextDueKM ? `<br>Next Due KM: ${escapeHTML(m.nextDueKM)} ${kmOverdue ? '<span class="due-tag due-over">KM Overdue</span>' : (kmDueSoon ? '<span class="due-tag due-soon">KM Due Soon</span>' : '')}` : ''}
-        </div>
-      </div>
-    </div>
-    <div class="bike-actions">
-      <div class="name" style="color:var(--rust)">₹${m.cost}</div>
-      <button class="btn btn-outline btn-sm" onclick="editMaint(${m.id})">Edit</button>
-      <button class="btn btn-danger btn-sm" onclick="deleteMaint(${m.id})">Delete</button>
-    </div>
-  </div>`;
-}
-
-function customerCardHTML(c){
-  const isRepeat = c.rentalCount >= 2;
-  return `
-  <div class="bike-card">
-    <div class="bike-left">
-      <div class="bike-icon">👤</div>
-      <div class="bike-info">
-        <div class="name">${escapeHTML(c.name)}${isRepeat ? `<span class="repeat-badge">Repeat · ${c.rentalCount}x</span>` : ''}</div>
-        <div class="plate-no">${escapeHTML(c.phone||'-')}</div>
-        <div class="meta">
-          Total Spent: ₹${c.totalSpent} · Last Rental: ${c.lastDate ? formatDMY(c.lastDate) : '-'}
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
-function rentalCardHTML(r){
-  const isActive = r.status === 'active';
-  const msSince = isActive ? (new Date() - new Date(r.startDate + 'T00:00:00')) : 0;
-  const daysSince = isActive ? Math.floor(msSince / 86400000) : 0;
-  const hoursSince = isActive ? Math.floor((msSince % 86400000) / 3600000) : 0;
-  const isLongPending = isActive && daysSince >= 30;
-  const runningLabel = daysSince > 0 ? `${daysSince}d ${hoursSince}h` : `${hoursSince}h`;
-  const kmTravelled = (!isActive && r.startKM && r.endKM && parseFloat(r.endKM) >= parseFloat(r.startKM))
-    ? (parseFloat(r.endKM) - parseFloat(r.startKM)) : null;
-  const profit = !isActive ? netRentalIncome(r) : null;
-  const paymentsTotal = totalPaidSoFar(r);
-  const cardBike = loadBikes().find(b=>b.id===r.bikeId);
-  const bikeLabel = r.bikeName + (cardBike ? ' ('+cardBike.plate+')' : '');
-  return `
-  <div class="bike-card">
-    <div class="bike-left">
-      <div class="bike-icon">${isActive ? '🔑' : '✅'}</div>
-      <div class="bike-info">
-        <div class="name">${escapeHTML(bikeLabel)} · ${escapeHTML(r.customerName)}</div>
-        <div class="plate-no">${escapeHTML(r.customerPhone || '-')}${!isActive ? ' · '+escapeHTML(getInvoiceNumber(r)) : ''}</div>
-        <div class="meta">
-          ${formatDMY(r.startDate)} ${isActive ? '' : '→ '+formatDMY(r.returnDate)}
-          ${isActive
-            ? ' · ₹'+r.rate+'/day' + (paymentsTotal ? ' · Paid so far ₹'+paymentsTotal : '')
-            : ' · Total ₹'+r.totalAmount + (r.fine ? ' · Fine ₹'+r.fine : '') + (r.discount ? ' · Discount ₹'+r.discount : '') + (r.received ? ' · Received ₹'+r.received : '') + ' · Balance ₹'+(r.balance!=null?r.balance:r.totalAmount)}
-          ${isActive ? `<span class="due-tag ${isLongPending?'due-over':'due-ok'}">⏱ Running: ${runningLabel}</span>` : ''}
-          ${!isActive ? `<br>Profit: ₹${profit}${kmTravelled!=null ? ' · KM Travelled: '+kmTravelled : ''}` : ''}
-        </div>
-      </div>
-    </div>
-    <div class="bike-actions">
-      ${isActive
-        ? `<button class="btn btn-primary btn-sm" onclick="openReturnModal(${r.id})">Return</button>
-           <button class="btn btn-outline btn-sm" onclick="editActiveRental(${r.id})">✏️ Edit</button>
-           <button class="btn btn-outline btn-sm" onclick="openAddPaymentModal(${r.id})">💰 Payment</button>
-           <button class="btn btn-outline btn-sm" onclick="sendWhatsAppReminder(${r.id})">📲 Remind</button>
-           <button class="btn btn-outline btn-sm" onclick="callCustomer(${r.id})">📞 Call</button>`
-        : `<button class="btn btn-outline btn-sm" onclick="editReturnedRental(${r.id})">✏️ Edit</button>`}
-      <button class="btn btn-outline btn-sm" onclick="openReceipt(${r.id})">🧾 Receipt</button>
-    </div>
-  </div>`;
-}
-
-function bikeCardHTML(b){
-  return `
-  <div class="bike-card">
-    <div class="bike-left">
-      <div class="bike-icon">🏍️</div>
-      <div class="bike-info">
-        <div class="name">${escapeHTML(b.name)}${b.year ? ' <span style="font-weight:500;color:#8a8272;font-size:12.5px;">('+escapeHTML(String(b.year))+')</span>' : ''}</div>
-        <div class="plate-no">${escapeHTML(b.plate)}</div>
-        <div class="meta">
-          <span class="status-badge ${statusClass(b.status)}">${statusLabel(b.status)}</span>
-          ${b.rate ? ' · ₹'+b.rate+'/day' : ''}
-          ${b.currentKM ? ' · '+escapeHTML(String(b.currentKM))+' KM' : ''}
-        </div>
-      </div>
-    </div>
-    <div class="bike-actions">
-      <button class="btn btn-outline btn-sm" onclick="editBike(${b.id})">Edit</button>
-      <button class="btn btn-danger btn-sm" onclick="deleteBike(${b.id})">Delete</button>
-    </div>
-  </div>`;
-}
-
-function escapeHTML(str){
-  const d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
-}
-
-function openModal(){
-  document.getElementById('modalTitle').textContent = 'Add New Bike';
-  document.getElementById('editId').value = '';
-  document.getElementById('fName').value = '';
-  document.getElementById('fPlate').value = '';
-  document.getElementById('fYear').value = '';
-  document.getElementById('fCurrentKM').value = '';
-  document.getElementById('fStatus').value = 'available';
-  document.getElementById('fRate').value = '';
-  document.getElementById('fPlate').disabled = false;
-  document.getElementById('fStatus').disabled = false;
-  document.getElementById('editLockNote').classList.add('hide');
-  document.getElementById('modalOverlay').classList.remove('hide');
-}
-
-function editBike(id){
-  const b = loadBikes().find(x=>x.id===id);
-  if(!b) return;
-  document.getElementById('modalTitle').textContent = 'Edit Bike';
-  document.getElementById('editId').value = b.id;
-  document.getElementById('fName').value = b.name;
-  document.getElementById('fPlate').value = b.plate;
-  document.getElementById('fYear').value = b.year || '';
-  document.getElementById('fCurrentKM').value = b.currentKM || '';
-  document.getElementById('fStatus').value = b.status;
-  document.getElementById('fRate').value = b.rate || '';
-
-  const hasActiveRental = loadRentals().some(r => r.bikeId === id && r.status === 'active');
-  document.getElementById('fPlate').disabled = hasActiveRental;
-  document.getElementById('fStatus').disabled = hasActiveRental;
-  document.getElementById('editLockNote').classList.toggle('hide', !hasActiveRental);
-
-  document.getElementById('modalOverlay').classList.remove('hide');
-}
-
-function closeModal(){
-  document.getElementById('modalOverlay').classList.add('hide');
-}
-
-function saveBike(){
-  const name = document.getElementById('fName').value.trim();
-  const plate = document.getElementById('fPlate').value.trim();
-  const year = document.getElementById('fYear').value.trim();
-  const currentKM = document.getElementById('fCurrentKM').value.trim();
-  const status = document.getElementById('fStatus').value;
-  const rate = parseFloat(document.getElementById('fRate').value) || 0;
-  const editId = document.getElementById('editId').value;
-
-  if(!name || !plate){
-    alert('Bike name and number are required');
-    return;
-  }
-
-  let list = loadBikes();
-
-  const normalizedPlate = plate.replace(/\s+/g,'').toUpperCase();
-  const isDuplicate = list.some(b =>
-    b.plate.replace(/\s+/g,'').toUpperCase() === normalizedPlate && b.id != editId
-  );
-  if(isDuplicate){
-    alert('இந்த Vehicle Number ஏற்கனவே இருக்கு! / This Vehicle Number already exists.');
-    return;
-  }
-
-  // warn if reducing Current KM on an existing bike (likely a data-entry mistake)
-  if(editId && currentKM){
-    const existingBike = list.find(b => b.id == editId);
-    if(existingBike && existingBike.currentKM && parseFloat(currentKM) < parseFloat(existingBike.currentKM)){
-      const proceed = confirm(`⚠️ Current KM ${existingBike.currentKM}-லேர்ந்து ${currentKM}-ஆ குறைக்கப் போறீங்க. இது சரியா?\n\n⚠️ You're reducing Current KM from ${existingBike.currentKM} to ${currentKM}. Are you sure this is correct?`);
-      if(!proceed) return;
-    }
-  }
-
-  // store plate in a consistent normalized display format (uppercase, single spaces)
-  const displayPlate = plate.toUpperCase().replace(/\s+/g,' ').trim();
-
-  if(editId){
-    const existingBike = list.find(b => b.id == editId);
-    const hasActiveRental = loadRentals().some(r => r.bikeId == editId && r.status === 'active');
-    const finalPlate = hasActiveRental && existingBike ? existingBike.plate : displayPlate;
-    const finalStatus = hasActiveRental && existingBike ? existingBike.status : status;
-    list = list.map(b => b.id == editId ? {...b, name, plate: finalPlate, year, currentKM, status: finalStatus, rate} : b);
-  } else {
-    list.push({id: Date.now(), name, plate: displayPlate, year, currentKM, status, rate});
-  }
-  saveBikes(list);
-  closeModal();
-  document.getElementById('searchInput').value = '';
-  render();
-}
-
-function deleteBike(id){
-  const bike = loadBikes().find(b => b.id === id);
-  if(!bike) return;
-  const hasActiveRental = loadRentals().some(r => r.bikeId === id && r.status === 'active');
-  if(hasActiveRental){
-    alert('⚠️ இந்த பைக் இப்போ வாடகைக்கு போய் இருக்கு! Delete பண்ண முடியாது.\n\n⚠️ This bike currently has an active rental! It cannot be deleted until it is returned.');
-    return;
-  }
-  if(!confirm(`Delete ${bike.name}?\n\n${bike.plate}\n\nAre you sure?`)) return;
-  const list = loadBikes().filter(b=>b.id!==id);
-  saveBikes(list);
-  render();
-}
-
-document.getElementById('modalOverlay').addEventListener('click', (e)=>{
-  if(e.target.id === 'modalOverlay') closeModal();
-});
-
-// ---- RENT ENTRY ----
-// ---- RECORD PAYMENT (for ongoing / active rentals) ----
-function openAddPaymentModal(rentalId){
-  const r = loadRentals().find(x=>x.id===rentalId);
-  if(!r) return;
-  document.getElementById('paymentRentalId').value = r.id;
-  document.getElementById('paymentInfo').value = `${r.bikeName} · ${r.customerName}`;
-  document.getElementById('paymentAlreadyPaid').value = '₹' + totalPaidSoFar(r);
-  document.getElementById('paymentAmount').value = '';
-  document.getElementById('paymentDate').value = todayStr();
-  document.getElementById('paymentNote').value = '';
-  document.getElementById('addPaymentModalOverlay').classList.remove('hide');
-}
-function closeAddPaymentModal(){
-  document.getElementById('addPaymentModalOverlay').classList.add('hide');
-}
-function saveAddPayment(){
-  const rentalId = parseInt(document.getElementById('paymentRentalId').value);
-  const amount = parseFloat(document.getElementById('paymentAmount').value) || 0;
-  const date = document.getElementById('paymentDate').value || todayStr();
-  const note = document.getElementById('paymentNote').value.trim();
-
-  if(amount <= 0){ alert('Please enter a valid payment amount'); return; }
-
-  const rentals = loadRentals();
-  const updated = rentals.map(r=>{
-    if(r.id !== rentalId) return r;
-    const payments = r.payments || [];
-    payments.push({id: Date.now(), amount, date, note});
-    return {...r, payments};
-  });
-  saveRentals(updated);
-  closeAddPaymentModal();
-  render();
-}
-document.getElementById('addPaymentModalOverlay').addEventListener('click', (e)=>{
-  if(e.target.id === 'addPaymentModalOverlay') closeAddPaymentModal();
-});
-
-function openRentModal(){
-  const available = loadBikes().filter(b=>b.status==='available');
-  const sel = document.getElementById('rBike');
-  if(available.length === 0){
-    alert('No available bikes to rent out right now.');
-    return;
-  }
-  sel.innerHTML = available.map(b=>`<option value="${b.id}" data-rate="${b.rate||0}">${escapeHTML(b.name)} (${escapeHTML(b.plate)})</option>`).join('');
-  sel.onchange = ()=>{
-    const opt = sel.options[sel.selectedIndex];
-    document.getElementById('rRate').value = opt.dataset.rate || '';
-  };
-  sel.onchange();
-  document.getElementById('rCustomer').value = '';
-  document.getElementById('rPhone').value = '';
-  document.getElementById('rStartDate').value = todayStr();
-  document.getElementById('rentModalOverlay').classList.remove('hide');
-}
-function closeRentModal(){
-  document.getElementById('rentModalOverlay').classList.add('hide');
-}
-function saveRentEntry(){
-  const bikeId = parseInt(document.getElementById('rBike').value);
-  const bikes = loadBikes();
-  const bike = bikes.find(b=>b.id===bikeId);
-  const customerName = document.getElementById('rCustomer').value.trim();
-  const customerPhone = document.getElementById('rPhone').value.trim();
-  const startDate = document.getElementById('rStartDate').value || todayStr();
-  const startKM = document.getElementById('rStartKM').value.trim();
-  const rate = parseFloat(document.getElementById('rRate').value) || 0;
-  const advance = parseFloat(document.getElementById('rAdvance').value) || 0;
-
-  if(!bike){ alert('Please select a bike'); return; }
-  if(!customerName){ alert('Customer name is required'); return; }
-  const phoneDigits = customerPhone.replace(/\D/g,'');
-  if(!phoneDigits || phoneDigits.length !== 10){
-    alert('சரியான 10 digit Phone Number கொடுக்கவும் / Please enter a valid 10-digit phone number');
-    return;
-  }
-
-  const rentals = loadRentals();
-  rentals.push({
-    id: Date.now(),
-    invoiceNo: getNextInvoiceNo(),
-    bikeId: bike.id,
-    bikeName: bike.name,
-    customerName, customerPhone,
-    startDate, startKM, rate, advance,
-    status: 'active'
-  });
-  saveRentals(rentals);
-
-  const updatedBikes = bikes.map(b => b.id === bikeId ? {...b, status:'rented'} : b);
-  saveBikes(updatedBikes);
-
-  closeRentModal();
-  document.getElementById('rentalSearchInput').value = '';
-  render();
-}
-
-// ---- RETURN ENTRY ----
-function openReturnModal(rentalId){
-  const rental = loadRentals().find(r=>r.id===rentalId);
-  if(!rental) return;
-  document.getElementById('returnRentalId').value = rental.id;
-  document.getElementById('retBikeName').value = rental.bikeName;
-  document.getElementById('retCustomer').value = rental.customerName;
-  document.getElementById('rReturnDate').value = todayStr();
-  document.getElementById('rEndKM').value = '';
-  document.getElementById('retAdvance').value = '₹' + totalPaidSoFar(rental);
-  document.getElementById('retDiscount').value = 0;
-  document.getElementById('retReceived').value = 0;
-  document.getElementById('retFine').value = 0;
-  document.getElementById('rReturnDate').onchange = ()=>updateReturnCalc(rental);
-  document.getElementById('retDiscount').oninput = ()=>updateReturnCalc(rental);
-  document.getElementById('retReceived').oninput = ()=>updateReturnCalc(rental);
-  document.getElementById('retFine').oninput = ()=>updateReturnCalc(rental);
-  document.getElementById('retAmount').oninput = ()=>updateReturnCalc(rental);
-  updateReturnCalc(rental);
-  document.getElementById('returnModalOverlay').classList.remove('hide');
-}
-function updateReturnCalc(rental){
-  const returnDate = document.getElementById('rReturnDate').value || todayStr();
-  const start = new Date(rental.startDate);
-  const end = new Date(returnDate);
-  let days = Math.round((end - start) / 86400000);
-  if(days < 1) days = 1;
-  document.getElementById('retDays').value = days + (days===1 ? ' day' : ' days');
-  // only auto-fill amount on first calc pass (when user hasn't typed a custom amount)
-  if(document.activeElement.id !== 'retAmount'){
-    document.getElementById('retAmount').value = days * (rental.rate || 0);
-  }
-  const totalAmount = parseFloat(document.getElementById('retAmount').value) || 0;
-  const discount = parseFloat(document.getElementById('retDiscount').value) || 0;
-  const received = parseFloat(document.getElementById('retReceived').value) || 0;
-  const fine = parseFloat(document.getElementById('retFine').value) || 0;
-  const advance = totalPaidSoFar(rental);
-  const balance = roundMoney(totalAmount + fine - discount - advance - received);
-  document.getElementById('retBalance').value = '₹' + balance;
-}
-function closeReturnModal(){
-  document.getElementById('returnModalOverlay').classList.add('hide');
-}
-function saveReturnEntry(){
-  const rentalId = parseInt(document.getElementById('returnRentalId').value);
-  const returnDate = document.getElementById('rReturnDate').value || todayStr();
-  const endKM = document.getElementById('rEndKM').value.trim();
-  const totalAmount = parseFloat(document.getElementById('retAmount').value) || 0;
-  const discount = parseFloat(document.getElementById('retDiscount').value) || 0;
-  const received = parseFloat(document.getElementById('retReceived').value) || 0;
-  const fine = parseFloat(document.getElementById('retFine').value) || 0;
-
-  const rentals = loadRentals();
-  const rental = rentals.find(r=>r.id===rentalId);
-  if(!rental) return;
-
-  if(endKM && rental.startKM && parseFloat(endKM) < parseFloat(rental.startKM)){
-    alert(`End KM (${endKM}) Start KM (${rental.startKM})-ஐ விட குறைவா இருக்கக்கூடாது! / End KM cannot be less than Start KM.`);
-    return;
-  }
-
-  const balance = roundMoney(totalAmount + fine - discount - totalPaidSoFar(rental) - received);
-
-  const updatedRentals = rentals.map(r =>
-    r.id === rentalId ? {...r, status:'returned', returnDate, endKM, totalAmount, discount, fine, received, balance} : r
-  );
-  saveRentals(updatedRentals);
-
-  const bikes = loadBikes();
-  const updatedBikes = bikes.map(b => {
-    if(b.id !== rental.bikeId) return b;
-    const updated = {...b, status:'available'};
-    if(endKM && (!b.currentKM || parseFloat(endKM) > parseFloat(b.currentKM))){
-      updated.currentKM = endKM;
-    }
-    return updated;
-  });
-  saveBikes(updatedBikes);
-
-  closeReturnModal();
-  render();
-}
-
-document.getElementById('rentModalOverlay').addEventListener('click', (e)=>{
-  if(e.target.id === 'rentModalOverlay') closeRentModal();
-});
-document.getElementById('returnModalOverlay').addEventListener('click', (e)=>{
-  if(e.target.id === 'returnModalOverlay') closeReturnModal();
-});
-
-// ---- EXPENSES ----
-function openExpenseModal(){
-  document.getElementById('expenseModalTitle').textContent = 'Add Expense';
-  document.getElementById('editExpenseId').value = '';
-  const bikes = loadBikes();
-  const sel = document.getElementById('eBike');
-  sel.innerHTML = '<option value="">— General —</option>' +
-    bikes.map(b=>`<option value="${b.id}">${escapeHTML(b.name)} (${escapeHTML(b.plate)})</option>`).join('');
-  document.getElementById('eCategory').value = 'Fuel';
-  document.getElementById('eAmount').value = '';
-  document.getElementById('eDate').value = todayStr();
-  document.getElementById('eNote').value = '';
-  document.getElementById('expenseModalOverlay').classList.remove('hide');
-}
-function editExpense(id){
-  const e = loadExpenses().find(x=>x.id===id);
-  if(!e) return;
-  document.getElementById('expenseModalTitle').textContent = 'Edit Expense';
-  document.getElementById('editExpenseId').value = e.id;
-  const bikes = loadBikes();
-  const sel = document.getElementById('eBike');
-  sel.innerHTML = '<option value="">— General —</option>' +
-    bikes.map(b=>`<option value="${b.id}">${escapeHTML(b.name)} (${escapeHTML(b.plate)})</option>`).join('');
-  sel.value = e.bikeId || '';
-  document.getElementById('eCategory').value = e.category;
-  document.getElementById('eAmount').value = e.amount;
-  document.getElementById('eDate').value = e.date;
-  document.getElementById('eNote').value = e.note || '';
-  document.getElementById('expenseModalOverlay').classList.remove('hide');
-}
-function closeExpenseModal(){
-  document.getElementById('expenseModalOverlay').classList.add('hide');
-}
-function saveExpense(){
-  const bikeId = document.getElementById('eBike').value;
-  const bikes = loadBikes();
-  const bike = bikeId ? bikes.find(b=>b.id==bikeId) : null;
-  const category = document.getElementById('eCategory').value;
-  const amount = parseFloat(document.getElementById('eAmount').value) || 0;
-  const date = document.getElementById('eDate').value || todayStr();
-  const note = document.getElementById('eNote').value.trim();
-  const editExpenseId = document.getElementById('editExpenseId').value;
-
-  if(amount <= 0){ alert('Please enter a valid amount'); return; }
-
-  let list = loadExpenses();
-  if(editExpenseId){
-    list = list.map(e => e.id == editExpenseId
-      ? {...e, bikeId: bike?bike.id:null, bikeName: bike?bike.name:'', category, amount, date, note}
-      : e);
-  } else {
-    list.push({id: Date.now(), bikeId: bike?bike.id:null, bikeName: bike?bike.name:'', category, amount, date, note});
-  }
-  saveExpenses(list);
-  closeExpenseModal();
-  document.getElementById('expenseSearchInput').value = '';
-  render();
-}
-function deleteExpense(id){
-  const e = loadExpenses().find(x=>x.id===id);
-  if(!e) return;
-  if(!confirm(`Delete ${e.category} expense?\n\n₹${e.amount} · ${formatDMY(e.date)}\n\nAre you sure?`)) return;
-  saveExpenses(loadExpenses().filter(x=>x.id!==id));
-  render();
-}
-
-// ---- MAINTENANCE ----
-function openMaintModal(){
-  document.getElementById('maintModalTitle').textContent = 'Add Maintenance Record';
-  document.getElementById('editMaintId').value = '';
-  const bikes = loadBikes();
-  if(bikes.length === 0){ alert('Please add a bike first'); return; }
-  const sel = document.getElementById('mBike');
-  sel.innerHTML = bikes.map(b=>`<option value="${b.id}">${escapeHTML(b.name)} (${escapeHTML(b.plate)})</option>`).join('');
-  document.getElementById('mType').value = 'Engine Oil';
-  document.getElementById('mDate').value = todayStr();
-  document.getElementById('mCost').value = '';
-  document.getElementById('mNextDue').value = '';
-  document.getElementById('mNextDueKM').value = '';
-  document.getElementById('maintModalOverlay').classList.remove('hide');
-}
-function editMaint(id){
-  const m = loadMaintList().find(x=>x.id===id);
-  if(!m) return;
-  document.getElementById('maintModalTitle').textContent = 'Edit Maintenance Record';
-  document.getElementById('editMaintId').value = m.id;
-  const bikes = loadBikes();
-  const sel = document.getElementById('mBike');
-  sel.innerHTML = bikes.map(b=>`<option value="${b.id}">${escapeHTML(b.name)} (${escapeHTML(b.plate)})</option>`).join('');
-  sel.value = m.bikeId;
-  document.getElementById('mType').value = m.type;
-  document.getElementById('mDate').value = m.date;
-  document.getElementById('mCost').value = m.cost;
-  document.getElementById('mNextDue').value = m.nextDue || '';
-  document.getElementById('mNextDueKM').value = m.nextDueKM || '';
-  document.getElementById('maintModalOverlay').classList.remove('hide');
-}
-function closeMaintModal(){
-  document.getElementById('maintModalOverlay').classList.add('hide');
-}
-function saveMaint(){
-  const bikeId = parseInt(document.getElementById('mBike').value);
-  const bike = loadBikes().find(b=>b.id===bikeId);
-  const type = document.getElementById('mType').value;
-  const date = document.getElementById('mDate').value || todayStr();
-  const cost = parseFloat(document.getElementById('mCost').value) || 0;
-  const nextDue = document.getElementById('mNextDue').value;
-  const nextDueKM = document.getElementById('mNextDueKM').value.trim();
-  const editMaintId = document.getElementById('editMaintId').value;
-
-  if(!bike){ alert('Please select a bike'); return; }
-
-  let list = loadMaintList();
-  if(editMaintId){
-    list = list.map(m => m.id == editMaintId
-      ? {...m, bikeId: bike.id, bikeName: bike.name, type, date, cost, nextDue, nextDueKM}
-      : m);
-  } else {
-    list.push({id: Date.now(), bikeId: bike.id, bikeName: bike.name, type, date, cost, nextDue, nextDueKM});
-  }
-  saveMaintList(list);
-  closeMaintModal();
-  document.getElementById('maintSearchInput').value = '';
-  render();
-}
-function deleteMaint(id){
-  const m = loadMaintList().find(x=>x.id===id);
-  if(!m) return;
-  if(!confirm(`Delete ${m.type} record?\n\n${m.bikeName} · ${formatDMY(m.date)}\n\nAre you sure?`)) return;
-  saveMaintList(loadMaintList().filter(x=>x.id!==id));
-  render();
-}
-
-document.getElementById('expenseModalOverlay').addEventListener('click', (e)=>{
-  if(e.target.id === 'expenseModalOverlay') closeExpenseModal();
-});
-document.getElementById('maintModalOverlay').addEventListener('click', (e)=>{
-  if(e.target.id === 'maintModalOverlay') closeMaintModal();
-});
-
-// ---- CUSTOMER RECEIPT ----
-let currentReceiptRental = null;
-
-function calcDays(startDate, endDate){
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  let days = Math.round((end - start) / 86400000);
-  return days < 1 ? 1 : days;
-}
-
-function getNextInvoiceNo(){
-  let counter = parseInt(localStorage.getItem(INVOICE_COUNTER_KEY)) || 0;
-  counter += 1;
-  try{ localStorage.setItem(INVOICE_COUNTER_KEY, String(counter)); }catch(e){}
-  return 'INV-' + String(counter).padStart(5,'0');
-}
-function bumpInvoiceCounterIfNeeded(invoiceNo){
-  if(!invoiceNo) return;
-  const match = /INV-(\d+)/.exec(invoiceNo);
-  if(!match) return;
-  const num = parseInt(match[1], 10);
-  const current = parseInt(localStorage.getItem(INVOICE_COUNTER_KEY)) || 0;
-  if(num > current){
-    try{ localStorage.setItem(INVOICE_COUNTER_KEY, String(num)); }catch(e){}
-  }
-}
-
-function getInvoiceNumber(rentalOrId){
-  // accepts either a rental object (preferred) or a rental id (legacy fallback)
-  let r = rentalOrId;
-  if(typeof rentalOrId !== 'object'){
-    r = loadRentals().find(x=>x.id===rentalOrId);
-  }
-  if(r && r.invoiceNo) return r.invoiceNo;
-  // fallback for old records saved before invoiceNo existed
-  const sorted = loadRentals().slice().sort((a,b)=>a.id-b.id);
-  const idx = sorted.findIndex(x=>x.id===(r?r.id:rentalOrId));
-  return 'INV-' + String(idx+1).padStart(5,'0');
-}
-
-// ---- EDIT COMPLETED RENTAL RECORD ----
-// ---- EDIT ACTIVE (IN-PROGRESS) RENTAL — fix mistakes like wrong bike selected ----
-function editActiveRental(rentalId){
-  const r = loadRentals().find(x=>x.id===rentalId);
-  if(!r) return;
-  document.getElementById('editActiveId').value = r.id;
-
-  // bike dropdown: current bike + all bikes that are available (so it's not stuck rented elsewhere)
-  const allBikes = loadBikes();
-  const selectableBikes = allBikes.filter(b => b.id === r.bikeId || b.status === 'available');
-  const sel = document.getElementById('editActiveBike');
-  sel.innerHTML = selectableBikes.map(b=>`<option value="${b.id}" ${b.id===r.bikeId?'selected':''}>${escapeHTML(b.name)} (${escapeHTML(b.plate)})</option>`).join('');
-
-  document.getElementById('editActiveCustomer').value = r.customerName;
-  document.getElementById('editActivePhone').value = r.customerPhone || '';
-  document.getElementById('editActiveStartDate').value = r.startDate;
-  document.getElementById('editActiveStartKM').value = r.startKM || '';
-  document.getElementById('editActiveRate').value = r.rate || '';
-  document.getElementById('editActiveAdvance').value = r.advance || '';
-
-  document.getElementById('editActiveModalOverlay').classList.remove('hide');
-}
-function closeEditActiveModal(){
-  document.getElementById('editActiveModalOverlay').classList.add('hide');
-}
-function saveEditActiveRental(){
-  const rentalId = parseInt(document.getElementById('editActiveId').value);
-  const newBikeId = parseInt(document.getElementById('editActiveBike').value);
-  const customerName = document.getElementById('editActiveCustomer').value.trim();
-  const customerPhone = document.getElementById('editActivePhone').value.trim();
-  const startDate = document.getElementById('editActiveStartDate').value;
-  const startKM = document.getElementById('editActiveStartKM').value.trim();
-  const rate = parseFloat(document.getElementById('editActiveRate').value) || 0;
-  const advance = parseFloat(document.getElementById('editActiveAdvance').value) || 0;
-
-  if(!customerName){ alert('Customer name is required'); return; }
-  const phoneDigits = customerPhone.replace(/\D/g,'');
-  if(!phoneDigits || phoneDigits.length !== 10){
-    alert('சரியான 10 digit Phone Number கொடுக்கவும் / Please enter a valid 10-digit phone number');
-    return;
-  }
-
-  const rentals = loadRentals();
-  const rental = rentals.find(r=>r.id===rentalId);
-  if(!rental) return;
-
-  const bikes = loadBikes();
-  const newBike = bikes.find(b=>b.id===newBikeId);
-  if(!newBike){ alert('Please select a bike'); return; }
-
-  const bikeChanged = newBikeId !== rental.bikeId;
-
-  // if the bike was changed: free up the old bike, mark the new one as rented
-  let updatedBikes = bikes;
-  if(bikeChanged){
-    updatedBikes = bikes.map(b=>{
-      if(b.id === rental.bikeId) return {...b, status:'available'};
-      if(b.id === newBikeId) return {...b, status:'rented'};
-      return b;
-    });
-    saveBikes(updatedBikes);
-  }
-
-  const updatedRentals = rentals.map(r => r.id === rentalId
-    ? {...r, bikeId: newBikeId, bikeName: newBike.name, customerName, customerPhone, startDate, startKM, rate, advance}
-    : r
-  );
-  saveRentals(updatedRentals);
-
-  closeEditActiveModal();
-  render();
-}
-document.getElementById('editActiveModalOverlay').addEventListener('click', (e)=>{
-  if(e.target.id === 'editActiveModalOverlay') closeEditActiveModal();
-});
-
-function editReturnedRental(rentalId){
-  const r = loadRentals().find(x=>x.id===rentalId);
-  if(!r) return;
-  document.getElementById('editReturnedId').value = r.id;
-  document.getElementById('editReturnedInfo').value = `${r.bikeName} · ${r.customerName}`;
-  document.getElementById('editRetAmount').value = r.totalAmount || 0;
-  document.getElementById('editRetFine').value = r.fine || 0;
-  document.getElementById('editRetDiscount').value = r.discount || 0;
-  document.getElementById('editRetReceived').value = r.received || 0;
-
-  const recalc = ()=>{
-    const total = parseFloat(document.getElementById('editRetAmount').value) || 0;
-    const fine = parseFloat(document.getElementById('editRetFine').value) || 0;
-    const discount = parseFloat(document.getElementById('editRetDiscount').value) || 0;
-    const received = parseFloat(document.getElementById('editRetReceived').value) || 0;
-    const balance = roundMoney(total + fine - discount - (r.advance||0) - received);
-    document.getElementById('editRetBalance').value = '₹' + balance;
-  };
-  ['editRetAmount','editRetFine','editRetDiscount','editRetReceived'].forEach(id=>{
-    document.getElementById(id).oninput = recalc;
-  });
-  recalc();
-
-  document.getElementById('editReturnedModalOverlay').classList.remove('hide');
-}
-function closeEditReturnedModal(){
-  document.getElementById('editReturnedModalOverlay').classList.add('hide');
-}
-function saveEditReturnedRental(){
-  const id = parseInt(document.getElementById('editReturnedId').value);
-  const totalAmount = parseFloat(document.getElementById('editRetAmount').value) || 0;
-  const fine = parseFloat(document.getElementById('editRetFine').value) || 0;
-  const discount = parseFloat(document.getElementById('editRetDiscount').value) || 0;
-  const received = parseFloat(document.getElementById('editRetReceived').value) || 0;
-
-  const rentals = loadRentals();
-  const rental = rentals.find(r=>r.id===id);
-  if(!rental) return;
-  const balance = roundMoney(totalAmount + fine - discount - (rental.advance||0) - received);
-
-  const updated = rentals.map(r => r.id === id ? {...r, totalAmount, fine, discount, received, balance} : r);
-  saveRentals(updated);
-  closeEditReturnedModal();
-  render();
-}
-
-document.getElementById('editReturnedModalOverlay').addEventListener('click', (e)=>{
-  if(e.target.id === 'editReturnedModalOverlay') closeEditReturnedModal();
-});
-
-function openReceipt(rentalId){
-  const r = loadRentals().find(x=>x.id===rentalId);
-  if(!r) return;
-  currentReceiptRental = r;
-  const isActive = r.status === 'active';
-  const returnDate = isActive ? todayStr() : r.returnDate;
-  const days = calcDays(r.startDate, returnDate);
-  const total = isActive ? roundMoney(days * (r.rate||0)) : (r.totalAmount||0);
-  const advance = totalPaidSoFar(r);
-  const discount = r.discount || 0;
-  const fine = r.fine || 0;
-  const received = r.received || 0;
-  const paid = advance + received;
-  const balance = roundMoney(isActive ? (total - advance) : (r.balance!=null ? r.balance : (total + fine - discount - advance)));
-
-  document.getElementById('receiptContent').innerHTML = `
-    <div style="font-weight:800;color:var(--teal);font-size:16px;margin-bottom:2px;">MASS BIKE</div>
-    <div style="font-size:11.5px;color:#8a8272;margin-bottom:4px;">Kadayanallur · Tamil Nadu</div>
-    <div style="font-size:11.5px;color:var(--mustard-dark);font-weight:700;margin-bottom:12px;">Invoice No: ${getInvoiceNumber(r)}</div>
-    <div style="border-top:1px dashed var(--line);margin-bottom:10px;"></div>
-    <div class="summary-row"><span>Customer</span><span class="amt" style="font-size:14px;color:var(--ink);">${escapeHTML(r.customerName)}</span></div>
-    <div class="summary-row"><span>Phone</span><span class="amt" style="font-size:14px;color:var(--ink);">${escapeHTML(r.customerPhone||'-')}</span></div>
-    <div class="summary-row"><span>Bike</span><span class="amt" style="font-size:14px;color:var(--ink);">${escapeHTML(r.bikeName)}</span></div>
-    <div class="summary-row"><span>Rent Date</span><span class="amt" style="font-size:14px;color:var(--ink);">${formatDMY(r.startDate)}${r.startKM ? ' (KM: '+escapeHTML(r.startKM)+')' : ''}</span></div>
-    <div class="summary-row"><span>Return Date</span><span class="amt" style="font-size:14px;color:var(--ink);">${formatDMY(returnDate)}${isActive ? ' (ongoing)' : (r.endKM ? ' (KM: '+escapeHTML(r.endKM)+')' : '')}</span></div>
-    <div class="summary-row"><span>Total Days</span><span class="amt" style="font-size:14px;color:var(--ink);">${days}</span></div>
-    <div class="summary-row"><span>Total Amount</span><span class="amt" style="font-size:14px;color:var(--ink);">₹${total}</span></div>
-    ${fine ? `<div class="summary-row"><span>Fine / Late Charge</span><span class="amt" style="font-size:14px;color:var(--rust);">₹${fine}</span></div>` : ''}
-    ${discount ? `<div class="summary-row"><span>Discount</span><span class="amt" style="font-size:14px;color:var(--ink);">₹${discount}</span></div>` : ''}
-    <div class="summary-row"><span>Paid Amount</span><span class="amt amt-pos" style="font-size:14px;">₹${paid}</span></div>
-    <div class="summary-row" style="${balance>0
-        ? 'background:#FCEEE9;border:1.5px solid #EFC3B7;border-radius:12px;padding:12px 14px;margin-top:8px;'
-        : 'border-top:1px dashed var(--line);margin-top:4px;padding-top:10px;'}">
-      <span style="font-weight:700;${balance>0?'color:var(--rust);':''}">'தற்போது பெற வேண்டியது'</span>
-      <span class="amt" style="font-size:${balance>0?'18px':'15px'};font-weight:800;color:${balance>0?'var(--rust)':'var(--green)'};">₹${balance}</span>
-    </div>
-  `;
-  document.getElementById('receiptModalOverlay').classList.remove('hide');
-}
-
-function closeReceipt(){
-  document.getElementById('receiptModalOverlay').classList.add('hide');
-}
-
-function downloadReceiptPDF(){
-  const r = currentReceiptRental;
-  if(!r) return;
-  const isActive = r.status === 'active';
-  const returnDate = isActive ? todayStr() : r.returnDate;
-  const days = calcDays(r.startDate, returnDate);
-  const total = isActive ? roundMoney(days * (r.rate||0)) : (r.totalAmount||0);
-  const advance = totalPaidSoFar(r);
-  const discount = r.discount || 0;
-  const fine = r.fine || 0;
-  const received = r.received || 0;
-  const paid = advance + received;
-  const balance = roundMoney(isActive ? (total - advance) : (r.balance!=null ? r.balance : (total + fine - discount - advance)));
-
-  const lines = [
-    {text:'MASS BIKE', bold:true, size:18, gap:22},
-    {text:'Kadayanallur, Tamil Nadu', size:10, gap:16},
-    {text:`Invoice No: ${getInvoiceNumber(r)}`, bold:true, size:11, gap:22},
-    {text:`Customer: ${r.customerName}`, size:11},
-    {text:`Phone: ${r.customerPhone||'-'}`, size:11},
-    {text:`Bike: ${r.bikeName}`, size:11},
-    {text:`Rent Date: ${formatDMY(r.startDate)}`, size:11},
-    {text:`Return Date: ${formatDMY(returnDate)}${isActive?' (ongoing)':''}`, size:11},
-    {text:`Total Days: ${days}`, size:11},
-    {text:`Total Amount: Rs.${total}`, size:11},
-  ];
-  if(fine) lines.push({text:`Fine / Late Charge: Rs.${fine}`, size:11});
-  if(discount) lines.push({text:`Discount: Rs.${discount}`, size:11});
-  lines.push({text:`Paid Amount: Rs.${paid}`, size:11, gap:26});
-  lines.push({text:`${balance>0?'Balance Amount (PENDING)':'Balance Amount'}: Rs.${balance}`, bold:true, size:14});
-
-  const stamp = todayStr().replace(/-/g,'');
-  buildAndDownloadPdf(`receipt-${r.customerName.replace(/\s+/g,'_')}-${stamp}.pdf`, lines);
-}
-
-function shareReceiptWhatsApp(){
-  const r = currentReceiptRental;
-  if(!r) return;
-  const isActive = r.status === 'active';
-  const returnDate = isActive ? todayStr() : r.returnDate;
-  const days = calcDays(r.startDate, returnDate);
-  const total = isActive ? roundMoney(days * (r.rate||0)) : (r.totalAmount||0);
-  const advance = totalPaidSoFar(r);
-  const discount = r.discount || 0;
-  const fine = r.fine || 0;
-  const received = r.received || 0;
-  const paid = advance + received;
-  const balance = roundMoney(isActive ? (total - advance) : (r.balance!=null ? r.balance : (total + fine - discount - advance)));
-
-  let text = `*MASS BIKE - Rental Receipt*\n`;
-  text += `Invoice No: ${getInvoiceNumber(r)}\n`;
-  text += `Customer: ${r.customerName}\n`;
-  text += `Bike: ${r.bikeName}\n`;
-  text += `Rent Date: ${formatDMY(r.startDate)}${r.startKM ? ' (KM: '+r.startKM+')' : ''}\n`;
-  text += `Return Date: ${formatDMY(returnDate)}${isActive ? ' (ongoing)' : (r.endKM ? ' (KM: '+r.endKM+')' : '')}\n`;
-  text += `Total Days: ${days}\n`;
-  text += `Total Amount: ₹${total}\n`;
-  if(fine) text += `Fine / Late Charge: ₹${fine}\n`;
-  if(discount) text += `Discount: ₹${discount}\n`;
-  text += `Paid Amount: ₹${paid}\n`;
-  text += `${balance>0?'⚠️ Balance Amount (PENDING)':'Balance Amount'}: ₹${balance}\n`;
-
-  const phone = (r.customerPhone||'').replace(/\D/g,'');
-  const url = 'https://wa.me/' + (phone ? phone : '') + '?text=' + encodeURIComponent(text);
-  window.open(url, '_blank');
-}
-
-document.getElementById('receiptModalOverlay').addEventListener('click', (e)=>{
-  if(e.target.id === 'receiptModalOverlay') closeReceipt();
-});
-
-// ---- REPORTS: PDF & WHATSAPP ----
-function getFilteredReturnedRentals(){
-  const history = loadRentals().filter(r=>r.status==='returned');
-  if(reportFilter.type === 'all') return history;
-  return history.filter(r => r.returnDate && r.returnDate >= reportFilter.from && r.returnDate <= reportFilter.to);
-}
-
-function downloadReportPDF(){
-  const income = document.getElementById('repIncome').textContent.replace('₹','Rs.');
-  const expenses = document.getElementById('repExpenses').textContent.replace('₹','Rs.');
-  const net = document.getElementById('repNet').textContent.replace('₹','Rs.');
-  const filterLabels = {all:'All Time', today:'Today', month:'This Month', custom:'Custom Range'};
-
-  const lines = [
-    {text:'MASS BIKE - Business Report', bold:true, size:16, gap:20},
-    {text:`Kadayanallur, Tamil Nadu · ${formatDMY(todayStr())}`, size:10, gap:16},
-    {text:`Period: ${filterLabels[reportFilter.type] || 'All Time'}`, size:10, gap:22},
-    {text:`Total Income: ${income}`, size:12},
-    {text:`Total Expenses: ${expenses}`, size:12},
-    {text:`Net Profit / Loss: ${net}`, size:12, gap:26},
-  ];
-
-  const byBike = {};
-  getFilteredReturnedRentals().forEach(r=>{
-    const key = r.bikeId || r.bikeName;
-    if(!byBike[key]) byBike[key] = {name: r.bikeName, bikeId: r.bikeId, amt: 0};
-    byBike[key].amt += netRentalIncome(r);
-  });
-  const allBikesForPdf = loadBikes();
-  if(Object.keys(byBike).length){
-    lines.push({text:'Bike-wise Income', bold:true, size:13, gap:18});
-    Object.values(byBike).forEach(row=>{
-      const b = allBikesForPdf.find(x=>x.id===row.bikeId);
-      const label = row.name + (b ? ' ('+b.plate+')' : '');
-      lines.push({text:`${label}: Rs.${row.amt}`, size:11});
-    });
-  }
-
-  buildAndDownloadPdf(`mass-bike-report-${todayStr().replace(/-/g,'')}.pdf`, lines);
-}
-
-function shareReportWhatsApp(){
-  const income = document.getElementById('repIncome').textContent;
-  const expenses = document.getElementById('repExpenses').textContent;
-  const net = document.getElementById('repNet').textContent;
-  const filterLabels = {all:'All Time', today:'Today', month:'This Month', custom:'Custom Range'};
-  let text = `*MASS BIKE - Business Report*\n`;
-  text += `Date: ${todayStr()}\n`;
-  text += `Period: ${filterLabels[reportFilter.type] || 'All Time'}\n\n`;
-  text += `Total Income: ${income}\n`;
-  text += `Total Expenses: ${expenses}\n`;
-  text += `Net Profit/Loss: ${net}\n`;
-
-  const byBike = {};
-  getFilteredReturnedRentals().forEach(r=>{
-    const key = r.bikeId || r.bikeName;
-    if(!byBike[key]) byBike[key] = {name: r.bikeName, bikeId: r.bikeId, amt: 0};
-    byBike[key].amt += netRentalIncome(r);
-  });
-  const allBikesForWA = loadBikes();
-  if(Object.keys(byBike).length){
-    text += `\n*Bike-wise Income*\n`;
-    Object.values(byBike).forEach(row=>{
-      const b = allBikesForWA.find(x=>x.id===row.bikeId);
-      const label = row.name + (b ? ' ('+b.plate+')' : '');
-      text += `${label}: ₹${row.amt}\n`;
-    });
-  }
-
-  const url = 'https://wa.me/?text=' + encodeURIComponent(text);
-  window.open(url, '_blank');
-}
-
-// ---- BACKUP / RESTORE ----
-function simpleChecksum(str){
-  let hash = 5381;
-  for(let i=0;i<str.length;i++){
-    hash = ((hash << 5) + hash) + str.charCodeAt(i);
-    hash = hash & hash; // keep as 32-bit int
-  }
-  return (hash >>> 0).toString(16);
-}
-
-// ---- CSV EXPORT ----
-function csvEscape(val){
-  const s = String(val==null?'':val);
-  if(s.includes(',') || s.includes('"') || s.includes('\n')){
-    return '"' + s.replace(/"/g,'""') + '"';
-  }
+const $=id=>document.getElementById(id);
+const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function normalizeEntryDate(value){
+  const s=String(value??'').trim();
+  if(!s)return '';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  let m=s.match(/^(\d{2})[./-](\d{2})[./-](\d{4})$/);
+  if(m)return `${m[3]}-${m[2]}-${m[1]}`;
+  m=s.match(/^(\d{2})[./-](\d{2})[./-](\d{2})$/);
+  if(m)return `20${m[3]}-${m[2]}-${m[1]}`;
   return s;
 }
-function rowsToCSV(headers, rows){
-  const lines = [headers.map(csvEscape).join(',')];
-  rows.forEach(row => lines.push(row.map(csvEscape).join(',')));
-  return lines.join('\r\n');
-}
-function downloadCSVFile(filename, csvContent){
-  const blob = new Blob(['\uFEFF' + csvContent], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-// ---- RESET ALL DATA (start fresh) ----
-function resetAllData(){
-  const firstConfirm = confirm('⚠️ இது Bikes, Rentals, Expenses, Maintenance — எல்லா data-வையும் நிரந்தரமா நீக்கிவிடும்.\n\nதொடர்ந்து முன், Backup எடுத்துக்கொண்டீர்களா?\n\n⚠️ This will PERMANENTLY delete all Bikes, Rentals, Expenses, and Maintenance data.\n\nHave you already downloaded a backup? Continue?');
-  if(!firstConfirm) return;
-
-  const secondConfirm = confirm('கடைசி தடவை கேட்கிறேன் — இது Undo செய்ய முடியாது!\n\nFinal warning — this CANNOT be undone!\n\nType-check: Are you absolutely sure you want to delete everything?');
-  if(!secondConfirm) return;
-
-  saveBikes([]);
-  saveRentals([]);
-  saveExpenses([]);
-  saveMaintList([]);
-  try{
-    localStorage.removeItem(INVOICE_COUNTER_KEY);
-    localStorage.removeItem('massBikeV1_autobackup');
-  }catch(e){}
-
-  alert('எல்லா data-வும் நீக்கப்பட்டது. Fresh-ஆ ஆரம்பிக்கலாம்! / All data cleared. You can start fresh now!');
-  render();
+function normalizeAllEntryDates(){
+  let changed=false;
+  entries=entries.map(x=>{
+    const d=normalizeEntryDate(x.date);
+    if(d!==x.date){changed=true;return {...x,date:d};}
+    return x;
+  });
+  if(changed)localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));
 }
 
-function exportCSV(type){
-  const stamp = todayStr().replace(/-/g,'');
-  let headers, rows, filename;
 
-  if(type === 'bikes'){
-    headers = ['Name','Vehicle Number','Model Year','Current KM','Status','Daily Rate'];
-    rows = loadBikes().map(b => [b.name, b.plate, b.year||'', b.currentKM||'', statusLabel(b.status), b.rate||0]);
-    filename = `mass-bike-bikes-${stamp}.csv`;
-  } else if(type === 'rentals'){
-    headers = ['Customer','Phone','Bike','Status','Rent Date','Start KM','Return Date','End KM','Rate','Advance','Mid-Rental Payments','Total Paid So Far','Total Amount','Fine','Discount','Received','Balance'];
-    rows = loadRentals().map(r => [
-      r.customerName, r.customerPhone||'', r.bikeName, r.status,
-      formatDMY(r.startDate), r.startKM||'', r.returnDate?formatDMY(r.returnDate):'', r.endKM||'',
-      r.rate||0, r.advance||0, (r.payments||[]).reduce((s,p)=>s+(p.amount||0),0), totalPaidSoFar(r),
-      r.totalAmount||'', r.fine||0, r.discount||0, r.received||0, r.balance!=null?r.balance:''
-    ]);
-    filename = `mass-bike-rentals-${stamp}.csv`;
-  } else if(type === 'expenses'){
-    headers = ['Date','Category','Bike','Amount','Note'];
-    rows = loadExpenses().map(e => [formatDMY(e.date), e.category, e.bikeName||'', e.amount||0, e.note||'']);
-    filename = `mass-bike-expenses-${stamp}.csv`;
-  } else if(type === 'maintenance'){
-    headers = ['Bike','Type','Date Done','Cost','Next Due Date','Next Due KM'];
-    rows = loadMaintList().map(m => [m.bikeName, m.type, formatDMY(m.date), m.cost||0, m.nextDue?formatDMY(m.nextDue):'', m.nextDueKM||'']);
-    filename = `mass-bike-maintenance-${stamp}.csv`;
-  } else {
-    return;
-  }
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 
-  downloadCSVFile(filename, rowsToCSV(headers, rows));
+
+function backupData(){
+  const data={version:"4.10",items,entries,expenses,exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="sale-profit-book-backup.json";a.click();URL.revokeObjectURL(a.href);
 }
-
-function downloadBackup(){
-  const bikesData = loadBikes();
-  const rentalsData = loadRentals();
-  const expensesData = loadExpenses();
-  const maintenanceData = loadMaintList();
-  const payload = { bikes: bikesData, rentals: rentalsData, expenses: expensesData, maintenance: maintenanceData };
-  const data = {
-    exportedAt: new Date().toISOString(),
-    app: 'MASS BIKE',
-    version: APP_VERSION,
-    recordCounts: {
-      bikes: bikesData.length,
-      rentals: rentalsData.length,
-      expenses: expensesData.length,
-      maintenance: maintenanceData.length
-    },
-    checksum: simpleChecksum(JSON.stringify(payload)),
-    ...payload
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const stamp = todayStr().replace(/-/g,'');
-  a.href = url;
-  a.download = `mass-bike-backup-${stamp}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
-function restoreBackup(event){
-  const file = event.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e){
+function restoreData(event){
+  const file=event.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
     try{
-      const data = JSON.parse(e.target.result);
-      if(!data.bikes || !Array.isArray(data.bikes)){
-        alert('This does not look like a valid MASS BIKE backup file.');
-        return;
-      }
-
-      // integrity check: recompute checksum and compare record counts
-      let integrityWarning = '';
-      if(data.checksum){
-        const payload = { bikes: data.bikes||[], rentals: data.rentals||[], expenses: data.expenses||[], maintenance: data.maintenance||[] };
-        const recomputed = simpleChecksum(JSON.stringify(payload));
-        if(recomputed !== data.checksum){
-          integrityWarning = '\n\n⚠️ CHECKSUM MISMATCH — இந்த file corrupt ஆகி இருக்கலாம்! / This file may be corrupted!';
-        }
-      }
-      if(data.recordCounts){
-        const rc = data.recordCounts;
-        if(rc.bikes !== (data.bikes||[]).length || rc.rentals !== (data.rentals||[]).length ||
-           rc.expenses !== (data.expenses||[]).length || rc.maintenance !== (data.maintenance||[]).length){
-          integrityWarning += '\n\n⚠️ RECORD COUNT MISMATCH — Data incomplete-ஆ இருக்கலாம்!';
-        }
-      }
-
-      if(!confirm(`Backup Version: ${data.version || 'unknown'} · App Version: ${APP_VERSION}\nRecords: ${(data.bikes||[]).length} bikes, ${(data.rentals||[]).length} rentals, ${(data.expenses||[]).length} expenses, ${(data.maintenance||[]).length} maintenance${integrityWarning}\n\nஇது உங்கள் தற்போதைய data-ஐ முழுவதும் மாற்றிவிடும். தொடரவா? / This will replace all current data. Continue?`)) return;
-      saveBikes(data.bikes || []);
-      saveRentals(data.rentals || []);
-      saveExpenses(data.expenses || []);
-      saveMaintList(data.maintenance || []);
-      (data.rentals || []).forEach(r => bumpInvoiceCounterIfNeeded(r.invoiceNo));
-      alert('Restore complete!');
-      render();
-    }catch(err){
-      alert('Could not read this backup file. Please choose a valid backup.');
-    }
-    event.target.value = '';
+      const data=JSON.parse(reader.result);
+      if(!Array.isArray(data.items)||!Array.isArray(data.entries))throw new Error();
+      expenses=Array.isArray(data.expenses)?data.expenses:[];
+      items=data.items;entries=data.entries;
+      localStorage.setItem(ITEMS_KEY,JSON.stringify(items));
+      localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));
+      populateItems();renderItems();renderHistory();alert("Backup restored successfully.");
+    }catch(e){alert("Invalid backup file.");}
+    event.target.value="";
   };
   reader.readAsText(file);
 }
+function exportCSV(){
+  const rows=[
+    ["Date","Time","State / Place","Item Name","Meter","Purchase / Meter","Sale","Paid By","Purchase","Profit"],
+    ...entries.map(x=>[x.date,x.time||"",x.place,x.item,x.meter,x.rate,x.sale,x.paidBy||"GPay",x.purchase,x.profit]),
+    [],
+    ["EXPENSES"],
+    ["Date","Expense Name","Amount"],
+    ...expenses.map(x=>[x.date,x.name,x.amount])
+  ];
+  const csv=rows.map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="sale-profit-book.csv";a.click();URL.revokeObjectURL(a.href);
+}
 
-render();
 
-// ---- In-app Daily Due Reminder (replaces browser notifications) ----
-function getDueSummary(){
-  const currentBikes = loadBikes();
-  const activeRentals = loadRentals().filter(r=>r.status==='active');
-  const longPending = activeRentals.filter(r=>{
-    const days = Math.round((new Date(todayStr()) - new Date(r.startDate)) / 86400000);
-    return days >= 30;
-  });
-  const serviceDue = loadMaintList().filter(m=>{
-    let due = false;
-    if(m.nextDue){
-      const days = Math.round((new Date(m.nextDue) - new Date(todayStr())) / 86400000);
-      due = days <= 7;
+
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;$('installBtn').style.display='block';});
+window.addEventListener('appinstalled',()=>{$('installBtn').style.display='none';deferredInstallPrompt=null;});
+async function installPWA(){
+  if(!deferredInstallPrompt){alert('Install option is not available in this browser right now.');return}
+  deferredInstallPrompt.prompt(); await deferredInstallPrompt.userChoice; deferredInstallPrompt=null;$('installBtn').style.display='none';
+}
+function saveExpense(){
+  const date=$('expenseDate').value||today(),name=$('expenseName').value.trim(),amount=Number($('expenseAmount').value)||0;
+  if(!name||!(amount>0)){alert('Please enter an Expense Name and Amount.');return}
+  if(editingExpenseId){
+    const i=expenses.findIndex(x=>x.id===editingExpenseId);
+    if(i>=0)expenses[i]={...expenses[i],date,name,amount};
+  }else expenses.unshift({id:Date.now(),date,name,amount});
+  localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));editingExpenseId=null;$('expenseSaveBtn').textContent='Add Expense';
+  $('expenseName').value='';$('expenseAmount').value='';renderExpenses();
+  updateTodayExpenseTotal();
+  refreshDashboard();
+}
+function clearExpenseForm(){
+  editingExpenseId=null;
+  $('expenseDate').value=today();
+  $('expenseName').value='';
+  $('expenseAmount').value='';
+  $('expenseSaveBtn').textContent='Add Expense';
+}
+function renderExpenses(){
+  const el=$('expenseList'); if(!el)return;
+  const selected=getSelectedExpenseDate();
+  const todayExpenses=(Array.isArray(expenses)?expenses:[]).filter(x=>expenseDateKey(x.date)===selected).sort((a,b)=>(b.id||0)-(a.id||0));
+  const oldMap={};
+  (Array.isArray(expenses)?expenses:[]).filter(x=>expenseDateKey(x.date)!==selected).forEach(x=>{const d=expenseDateKey(x.date)||'Unknown';oldMap[d]=(oldMap[d]||0)+Number(x.amount||0);});
+  const oldDates=Object.keys(oldMap).sort((a,b)=>b.localeCompare(a));
+  const total=todayExpenses.reduce((sum,x)=>sum+Number(x.amount||0),0);
+  let html='';
+  if(todayExpenses.length){
+    html += `<div class="expense-section-title">💸 Today Expense</div>`;
+    html += todayExpenses.map(x=>`<div class="expense-row"><b>${esc(x.name)}</b><div class="meta">${esc(expenseDateKey(x.date))} • ${money(x.amount)}</div><div class="expense-actions"><button class="edit-btn" onclick="editExpense(${x.id})">Edit</button><button class="danger" onclick="deleteExpense(${x.id})">Delete</button></div></div>`).join('');
+  } else { html += '<div class="expense-empty-note">No expenses for today.</div>'; }
+  html += `<div id="todayExpenseTotal" class="today-expense-total"><span>💸 Today Total Expense</span><strong>${money(total)}</strong></div>`;
+  if(oldDates.length){
+    html += `<div class="expense-section-title old-expense-title">📅 Previous Expenses</div>`;
+    html += oldDates.map(d=>`<div class="expense-old-row"><span>${esc(d)}</span><strong>${money(oldMap[d])}</strong></div>`).join('');
+  }
+  el.innerHTML=html;
+}
+function editExpense(id){
+  const x=expenses.find(e=>e.id===id);if(!x)return;
+  editingExpenseId=id;
+  $('expenseDate').value=x.date;
+  $('expenseName').value=x.name;
+  $('expenseAmount').value=x.amount;
+  $('expenseSaveBtn').textContent='Update Expense';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function deleteExpense(id){
+  if(!confirm('Delete this expense?'))return;
+  expenses=expenses.filter(x=>x.id!==id);
+  localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));
+  if(editingExpenseId===id) clearExpenseForm();
+  renderExpenses();
+  updateTodayExpenseTotal();
+  refreshDashboard();
+}
+
+function setActive(btn){
+ document.querySelectorAll('.nav-bar button').forEach(b=>b.classList.remove('nav-active'));
+ btn.classList.add('nav-active');
+}
+function showPage(page,btn){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ $(page+'Page').classList.add('active');
+ setActive(btn);
+ if(page==='expense'){ if(!editingExpenseId) $('expenseDate').value=today(); renderExpenses();
+  updateTodayExpenseTotal(); }
+ refreshDashboard();
+ if(page==='report'){
+   const d=today(); if(!$('reportFrom').value)$('reportFrom').value=d.slice(0,8)+'01'; if(!$('reportTo').value)$('reportTo').value=d;
+ }
+}
+function generateReport(){
+ const from=normalizeEntryDate($('reportFrom').value), to=normalizeEntryDate($('reportTo').value);
+ if(!from||!to){alert('Select Date From and Date To.');return}
+ if(from>to){alert('Date From cannot be after Date To.');return}
+
+ const sales=entries.filter(x=>{
+   const d=normalizeEntryDate(x.date);
+   return d>=from && d<=to;
+ });
+ const exps=(Array.isArray(expenses)?expenses:[]).filter(x=>{
+   const d=normalizeEntryDate(x.date);
+   return d>=from && d<=to;
+ });
+
+ const total=sales.reduce((a,x)=>({
+   meter:a.meter+Number(x.meter||0),
+   sale:a.sale+Number(x.sale||0),
+   purchase:a.purchase+Number(x.purchase||0),
+   profit:a.profit+Number(x.profit||0),
+   gpay:a.gpay+(String(x.paidBy||'GPay').toLowerCase()==='gpay'?Number(x.sale||0):0),
+   cash:a.cash+(String(x.paidBy||'').toLowerCase()==='cash'?Number(x.sale||0):0)
+ }),{meter:0,sale:0,purchase:0,profit:0,gpay:0,cash:0});
+
+ const expenseTotal=exps.reduce((s,x)=>s+Number(x.amount||0),0);
+ const netProfit=total.profit-expenseTotal;
+
+ const expenseMap={};
+ exps.forEach(x=>{
+   const name=String(x.name||'Other').trim()||'Other';
+   expenseMap[name]=(expenseMap[name]||0)+Number(x.amount||0);
+ });
+
+ const expenseBreakdown=Object.entries(expenseMap)
+   .sort((a,b)=>a[0].localeCompare(b[0]))
+   .map(([name,amt])=>`<div class="item-row"><div><b>${esc(name)}</b></div><b>${money(amt)}</b></div>`)
+   .join('') || '<div class="empty">No expenses found</div>';
+
+ const saleEntries=sales.map(x=>`
+   <div class="history-card">
+    <div class="history-head"><span>${esc(x.item)}</span><span>${money(x.profit)}</span></div>
+    <div class="meta">${esc(normalizeEntryDate(x.date))} • Meter ${Number(x.meter||0).toFixed(2)} • Sale ${money(x.sale)}</div>
+    <div class="meta">Purchase ${money(x.purchase)} • ${esc(x.paidBy||'GPay')}</div>
+   </div>`).join('');
+
+ const expenseEntries=exps.map(x=>`
+   <div class="history-card">
+    <div class="history-head"><span>Expense: ${esc(x.name)}</span><span>${money(x.amount)}</span></div>
+    <div class="meta">${esc(normalizeEntryDate(x.date))} • Expense</div>
+   </div>`).join('');
+
+ $('reportResult').innerHTML=`
+ <div class="report-summary">
+  <div class="stat">📏 Meter<b>${total.meter.toFixed(2)}</b></div>
+  <div class="stat">💰 Sale<b>${money(total.sale)}</b></div>
+  <div class="stat">🧾 Purchase<b>${money(total.purchase)}</b></div>
+  <div class="stat">📈 Profit<b>${money(total.profit)}</b></div>
+  <div class="stat">💸 Expense<b>${money(expenseTotal)}</b></div>
+  <div class="stat">💵 Net Profit<b>${money(netProfit)}</b></div>
+  <div class="stat">💳 GPay<b>${money(total.gpay)}</b></div>
+  <div class="stat">💵 Cash<b>${money(total.cash)}</b></div>
+ </div>
+ <div class="history-card"><b>📅 ${esc(from)} → ${esc(to)}</b><br><span class="meta">Sales: ${sales.length} • Expenses: ${exps.length}</span></div>
+ <div class="history-card"><b>💸 Expense Breakdown</b>${expenseBreakdown}</div>
+ <div class="history-card"><b>📋 Entries (${sales.length+exps.length})</b>
+   ${saleEntries}${expenseEntries || '<div class="empty">No entries found for this date range</div>'}
+ </div>`;
+}
+
+function refreshDashboard(){
+  const t=today();
+  const sales=(Array.isArray(entries)?entries:[]).filter(x=>normalizeEntryDate(x.date)===t);
+  const exps=(Array.isArray(expenses)?expenses:[]).filter(x=>expenseDateKey(x.date)===t);
+  const sale=sales.reduce((a,x)=>a+Number(x.sale||0),0);
+  const purchase=sales.reduce((a,x)=>a+Number(x.purchase||0),0);
+  const profit=sales.reduce((a,x)=>a+Number(x.profit||0),0);
+  const expense=exps.reduce((a,x)=>a+Number(x.amount||0),0);
+  const gpay=sales.reduce((a,x)=>a+(String(x.paidBy||'').toLowerCase()==='gpay'?Number(x.sale||0):0),0);
+  const cash=sales.reduce((a,x)=>a+(String(x.paidBy||'').toLowerCase()==='cash'?Number(x.sale||0):0),0);
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=money(val)};
+  set('dashSale',sale);set('dashPurchase',purchase);set('dashProfit',profit);set('dashExpense',expense);set('dashGpay',gpay);set('dashCash',cash);set('dashNet',profit-expense);
+}
+
+function init(){
+  normalizeAllEntryDates();
+  $('date').value=today();
+  populateItems();
+  renderItems();
+  renderHistory();
+  refreshDashboard();
+}
+function populateItems(){
+  const old=$('item').value;
+  $('item').innerHTML='<option value="">Select Item</option>'+
+    items.map(x=>`<option value="${esc(x.name)}">${esc(x.name)} — ${money(x.rate)}/m</option>`).join('');
+  if(items.some(x=>x.name===old)) $('item').value=old;
+}
+function getRate(){
+  const x=items.find(i=>i.name===$('item').value);
+  return x?Number(x.rate):0;
+}
+function calculate(){
+  const rate=getRate(), meter=Number($('meter').value)||0, sale=Number($('sale').value)||0;
+  const purchase=rate>0&&meter>0?Math.round(rate*meter*100)/100:0;
+  const profit=purchase>0?Math.round((sale-purchase)*100)/100:0;
+  $('purchase').value=purchase?purchase:'';
+  $('profit').value=(sale>0&&purchase>0)?profit:'';
+}
+function localTime(){const d=new Date();return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});}
+let editingId=null;
+function saveEntry(){
+  const item=$('item').value, meter=Number($('meter').value)||0, sale=Number($('sale').value)||0;
+  const rate=getRate(), purchase=rate*meter;
+  if(!item){alert('Please select an Item Name.');return}
+  if(!(meter>0)){alert('Please enter Meter.');return}
+  if(!(sale>=0)){alert('Please enter Sale amount.');return}
+  if(!(rate>0)){alert('Please add a Purchase / Meter rate for this item.');return}
+  const wasEditing=!!editingId;
+  if(editingId){
+    const idx=entries.findIndex(x=>x.id===editingId);
+    if(idx>=0) entries[idx]={...entries[idx],date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,meter,rate,sale,paidBy:$('paidBy').value,purchase,profit:sale-purchase};
+  }else{
+    entries.unshift({id:Date.now(),date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,meter,rate,sale,paidBy:$('paidBy').value,purchase,profit:sale-purchase,time:localTime()});
+  }
+  editingId=null;$('saveBtn').textContent='Save Entry';
+  localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));
+  alert(wasEditing?'Entry updated successfully.':'Entry saved successfully.');
+  newEntry();
+  renderHistory();
+  refreshDashboard();
+}
+function newEntry(){
+  editingId=null;$('saveBtn').textContent='Save Entry';
+  $('historyCard').classList.add('hidden');$('entryCard').classList.remove('hidden');
+  $('item').value='';$('meter').value='';$('sale').value='';$('paidBy').value='GPay';$('purchase').value='';$('profit').value='';
+  $('date').value=today();
+}
+
+function showHistory(){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const homePage=document.getElementById('homePage');
+  if(homePage) homePage.classList.add('active');
+  $('historySearch').value='';
+  $('historyFrom').value='';
+  $('historyTo').value='';
+  $('entryCard').classList.add('hidden');
+  $('historyCard').classList.remove('hidden');
+  renderHistory();
+}
+function renderHistory(){
+  normalizeAllEntryDates();
+  const q=($('historySearch')?.value||'').trim().toLowerCase();
+  const from=normalizeEntryDate($('historyFrom')?.value||'');
+  const to=normalizeEntryDate($('historyTo')?.value||'');
+  const list=entries
+    .filter(x=>{
+      const d=normalizeEntryDate(x.date);
+      const text=(x.item||'').toLowerCase();
+      return (!q||text.includes(q))&&(!from||d>=from)&&(!to||d<=to);
+    })
+    .sort((a,b)=>{
+      const da=normalizeEntryDate(a.date), db=normalizeEntryDate(b.date);
+      if(db!==da)return db.localeCompare(da);
+      return Number(b.id||0)-Number(a.id||0);
+    });
+  const total=list.reduce((a,x)=>({
+    meter:a.meter+Number(x.meter||0),
+    sale:a.sale+Number(x.sale||0),
+    purchase:a.purchase+Number(x.purchase||0),
+    profit:a.profit+Number(x.profit||0)
+  }),{meter:0,sale:0,purchase:0,profit:0});
+  $('sumMeter').textContent=Number(total.meter.toFixed(2)).toLocaleString('en-IN');
+  $('sumSale').textContent=money(total.sale);
+  $('sumPurchase').textContent=money(total.purchase);
+  $('sumProfit').textContent=money(total.profit);
+  const listEl=$('historyList'); $('historyCount') && ($('historyCount').textContent = `Entries (${list.length})`);
+  if(!list.length){
+    listEl.innerHTML='<div class="history-card empty">No records found</div>';
+    return;
+  }
+  listEl.innerHTML=list.map(x=>`
+    <div class="history-card">
+      <div class="history-head"><span>${esc(x.item)}</span><span>${money(x.profit)}</span></div>
+      <div class="meta">${esc(normalizeEntryDate(x.date))} • ${esc(x.place||'Kerala')} • ${x.meter} m</div>
+      <div class="time-line">Time: ${esc(x.time||'—')}</div>
+      <div style="margin-top:9px">Sale ${money(x.sale)} • ${esc(x.paidBy||'GPay')} − Purchase ${money(x.purchase)}</div>
+      <div class="meta">Purchase / Meter: ${money(x.rate)}</div>
+      <div class="history-actions">
+        <button class="edit-btn" onclick="editEntry(${x.id})">Edit</button>
+        <button class="danger" onclick="deleteEntry(${x.id})">Delete</button>
+      </div>
+    </div>`).join('');
+}
+function setHistoryFilter(type){
+  const d=new Date(), pad=n=>String(n).padStart(2,'0');
+  const fmt=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;
+  let from=d,to=d;
+  if(type==='week'){const day=d.getDay();from=new Date(d);from.setDate(d.getDate()-(day||7)+1)}
+  if(type==='month'){from=new Date(d.getFullYear(),d.getMonth(),1)}
+  $('historyFrom').value=fmt(from);$('historyTo').value=fmt(to);renderHistory();
+}
+function clearHistoryFilter(){
+  $('historySearch').value='';$('historyFrom').value='';$('historyTo').value='';renderHistory();
+}
+function editEntry(id){
+  const x=entries.find(e=>e.id===id);if(!x)return;
+  editingId=id;$('entryCard').classList.remove('hidden');$('historyCard').classList.add('hidden');
+  $('place').value=x.place||'Kerala';$('date').value=x.date||today();
+  $('item').value=x.item;$('meter').value=x.meter;$('sale').value=x.sale;$('paidBy').value=x.paidBy||'GPay';
+  calculate();$('saveBtn').textContent='Update Entry';window.scrollTo({top:0,behavior:'smooth'});
+}
+function deleteEntry(id){
+  if(!confirm('Delete this entry?'))return;
+  entries=entries.filter(x=>x.id!==id);localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));renderHistory();refreshDashboard();
+}
+function openItemModal(){
+  $('itemModal').style.display='flex';
+  document.documentElement.classList.add('modal-open');
+  document.body.classList.add('modal-open');
+  renderItems();
+}
+function closeItemModal(){
+  $('itemModal').style.display='none';
+  document.documentElement.classList.remove('modal-open');
+  document.body.classList.remove('modal-open');
+}
+function saveItem(){
+  const name=$('newItemName').value.trim(),rate=Number($('newItemRate').value);
+  if(!name||!(rate>0)){alert('Enter Item Name and Purchase / Meter.');return}
+  const old=items.find(x=>x.name.toLowerCase()===name.toLowerCase());
+  if(old)old.rate=rate;else items.push({name,rate});
+  localStorage.setItem(ITEMS_KEY,JSON.stringify(items));
+  $('newItemName').value='';$('newItemRate').value='';populateItems();renderItems();calculate();
+}
+function renderItems(){
+  const list=$('itemList');
+  if(!items.length){list.innerHTML='<div class="empty">No items added</div>';return}
+  list.innerHTML=items.map(x=>`
+    <div class="item-row">
+      <div><b>${esc(x.name)}</b><div class="meta">${money(x.rate)} / meter</div></div>
+      <button class="danger" onclick="deleteItem(${JSON.stringify(x.name)})">Delete</button>
+    </div>`).join('');
+}
+function deleteItem(name){
+  if(!confirm('Delete this item?'))return;
+  items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();calculate();
+}
+init();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
+
+// V4.75: Clean Today Total Expense — expense records only.
+
+
+// V4.69: History "Show All" reset — does not modify stored data.
+(function(){
+  function bindHistoryAll(){
+    const b = document.getElementById('historyAllBtn');
+    if(!b || b.dataset.bound) return;
+    b.dataset.bound = '1';
+    b.addEventListener('click', function(){
+      const search = document.querySelector('input[placeholder*="Search Item"]');
+      if(search) search.value = '';
+      document.querySelectorAll('input[type="date"]').forEach(function(x){ x.value=''; });
+      if(typeof renderHistory === 'function') renderHistory();
+      else if(typeof renderHome === 'function') renderHome();
+    });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindHistoryAll);
+  else bindHistoryAll();
+})();
+
+
+// V4.71: Home date defaults to today's local date when blank.
+(function(){
+  function todayISO(){
+    const d = new Date();
+    return d.getFullYear() + '-' +
+      String(d.getMonth()+1).padStart(2,'0') + '-' +
+      String(d.getDate()).padStart(2,'0');
+  }
+  function ensureHomeToday(){
+    const dateInputs = Array.from(document.querySelectorAll('input[type="date"]'));
+    if(!dateInputs.length) return;
+    // Prefer the Home date input near "State / Place".
+    let target = dateInputs.find(x => {
+      const prev = x.closest('div,section,form');
+      return prev && /Date/i.test(prev.innerText || '');
+    }) || dateInputs[0];
+    if(target && !target.value){
+      target.value = todayISO();
+      target.dispatchEvent(new Event('change', {bubbles:true}));
     }
-    if(m.nextDueKM){
-      const bike = currentBikes.find(b=>b.id===m.bikeId);
-      if(bike && bike.currentKM) due = due || (parseFloat(bike.currentKM) >= parseFloat(m.nextDueKM) - 200);
-    }
-    return due;
-  });
-  return {longPending, serviceDue, currentBikes};
-}
-
-function checkDailyDueReminder(){
-  const lastShown = localStorage.getItem('massBikeV1_lastReminderDate');
-  if(lastShown === todayStr()) return; // show at most once per day
-
-  const {longPending, serviceDue, currentBikes} = getDueSummary();
-  const returnedPending = loadRentals().filter(r => r.status==='returned' && (r.balance||0) > 0);
-  if(longPending.length === 0 && serviceDue.length === 0 && returnedPending.length === 0) return;
-
-  let html = '';
-  if(longPending.length){
-    html += `<div style="font-weight:700;color:var(--rust);margin-bottom:8px;font-size:13.5px;">⚠️ Long Pending Rentals (${longPending.length})</div>`;
-    longPending.forEach(r=>{
-      const days = Math.round((new Date(todayStr()) - new Date(r.startDate)) / 86400000);
-      const bike = currentBikes.find(b=>b.id===r.bikeId);
-      html += `<div class="summary-row" style="align-items:flex-start;border-bottom:1px solid var(--line);padding:10px 0;">
-        <span>${escapeHTML(r.customerName)} · ${escapeHTML(bike?bike.plate:'-')}<br>
-          <span style="font-size:11px;color:#8a8272;font-weight:400;">${days} days running</span>
-        </span>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <button class="btn btn-primary btn-sm" onclick="sendWhatsAppReminder(${r.id})">📲 Remind</button>
-          <button class="btn btn-outline btn-sm" onclick="callCustomer(${r.id})">📞 Call</button>
-        </div>
-      </div>`;
-    });
   }
-  if(returnedPending.length){
-    html += `<div style="font-weight:700;color:var(--rust);margin:14px 0 8px;font-size:13.5px;">💰 Pending Payments — Returned (${returnedPending.length})</div>`;
-    returnedPending.forEach(r=>{
-      const bike = currentBikes.find(b=>b.id===r.bikeId);
-      html += `<div class="summary-row" style="align-items:flex-start;border-bottom:1px solid var(--line);padding:10px 0;">
-        <span>${escapeHTML(r.customerName)} · ${escapeHTML(bike?bike.plate:'-')}<br>
-          <span style="font-size:11px;color:#8a8272;font-weight:400;">Balance ₹${r.balance}</span>
-        </span>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <button class="btn btn-primary btn-sm" onclick="sendWhatsAppReminder(${r.id})">📲 Remind</button>
-          <button class="btn btn-outline btn-sm" onclick="callCustomer(${r.id})">📞 Call</button>
-        </div>
-      </div>`;
-    });
-  }
-  if(serviceDue.length){
-    html += `<div style="font-weight:700;color:var(--rust);margin:14px 0 8px;font-size:13.5px;">🛠️ Service Due (${serviceDue.length})</div>`;
-    serviceDue.forEach(m=>{
-      html += `<div class="summary-row" style="border-bottom:1px solid var(--line);padding:8px 0;"><span>${escapeHTML(m.bikeName)} · ${escapeHTML(m.type)}</span></div>`;
-    });
-  }
-
-  document.getElementById('dueReminderContent').innerHTML = html;
-  document.getElementById('dueReminderOverlay').classList.remove('hide');
-  try{ localStorage.setItem('massBikeV1_lastReminderDate', todayStr()); }catch(e){}
-}
-
-function closeDueReminder(){
-  document.getElementById('dueReminderOverlay').classList.add('hide');
-}
-
-// ---- WhatsApp Reminder for a specific overdue rental ----
-function callCustomer(rentalId){
-  const r = loadRentals().find(x=>x.id===rentalId);
-  if(!r || !r.customerPhone){ alert('Phone number இல்லை / No phone number saved'); return; }
-  const phone = r.customerPhone.replace(/\D/g,'');
-  window.location.href = 'tel:' + phone;
-}
-
-function sendWhatsAppReminder(rentalId){
-  const r = loadRentals().find(x=>x.id===rentalId);
-  if(!r) return;
-  const bike = loadBikes().find(b=>b.id===r.bikeId);
-  let text = `Hi ${r.customerName}, this is a reminder from MASS BIKE.\n`;
-
-  if(r.status === 'active'){
-    const days = Math.round((new Date(todayStr()) - new Date(r.startDate)) / 86400000);
-    const owed = roundMoney(Math.max(0, (days * (r.rate||0)) - totalPaidSoFar(r)));
-    text += `Your rental of ${r.bikeName}${bike ? ' ('+bike.plate+')' : ''} has been running for ${days} days since ${formatDMY(r.startDate)}.\n`;
-    if(owed > 0) text += `Pending amount so far: ₹${owed}.\n`;
-    text += `Please return the bike or contact us. Thank you!`;
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', ensureHomeToday);
   } else {
-    text += `Your rental of ${r.bikeName}${bike ? ' ('+bike.plate+')' : ''} was returned on ${formatDMY(r.returnDate)}.\n`;
-    if((r.balance||0) > 0) text += `Pending balance: ₹${r.balance}.\n`;
-    text += `Kindly settle the balance at your earliest. Thank you!`;
+    ensureHomeToday();
   }
+})();
 
-  const phone = (r.customerPhone||'').replace(/\D/g,'');
-  const url = 'https://wa.me/' + (phone ? phone : '') + '?text=' + encodeURIComponent(text);
-  window.open(url, '_blank');
+
+// V4.72: build marker / cache refresh helper.
+(function(){
+  const BUILD = '4.88';
+  try {
+    const old = localStorage.getItem('__spb_build__');
+    if(old && old !== BUILD && 'serviceWorker' in navigator){
+      navigator.serviceWorker.getRegistrations().then(rs =>
+        Promise.all(rs.map(r => r.update()))
+      ).catch(()=>{});
+    }
+    localStorage.setItem('__spb_build__', BUILD);
+  } catch(e) {}
+})();
+
+
+// V4.74 FULL APP UPDATE
+(function(){
+  const BUILD = '4.88';
+  try { localStorage.setItem('__spb_build__', BUILD); } catch(e) {}
+})();
+
+// V4.75 CLEAN TODAY TOTAL
+try{localStorage.setItem('__spb_build__','4.88')}catch(e){}
+
+
+
+// V4.81 today/expense date refresh
+window.addEventListener('load', function(){try{updateTodayTotalExpense();}catch(e){}});
+
+// V4.77 expense date change refresh
+window.addEventListener('DOMContentLoaded',function(){const d=document.getElementById('expenseDate');if(d)d.addEventListener('change',updateTodayExpenseTotal);});
+// V4.81 auto-date final
+window.addEventListener('load',function(){try{$('date').value=today();if(!editingExpenseId)$('expenseDate').value=today();updateTodayExpenseTotal();}catch(e){}});
+
+// V4.81 LOCAL DATE FINAL FIX
+(function(){
+  function applyLocalToday(){
+    try {
+      const d=today();
+      const home=document.getElementById('date');
+      const exp=document.getElementById('expenseDate');
+      if(home && !window.editingId) home.value=d;
+      if(exp && !window.editingExpenseId) exp.value=d;
+    } catch(e) {}
+  }
+  window.addEventListener('DOMContentLoaded',applyLocalToday);
+  window.addEventListener('pageshow',applyLocalToday);
+})();
+
+</script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+
+// V4.77 — Today Total Expense is based on the selected Expense date.
+function expenseDateKey(v){
+  let d = String(v || '').trim();
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(d)) {
+    const [dd,mm,yyyy] = d.split('/');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  if (/^\d{4}\/\d{2}\/\d{2}$/.test(d)) return d.replaceAll('/','-');
+  return d.length >= 10 ? d.slice(0,10) : d;
 }
 
-document.getElementById('dueReminderOverlay').addEventListener('click', (e)=>{
-  if(e.target.id === 'dueReminderOverlay') closeDueReminder();
-});
-
-checkDailyDueReminder();
-
-// Keep the "Running" time badge on active rentals live while the app stays open
-setInterval(()=>{
-  const rentalsTabVisible = !document.getElementById('tab-rentals').classList.contains('hide');
-  const dashboardTabVisible = !document.getElementById('tab-dashboard').classList.contains('hide');
-  if(rentalsTabVisible || dashboardTabVisible) render();
-}, 60000);
-
-// Register a minimal service worker (enables full "Install App" prompt when hosted on HTTPS)
-if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
-  const swCode = `
-    self.addEventListener('install', e => self.skipWaiting());
-    self.addEventListener('activate', e => self.clients.claim());
-    self.addEventListener('fetch', e => {});
-  `;
-  const swBlob = new Blob([swCode], {type:'application/javascript'});
-  const swUrl = URL.createObjectURL(swBlob);
-  navigator.serviceWorker.register(swUrl).catch(()=>{});
+function getSelectedExpenseDate(){
+  const input = document.getElementById('expenseDate');
+  if(input && input.value) return expenseDateKey(input.value);
+  const now = new Date();
+  return now.getFullYear() + '-' +
+    String(now.getMonth()+1).padStart(2,'0') + '-' +
+    String(now.getDate()).padStart(2,'0');
 }
 
-// Keep modal fields visible when the mobile keyboard opens
-if(window.visualViewport){
-  window.visualViewport.addEventListener('resize', ()=>{
-    document.querySelectorAll('.overlay:not(.hide) .modal').forEach(m=>{
-      m.style.maxHeight = (window.visualViewport.height * 0.85) + 'px';
-    });
+function updateTodayExpenseTotal(){
+  const el = document.getElementById('todayExpenseTotal');
+  if(!el) return;
+  const selected = getSelectedExpenseDate();
+  const total = (Array.isArray(expenses)?expenses:[]).reduce((sum,x)=>{
+    return sum + (expenseDateKey(x.date) === selected ? Number(x.amount || 0) : 0);
+  },0);
+  el.innerHTML = `<span>💸 Today Total Expense</span><strong>${money(total)}</strong>`;
+}
+
+function saveGoogleClientId(){
+  const id=$('googleClientId').value.trim();
+  if(!id){alert('Enter Google OAuth Client ID.');return}
+  localStorage.setItem('spb_google_client_id',id);alert('Google Client ID saved.');
+}
+function googleDriveData(){
+  return JSON.stringify({version:'4.11',items,entries,expenses,exportedAt:new Date().toISOString()});
+}
+async function googleDriveBackup(){
+  const clientId=localStorage.getItem('spb_google_client_id')||$('googleClientId')?.value.trim();
+  if(!clientId){alert('Google Drive Backup requires a Google OAuth Client ID.\n\nFor normal Full Backup, use 📦 Full Backup (No Login).');return}
+  if(!window.google?.accounts?.oauth2){alert('Google Sign-In is still loading. Please try again.');return}
+  const tokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:clientId,scope:'https://www.googleapis.com/auth/drive.file',
+    callback:async(resp)=>{
+      if(resp.error){alert('Google authorization failed.');return}
+      const file={name:'sale-profit-book-backup.json',mimeType:'application/json'};
+      const meta=JSON.stringify(file);
+      const boundary='-------spb'+Date.now();
+      const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+meta+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+googleDriveData()+'\r\n--'+boundary+'--';
+      const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{Authorization:'Bearer '+resp.access_token,'Content-Type':'multipart/related; boundary='+boundary},body});
+      if(r.ok)alert('Google Drive backup completed.');else alert('Google Drive backup failed.');
+    }
   });
+  tokenClient.requestAccessToken({prompt:''});
 }
-document.addEventListener('focusin', (e)=>{
-  if(e.target.closest && e.target.closest('.modal')){
-    setTimeout(()=>{
-      e.target.scrollIntoView({block:'center', behavior:'smooth'});
-    }, 300);
+async function googleDriveRestore(){
+  alert('Google Drive Restore will be enabled after the Google OAuth Client ID is configured and authorized.');
+}
+</script>
+<script>
+window.addEventListener('load',function(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(function(r){return r.update();}).catch(function(){});
   }
 });
+</script>
+
+
+
+
+<script>
+(function(){
+  const MKEY='saleProfitBookMansoorV1';
+  const INITIAL_BALANCE=43334;
+  function localToday(){
+    const d=new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function fmtDate(v){
+    const s=String(v||'');
+    const m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? `${m[3]}.${m[2]}.${m[1].slice(2)}` : s;
+  }
+  function getMansoor(){
+    try{return JSON.parse(localStorage.getItem(MKEY)||'[]')}catch(e){return[]}
+  }
+  function setMansoor(a){localStorage.setItem(MKEY,JSON.stringify(a))}
+
+  window.showMansoor=function(){
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+    var p=document.getElementById('mansoorPage');
+    if(p)p.classList.add('active');
+    document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
+    var d=document.getElementById('mansoorDate');
+    if(d && !mansoorEditId)d.value=localToday();
+    renderMansoor();
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+
+  window.clearMansoor=function(){
+    document.getElementById('mansoorType').value='taken';
+    document.getElementById('mansoorDate').value=localToday();
+    document.getElementById('mansoorAmount').value='';
+    document.getElementById('mansoorNote').value='';
+    mansoorEditId=null;
+    const b=document.querySelector('#mansoorPage button[onclick*="saveMansoor"]'); if(b)b.textContent='Save';
+  };
+
+  let mansoorEditId=null;
+
+  window.saveMansoor=function(){
+    const type=document.getElementById('mansoorType').value;
+    const date=document.getElementById('mansoorDate').value || localToday();
+    const amount=Number(document.getElementById('mansoorAmount').value);
+    const note=document.getElementById('mansoorNote').value.trim();
+    if(!date||!amount||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return;}
+    const a=getMansoor();
+    if(mansoorEditId!==null){
+      const i=a.findIndex(x=>x.id===mansoorEditId);
+      if(i>=0)a[i]={...a[i],type,date,amount,note};
+    }else{
+      a.push({id:Date.now(),type,date,amount,note});
+    }
+    setMansoor(a);
+    mansoorEditId=null;
+    clearMansoor();
+    renderMansoor();
+  };
+
+  window.editMansoor=function(id){
+    const x=getMansoor().find(v=>v.id===id); if(!x)return;
+    mansoorEditId=id;
+    document.getElementById('mansoorType').value=x.type;
+    document.getElementById('mansoorDate').value=x.date;
+    document.getElementById('mansoorAmount').value=x.amount;
+    document.getElementById('mansoorNote').value=x.note||'';
+    const b=document.querySelector('#mansoorPage button[onclick*="saveMansoor"]');
+    if(b)b.textContent='Update';
+  };
+
+  window.deleteMansoor=function(id){
+    if(!confirm('இந்த பதிவை Delete செய்யவா?'))return;
+    setMansoor(getMansoor().filter(x=>x.id!==id));
+    renderMansoor();
+  };
+
+  window.toggleMansoorDate=function(id){
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle('mansoor-detail-hidden');
+  };
+
+  window.renderMansoor=function(){
+    const all=getMansoor();
+    const a=all.slice().sort((x,y)=>String(y.date).localeCompare(String(x.date))||y.id-x.id);
+    const taken=a.filter(x=>x.type==='taken').reduce((s,x)=>s+Number(x.amount||0),0);
+    const given=a.filter(x=>x.type==='given').reduce((s,x)=>s+Number(x.amount||0),0);
+    const balance=INITIAL_BALANCE+taken-given;
+    const b=document.getElementById('mansoorBalance'); if(b)b.textContent='₹'+balance.toLocaleString('en-IN');
+
+    const h=document.getElementById('mansoorHistory'); if(!h)return;
+    if(!a.length){h.innerHTML='<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';return;}
+
+    const t=localToday();
+    const todayRows=a.filter(x=>String(x.date)===t);
+    const oldMap={};
+    a.filter(x=>String(x.date)!==t).forEach(x=>{
+      const d=String(x.date||'');
+      if(!oldMap[d])oldMap[d]={taken:0,given:0,rows:[]};
+      if(x.type==='taken')oldMap[d].taken+=Number(x.amount||0);
+      else oldMap[d].given+=Number(x.amount||0);
+      oldMap[d].rows.push(x);
+    });
+
+    let html='';
+    if(todayRows.length){
+      html += '<div class="expense-section-title">📅 Today — '+fmtDate(t)+'</div>';
+      html += todayRows.map(x=>`
+        <div class="mansoor-row">
+          <div><b>${x.type==='taken'?'பணம் வாங்கியது':'பணம் தந்தது'}</b>
+          <div class="meta">${fmtDate(x.date)}${x.note?' • '+esc(x.note):''}</div></div>
+          <strong>${x.type==='taken'?'+':'-'}₹${Number(x.amount||0).toLocaleString('en-IN')}</strong>
+          <div class="mansoor-actions"><button class="mansoor-edit" onclick="editMansoor(${x.id})">Edit</button><button class="danger mansoor-delete" onclick="deleteMansoor(${x.id})">Delete</button></div>
+        </div>`).join('');
+    } else {
+      html += '<div class="expense-empty-note">இன்று பதிவு இல்லை.</div>';
+    }
+
+    const oldDates=Object.keys(oldMap).sort((a,b)=>b.localeCompare(a));
+    if(oldDates.length || INITIAL_BALANCE>0){
+      html += '<div class="expense-section-title old-expense-title">📜 Previous History</div>';
+      html += '<div class="expense-old-row mansoor-old-toggle mansoor-opening-balance"><span>📅 19.08.26</span><strong>₹'+INITIAL_BALANCE.toLocaleString('en-IN')+'</strong></div>';
+      html += oldDates.map(d=>{
+        const net=oldMap[d].taken-oldMap[d].given;
+        const sign=net>=0?'+':'-';
+        const rows=oldMap[d].rows.slice().sort((x,y)=>y.id-x.id);
+        const detail=rows.map(x=>`<div class="mansoor-detail-row"><div><b>${x.type==='taken'?'பணம் வாங்கியது':'பணம் தந்தது'}</b><div class="meta">${fmtDate(x.date)}${x.note?' • '+esc(x.note):' • குறிப்பு இல்லை'}</div></div><strong>${x.type==='taken'?'+':'-'}₹${Number(x.amount||0).toLocaleString('en-IN')}</strong></div>`).join('');
+        const id='mansoor-old-'+d.replace(/[^0-9]/g,'');
+        return `<div class="expense-old-row mansoor-old-toggle" role="button" tabindex="0" onclick="toggleMansoorDate('${id}')" onkeydown="if(event.key==='Enter'||event.key===' ')toggleMansoorDate('${id}')"><span>📅 ${fmtDate(d)}</span><strong>${sign}₹${Math.abs(net).toLocaleString('en-IN')}</strong></div><div id="${id}" class="mansoor-old-details mansoor-detail-hidden">${detail}</div>`;
+      }).join('');
+    }
+    h.innerHTML=html;
+  };
+
+  window.addEventListener('DOMContentLoaded',function(){
+    const d=document.getElementById('mansoorDate');
+    if(d)d.value=localToday();
+    renderMansoor();
+  });
+})();
+</script>
+
+
+<script>
+/* V4.47 REPORTS — expense and sales data fix */
+(function(){
+  function num(v){ return Number(v)||0; }
+  function rsMoney(v){
+    return '₹' + num(v).toLocaleString('en-IN',{maximumFractionDigits:2});
+  }
+  function showDateDefaults(){
+    var d=new Date();
+    var today=d.toISOString().slice(0,10);
+    var first=today.slice(0,8)+'01';
+    var f=document.getElementById('reportFrom');
+    var t=document.getElementById('reportTo');
+    if(f && !f.value) f.value=first;
+    if(t && !t.value) t.value=today;
+  }
+
+  window.generateReport=function(){
+    var f=document.getElementById('reportFrom');
+    var t=document.getElementById('reportTo');
+    var box=document.getElementById('reportResult');
+    if(!f || !t || !box) return;
+
+    var from=f.value, to=t.value;
+    if(!from || !to){ alert('Please select Date From and Date To.'); return; }
+    if(from>to){ alert('Date From cannot be after Date To.'); return; }
+
+    var salesData=(typeof entries!=='undefined' && Array.isArray(entries)) ? entries : [];
+    var salesList=salesData.filter(function(x){
+      return String(x.date||'')>=from && String(x.date||'')<=to;
+    });
+    var expenseData=(typeof expenses!=='undefined' && Array.isArray(expenses)) ? expenses : [];
+    var expenseList=expenseData.filter(function(x){
+      return String(x.date||'')>=from && String(x.date||'')<=to;
+    });
+
+    var meter=0,sale=0,purchase=0,profit=0,gpay=0,cash=0,expense=0;
+    salesList.forEach(function(x){
+      meter+=num(x.meter);
+      sale+=num(x.sale);
+      purchase+=num(x.purchase);
+      profit+=num(x.profit);
+      var p=String(x.paidBy||'GPay').toLowerCase();
+      if(p.indexOf('gpay')>=0 || p.indexOf('google')>=0) gpay+=num(x.sale);
+      else if(p.indexOf('cash')>=0) cash+=num(x.sale);
+    });
+    expenseList.forEach(function(x){ expense+=num(x.amount); });
+    var netProfit=profit-expense;
+
+    var expenseBreakdown={};
+    expenseList.forEach(function(x){
+      var n=String(x.name||'Expense').trim()||'Expense';
+      expenseBreakdown[n]=(expenseBreakdown[n]||0)+num(x.amount);
+    });
+    var breakdownNames=Object.keys(expenseBreakdown).sort(function(a,b){return a.localeCompare(b);});
+    var breakdownHtml=breakdownNames.length ? breakdownNames.map(function(n){
+      return '<div class=\"breakdown-row\"><span class=\"breakdown-name\">'+String(n).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]})+'</span><span class=\"breakdown-amount\">'+rsMoney(expenseBreakdown[n])+'</span></div>';
+    }).join('') : '<div class=\"empty\">No expenses for this date range.</div>';
+
+    var rows='';
+    salesList.forEach(function(x){
+      rows += '<div class="report-entry">' +
+        '<b>'+String(x.item||'Item').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})+'</b>' +
+        '<div class="meta">'+String(x.date||'')+
+        ' • Meter '+num(x.meter).toFixed(2)+
+        ' • Sale '+rsMoney(x.sale)+
+        ' • Purchase '+rsMoney(x.purchase)+
+        ' • Profit '+rsMoney(x.profit)+
+        ' • '+String(x.paidBy||'GPay')+'</div></div>';
+    });
+    expenseList.forEach(function(x){
+      rows += '<div class="report-entry"><b>Expense: '+
+        String(x.name||'Expense').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})+
+        '</b><div class="meta">'+String(x.date||'')+' • '+rsMoney(x.amount)+'</div></div>';
+    });
+    if(!rows) rows='<div class="empty">No entries found for this date range.</div>';
+
+    box.innerHTML =
+      '<h3>Report Summary</h3>'+
+      '<div class="report-summary-grid">'+
+      '<div><span>📏 Meter</span><b>'+meter.toFixed(2)+'</b></div>'+
+      '<div><span>💰 Sale</span><b>'+rsMoney(sale)+'</b></div>'+
+      '<div><span>🧾 Purchase</span><b>'+rsMoney(purchase)+'</b></div>'+
+      '<div><span>📈 Profit</span><b>'+rsMoney(profit)+'</b></div>'+
+      '<div><span>💸 Expense</span><b>'+rsMoney(expense)+'</b></div>'+
+      '<div><span>💵 Net Profit</span><b>'+rsMoney(netProfit)+'</b></div>'+
+      '<div><span>💳 GPay</span><b>'+rsMoney(gpay)+'</b></div>'+
+      '<div><span>💵 Cash</span><b>'+rsMoney(cash)+'</b></div>'+
+      '</div>'+
+      '<div class=\"report-breakdown\"><h3>💸 Expense Breakdown</h3>'+breakdownHtml+'</div>'+
+      '<h3>📋 Entries ('+(salesList.length+expenseList.length)+')</h3>'+
+      rows;
+    box.classList.remove('hidden');
+  };
+
+  /* Keep Reports compatible with V4.41 navigation. */
+  window.showReports=function(){
+    if(typeof showPage==='function') showPage('report', null);
+    showDateDefaults();
+  };
+})();
+</script>
+
+<script>
+/* V4.49 — Export the currently selected report range as CSV. */
+window.exportReportCSV=function(){
+  var from=document.getElementById('reportFrom')?.value||'';
+  var to=document.getElementById('reportTo')?.value||'';
+  if(!from||!to){ alert('Please select Date From and Date To.'); return; }
+  var sales=Array.isArray(window.entries)?window.entries:(typeof entries!=='undefined'&&Array.isArray(entries)?entries:[]);
+  var exps=Array.isArray(window.expenses)?window.expenses:(typeof expenses!=='undefined'&&Array.isArray(expenses)?expenses:[]);
+  var inRange=function(d){return String(d||'')>=from && String(d||'')<=to;};
+  var rows=[['Type','Date','Item / Expense','Meter','Sale','Purchase','Profit','Paid By','Amount']];
+  sales.filter(function(x){return inRange(x.date);}).forEach(function(x){
+    rows.push(['Sale',x.date,x.item||'',x.meter||0,x.sale||0,x.purchase||0,x.profit||0,x.paidBy||'', '']);
+  });
+  exps.filter(function(x){return inRange(x.date);}).forEach(function(x){
+    rows.push(['Expense',x.date,x.name||'','', '', '', '', '', x.amount||0]);
+  });
+  var csv=rows.map(function(r){return r.map(function(v){var s=String(v??'');return /[",\\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(',');}).join('\\r\\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Sale-Profit-Report-'+from+'-to-'+to+'.csv';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+};
+</script>
+
+<script>
+/* V4.50 — Share / Print the generated report. */
+window.shareReport=function(){
+  var box=document.getElementById('reportResult');
+  if(!box || !box.innerText.trim()){ alert('Please Generate Report first.'); return; }
+  var from=document.getElementById('reportFrom')?.value||'';
+  var to=document.getElementById('reportTo')?.value||'';
+  var text='Sale Profit Book Report\n'+from+' to '+to+'\n\n'+box.innerText.trim();
+  if(navigator.share){
+    navigator.share({title:'Sale Profit Book Report',text:text}).catch(function(){});
+  }else if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(function(){alert('Report copied.');}).catch(function(){alert('Sharing is not supported on this device.');});
+  }else{ alert('Sharing is not supported on this device.'); }
+};
+window.printReport=function(){
+  var box=document.getElementById('reportResult');
+  if(!box || !box.innerText.trim()){ alert('Please Generate Report first.'); return; }
+  var from=document.getElementById('reportFrom')?.value||'';
+  var to=document.getElementById('reportTo')?.value||'';
+  var w=window.open('','_blank');
+  if(!w){ alert('Please allow pop-ups to print the report.'); return; }
+  w.document.write('<!doctype html><html><head><title>Sale Profit Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin:0 0 6px}h2,h3{margin-top:22px}.report-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.report-summary-grid>div{border:1px solid #ddd;border-radius:12px;padding:12px}.report-summary-grid b{display:block;margin-top:6px;font-size:18px}.breakdown-row,.report-entry{padding:10px 0;border-bottom:1px solid #ddd}.meta{margin-top:5px;color:#666;font-size:13px}@media print{body{padding:0}}</style></head><body><h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+box.innerHTML+'\\n
+
+</body></html>');
+  w.document.close(); w.focus(); setTimeout(function(){w.print();},300);
+};
+</script>
+
+
+<script id="v455-backup-script">
+(function(){
+  function fullBackupV455(){
+    const storage={};
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      storage[k]=localStorage.getItem(k);
+    }
+    const data={app:"SALE-PROFIT-BOOK",version:"4.77",createdAt:new Date().toISOString(),storage:storage};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download="SALE-PROFIT-BOOK-FULL-BACKUP-"+new Date().toISOString().slice(0,10)+".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  }
+  function restoreV455(file){
+    if(!file)return;
+    if(!confirm('Restore will replace the current app data with this backup. Continue?')) return;
+    const reader=new FileReader();
+    reader.onload=function(){
+      try{
+        const data=JSON.parse(reader.result);
+        if(!data||data.app!=="SALE-PROFIT-BOOK"||!data.storage)throw new Error("invalid");
+        if(!confirm("Restore Full Backup? Current app data will be replaced."))return;
+        localStorage.clear();
+        Object.keys(data.storage).forEach(function(k){localStorage.setItem(k,data.storage[k]);});
+        alert("Full Backup restored successfully.\n\nBackup date: " + (data.createdAt ? new Date(data.createdAt).toLocaleString() : "Unknown") + "\nItems restored: " + Object.keys(data.storage).length);
+        location.reload();
+      }catch(e){alert("Invalid SALE-PROFIT-BOOK backup file.");}
+    };
+    reader.readAsText(file);
+  }
+  window.fullBackupV455=fullBackupV455;
+  window.restoreV455=restoreV455;
+})();
+</script>
+
+
+<script id="v484-stability-fix">
+// V4.85 — stability: refresh local dates/dashboard whenever the PWA resumes.
+(function(){
+  function localToday(){
+    const d=new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function refresh(){
+    try{
+      const t=localToday();
+      const home=document.getElementById('date');
+      const exp=document.getElementById('expenseDate');
+      // Only reset new-entry/expense forms; never overwrite an active edit.
+      if(home && !window.editingId) home.value=t;
+      if(exp && !window.editingExpenseId) exp.value=t;
+      if(typeof refreshDashboard==='function') refreshDashboard();
+      if(typeof updateTodayExpenseTotal==='function') updateTodayExpenseTotal();
+      if(typeof renderMansoor==='function' && document.getElementById('mansoorPage')?.classList.contains('active')) renderMansoor();
+    }catch(e){}
+  }
+  window.addEventListener('pageshow',refresh);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh();});
+  setTimeout(refresh,250);
+})();
 </script>
 </body>
 </html>
