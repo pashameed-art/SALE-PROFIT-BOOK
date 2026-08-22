@@ -433,7 +433,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.96</div>
+  <div class="version">Version 4.99</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -768,7 +768,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;',
 
 
 function backupData(){
-  const data={version:"4.96",items,entries,expenses,stockMovements,exportedAt:new Date().toISOString()};
+  const data={version:"4.99",items,entries,expenses,stockMovements,exportedAt:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);
   a.download="sale-profit-book-backup.json";a.click();URL.revokeObjectURL(a.href);
