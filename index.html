@@ -635,7 +635,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.36',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.37',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -684,11 +684,20 @@ window.addEventListener('load',function(){
 }
 </style>
 
+<style id="v537-tab-pages-style">
+body.page-open-mode .page{display:none!important}
+body.page-open-mode #homePage{display:block!important}
+body.page-open-mode #expensePage.active,
+body.page-open-mode #mansoorPage.active,
+body.page-open-mode #reportPage.active,
+body.page-open-mode #backupPage.active{display:block!important}
+.tab-page-back{display:inline-flex;align-items:center;gap:6px;margin:0 0 14px;padding:9px 14px;border:0;border-radius:12px;background:#e9f5f3;color:#145f59;font-weight:800;font-size:14px}
+</style>
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.36</div>
+<div class="version">Version 5.37</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -802,7 +811,7 @@ window.addEventListener('load',function(){
 </section>
 
 
-<div class="page" id="expensePage">
+<div class="page" id="expensePage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
 <div class="backup-box">
 <h2 style="margin-top:0">Expense</h2>
 <div class="report-grid">
@@ -831,7 +840,7 @@ window.addEventListener('load',function(){
 <div class="expense-list" id="expenseList"></div>
 </div>
 </div>
-<div class="page" id="backupPage">
+<div class="page" id="backupPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
 <div class="backup-box">
 <h2 style="margin-top:0">Backup</h2>
 <div class="backup-actions-v455">
@@ -846,7 +855,7 @@ window.addEventListener('load',function(){
 <button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
 </div>
 </div>
-<section class="page hidden" id="mansoorPage">
+<section class="page hidden" id="mansoorPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
 <div class="card">
 <h2>🤝 Mansoor கொடுக்கல் வாங்கல்</h2>
 <div class="mansoor-balance">
@@ -884,7 +893,7 @@ window.addEventListener('load',function(){
 <div id="mansoorHistory"></div>
 </div>
 </section>
-<section class="page" id="reportPage">
+<section class="page" id="reportPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
 <div class="card">
 <h2>Reports</h2>
 <div class="report-date-row">
@@ -2088,6 +2097,46 @@ function updateTodayNetProfit(){
   }catch(e){console.error(e);}
 }
 
+</script>
+<script id="v537-tab-pages">
+(function(){
+  var pages={home:'homePage',expense:'expensePage',mansoor:'mansoorPage',reports:'reportPage',backup:'backupPage'};
+  function ids(){return Object.keys(pages).map(function(k){return pages[k];});}
+  function clear(){ids().forEach(function(id){var e=document.getElementById(id);if(e)e.classList.remove('active');});}
+  function show(name,btn){
+    document.body.classList.add('page-open-mode');clear();
+    var e=document.getElementById(pages[name]);if(e)e.classList.add('active');
+    document.querySelectorAll('nav button,.nav button,.topnav button').forEach(function(b){b.classList.remove('active');});
+    if(btn)btn.classList.add('active');window.scrollTo(0,0);
+    if(name==='home'&&typeof refresh==='function')refresh();
+    if(name==='home'&&typeof refreshDashboard==='function')refreshDashboard();
+    if(name==='expense'&&typeof renderExpenses==='function')renderExpenses();
+    if(name==='expense'&&typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal();
+    if(name==='reports'&&typeof showDateDefaults==='function')showDateDefaults();
+    if(name==='mansoor'&&typeof showMansoor==='function')showMansoor();
+  }
+  function home(){
+    document.body.classList.remove('page-open-mode');clear();
+    var e=document.getElementById('homePage');if(e)e.classList.add('active');window.scrollTo(0,0);
+  }
+  window.openHomeTab=function(b){show('home',b)};
+  window.openExpenseTab=function(b){show('expense',b)};
+  window.openMansoorTab=function(b){show('mansoor',b)};
+  window.openReportsTab=function(b){show('reports',b)};
+  window.openBackupTab=function(b){show('backup',b)};
+  window.returnHomeTab=home;
+  function bind(){
+    document.querySelectorAll('button').forEach(function(b){
+      var t=(b.textContent||'').trim().replace(/\s+/g,' ');
+      if(t==='Home')b.onclick=function(){openHomeTab(b)};
+      else if(t==='Expense')b.onclick=function(){openExpenseTab(b)};
+      else if(t==='Mansoor')b.onclick=function(){openMansoorTab(b)};
+      else if(t==='Reports')b.onclick=function(){openReportsTab(b)};
+      else if(t==='Backup')b.onclick=function(){openBackupTab(b)};
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
+})();
 </script>
 </body>
 </html>
