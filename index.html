@@ -8,7 +8,7 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>Sale Profit Book • V5.08</title>
+<title>Sale Profit Book • V5.09</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -446,7 +446,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 5.08</div>
+  <div class="version">Version 5.09</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -464,7 +464,7 @@ html.modal-open, body.modal-open{
 <div id="homePage" class="page active">
 
 <div class="card stock-card" id="stockCard">
-  <div class="dashboard-title">📦 Stock</div>
+  
   <div class="field" style="margin-bottom:12px">
     <label>Item</label>
     <select id="stockItemSelect" onchange="renderStock()">
@@ -506,7 +506,8 @@ html.modal-open, body.modal-open{
   <!-- ROW 2 -->
   <!-- ROW 3 -->
   <section id="entryCard" class="card">
-    <div class="field">
+    <div class="dashboard-title">📦 Stock</div>
+<div class="field">
       <label>Item Name</label>
       <select id="item" onchange="calculate()">
         <option value="">Select Item</option>
@@ -1326,7 +1327,7 @@ function deleteItem(name){
 }
 
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=5.08', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=5.09', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
 
 // V4.75: Clean Today Total Expense — expense records only.
 
@@ -1495,7 +1496,7 @@ async function googleDriveRestore(){
 <script>
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.08',{scope:'./'}).then(function(r){return r.update();}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.09',{scope:'./'}).then(function(r){return r.update();}).catch(function(){});
   }
 });
 </script>
