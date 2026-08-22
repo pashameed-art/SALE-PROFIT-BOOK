@@ -640,11 +640,21 @@ window.addEventListener('load',function(){
 });
 </script>
 
+
+<style id="stock-section-title-style">
+.stock-section-title{
+  margin:0 0 14px 0;
+  font-size:28px;
+  font-weight:800;
+  color:#145f59;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.34</div>
+<div class="version">Version 5.35</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -703,6 +713,7 @@ window.addEventListener('load',function(){
 </div>
 </section><div class="card stock-card" id="stockCard">
 <div class="field" style="margin-bottom:12px">
+<h2 class="stock-section-title">📦 Stock</h2>
 <label>Item</label>
 <select id="stockItemSelect" onchange="renderStock()">
 <option value="">Select Item</option>
