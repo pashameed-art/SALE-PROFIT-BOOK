@@ -1,0 +1,2305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Mass Uniform Store</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#1C2B3A">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MUS Ledger">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#F3EFE3; --paper:#FFFDF8; --navy:#1C2B3A; --khaki:#4A5D3A;
+  --brass:#B8860B; --brown:#5A4632; --purple:#6b5b95; --rust:#8B3A2E;
+  --border:#e0d8c5; --muted:#8a8270;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--cream);font-family:'Noto Sans',sans-serif;color:var(--navy);padding-bottom:90px;}
+.stencil{font-family:'Oswald',sans-serif;letter-spacing:.06em;text-transform:uppercase;}
+.card{background:var(--paper);border:2px dashed rgba(28,43,58,.25);border-radius:10px;padding:12px;}
+input,select,textarea,button{font-family:'Noto Sans',sans-serif;}
+button{cursor:pointer;}
+.hidden{display:none !important;}
+.modal-overlay{position:fixed;inset:0;background:rgba(28,43,58,.5);display:flex;align-items:flex-end;z-index:50;}
+.modal-sheet{background:var(--cream);width:100%;border-radius:18px 18px 0 0;padding:18px 18px 24px;max-height:85vh;overflow-y:auto;}
+.field-label{font-size:12px;color:#6b6455;display:block;margin-bottom:4px;}
+.field-input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);font-size:14px;background:#fff;color:var(--navy);}
+.btn-primary{width:100%;padding:14px;border-radius:12px;border:none;background:var(--navy);color:var(--cream);font-weight:700;font-size:15px;}
+.btn-gold{width:100%;padding:14px;border-radius:12px;border:none;background:var(--brass);color:var(--navy);font-weight:800;font-size:15px;}
+.row{display:flex;gap:8px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+select{appearance:none;}
+/* Prevent Android Chrome auto-zoom-triggered scroll jump on focus */
+input, select, textarea { font-size:16px !important; }
+
+/* Bill printing / "Download PDF" — isolate just the invoice card.
+   #printableInvoice is set on the invoice preview card in sales.js. */
+@media print {
+  body * { visibility: hidden; }
+  #printableInvoice, #printableInvoice * { visibility: visible; }
+  #printableInvoice {
+    position: absolute; left: 0; top: 0; width: 100%;
+    box-shadow: none !important; border: none !important;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<div style="background:var(--navy);padding:22px 18px 26px;position:relative;overflow:hidden;">
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--brass);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;">👕</div>
+      <div>
+        <div class="stencil" style="color:var(--brass);font-size:12px;font-weight:700;">UNIFORM STORE LEDGER</div>
+        <div id="headerTitle" style="color:var(--cream);font-size:20px;font-weight:800;">Daily Accounts</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button id="installAppBtn" class="hidden" onclick="MUS.App.installApp()" style="background:var(--brass);border:none;border-radius:10px;padding:8px 10px;color:var(--navy);font-weight:700;font-size:12px;white-space:nowrap;">📲 Install App</button>
+      <button onclick="MUS.App.openShopSettings()" style="background:rgba(255,255,255,.1);border:none;border-radius:10px;padding:8px;color:var(--cream);font-size:16px;">⚙️</button>
+    </div>
+  </div>
+  <div id="todayStrip" style="margin-top:18px;background:rgba(255,255,255,.06);border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;"></div>
+</div>
+
+<div style="display:flex;gap:8px;padding:12px 14px 0;">
+  <button id="tabDashboardBtn" onclick="MUS.App.switchTab('dashboard')" style="flex:1;padding:10px;border-radius:10px;font-weight:700;font-size:13px;">📊 Dashboard</button>
+  <button id="tabLedgerBtn" onclick="MUS.App.switchTab('ledger')" style="flex:1;padding:10px;border-radius:10px;font-weight:700;font-size:13px;">📒 Ledger</button>
+  <button id="tabBillBtn" onclick="MUS.App.switchTab('bill')" style="flex:1;padding:10px;border-radius:10px;font-weight:700;font-size:13px;">📄 Bill</button>
+</div>
+
+<div id="dashboardView" class="hidden"></div>
+<div id="ledgerView"></div>
+<div id="billView" class="hidden"></div>
+
+<button id="fabAdd" onclick="MUS.Dashboard.openEntryForm()" style="position:fixed;bottom:22px;right:20px;width:58px;height:58px;border-radius:50%;background:var(--brass);border:3px solid var(--navy);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(28,43,58,.35);font-size:26px;font-weight:700;color:var(--navy);">+</button>
+
+<div id="modalRoot"></div>
+
+<script>
+/* ===== storage.js ===== */
+/* ==========================================================================
+   storage.js
+   - Defines the shared MUS namespace (all modules attach themselves here).
+   - Holds generic utilities used across modules.
+   - Owns the localStorage read/write and the default seed data.
+   - Owns one-time migration from the old nested "catalog" shape
+     (companies -> items -> shades) into the new flat Product Master shape.
+   ========================================================================== */
+
+window.MUS = window.MUS || {};
+
+/* ---------------- Entry Types (shared config) ---------------- */
+MUS.Types = {
+  sale:            { label: "Sale",              color: "#4A5D3A", sign: 1 },
+  expense:         { label: "Expense",           color: "#8B3A2E", sign: -1 },
+  purchase:        { label: "Purchase",          color: "#5A4632", sign: -1 },
+  creditGiven:     { label: "Credit Given",      color: "#6b5b95", sign: 0 },
+  credit:          { label: "Credit Received",   color: "#B8860B", sign: 1 },
+  supplierCredit:  { label: "Supplier Credit",   color: "#2E4057", sign: 0 },
+  supplierPayment: { label: "Supplier Payment",  color: "#1C6758", sign: -1 },
+};
+
+/* ---------------- Utils ---------------- */
+MUS.Utils = (function () {
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function fmtDate(dateStr) {
+    const d = new Date(dateStr + "T00:00:00");
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return `${String(d.getDate()).padStart(2, "0")} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  function fmtTime(isoOrDate) {
+    const d = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
+    if (isNaN(d.getTime())) return "";
+    let hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+    return `${hours}:${minutes} ${ampm}`;
+  }
+
+  function money(n) {
+    return "₹" + Math.abs(n || 0).toLocaleString("en-IN");
+  }
+
+  function esc(s) {
+    return (s || "").toString().replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    }[c]));
+  }
+
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  return { todayStr, fmtDate, fmtTime, money, esc, uid };
+})();
+
+/* ---------------- Storage ---------------- */
+MUS.Storage = (function () {
+  const STORAGE_KEY = "muStoreData_v2";
+  const LEGACY_KEY = "muStoreData"; // v1 monolithic app used this key
+
+  function defaultProducts() {
+    const u = MUS.Utils.uid;
+    return [
+      {
+        id: u(), company: "BSL", item: "Diplomat", productName: "BSL - Diplomat",
+        purchaseRate: 225, saleRate: 0, active: true, shades: [], stock: 0, minStock: 10,
+      },
+      {
+        id: u(), company: "BSL", item: "Executive Choice", productName: "BSL - Executive Choice",
+        purchaseRate: 225, saleRate: 0, active: true, stock: 0, minStock: 10,
+        shades: [
+          { id: u(), shadeNo: "002", stock: 0 },
+          { id: u(), shadeNo: "003", stock: 0 },
+          { id: u(), shadeNo: "004", stock: 0 },
+          { id: u(), shadeNo: "005", stock: 0 },
+          { id: u(), shadeNo: "006", stock: 0 },
+        ],
+      },
+      {
+        id: u(), company: "BSL", item: "Officer Charm", productName: "BSL - Officer Charm",
+        purchaseRate: 225, saleRate: 0, active: true, stock: 0, minStock: 10,
+        shades: [
+          { id: u(), shadeNo: "002", stock: 0 },
+          { id: u(), shadeNo: "003", stock: 0 },
+          { id: u(), shadeNo: "004", stock: 0 },
+          { id: u(), shadeNo: "005", stock: 0 },
+          { id: u(), shadeNo: "006", stock: 0 },
+        ],
+      },
+      {
+        id: u(), company: "IPS Shatak Fab", item: "Officer Choice", productName: "IPS Shatak Fab - Officer Choice",
+        purchaseRate: 165, saleRate: 0, active: true, stock: 0, minStock: 10,
+        shades: ["01","02","08","14","19","20","18","17","24","25","28","29","30"].map((n) => ({ id: u(), shadeNo: n, stock: 0 })),
+      },
+      {
+        id: u(), company: "Reid & Taylor", item: "Prime", productName: "Reid & Taylor - Prime",
+        purchaseRate: 600, saleRate: 0, active: true, stock: 0, minStock: 10,
+        shades: [
+          { id: u(), shadeNo: "01", stock: 24 },
+          { id: u(), shadeNo: "02", stock: 60 },
+          { id: u(), shadeNo: "03", stock: 0 },
+        ],
+      },
+    ];
+  }
+
+  function defaultState() {
+    return {
+      entries: [],
+      invoices: [],
+      shopInfo: { name: "Mass Uniform Store", address: "Indra Nagar, Kadayanallur – 627751", phone: "9042321452" },
+      products: defaultProducts(),
+      customers: [],
+      lastBackupAt: null,
+    };
+  }
+
+  /* Convert v1 nested catalog (companies -> items -> shades) into flat products[] */
+  function migrateCatalogToProducts(catalog) {
+    const products = [];
+    (catalog || []).forEach((co) => {
+      (co.items || []).forEach((it) => {
+        products.push({
+          id: it.id || MUS.Utils.uid(),
+          company: co.companyName,
+          item: it.name,
+          productName: `${co.companyName} - ${it.name}`,
+          purchaseRate: it.purchaseRate || it.rate || 0,
+          saleRate: it.saleRate || 0,
+          active: true,
+          stock: it.stock || 0,
+          shades: (it.shades || []).map((s) => ({ id: s.id || MUS.Utils.uid(), shadeNo: s.shadeNo, stock: s.stock })),
+        });
+      });
+    });
+    return products;
+  }
+
+  function load() {
+    // Try current (v2) format first
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return Object.assign(defaultState(), parsed);
+      }
+    } catch (e) { console.error("Storage load error", e); }
+
+    // Fall back to legacy (v1) single-file app data and migrate it
+    try {
+      const legacyRaw = localStorage.getItem(LEGACY_KEY);
+      if (legacyRaw) {
+        const legacy = JSON.parse(legacyRaw);
+        const state = defaultState();
+        state.entries = legacy.entries || [];
+        state.invoices = legacy.invoices || [];
+        state.shopInfo = legacy.shopInfo || state.shopInfo;
+        if (legacy.catalog) state.products = migrateCatalogToProducts(legacy.catalog);
+        save(state);
+        return state;
+      }
+    } catch (e) { console.error("Legacy migration error", e); }
+
+    return defaultState();
+  }
+
+  function save(state) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.error("Storage save error", e);
+    }
+  }
+
+  return { load, save, defaultState, defaultProducts, migrateCatalogToProducts, STORAGE_KEY };
+})();
+
+
+/* ===== products.js ===== */
+/* ==========================================================================
+   products.js — Product Master
+   Every product: { id, company, item, productName, purchaseRate, saleRate,
+                     active, shades:[{id, shadeNo, stock}], stock }
+   `stock` is only meaningful when a product has no shades.
+   This module owns all reads/writes to state.products and is the single
+   source of truth that purchase.js and sales.js build on top of.
+   ========================================================================== */
+
+window.MUS = window.MUS || {};
+
+MUS.Products = (function () {
+  const { uid, esc } = MUS.Utils;
+
+  function list(state, { activeOnly = false } = {}) {
+    const items = state.products || [];
+    return activeOnly ? items.filter((p) => p.active) : items;
+  }
+
+  function getById(state, id) {
+    return (state.products || []).find((p) => p.id === id) || null;
+  }
+
+  function getCompanies(state, { activeOnly = true } = {}) {
+    const src = activeOnly ? list(state, { activeOnly: true }) : list(state);
+    return [...new Set(src.map((p) => p.company))].sort();
+  }
+
+  function getItemsForCompany(state, company, { activeOnly = true } = {}) {
+    const src = activeOnly ? list(state, { activeOnly: true }) : list(state);
+    return src.filter((p) => p.company === company);
+  }
+
+  function currentStock(product) {
+    if (product.shades && product.shades.length > 0) {
+      return product.shades.reduce((s, sh) => s + (parseFloat(sh.stock) || 0), 0);
+    }
+    return parseFloat(product.stock) || 0;
+  }
+
+  function isLowStock(product) {
+    const min = parseFloat(product.minStock);
+    if (isNaN(min) || min <= 0) return false;
+    return currentStock(product) < min;
+  }
+
+  function lowStockList(state) {
+    return list(state, { activeOnly: true }).filter(isLowStock);
+  }
+
+  function stockValue(state) {
+    return list(state).reduce((sum, p) => sum + currentStock(p) * (parseFloat(p.purchaseRate) || 0), 0);
+  }
+
+  function add(state, data) {
+    const product = {
+      id: uid(),
+      company: (data.company || "").trim(),
+      item: (data.item || "").trim(),
+      productName: `${(data.company || "").trim()} - ${(data.item || "").trim()}`,
+      purchaseRate: parseFloat(data.purchaseRate) || 0,
+      saleRate: parseFloat(data.saleRate) || 0,
+      minStock: parseFloat(data.minStock) || 0,
+      active: data.active !== undefined ? !!data.active : true,
+      favourite: !!data.favourite,
+      stock: parseFloat(data.stock) || 0,
+      shades: data.shades || [],
+    };
+    state.products.push(product);
+    return product;
+  }
+
+  function update(state, id, patch) {
+    const p = getById(state, id);
+    if (!p) return null;
+    Object.assign(p, patch);
+    if (patch.company !== undefined || patch.item !== undefined) {
+      p.productName = `${p.company} - ${p.item}`;
+    }
+    return p;
+  }
+
+  function remove(state, id) {
+    state.products = state.products.filter((p) => p.id !== id);
+  }
+
+  function addShade(state, productId, shadeNo, stock) {
+    const p = getById(state, productId);
+    if (!p) return null;
+    const shade = { id: uid(), shadeNo: (shadeNo || "").trim(), stock: parseFloat(stock) || 0 };
+    p.shades = p.shades || [];
+    p.shades.push(shade);
+    return shade;
+  }
+
+  function updateShade(state, productId, shadeId, patch) {
+    const p = getById(state, productId);
+    const s = p && p.shades.find((sh) => sh.id === shadeId);
+    if (s) Object.assign(s, patch);
+    return s || null;
+  }
+
+  function removeShade(state, productId, shadeId) {
+    const p = getById(state, productId);
+    if (!p) return;
+    p.shades = p.shades.filter((sh) => sh.id !== shadeId);
+  }
+
+  /* Increase or decrease stock. deltaQty is positive for purchases (stock in),
+     negative for sales (stock out). If a shadeId is given, adjusts that shade;
+     otherwise adjusts the product-level stock (no-shade products). */
+  function adjustStock(state, productId, shadeId, deltaQty) {
+    const p = getById(state, productId);
+    if (!p) return;
+    if (shadeId) {
+      const s = p.shades.find((sh) => sh.id === shadeId);
+      if (s) s.stock = Math.max(0, (parseFloat(s.stock) || 0) + deltaQty);
+    } else {
+      p.stock = Math.max(0, (parseFloat(p.stock) || 0) + deltaQty);
+    }
+  }
+
+  /* ------------------------------------------------------------------
+     Product Master UI — self-contained modal for managing products.
+     Rendering only calls into MUS.App.openModal / closeModal / render
+     so this module has no hidden coupling beyond that thin contract.
+     ------------------------------------------------------------------ */
+  let expandedProductId = null;
+
+  function openManageModal() {
+    expandedProductId = null;
+    MUS.App.openModal(renderManageModalHtml());
+  }
+
+  function renderManageModalHtml() {
+    const state = MUS.App.state;
+    const products = list(state);
+
+    const rows = products.map((p) => {
+      const stock = currentStock(p);
+      let shadesHtml = "";
+      if (expandedProductId === p.id) {
+        const shadeRows = (p.shades || []).map((s) => `
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap;">
+            <input type="text" class="field-input" style="width:78px;padding:6px 8px;" value="${esc(s.shadeNo)}"
+              oninput="MUS.Products.uiUpdateShade('${p.id}','${s.id}','shadeNo',this.value)">
+            <input type="number" inputmode="decimal" class="field-input" style="flex:1;padding:6px 8px;" value="${s.stock}"
+              oninput="MUS.Products.uiUpdateShade('${p.id}','${s.id}','stock',parseFloat(this.value)||0)">
+            <button onclick="MUS.Products.uiRemoveShade('${p.id}','${s.id}')" style="background:none;border:none;color:#c2a28a;font-size:15px;">🗑</button>
+          </div>`).join("");
+        shadesHtml = `
+          <div style="margin-top:8px;border-top:1px dashed var(--border);padding-top:8px;">
+            ${shadeRows}
+            <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
+              <input type="text" class="field-input" id="newShadeNo-${p.id}" style="width:78px;padding:6px 8px;" placeholder="Shade no.">
+              <input type="number" inputmode="decimal" class="field-input" id="newShadeStock-${p.id}" style="flex:1;padding:6px 8px;" placeholder="Stock">
+              <button onclick="MUS.Products.uiAddShade('${p.id}')" style="padding:0 10px;border-radius:6px;border:none;background:#4A5D3A;color:#fff;">+</button>
+            </div>
+          </div>`;
+      }
+
+      return `
+        <div class="card" style="margin-bottom:10px;">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <button onclick="MUS.Products.uiToggleFavourite('${p.id}')" style="background:none;border:none;font-size:20px;line-height:1;padding:0 2px;flex-shrink:0;">
+              ${p.favourite ? "⭐" : "☆"}</button>
+            <input type="text" class="field-input" style="flex:1;min-width:110px;font-size:13px;padding:8px 8px;" value="${esc(p.company)}"
+              placeholder="Company" oninput="MUS.Products.uiUpdate('${p.id}','company',this.value)">
+            <input type="text" class="field-input" style="flex:1;min-width:110px;font-size:13px;padding:8px 8px;" value="${esc(p.item)}"
+              placeholder="Item" oninput="MUS.Products.uiUpdate('${p.id}','item',this.value)">
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:90px;">
+              <label style="font-size:11px;color:#8a8270;">Purchase ₹</label>
+              <input type="number" inputmode="decimal" class="field-input" style="padding:6px 8px;" value="${p.purchaseRate}"
+                oninput="MUS.Products.uiUpdate('${p.id}','purchaseRate',parseFloat(this.value)||0)">
+            </div>
+            <div style="flex:1;min-width:90px;">
+              <label style="font-size:11px;color:#8a8270;">Sale ₹ (default)</label>
+              <input type="number" inputmode="decimal" class="field-input" style="padding:6px 8px;" value="${p.saleRate || ""}" placeholder="manual"
+                oninput="MUS.Products.uiUpdate('${p.id}','saleRate',parseFloat(this.value)||0)">
+            </div>
+            <div style="flex:1;min-width:90px;">
+              <label style="font-size:11px;color:#8a8270;">Min Stock</label>
+              <input type="number" inputmode="decimal" class="field-input" style="padding:6px 8px;" value="${p.minStock || ""}" placeholder="e.g. 10"
+                oninput="MUS.Products.uiUpdate('${p.id}','minStock',parseFloat(this.value)||0)">
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:6px;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#6b6455;">
+              <input type="checkbox" ${p.active ? "checked" : ""} onchange="MUS.Products.uiUpdate('${p.id}','active',this.checked)"> Active
+            </label>
+            <span style="font-size:11px;color:#8a8270;">Stock: <b style="color:var(--navy);">${stock}</b>
+              ${isLowStock(p) ? `<span style="background:#8B3A2E1a;color:#8B3A2E;font-weight:700;padding:2px 6px;border-radius:5px;margin-left:6px;">⚠ LOW</span>` : ""}</span>
+            <button onclick="MUS.Products.uiRemove('${p.id}')" style="background:none;border:none;color:#c2a28a;">🗑</button>
+          </div>
+          <button onclick="MUS.Products.uiToggleExpand('${p.id}')" style="margin-top:8px;background:none;border:none;color:var(--brass);font-size:12px;font-weight:700;">
+            ${expandedProductId === p.id ? "Hide Shades" : `Shades (${(p.shades || []).length})`}
+          </button>
+          ${shadesHtml}
+        </div>`;
+    }).join("");
+
+    return `
+      <div class="modal-overlay" onclick="MUS.App.closeModal()">
+        <div class="modal-sheet" onclick="event.stopPropagation()">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div class="stencil" style="font-size:13px;font-weight:700;">Product Master</div>
+            <button onclick="MUS.App.closeModal()" style="background:none;border:none;font-size:18px;">✕</button>
+          </div>
+          ${rows || `<div style="text-align:center;color:#9a9280;padding:20px;font-size:13px;">No products yet.</div>`}
+          <div class="card" style="margin-top:6px;margin-bottom:18px;">
+            <div class="stencil" style="font-size:11px;color:#6b6455;margin-bottom:8px;">Add New Product</div>
+            <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+              <input type="text" class="field-input" id="newProdCompany" style="flex:1;min-width:110px;" placeholder="Company">
+              <input type="text" class="field-input" id="newProdItem" style="flex:1;min-width:110px;" placeholder="Item">
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+              <input type="number" inputmode="decimal" class="field-input" id="newProdPurchaseRate" style="flex:1;" placeholder="Purchase ₹">
+              <input type="number" inputmode="decimal" class="field-input" id="newProdSaleRate" style="flex:1;" placeholder="Sale ₹ (optional)">
+              <input type="number" inputmode="decimal" class="field-input" id="newProdMinStock" style="flex:1;" placeholder="Min Stock">
+            </div>
+            <button class="btn-gold" onclick="MUS.Products.uiAddProduct()">+ Add Product</button>
+          </div>
+          <button class="btn-primary" onclick="MUS.App.closeModal()">Done</button>
+        </div>
+      </div>`;
+  }
+
+  function uiRefresh() {
+    MUS.App.openModal(renderManageModalHtml());
+  }
+  function uiToggleExpand(id) {
+    expandedProductId = expandedProductId === id ? null : id;
+    uiRefresh();
+  }
+  function uiToggleFavourite(id) {
+    const p = getById(MUS.App.state, id);
+    if (!p) return;
+    update(MUS.App.state, id, { favourite: !p.favourite });
+    MUS.App.saveState();
+    uiRefresh();
+  }
+  function uiUpdate(id, field, value) {
+    update(MUS.App.state, id, { [field]: value });
+    MUS.App.saveState();
+  }
+  function uiRemove(id) {
+    remove(MUS.App.state, id);
+    MUS.App.saveState();
+    uiRefresh();
+  }
+  function uiAddProduct() {
+    const company = document.getElementById("newProdCompany").value.trim();
+    const item = document.getElementById("newProdItem").value.trim();
+    const purchaseRate = parseFloat(document.getElementById("newProdPurchaseRate").value) || 0;
+    const saleRate = parseFloat(document.getElementById("newProdSaleRate").value) || 0;
+    const minStock = parseFloat(document.getElementById("newProdMinStock").value) || 0;
+    if (!company || !item) { alert("Please enter both Company and Item."); return; }
+    add(MUS.App.state, { company, item, purchaseRate, saleRate, minStock, active: true, shades: [] });
+    MUS.App.saveState();
+    uiRefresh();
+  }
+  function uiAddShade(productId) {
+    const noEl = document.getElementById(`newShadeNo-${productId}`);
+    const stockEl = document.getElementById(`newShadeStock-${productId}`);
+    const shadeNo = noEl.value.trim();
+    const stock = parseFloat(stockEl.value) || 0;
+    if (!shadeNo) { alert("Please enter a shade number."); return; }
+    addShade(MUS.App.state, productId, shadeNo, stock);
+    MUS.App.saveState();
+    uiRefresh();
+  }
+  function uiUpdateShade(productId, shadeId, field, value) {
+    updateShade(MUS.App.state, productId, shadeId, { [field]: value });
+    MUS.App.saveState();
+  }
+  function uiRemoveShade(productId, shadeId) {
+    removeShade(MUS.App.state, productId, shadeId);
+    MUS.App.saveState();
+    uiRefresh();
+  }
+
+  return {
+    list, getById, getCompanies, getItemsForCompany, currentStock,
+    isLowStock, lowStockList, stockValue,
+    add, update, remove, addShade, updateShade, removeShade, adjustStock,
+    openManageModal, uiToggleExpand, uiToggleFavourite, uiUpdate, uiRemove, uiAddProduct,
+    uiAddShade, uiUpdateShade, uiRemoveShade,
+  };
+})();
+
+
+
+/* ===== customers.js ===== */
+/* ==========================================================================
+   customers.js — Customer Master
+   Every customer: { id, name, mobile, address, lastPurchaseDate,
+                      lastRates: { [productId]: { rate, date } } }
+
+   This module is the single source of truth for:
+   - the customer list used for Bill-screen autocomplete
+   - "pending balance" / "last purchase" lookups shown when a customer
+     is selected (pending balance itself is computed by reports.js from
+     entries — customers.js just calls that so there's one definition)
+   - remembering the last rate charged to a customer for a given product,
+     so sales.js can prefill (but never force) the Rate field next time.
+   ========================================================================== */
+
+window.MUS = window.MUS || {};
+
+MUS.Customers = (function () {
+  const { uid, esc } = MUS.Utils;
+
+  function list(state) {
+    return state.customers || [];
+  }
+
+  function getById(state, id) {
+    return list(state).find((c) => c.id === id) || null;
+  }
+
+  function findByNameExact(state, name) {
+    const target = (name || "").trim().toLowerCase();
+    if (!target) return null;
+    return list(state).find((c) => c.name.trim().toLowerCase() === target) || null;
+  }
+
+  /* Finds an existing customer by name, or creates a minimal new record.
+     If mobile/address are supplied and the existing record is missing
+     them, they get filled in (never overwrites a value that's already set). */
+  function getOrCreate(state, { name, mobile, address }) {
+    const cleanName = (name || "").trim();
+    if (!cleanName) return null;
+    let c = findByNameExact(state, cleanName);
+    if (!c) {
+      c = { id: uid(), name: cleanName, mobile: (mobile || "").trim(), address: (address || "").trim(), lastPurchaseDate: null, lastRates: {} };
+      state.customers.push(c);
+    } else {
+      if (!c.mobile && mobile) c.mobile = mobile.trim();
+      if (!c.address && address) c.address = address.trim();
+    }
+    return c;
+  }
+
+  function update(state, id, patch) {
+    const c = getById(state, id);
+    if (c) Object.assign(c, patch);
+    return c;
+  }
+
+  function remove(state, id) {
+    state.customers = state.customers.filter((c) => c.id !== id);
+  }
+
+  function setLastRate(state, customerId, productId, rate, date) {
+    const c = getById(state, customerId);
+    if (!c || !productId) return;
+    c.lastRates = c.lastRates || {};
+    c.lastRates[productId] = { rate: parseFloat(rate) || 0, date };
+  }
+
+  function getLastRate(state, customerId, productId) {
+    const c = getById(state, customerId);
+    if (!c || !productId || !c.lastRates) return null;
+    return c.lastRates[productId] || null;
+  }
+
+  function recordPurchase(state, customerId, date) {
+    const c = getById(state, customerId);
+    if (!c) return;
+    if (!c.lastPurchaseDate || date > c.lastPurchaseDate) c.lastPurchaseDate = date;
+  }
+
+  /* ------------------------------------------------------------------
+     Manage Customers modal (self-contained CRUD UI)
+     ------------------------------------------------------------------ */
+  function openManageModal() {
+    MUS.App.openModal(renderManageModalHtml());
+  }
+
+  function renderManageModalHtml() {
+    const state = MUS.App.state;
+    const customers = list(state);
+
+    const rows = customers.map((c) => {
+      const bal = MUS.Reports.customerBalanceFor(state.entries, c.name);
+      return `
+      <div class="card" style="margin-bottom:10px;">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input type="text" class="field-input" style="flex:1;min-width:110px;font-size:13px;padding:8px 8px;" value="${esc(c.name)}"
+            placeholder="Name" oninput="MUS.Customers.uiUpdate('${c.id}','name',this.value)">
+          <input type="tel" inputmode="tel" class="field-input" style="flex:1;min-width:110px;font-size:13px;padding:8px 8px;" value="${esc(c.mobile)}"
+            placeholder="Mobile Number" oninput="MUS.Customers.uiUpdate('${c.id}','mobile',this.value)">
+        </div>
+        <input type="text" class="field-input" style="margin-top:8px;font-size:13px;padding:8px 8px;" value="${esc(c.address)}"
+          placeholder="Address (optional)" oninput="MUS.Customers.uiUpdate('${c.id}','address',this.value)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+          <span style="font-size:11px;color:#8a8270;">
+            Pending: <b style="color:${bal.balance > 0 ? "#8B3A2E" : "#4A5D3A"};">${MUS.Utils.money(bal.balance)}</b>
+            ${c.lastPurchaseDate ? ` · Last purchase: ${MUS.Utils.fmtDate(c.lastPurchaseDate)}` : ""}
+          </span>
+          <button onclick="MUS.Customers.uiRemove('${c.id}')" style="background:none;border:none;color:#c2a28a;">🗑</button>
+        </div>
+      </div>`;
+    }).join("");
+
+    return `
+      <div class="modal-overlay" onclick="MUS.App.closeModal()">
+        <div class="modal-sheet" onclick="event.stopPropagation()">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div class="stencil" style="font-size:13px;font-weight:700;">Customer Master</div>
+            <button onclick="MUS.App.closeModal()" style="background:none;border:none;font-size:18px;">✕</button>
+          </div>
+          ${rows || `<div style="text-align:center;color:#9a9280;padding:20px;font-size:13px;">No customers yet — they're also added automatically the first time you bill someone.</div>`}
+          <div class="card" style="margin-top:6px;margin-bottom:18px;">
+            <div class="stencil" style="font-size:11px;color:#6b6455;margin-bottom:8px;">Add New Customer</div>
+            <input type="text" class="field-input" id="newCustName" style="margin-bottom:8px;" placeholder="Name">
+            <input type="tel" inputmode="tel" class="field-input" id="newCustMobile" style="margin-bottom:8px;" placeholder="Mobile Number">
+            <input type="text" class="field-input" id="newCustAddress" style="margin-bottom:8px;" placeholder="Address (optional)">
+            <button class="btn-gold" onclick="MUS.Customers.uiAdd()">+ Add Customer</button>
+          </div>
+          <button class="btn-primary" onclick="MUS.App.closeModal()">Done</button>
+        </div>
+      </div>`;
+  }
+
+  function uiRefresh() { MUS.App.openModal(renderManageModalHtml()); }
+  function uiUpdate(id, field, value) {
+    update(MUS.App.state, id, { [field]: value });
+    MUS.App.saveState();
+  }
+  function uiRemove(id) {
+    remove(MUS.App.state, id);
+    MUS.App.saveState();
+    uiRefresh();
+  }
+  function uiAdd() {
+    const name = document.getElementById("newCustName").value.trim();
+    const mobile = document.getElementById("newCustMobile").value.trim();
+    const address = document.getElementById("newCustAddress").value.trim();
+    if (!name) { alert("Please enter a customer name."); return; }
+    getOrCreate(MUS.App.state, { name, mobile, address });
+    MUS.App.saveState();
+    uiRefresh();
+  }
+
+  return {
+    list, getById, findByNameExact, getOrCreate, update, remove,
+    setLastRate, getLastRate, recordPurchase,
+    openManageModal, uiUpdate, uiRemove, uiAdd,
+  };
+})();
+
+
+/* ===== purchase.js ===== */
+/* ==========================================================================
+   purchase.js
+   Record Purchase flow: pick a product (+ shade if it has one), quantity,
+   rate, and whether it was paid now or bought on supplier credit.
+   - "Paid Now"  -> logs a `purchase` entry (counts as cash expense).
+   - "On Credit" -> logs a `supplierCredit` entry (no cash impact yet);
+                    later settled via a `supplierPayment` entry from the
+                    New Entry form in dashboard.js.
+   Either way, stock is increased immediately via MUS.Products.adjustStock.
+   ========================================================================== */
+
+window.MUS = window.MUS || {};
+
+MUS.Purchase = (function () {
+  const { uid, esc, money, todayStr } = MUS.Utils;
+  let form = {};
+
+  function open() {
+    const state = MUS.App.state;
+    const firstCompany = MUS.Products.getCompanies(state)[0] || "";
+    form = { company: firstCompany, productId: "", shadeId: "", qty: "", rate: "", date: todayStr(), supplier: "", paymentStatus: "paid" };
+    MUS.App.openModal(renderHtml());
+  }
+
+  function refresh() {
+    MUS.App.openModal(renderHtml());
+  }
+
+  function renderHtml() {
+    const state = MUS.App.state;
+    const companies = MUS.Products.getCompanies(state);
+    const itemsInCompany = form.company ? MUS.Products.getItemsForCompany(state, form.company) : [];
+    const product = form.productId ? MUS.Products.getById(state, form.productId) : null;
+    const shade = product && product.shades.find((s) => s.id === form.shadeId);
+
+    const canSave = product && parseFloat(form.qty) > 0 && parseFloat(form.rate) > 0 &&
+      (!product.shades || product.shades.length === 0 || shade) &&
+      (form.paymentStatus === "paid" || form.supplier.trim());
+
+    const total = (parseFloat(form.qty) || 0) * (parseFloat(form.rate) || 0);
+
+    const shadeSection = (product && product.shades && product.shades.length > 0) ? `
+      <label class="field-label">Shade</label>
+      <select class="field-input" style="margin-bottom:10px;" onchange="MUS.Purchase.setField('shadeId', this.value)">
+        <option value="">-- Select Shade --</option>
+        ${product.shades.map((s) => `<option value="${s.id}" ${s.id === form.shadeId ? "selected" : ""}>Shade ${esc(s.shadeNo)} (current stock: ${s.stock})</option>`).join("")}
+      </select>` : "";
+
+    return `
+    <div class="modal-overlay" onclick="MUS.App.closeModal()">
+      <div class="modal-sheet" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div class="stencil" style="font-size:13px;color:var(--brown);font-weight:700;">Record Purchase</div>
+          <button onclick="MUS.App.closeModal()" style="background:none;border:none;font-size:18px;">✕</button>
+        </div>
+
+        <label class="field-label">Company</label>
+        <select class="field-input" style="margin-bottom:10px;" onchange="MUS.Purchase.setCompany(this.value)">
+          ${companies.length === 0 ? `<option value="">No companies yet — add one in Product Master</option>` : ""}
+          ${companies.map((c) => `<option value="${esc(c)}" ${c === form.company ? "selected" : ""}>${esc(c)}</option>`).join("")}
+        </select>
+
+        <label class="field-label">Item</label>
+        <select class="field-input" style="margin-bottom:10px;" onchange="MUS.Purchase.setField('productId', this.value); MUS.Purchase.prefillRate();" ${itemsInCompany.length === 0 ? "disabled" : ""}>
+          <option value="">${itemsInCompany.length === 0 ? "No items yet" : "-- Select Item --"}</option>
+          ${itemsInCompany.map((p) => `<option value="${p.id}" ${p.id === form.productId ? "selected" : ""}>${esc(p.item)}</option>`).join("")}
+        </select>
+
+        ${shadeSection}
+
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <div style="flex:1;">
+            <label class="field-label">Qty (mtr)</label>
+            <input type="number" inputmode="decimal" class="field-input" value="${form.qty}" oninput="MUS.Purchase.setFieldLight('qty', this.value)">
+          </div>
+          <div style="flex:1;">
+            <label class="field-label">Rate (₹/mtr)</label>
+            <input type="number" inputmode="decimal" class="field-input" value="${form.rate}" oninput="MUS.Purchase.setFieldLight('rate', this.value)">
+          </div>
+        </div>
+
+        <label class="field-label">Date</label>
+        <input type="date" class="field-input" style="margin-bottom:10px;" value="${form.date}" oninput="MUS.Purchase.setFieldLight('date', this.value)">
+
+        <label class="field-label">Payment</label>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button onclick="MUS.Purchase.setField('paymentStatus','paid')" style="flex:1;padding:10px 4px;border-radius:10px;font-weight:700;font-size:13px;
+            border:2px solid ${form.paymentStatus === "paid" ? "#4A5D3A" : "var(--border)"};
+            background:${form.paymentStatus === "paid" ? "#4A5D3A1a" : "#fff"};color:${form.paymentStatus === "paid" ? "#4A5D3A" : "#8a8270"};">Paid Now</button>
+          <button onclick="MUS.Purchase.setField('paymentStatus','credit')" style="flex:1;padding:10px 4px;border-radius:10px;font-weight:700;font-size:13px;
+            border:2px solid ${form.paymentStatus === "credit" ? "#2E4057" : "var(--border)"};
+            background:${form.paymentStatus === "credit" ? "#2E40571a" : "#fff"};color:${form.paymentStatus === "credit" ? "#2E4057" : "#8a8270"};">On Credit</button>
+        </div>
+
+        <label class="field-label">Supplier ${form.paymentStatus === "credit" ? "Name (required to track balance)" : "/ Note (optional)"}</label>
+        <input type="text" class="field-input" style="margin-bottom:14px;" value="${esc(form.supplier)}" oninput="MUS.Purchase.setFieldLight('supplier', this.value)" placeholder="e.g. BSL agent name">
+
+        <div id="purchaseTotalCost" class="card" style="margin-bottom:14px;display:${(form.qty && form.rate) ? "flex" : "none"};justify-content:space-between;">
+          <span style="font-size:13px;color:#6b6455;">Total Cost</span><span style="font-size:16px;font-weight:800;color:var(--brown);">${money(total)}</span></div>
+
+        <button id="purchaseSaveBtn" onclick="MUS.Purchase.save()" ${!canSave ? 'disabled style="opacity:0.5;"' : ""}
+          style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--brown);color:var(--cream);font-weight:800;font-size:15px;">
+          Save Purchase
+        </button>
+      </div>
+    </div>`;
+  }
+
+  function setCompany(company) {
+    form.company = company;
+    form.productId = "";
+    form.shadeId = "";
+    refresh();
+  }
+  function setField(field, value) {
+    form[field] = value;
+    if (field === "productId") form.shadeId = "";
+    refresh();
+  }
+
+  function setFieldLight(field, value) {
+    form[field] = value;
+    const state = MUS.App.state;
+    const product = form.productId ? MUS.Products.getById(state, form.productId) : null;
+    const shade = product && product.shades.find((s) => s.id === form.shadeId);
+    const canSave = product && parseFloat(form.qty) > 0 && parseFloat(form.rate) > 0 &&
+      (!product.shades || product.shades.length === 0 || shade) &&
+      (form.paymentStatus === "paid" || form.supplier.trim());
+    const total = (parseFloat(form.qty) || 0) * (parseFloat(form.rate) || 0);
+
+    const totalBox = document.getElementById("purchaseTotalCost");
+    if (totalBox) {
+      totalBox.style.display = (form.qty && form.rate) ? "flex" : "none";
+      const amountSpan = totalBox.querySelector("span:last-child");
+      if (amountSpan) amountSpan.textContent = money(total);
+    }
+    const saveBtn = document.getElementById("purchaseSaveBtn");
+    if (saveBtn) {
+      saveBtn.disabled = !canSave;
+      saveBtn.style.opacity = canSave ? 1 : 0.5;
+    }
+  }
+  function prefillRate() {
+    const product = MUS.Products.getById(MUS.App.state, form.productId);
+    if (product) form.rate = String(product.purchaseRate || "");
+  }
+
+  function save() {
+    const state = MUS.App.state;
+    const product = MUS.Products.getById(state, form.productId);
+    const shade = product && product.shades.find((s) => s.id === form.shadeId);
+    const q = parseFloat(form.qty) || 0;
+    const r = parseFloat(form.rate) || 0;
+    if (!product || q <= 0 || r <= 0) return;
+
+    MUS.Products.adjustStock(state, product.id, shade ? shade.id : null, q);
+
+    const isCredit = form.paymentStatus === "credit";
+    MUS.App.addEntry({
+      id: uid(),
+      type: isCredit ? "supplierCredit" : "purchase",
+      amount: q * r,
+      note: `Purchase: ${product.productName}${shade ? ` - Shade ${shade.shadeNo}` : ""} (${q} mtr)${isCredit ? " [On Credit]" : ""}`,
+      customer: (form.supplier || "").trim(),
+      phone: "",
+      date: form.date,
+    });
+
+    MUS.App.saveState();
+    MUS.App.closeModal();
+  }
+
+  return { open, setCompany, setField, setFieldLight, prefillRate, save };
+})();
+
+
+/* ===== sales.js ===== */
+/* ==========================================================================
+   sales.js
+   Bill / invoice building: product+shade selection (deducts stock), item
+   lines, Amount Paid / Balance Due, invoice generation, WhatsApp share
+   and clipboard-copy fallback for the finished bill.
+
+   IMPORTANT: updateItem()/updateAmountPaid() intentionally do NOT trigger
+   a full re-render while the user is typing. Re-rendering on every
+   keystroke destroys and recreates the focused <input>, which on Android
+   Chrome causes the keyboard/viewport to jump. Instead we patch just the
+   few DOM nodes that need to change (Amount, Total, Balance Due).
+   ========================================================================== */
+
+window.MUS = window.MUS || {};
+
+MUS.Sales = (function () {
+  const { uid, esc, money, todayStr, fmtDate, fmtTime } = MUS.Utils;
+
+  let billState = {
+    customer: "", customerId: null, customerMobile: "", date: todayStr(), items: [blankItem()],
+    discount: "", busCharge: "", roundOff: "", receivedAmount: "", paymentMode: "GPay",
+  };
+  let productSearchQuery = "";
+
+  function blankItem() {
+    return { id: uid(), desc: "", qty: "1", rate: "", productId: null, shadeId: null };
+  }
+
+  function resetBill() {
+    billState = {
+      customer: "", customerId: null, customerMobile: "", date: todayStr(), items: [blankItem()],
+      discount: "", busCharge: "", roundOff: "", receivedAmount: "", paymentMode: "GPay",
+    };
+    productSearchQuery = "";
+  }
+
+  /* ---------------- Rendering the Bill tab ---------------- */
+  function render() {
+    const state = MUS.App.state;
+    const t = computeTotals();
+
+    const itemRows = billState.items.map((it) => `
+      <div class="card" style="margin-bottom:8px;">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" class="field-input" style="flex:1;font-size:13px;padding:8px 10px;" value="${esc(it.desc)}"
+            oninput="MUS.Sales.updateItem('${it.id}','desc',this.value)" placeholder="Item description">
+          ${billState.items.length > 1 ? `<button onclick="MUS.Sales.removeItem('${it.id}')" style="background:none;border:none;color:#c2a28a;font-size:16px;flex-shrink:0;">🗑</button>` : ""}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <div style="flex:1;"><label style="font-size:11px;color:#8a8270;">Qty</label>
+            <input type="number" inputmode="decimal" class="field-input" style="font-size:13px;padding:8px 10px;" value="${it.qty}"
+              oninput="MUS.Sales.updateItem('${it.id}','qty',this.value)"></div>
+          <div style="flex:1;"><label style="font-size:11px;color:#8a8270;">Rate (₹/mtr)</label>
+            <input type="number" inputmode="decimal" class="field-input" style="font-size:13px;padding:8px 10px;" value="${it.rate}"
+              oninput="MUS.Sales.updateItem('${it.id}','rate',this.value)" placeholder="300+"></div>
+          <div style="flex:1;"><label style="font-size:11px;color:#8a8270;">Amount</label>
+            <div id="amt-${it.id}" style="padding:8px 10px;font-size:13px;font-weight:700;">${money((parseFloat(it.qty) || 0) * (parseFloat(it.rate) || 0))}</div></div>
+        </div>
+      </div>`).join("");
+
+    const prevBills = MUS.App.state.invoices.slice(0, 10).map((inv) => `
+      <div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="flex:1;cursor:pointer;" onclick="MUS.Sales.previewInvoiceById('${inv.id}')">
+          <div style="font-size:13px;font-weight:700;">${esc(inv.invoiceNo)} · ${esc(inv.customer)}</div>
+          <div style="font-size:11px;color:#8a8270;">${fmtDate(inv.date)}${inv.time ? ` · ${inv.time}` : ""}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+          <span style="font-weight:800;color:#4A5D3A;font-size:14px;">${money(inv.total)}</span>
+          <button onclick="event.stopPropagation(); MUS.Sales.deleteInvoice('${inv.id}')" style="background:none;border:none;color:#c2a28a;font-size:16px;">🗑</button>
+        </div>
+      </div>`).join("");
+
+
+    const html = `
+      <div style="padding:16px 14px 100px;">
+        <div class="card" style="margin-bottom:14px;">
+          <label class="field-label">Customer Name</label>
+          <input type="text" class="field-input" list="customerNamesList" style="margin-bottom:4px;" value="${esc(billState.customer)}"
+            oninput="MUS.Sales.setCustomer(this.value)" placeholder="Name">
+          <datalist id="customerNamesList">
+            ${MUS.Customers.list(state).map((c) => `<option value="${esc(c.name)}">`).join("")}
+          </datalist>
+          <div id="customerInfoBox">${customerInfoHtml()}</div>
+          <label class="field-label" style="margin-top:10px;">Mobile Number (optional)</label>
+          <input type="tel" inputmode="tel" class="field-input" style="margin-bottom:10px;" value="${esc(billState.customerMobile)}"
+            oninput="MUS.Sales.setCustomerMobile(this.value)" placeholder="10-digit mobile number">
+          <label class="field-label">Date</label>
+          <input type="date" class="field-input" value="${billState.date}" oninput="MUS.Sales.setDate(this.value)">
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span class="stencil" style="font-size:11px;color:#6b6455;">Add Item</span>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button onclick="MUS.Purchase.open()" style="background:none;border:none;color:var(--brown);font-size:12px;font-weight:700;">Record Purchase</button>
+            <button onclick="MUS.Products.openManageModal()" style="background:none;border:none;color:var(--brass);font-size:12px;font-weight:700;">Product Master</button>
+            <button onclick="MUS.Customers.openManageModal()" style="background:none;border:none;color:var(--purple);font-size:12px;font-weight:700;">Customers</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px;">
+          ${favouritesRowHtml(state)}
+          <label class="field-label">Search Product</label>
+          <input type="text" id="productSearchInput" class="field-input" style="margin-bottom:8px;" value="${esc(productSearchQuery)}"
+            oninput="MUS.Sales.setSearchQuery(this.value)" placeholder="Search company, item, or product name...">
+          <div id="searchResultsBox">${searchResultsHtml(state)}</div>
+        </div>
+
+        <div class="stencil" style="font-size:11px;color:#6b6455;margin-bottom:8px;">Items</div>
+        ${itemRows}
+        <button onclick="MUS.Sales.addBlankLine()" style="width:100%;padding:10px;border-radius:10px;border:2px dashed var(--brass);background:none;color:var(--brass);font-weight:700;font-size:13px;margin-bottom:16px;">+ Add Blank Line</button>
+
+        <div class="card" style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span style="font-size:13px;color:#6b6455;">Total Qty</span><span id="billTotalQtyVal" style="font-size:14px;font-weight:700;color:var(--navy);">${t.qty}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span style="font-size:13px;color:#6b6455;">Subtotal</span><span id="billSubtotalVal" style="font-size:14px;font-weight:700;color:var(--navy);">${money(t.subtotal)}</span></div>
+
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <div style="flex:1;"><label class="field-label">Discount (₹)</label>
+              <input type="number" inputmode="decimal" class="field-input" style="padding:10px 8px;" value="${billState.discount}" oninput="MUS.Sales.setBillField('discount', this.value)" placeholder="0"></div>
+            <div style="flex:1;"><label class="field-label">Bus/Auto (₹)</label>
+              <input type="number" inputmode="decimal" class="field-input" style="padding:10px 8px;" value="${billState.busCharge}" oninput="MUS.Sales.setBillField('busCharge', this.value)" placeholder="0"></div>
+            <div style="flex:1;"><label class="field-label">Round Off</label>
+              <input type="number" inputmode="decimal" class="field-input" style="padding:10px 8px;" value="${billState.roundOff}" oninput="MUS.Sales.setBillField('roundOff', this.value)" placeholder="0"></div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px dashed var(--border);padding-top:10px;">
+            <span style="font-size:13px;font-weight:700;color:var(--navy);">Grand Total</span>
+            <span id="billGrandTotalVal" style="font-size:20px;font-weight:800;color:var(--navy);">${money(t.grandTotal)}</span></div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <label class="field-label">Received Amount (₹)</label>
+          <input type="number" inputmode="decimal" class="field-input" style="margin-bottom:10px;" value="${billState.receivedAmount}" oninput="MUS.Sales.setBillField('receivedAmount', this.value)" placeholder="0">
+
+          <label class="field-label">Payment Mode</label>
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+            ${["GPay", "Cash", "Mixed"].map((mode) => `
+              <button onclick="MUS.Sales.setPaymentMode('${mode}')" style="flex:1;padding:10px 4px;border-radius:10px;font-weight:700;font-size:13px;
+                border:2px solid ${billState.paymentMode === mode ? "#4A5D3A" : "var(--border)"};
+                background:${billState.paymentMode === mode ? "#4A5D3A1a" : "#fff"};color:${billState.paymentMode === mode ? "#4A5D3A" : "#8a8270"};">${mode}</button>`).join("")}
+          </div>
+          <div id="balanceBox">${balanceHtml(t)}</div>
+        </div>
+
+        <button class="btn-gold" onclick="MUS.Sales.generateInvoice()" ${t.grandTotal <= 0 ? 'disabled style="opacity:0.5;"' : ""}>📄 Generate Bill</button>
+
+        ${MUS.App.state.invoices.length ? `<div style="margin-top:24px;"><div class="stencil" style="font-size:11px;color:#6b6455;margin-bottom:8px;">Previous Bills</div>${prevBills}</div>` : ""}
+      </div>`;
+    document.getElementById("billView").innerHTML = html;
+  }
+
+
+  function totals() {
+    const qty = billState.items.reduce((s, it) => s + (parseFloat(it.qty) || 0), 0);
+    const total = billState.items.reduce((s, it) => s + (parseFloat(it.qty) || 0) * (parseFloat(it.rate) || 0), 0);
+    return { qty, total };
+  }
+
+  /* Subtotal -> Discount -> + Bus/Auto -> + Round Off -> Grand Total -> Balance */
+  function computeTotals() {
+    const { qty, total: subtotal } = totals();
+    const discount = parseFloat(billState.discount) || 0;
+    const busCharge = parseFloat(billState.busCharge) || 0;
+    const roundOff = parseFloat(billState.roundOff) || 0;
+    const grandTotal = subtotal - discount + busCharge + roundOff;
+    const received = parseFloat(billState.receivedAmount) || 0;
+    const balance = grandTotal - received;
+    return { qty, subtotal, discount, busCharge, roundOff, grandTotal, received, balance };
+  }
+
+  function balanceHtml(t) {
+    const isPaid = Math.abs(t.balance) < 0.005;
+    if (isPaid) {
+      return `<div class="card" style="display:flex;justify-content:space-between;align-items:center;border-color:#4A5D3A;">
+        <span style="font-size:13px;color:#6b6455;">Balance</span>
+        <span style="font-size:14px;font-weight:800;color:#4A5D3A;background:#4A5D3A1a;padding:4px 10px;border-radius:6px;">✓ PAID</span></div>`;
+    }
+    return `<div class="card" style="display:flex;justify-content:space-between;">
+      <span style="font-size:13px;color:#6b6455;">Balance Amount</span>
+      <span style="font-size:16px;font-weight:800;color:${t.balance > 0 ? "#8B3A2E" : "#4A5D3A"};">${money(t.balance)}</span></div>`;
+  }
+
+  function refreshTotalsDisplay() {
+    const t = computeTotals();
+    const qtyEl = document.getElementById("billTotalQtyVal");
+    const subtotalEl = document.getElementById("billSubtotalVal");
+    const grandTotalEl = document.getElementById("billGrandTotalVal");
+    if (qtyEl) qtyEl.textContent = t.qty;
+    if (subtotalEl) subtotalEl.textContent = money(t.subtotal);
+    if (grandTotalEl) grandTotalEl.textContent = money(t.grandTotal);
+    const box = document.getElementById("balanceBox");
+    if (box) box.innerHTML = balanceHtml(t);
+    const genBtn = document.querySelector('button[onclick="MUS.Sales.generateInvoice()"]');
+    if (genBtn) { genBtn.disabled = t.grandTotal <= 0; genBtn.style.opacity = t.grandTotal <= 0 ? 0.5 : 1; }
+  }
+
+  function customerInfoHtml() {
+    const state = MUS.App.state;
+    const customer = MUS.Customers.findByNameExact(state, billState.customer);
+    if (!customer) return "";
+    const bal = MUS.Reports.customerBalanceFor(state.entries, customer.name);
+    const parts = [];
+    if (customer.mobile) parts.push(`📱 ${esc(customer.mobile)}`);
+    parts.push(`<b>தற்போது பெற வேண்டியது</b> <b style="color:${bal.balance > 0 ? "#8B3A2E" : "#4A5D3A"};">${money(bal.balance)}</b>`);
+    return `<div style="font-size:12px;color:#6b6455;background:#EFEADC;border-radius:8px;padding:8px 10px;margin-bottom:6px;">${parts.join(" · ")}</div>`;
+  }
+
+  function refreshCustomerInfoBox() {
+    const state = MUS.App.state;
+    const customer = MUS.Customers.findByNameExact(state, billState.customer);
+    billState.customerId = customer ? customer.id : null;
+    if (customer && customer.mobile && !billState.customerMobile) {
+      billState.customerMobile = customer.mobile;
+      const mobileInput = document.querySelector('input[oninput^="MUS.Sales.setCustomerMobile"]');
+      if (mobileInput) mobileInput.value = customer.mobile;
+    }
+    const box = document.getElementById("customerInfoBox");
+    if (box) box.innerHTML = customerInfoHtml();
+  }
+
+  /* ---------------- Field handlers ---------------- */
+  function setCustomer(v) { billState.customer = v; refreshCustomerInfoBox(); }
+  function setCustomerMobile(v) { billState.customerMobile = v; }
+  function setDate(v) { billState.date = v; }
+
+  function setSearchQuery(v) {
+    productSearchQuery = v;
+    const box = document.getElementById("searchResultsBox");
+    if (box) box.innerHTML = searchResultsHtml(MUS.App.state);
+  }
+
+  function updateItem(id, field, value) {
+    const it = billState.items.find((i) => i.id === id);
+    if (!it) return;
+    it[field] = value;
+    if (field === "qty" || field === "rate") {
+      const amtEl = document.getElementById(`amt-${id}`);
+      if (amtEl) amtEl.textContent = money((parseFloat(it.qty) || 0) * (parseFloat(it.rate) || 0));
+      refreshTotalsDisplay();
+    }
+  }
+  function setBillField(field, value) {
+    billState[field] = value;
+    refreshTotalsDisplay();
+  }
+  function setPaymentMode(mode) {
+    billState.paymentMode = mode;
+    render();
+  }
+  function addBlankLine() { billState.items.push(blankItem()); render(); }
+  function removeItem(id) { billState.items = billState.items.filter((i) => i.id !== id); render(); }
+
+  /* ---------------- Smart Product Search ---------------- */
+  function favouritesRowHtml(state) {
+    const favs = MUS.Products.list(state, { activeOnly: true }).filter((p) => p.favourite);
+    if (favs.length === 0) return "";
+    return `
+      <label class="field-label">⭐ Quick Bill</label>
+      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;">
+        ${favs.map((p) => `
+          <button onclick="MUS.Sales.addProductToBill('${p.id}')" style="flex-shrink:0;padding:8px 12px;border-radius:20px;border:2px solid var(--brass);
+            background:#B8860B1a;color:var(--navy);font-size:12px;font-weight:700;white-space:nowrap;">⭐ ${esc(p.productName)}</button>`).join("")}
+      </div>`;
+  }
+
+  function searchResultsHtml(state) {
+    const q = productSearchQuery.trim().toLowerCase();
+    let results = MUS.Products.list(state, { activeOnly: true });
+    if (q) {
+      results = results.filter((p) =>
+        p.company.toLowerCase().includes(q) || p.item.toLowerCase().includes(q) || p.productName.toLowerCase().includes(q));
+    }
+    // Favourites first, then alphabetical by product name.
+    results = results.sort((a, b) => (b.favourite - a.favourite) || a.productName.localeCompare(b.productName));
+    if (!q) results = results.slice(0, 8); // keep the idle list short and fast on mobile
+
+    if (results.length === 0) {
+      return `<div style="text-align:center;color:#9a9280;padding:14px 4px;font-size:13px;">No matching products.</div>`;
+    }
+    return results.map((p) => `
+      <button onclick="MUS.Sales.addProductToBill('${p.id}')" style="width:100%;text-align:left;padding:10px 12px;border-radius:8px;border:1px solid var(--border);
+        background:#fff;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:600;">${p.favourite ? "⭐ " : ""}${esc(p.productName)}</span>
+        <span style="font-size:11px;color:#8a8270;">${p.shades.length > 0 ? `${p.shades.length} shades` : ""}</span>
+      </button>`).join("");
+  }
+
+  function addProductToBill(productId) {
+    const state = MUS.App.state;
+    const product = MUS.Products.getById(state, productId);
+    if (!product) return;
+    if (product.shades && product.shades.length > 0) { openShadeSelector(product); return; }
+    addPlainLine(product);
+  }
+  function addPlainLine(product) {
+    const emptyIdx = billState.items.findIndex((it) => !it.desc.trim());
+    const line = { id: uid(), desc: product.productName, qty: "1", rate: prefillRateFor(product.id), productId: product.id, shadeId: null };
+    if (emptyIdx !== -1) billState.items[emptyIdx] = line; else billState.items.push(line);
+    render();
+  }
+  function prefillRateFor(productId) {
+    if (!billState.customerId) return "";
+    const last = MUS.Customers.getLastRate(MUS.App.state, billState.customerId, productId);
+    return last ? String(last.rate) : "";
+  }
+
+  /* ---------------- Shade selector (for sales) ---------------- */
+  function openShadeSelector(product) {
+    MUS.App.openModal(shadeSelectorHtml(product));
+  }
+  function shadeSelectorHtml(product) {
+    const rows = product.shades.map((s) => `
+      <div style="border-bottom:1px solid var(--border);padding:16px 2px;">
+        <div class="stencil" style="font-size:10px;color:#8a8270;">SHADE</div>
+        <div style="font-size:19px;font-weight:800;margin-bottom:10px;">${esc(s.shadeNo)}</div>
+        <div style="display:flex;gap:10px;">
+          <div style="background:#E8F3E3;border:1.5px solid #4A5D3A;border-radius:8px;padding:10px 14px;flex:1;">
+            <div style="font-size:11px;color:#4A5D3A;font-weight:600;">In Stock</div>
+            <div style="font-size:18px;font-weight:800;">${s.stock}</div>
+          </div>
+          <input type="number" inputmode="decimal" id="shadeQty-${s.id}" class="field-input" style="flex:1.3;" placeholder="Quantity"
+            oninput="MUS.Sales.checkShadeQty('${s.id}', ${s.stock})">
+        </div>
+        <div id="shadeWarn-${s.id}" style="font-size:11px;color:#8B3A2E;margin-top:6px;"></div>
+        <button id="shadeBtn-${s.id}" onclick="MUS.Sales.selectShade('${product.id}','${s.id}')" disabled
+          style="width:100%;margin-top:10px;padding:12px;border-radius:8px;border:none;background:var(--brass);color:var(--navy);font-weight:800;font-size:14px;opacity:0.5;">
+          Select
+        </button>
+      </div>`).join("");
+
+    return `
+    <div class="modal-overlay" onclick="MUS.App.closeModal()">
+      <div class="modal-sheet" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <div><div class="stencil" style="font-size:11px;color:#6b6455;">Select Shade</div>
+            <div style="font-size:16px;font-weight:800;">${esc(product.productName)}</div></div>
+          <button onclick="MUS.App.closeModal()" style="background:none;border:none;font-size:18px;">✕</button>
+        </div>
+        ${product.shades.length === 0 ? `<div style="text-align:center;color:#9a9280;padding:30px 10px;font-size:13px;">No shades added for this item yet.</div>` : rows}
+      </div>
+    </div>`;
+  }
+  function checkShadeQty(shadeId, stock) {
+    const val = parseFloat(document.getElementById(`shadeQty-${shadeId}`).value);
+    document.getElementById(`shadeWarn-${shadeId}`).textContent = (val > stock) ? `Only ${stock} in stock` : "";
+    const btn = document.getElementById(`shadeBtn-${shadeId}`);
+    const ok = val > 0;
+    btn.disabled = !ok;
+    btn.style.opacity = ok ? 1 : 0.5;
+  }
+  function selectShade(productId, shadeId) {
+    const qty = parseFloat(document.getElementById(`shadeQty-${shadeId}`).value);
+    if (!qty || qty <= 0) return;
+    const state = MUS.App.state;
+    const product = MUS.Products.getById(state, productId);
+    const shade = product.shades.find((s) => s.id === shadeId);
+
+    const emptyIdx = billState.items.findIndex((it) => !it.desc.trim());
+    const line = { id: uid(), desc: `${product.productName} - Shade ${shade.shadeNo}`, qty: String(qty), rate: prefillRateFor(product.id), productId: product.id, shadeId: shade.id };
+    if (emptyIdx !== -1) billState.items[emptyIdx] = line; else billState.items.push(line);
+
+    MUS.Products.adjustStock(state, product.id, shade.id, -qty);
+    MUS.App.saveState();
+    MUS.App.closeModal();
+  }
+
+  /* Invoice numbers look like MUS-2026-000001. The sequence counts existing
+     invoices for that year, so it naturally restarts each new year without
+     needing a separate counter to persist. */
+  function generateInvoiceNo(state, year) {
+    const countThisYear = state.invoices.filter((inv) => inv.invoiceNo && inv.invoiceNo.startsWith(`MUS-${year}-`)).length;
+    return `MUS-${year}-${String(countThisYear + 1).padStart(6, "0")}`;
+  }
+
+  /* ---------------- Invoice generation & preview ---------------- */
+  function generateInvoice() {
+    const validItems = billState.items.filter((it) => it.desc.trim() && (parseFloat(it.rate) || 0) > 0);
+    if (validItems.length === 0) return;
+    const state = MUS.App.state;
+    const t = computeTotals();
+    if (t.grandTotal <= 0) return;
+
+    const year = billState.date.slice(0, 4);
+    const invoiceNo = generateInvoiceNo(state, year);
+    const now = new Date();
+    const customerName = billState.customer.trim() || "Customer";
+    const invoice = {
+      id: uid(), invoiceNo, date: billState.date,
+      createdAt: now.toISOString(),
+      time: fmtTime(now),
+      customer: customerName,
+      items: validItems.map((it) => {
+        const product = it.productId ? MUS.Products.getById(state, it.productId) : null;
+        return {
+          desc: it.desc.trim(), qty: parseFloat(it.qty) || 0, rate: parseFloat(it.rate) || 0,
+          productId: it.productId || null,
+          purchaseRate: product ? (parseFloat(product.purchaseRate) || 0) : 0,
+          company: product ? product.company : "Other",
+        };
+      }),
+      subtotal: t.subtotal, discount: t.discount, busCharge: t.busCharge, roundOff: t.roundOff,
+      total: t.grandTotal, receivedAmount: t.received, balance: t.balance, paymentMode: billState.paymentMode,
+    };
+    state.invoices.unshift(invoice);
+
+    MUS.App.addEntry({ id: uid() + "s", type: "sale", amount: t.grandTotal, note: `Bill ${invoiceNo} (${billState.paymentMode})`, customer: customerName, phone: "", date: billState.date });
+
+    // Customer Master: link/create the customer, remember this rate for
+    // each product sold, and update their last purchase date.
+    const custRecord = MUS.Customers.getOrCreate(state, { name: customerName, mobile: billState.customerMobile, address: "" });
+    if (custRecord) {
+      MUS.Customers.recordPurchase(state, custRecord.id, billState.date);
+      validItems.forEach((it) => {
+        if (it.productId) MUS.Customers.setLastRate(state, custRecord.id, it.productId, it.rate, billState.date);
+      });
+    }
+
+    // Balance > 0 -> automatically create/update this customer's pending balance.
+    if (t.balance > 0.005) {
+      MUS.App.addEntry({ id: uid() + "cg", type: "creditGiven", amount: t.balance, note: `Balance due on ${invoiceNo}`, customer: customerName, phone: "", date: billState.date });
+    }
+
+    MUS.App.saveState();
+    resetBill();
+    render();
+    previewInvoiceById(invoice.id);
+  }
+
+  function previewInvoiceById(id) {
+    const inv = MUS.App.state.invoices.find((i) => i.id === id);
+    if (inv) openInvoicePreview(inv);
+  }
+
+  function deleteInvoice(id) {
+    const state = MUS.App.state;
+    const inv = state.invoices.find((i) => i.id === id);
+    if (!inv) return;
+    const ok = window.confirm(`Delete ${inv.invoiceNo}? This will also remove its Sale entry (and Balance Due, if any) from the Ledger.`);
+    if (!ok) return;
+
+    state.invoices = state.invoices.filter((i) => i.id !== id);
+    // Remove the ledger entries this bill created, so accounting stays correct.
+    state.entries = state.entries.filter((e) => {
+      const linked = e.note && e.note.includes(inv.invoiceNo);
+      return !linked;
+    });
+
+    MUS.App.saveState();
+    render();
+  }
+
+  function invoiceText(inv) {
+    const state = MUS.App.state;
+    const totalQty = inv.items.reduce((s, it) => s + (parseFloat(it.qty) || 0), 0);
+    const lines = [];
+    lines.push(state.shopInfo.name);
+    if (state.shopInfo.address) lines.push(state.shopInfo.address);
+    if (state.shopInfo.phone) lines.push(`Phone: ${state.shopInfo.phone}`);
+    lines.push("");
+    lines.push(`Invoice No: ${inv.invoiceNo}`);
+    lines.push(`Date: ${fmtDate(inv.date)}${inv.time ? ` ${inv.time}` : ""}`);
+    lines.push(`Customer: ${inv.customer}`);
+    lines.push("");
+    inv.items.forEach((it) => lines.push(`${it.desc} - Qty ${it.qty} x ₹${it.rate} = ${money(it.qty * it.rate)}`));
+    lines.push("");
+    lines.push(`Total Qty: ${totalQty}`);
+    const hasBillingDetails = inv.subtotal !== undefined;
+    if (hasBillingDetails) {
+      lines.push(`Subtotal: ${money(inv.subtotal)}`);
+      if (inv.discount) lines.push(`Discount: -${money(inv.discount)}`);
+      if (inv.busCharge) lines.push(`Bus / Auto: +${money(inv.busCharge)}`);
+      if (inv.roundOff) lines.push(`Round Off: ${inv.roundOff > 0 ? "+" : ""}${money(inv.roundOff)}`);
+      lines.push(`Grand Total: ${money(inv.total)}`);
+      lines.push(`Received (${inv.paymentMode || "—"}): ${money(inv.receivedAmount || 0)}`);
+      lines.push(Math.abs(inv.balance) < 0.005 ? `Status: PAID` : `Balance: ${money(inv.balance)}`);
+    } else {
+      lines.push(`Total: ${money(inv.total)}`);
+    }
+    lines.push("");
+    lines.push("Thank you!");
+    return lines.join("\n");
+  }
+
+  function openInvoicePreview(inv) {
+    const state = MUS.App.state;
+    const totalQty = inv.items.reduce((s, it) => s + (parseFloat(it.qty) || 0), 0);
+    const rows = inv.items.map((it) => `
+      <tr><td style="padding:6px 4px;border-bottom:1px solid #eee;">${esc(it.desc)}</td>
+        <td style="padding:6px 4px;border-bottom:1px solid #eee;text-align:center;">${it.qty}</td>
+        <td style="padding:6px 4px;border-bottom:1px solid #eee;text-align:right;">${money(it.rate)}</td>
+        <td style="padding:6px 4px;border-bottom:1px solid #eee;text-align:right;">${money(it.qty * it.rate)}</td></tr>`).join("");
+
+    const html = `
+    <div class="modal-overlay" style="align-items:center;" onclick="MUS.App.closeModal()">
+      <div style="background:#fff;border-radius:14px;width:100%;max-width:420px;max-height:88vh;overflow-y:auto;margin:0 14px;" onclick="event.stopPropagation()">
+        <div style="padding:14px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-weight:700;font-size:14px;">Bill Ready!</div>
+          <button onclick="MUS.App.closeModal()" style="background:none;border:none;font-size:18px;">✕</button>
+        </div>
+        <div style="padding:16px;">
+          <div id="printableInvoice" style="border:1px solid #e0d8c5;border-radius:12px;box-shadow:0 2px 8px rgba(28,43,58,.08);overflow:hidden;padding:20px;color:var(--navy);background:#fff;">
+            <div style="text-align:center;border-bottom:3px solid var(--navy);padding-bottom:12px;margin-bottom:12px;">
+              <div style="font-size:20px;font-weight:800;">${esc(state.shopInfo.name)}</div>
+              ${state.shopInfo.address ? `<div style="font-size:12px;color:#555;margin-top:2px;">${esc(state.shopInfo.address)}</div>` : ""}
+              ${state.shopInfo.phone ? `<div style="font-size:12px;color:#555;">Phone: ${esc(state.shopInfo.phone)}</div>` : ""}
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:14px;">
+              <div><div style="color:#888;font-size:11px;">Invoice No</div><div style="font-weight:700;">${esc(inv.invoiceNo)}</div></div>
+              <div><div style="color:#888;font-size:11px;">Date</div><div style="font-weight:700;">${fmtDate(inv.date)}${inv.time ? ` <span style="font-weight:600;color:#888;font-size:12px;">${inv.time}</span>` : ""}</div></div>
+            </div>
+            <div style="font-size:13px;margin-bottom:14px;"><div style="color:#888;font-size:11px;">Customer</div><div style="font-weight:700;">${esc(inv.customer)}</div></div>
+            <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px;">
+              <thead><tr style="border-bottom:2px solid var(--navy);"><th style="text-align:left;padding:6px 4px;">Item</th><th style="text-align:center;padding:6px 4px;">Qty</th><th style="text-align:right;padding:6px 4px;">Rate</th><th style="text-align:right;padding:6px 4px;">Amount</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+            <div style="display:flex;justify-content:flex-end;">
+              <div style="min-width:200px;border-top:2px solid var(--navy);padding-top:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span>Total Qty</span><span style="font-weight:700;">${totalQty}</span></div>
+                ${inv.subtotal !== undefined ? `
+                  <div style="display:flex;justify-content:space-between;font-size:12px;color:#555;margin-bottom:2px;"><span>Subtotal</span><span>${money(inv.subtotal)}</span></div>
+                  ${inv.discount ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:#555;margin-bottom:2px;"><span>Discount</span><span>-${money(inv.discount)}</span></div>` : ""}
+                  ${inv.busCharge ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:#555;margin-bottom:2px;"><span>Bus / Auto</span><span>+${money(inv.busCharge)}</span></div>` : ""}
+                  ${inv.roundOff ? `<div style="display:flex;justify-content:space-between;font-size:12px;color:#555;margin-bottom:2px;"><span>Round Off</span><span>${inv.roundOff > 0 ? "+" : ""}${money(inv.roundOff)}</span></div>` : ""}
+                ` : ""}
+                <div style="display:flex;justify-content:space-between;margin-top:4px;"><span style="font-weight:700;">Grand Total</span><span style="font-weight:800;font-size:16px;">${money(inv.total)}</span></div>
+                ${inv.subtotal !== undefined ? `
+                  <div style="display:flex;justify-content:space-between;font-size:12px;color:#555;margin-top:4px;"><span>Received (${esc(inv.paymentMode || "—")})</span><span>${money(inv.receivedAmount || 0)}</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:2px;">
+                    <span style="font-weight:700;">${Math.abs(inv.balance) < 0.005 ? "Status" : "Balance"}</span>
+                    <span style="font-weight:800;color:${Math.abs(inv.balance) < 0.005 ? "#4A5D3A" : "#8B3A2E"};">${Math.abs(inv.balance) < 0.005 ? "✓ PAID" : money(inv.balance)}</span>
+                  </div>
+                ` : ""}
+              </div>
+            </div>
+            <div style="text-align:center;margin-top:24px;font-size:11px;color:#999;">Thank you!</div>
+          </div>
+        </div>
+        <div style="padding:0 16px 16px;">
+          <button onclick="window.print()"
+            style="width:100%;padding:12px;border-radius:10px;border:none;background:var(--navy);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;font-size:15px;">
+            📄 Download PDF
+          </button>
+          <a href="https://wa.me/?text=${encodeURIComponent(invoiceText(inv))}" target="_blank" rel="noopener noreferrer"
+            style="width:100%;padding:12px;border-radius:10px;border:none;background:#25D366;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;box-sizing:border-box;margin-bottom:10px;font-size:15px;">
+            Share on WhatsApp
+          </a>
+          <div style="font-size:11px;color:#8a8270;margin-bottom:6px;">Or tap the box below to select all, then use your keyboard's Copy option:</div>
+          <textarea readonly onclick="this.select()" onfocus="this.select()" style="width:100%;height:140px;padding:10px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-family:monospace;resize:vertical;">${esc(invoiceText(inv))}</textarea>
+          <button class="btn-primary" style="margin-top:10px;" onclick="MUS.App.closeModal()">Done</button>
+        </div>
+      </div>
+    </div>`;
+    MUS.App.openModal(html);
+  }
+
+  return {
+    render, resetBill, setCustomer, setCustomerMobile, setDate,
+    updateItem, setBillField, setPaymentMode, addBlankLine, removeItem,
+    setSearchQuery, addProductToBill,
+    checkShadeQty, selectShade, generateInvoice, previewInvoiceById, deleteInvoice,
+  };
+})();
+
+
+/* ===== reports.js ===== */
+/* ==========================================================================
+   reports.js
+   Pure, side-effect-free calculations over entries[]. No DOM code here —
+   dashboard.js (and future V2 modules) render whatever this returns.
+   ========================================================================== */
+
+window.MUS = window.MUS || {};
+
+MUS.Reports = (function () {
+  function entriesForMonth(entries, monthStr) {
+    return entries.filter((e) => e.date.slice(0, 7) === monthStr);
+  }
+
+  function monthlyTotals(entries, monthStr) {
+    const monthEntries = entriesForMonth(entries, monthStr);
+    let sale = 0, expense = 0, credit = 0, purchase = 0;
+    monthEntries.forEach((e) => {
+      if (e.type === "sale") sale += e.amount;
+      if (e.type === "expense") expense += e.amount;
+      if (e.type === "credit") credit += e.amount;
+      if (e.type === "purchase") purchase += e.amount;
+      if (e.type === "supplierPayment") purchase += e.amount;
+    });
+    const net = sale + credit - expense - purchase;
+    return { sale, expense, credit, purchase, net, entries: monthEntries };
+  }
+
+  function groupByDate(entries) {
+    const map = {};
+    entries.forEach((e) => { (map[e.date] = map[e.date] || []).push(e); });
+    return Object.keys(map).sort((a, b) => (a < b ? 1 : -1)).map((date) => ({ date, entries: map[date] }));
+  }
+
+  function todayNet(entries, todayStr) {
+    return entries
+      .filter((e) => e.date === todayStr)
+      .reduce((s, e) => {
+        if (e.type === "expense" || e.type === "purchase" || e.type === "supplierPayment") return s - e.amount;
+        if (e.type === "creditGiven" || e.type === "supplierCredit") return s;
+        return s + e.amount;
+      }, 0);
+  }
+
+  function customerBalances(entries) {
+    const map = {};
+    entries.forEach((e) => {
+      const name = (e.customer || "").trim();
+      if (!name) return;
+      if (!map[name]) map[name] = { given: 0, paid: 0, phone: "" };
+      if (e.type === "creditGiven") {
+        map[name].given += e.amount;
+        if (e.phone) map[name].phone = e.phone;
+      }
+      if (e.type === "credit") map[name].paid += e.amount;
+    });
+    return Object.entries(map)
+      .map(([name, v]) => ({ name, ...v, balance: v.given - v.paid }))
+      .filter((c) => c.given > 0 || c.paid > 0)
+      .sort((a, b) => b.balance - a.balance);
+  }
+
+  /* Balance for one specific customer by exact name (case-insensitive). Used
+     by the Bill screen's "customer info" box so it doesn't have to compute
+     the full customerBalances() list on every keystroke. */
+  function customerBalanceFor(entries, name) {
+    const target = (name || "").trim().toLowerCase();
+    if (!target) return { given: 0, paid: 0, balance: 0 };
+    let given = 0, paid = 0;
+    entries.forEach((e) => {
+      if ((e.customer || "").trim().toLowerCase() !== target) return;
+      if (e.type === "creditGiven") given += e.amount;
+      if (e.type === "credit") paid += e.amount;
+    });
+    return { given, paid, balance: given - paid };
+  }
+
+  function supplierBalances(entries) {
+    const map = {};
+    entries.forEach((e) => {
+      const name = (e.customer || "").trim();
+      if (!name) return;
+      if (!map[name]) map[name] = { owed: 0, paid: 0 };
+      if (e.type === "supplierCredit") map[name].owed += e.amount;
+      if (e.type === "supplierPayment") map[name].paid += e.amount;
+    });
+    return Object.entries(map)
+      .map(([name, v]) => ({ name, ...v, balance: v.owed - v.paid }))
+      .filter((s) => s.owed > 0 || s.paid > 0)
+      .sort((a, b) => b.balance - a.balance);
+  }
+
+  /* ------------------------------------------------------------------
+     Profit
+     Profit per invoice item = (Selling Rate - Purchase Rate) x Qty.
+     purchaseRate is a snapshot stored on the item at sale time (see
+     sales.js generateInvoice), so profit stays correct even if a
+     product's purchase rate changes later.
+     ------------------------------------------------------------------ */
+  function invoiceProfit(invoice) {
+    return (invoice.items || []).reduce((sum, it) => {
+      const pr = it.purchaseRate || 0;
+      return sum + (it.rate - pr) * it.qty;
+    }, 0);
+  }
+
+  function profitForInvoices(invoices, predicate) {
+    return invoices.filter(predicate).reduce((sum, inv) => sum + invoiceProfit(inv), 0);
+  }
+
+  function dailyProfit(invoices, dateStr) {
+    return profitForInvoices(invoices, (inv) => inv.date === dateStr);
+  }
+  function monthlyProfit(invoices, monthStr) {
+    return profitForInvoices(invoices, (inv) => inv.date.slice(0, 7) === monthStr);
+  }
+  function yearlyProfit(invoices, yearStr) {
+    return profitForInvoices(invoices, (inv) => inv.date.slice(0, 4) === yearStr);
+  }
+
+  /* ------------------------------------------------------------------
+     Dashboard summary
+     ------------------------------------------------------------------ */
+  function todaysSales(invoices, dateStr) {
+    return invoices.filter((inv) => inv.date === dateStr).reduce((s, inv) => s + inv.total, 0);
+  }
+
+  /* ------------------------------------------------------------------
+     Reports
+     ------------------------------------------------------------------ */
+
+  /* 1. Daily Sales Report — one row per day: invoice count, sales, profit */
+  function dailySalesReport(invoices) {
+    const map = {};
+    invoices.forEach((inv) => {
+      if (!map[inv.date]) map[inv.date] = { date: inv.date, count: 0, sales: 0, profit: 0 };
+      map[inv.date].count += 1;
+      map[inv.date].sales += inv.total;
+      map[inv.date].profit += invoiceProfit(inv);
+    });
+    return Object.values(map).sort((a, b) => (a.date < b.date ? 1 : -1));
+  }
+
+  /* 2. Monthly Sales Report — one row per month */
+  function monthlySalesReport(invoices) {
+    const map = {};
+    invoices.forEach((inv) => {
+      const m = inv.date.slice(0, 7);
+      if (!map[m]) map[m] = { month: m, count: 0, sales: 0, profit: 0 };
+      map[m].count += 1;
+      map[m].sales += inv.total;
+      map[m].profit += invoiceProfit(inv);
+    });
+    return Object.values(map).sort((a, b) => (a.month < b.month ? 1 : -1));
+  }
+
+  /* 3. Product Wise Profit — grouped by product (falls back to the raw
+     description for older / manual lines with no linked product). */
+  function productWiseProfit(invoices) {
+    const map = {};
+    invoices.forEach((inv) => {
+      (inv.items || []).forEach((it) => {
+        const key = it.productId || it.desc;
+        if (!map[key]) map[key] = { name: it.desc, qty: 0, sales: 0, profit: 0 };
+        map[key].qty += it.qty;
+        map[key].sales += it.qty * it.rate;
+        map[key].profit += (it.rate - (it.purchaseRate || 0)) * it.qty;
+      });
+    });
+    return Object.values(map).sort((a, b) => b.profit - a.profit);
+  }
+
+  /* 4. Company Wise Sales — grouped by company snapshot on each item */
+  function companyWiseSales(invoices) {
+    const map = {};
+    invoices.forEach((inv) => {
+      (inv.items || []).forEach((it) => {
+        const company = it.company || "Other";
+        if (!map[company]) map[company] = { company, qty: 0, sales: 0, profit: 0 };
+        map[company].qty += it.qty;
+        map[company].sales += it.qty * it.rate;
+        map[company].profit += (it.rate - (it.purchaseRate || 0)) * it.qty;
+      });
+    });
+    return Object.values(map).sort((a, b) => b.sales - a.sales);
+  }
+
+  /* 5. Customer Pending Report — reuses customerBalances(), kept as its
+     own named entry point so the Reports screen has one function per
+     report, matching the spec's five report types. */
+  function customerPendingReport(entries) {
+    return customerBalances(entries).filter((c) => c.balance > 0);
+  }
+
+  return {
+    entriesForMonth, monthlyTotals, groupByDate, todayNet,
+    customerBalances, customerBalanceFor, supplierBalances,
+    invoiceProfit, dailyProfit, monthlyProfit, yearlyProfit, todaysSales,
+    dailySalesReport, monthlySalesReport, productWiseProfit, companyWiseSales, customerPendingReport,
+  };
+})();
+
+
+/* ===== dashboard.js ===== */
+/* ==========================================================================
+   dashboard.js
+   Renders the Ledger tab: today strip, monthly summary cards, customer &
+   supplier balance lists, the grouped entries list, and the New Entry
+   modal. All numbers come from reports.js — this file only draws them.
+   ========================================================================== */
+
+window.MUS = window.MUS || {};
+
+MUS.Dashboard = (function () {
+  const { esc, money, fmtDate, todayStr, uid } = MUS.Utils;
+
+  let filterMonth = todayStr().slice(0, 7);
+  const EXPENSE_CATEGORIES = ["Breakfast", "Lunch", "Dinner", "Tea", "Juice", "Car Rent", "Petrol", "Room Rent", "Movie", "Cigarette"];
+
+  function renderTodayStrip() {
+    const state = MUS.App.state;
+    const net = MUS.Reports.todayNet(state.entries, todayStr());
+    document.getElementById("todayStrip").innerHTML = `
+      <div><div style="color:#9CA8B5;font-size:12px;">Today</div><div style="color:var(--cream);font-size:15px;font-weight:600;">${fmtDate(todayStr())}</div></div>
+      <div style="text-align:right;"><div style="color:#9CA8B5;font-size:12px;">Today's Net</div>
+        <div style="color:${net >= 0 ? "#8FBF7F" : "#E28E7D"};font-size:18px;font-weight:800;">${money(net)}</div></div>`;
+  }
+
+  function summaryCard(label, value, color, bold) {
+    return `<div class="card"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;"><span style="font-size:12px;color:#6b6455;">${label}</span></div>
+      <div style="font-size:${bold ? 19 : 17}px;font-weight:800;color:${color};">${money(value)}</div></div>`;
+  }
+
+  function render() {
+    const state = MUS.App.state;
+    const totals = MUS.Reports.monthlyTotals(state.entries, filterMonth);
+    const grouped = MUS.Reports.groupByDate(totals.entries);
+    const customerBalances = MUS.Reports.customerBalances(state.entries);
+    const supplierBalances = MUS.Reports.supplierBalances(state.entries);
+
+    let html = `
+      <div style="padding:16px 14px 4px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span class="stencil" style="font-size:11px;color:#6b6455;">Monthly Summary</span>
+          <input type="month" value="${filterMonth}" onchange="MUS.Dashboard.setFilterMonth(this.value)" class="field-input" style="width:auto;padding:4px 8px;font-size:13px;">
+        </div>
+        <div class="grid2">
+          ${summaryCard("Sales", totals.sale, "#4A5D3A")}
+          ${summaryCard("Expenses", totals.expense, "#8B3A2E")}
+          ${summaryCard("Purchases", totals.purchase, "#5A4632")}
+          ${summaryCard("Credit Received", totals.credit, "#B8860B")}
+        </div>
+        <div style="margin-top:10px;">${summaryCard("Net Profit", totals.net, "#1C2B3A", true)}</div>
+      </div>`;
+
+    if (customerBalances.length) {
+      html += `<div style="padding:6px 14px 4px;"><span class="stencil" style="font-size:11px;color:#6b6455;">Customer Balances</span><div style="margin-top:8px;">`;
+      customerBalances.forEach((c) => {
+        html += `<div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;border-style:dashed;">
+          <div><div style="font-size:14px;font-weight:700;">${esc(c.name)}</div>
+            <div style="font-size:11px;color:var(--muted);">Given ${money(c.given)} · Paid ${money(c.paid)}${c.phone ? ` · ${esc(c.phone)}` : ""}</div></div>
+          <div style="text-align:right;"><div style="font-size:11px;color:var(--muted);">Balance</div>
+            <div style="font-size:15px;font-weight:800;color:${c.balance > 0 ? "#8B3A2E" : "#4A5D3A"};">${money(c.balance)}</div></div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    }
+
+    if (supplierBalances.length) {
+      html += `<div style="padding:6px 14px 4px;"><span class="stencil" style="font-size:11px;color:#6b6455;">Supplier Balances</span><div style="margin-top:8px;">`;
+      supplierBalances.forEach((s) => {
+        html += `<div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;border-style:dashed;border-color:#2E4057;">
+          <div><div style="font-size:14px;font-weight:700;">${esc(s.name)}</div>
+            <div style="font-size:11px;color:var(--muted);">Owed ${money(s.owed)} · Paid ${money(s.paid)}</div></div>
+          <div style="text-align:right;"><div style="font-size:11px;color:var(--muted);">Balance</div>
+            <div style="font-size:15px;font-weight:800;color:${s.balance > 0 ? "#2E4057" : "#1C6758"};">${money(s.balance)}</div></div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    }
+
+    html += `<div style="padding:10px 14px;">`;
+    if (grouped.length === 0) {
+      html += `<div style="text-align:center;color:#9a9280;padding:40px 10px;font-size:14px;">No entries yet for this month.<br>Tap the + button below to add one.</div>`;
+    }
+    grouped.forEach(({ date, entries }) => {
+      html += `<div style="margin-bottom:18px;"><div class="stencil" style="font-size:11px;color:#8a8270;margin-bottom:8px;padding-left:4px;">${fmtDate(date)}</div>`;
+      entries.forEach((e) => {
+        const t = MUS.Types[e.type];
+        html += `<div class="card" style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+          <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+            <div style="width:8px;height:34px;border-radius:4px;background:${t.color};flex-shrink:0;"></div>
+            <div style="min-width:0;">
+              <div style="font-size:14px;font-weight:600;">${t.label}${e.customer ? ` · ${esc(e.customer)}` : ""}</div>
+              ${e.note ? `<div style="font-size:12px;color:#8a8270;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(e.note)}</div>` : ""}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <span style="font-weight:800;font-size:15px;color:${t.color};">${t.sign > 0 ? "+" : t.sign < 0 ? "−" : ""}${money(e.amount)}</span>
+            <button onclick="MUS.Dashboard.deleteEntry('${e.id}')" style="background:none;border:none;padding:4px;color:#c2a28a;font-size:16px;">🗑</button>
+          </div>
+        </div>`;
+      });
+      html += `</div>`;
+    });
+    html += `</div>`;
+
+    document.getElementById("ledgerView").innerHTML = html;
+    renderTodayStrip();
+  }
+
+  function setFilterMonth(v) { filterMonth = v; render(); }
+
+  function deleteEntry(id) {
+    MUS.App.state.entries = MUS.App.state.entries.filter((e) => e.id !== id);
+    MUS.App.saveState();
+    render();
+  }
+
+  /* ---------------- New Entry modal ---------------- */
+  let entryForm = {};
+
+  function openEntryForm() {
+    entryForm = { type: "sale", amount: "", note: "", customer: "", phone: "", date: todayStr() };
+    MUS.App.openModal(entryModalHtml());
+  }
+  function refreshEntryModal() {
+    MUS.App.openModal(entryModalHtml());
+  }
+
+  function entryModalHtml() {
+    const typeButtons = Object.entries(MUS.Types)
+      .filter(([k]) => k !== "purchase" && k !== "supplierCredit")
+      .map(([key, t]) => `
+        <button onclick="MUS.Dashboard.setEntryType('${key}')" style="padding:10px 4px;border-radius:10px;font-weight:700;font-size:13px;
+          border:2px solid ${entryForm.type === key ? t.color : "var(--border)"};
+          background:${entryForm.type === key ? t.color + "1a" : "#fff"};color:${entryForm.type === key ? t.color : "#8a8270"};">${t.label}</button>`).join("");
+
+    const catChips = entryForm.type === "expense" ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+      ${EXPENSE_CATEGORIES.map((cat) => `<button onclick="MUS.Dashboard.setEntryNote('${cat}')" style="padding:6px 10px;border-radius:16px;font-size:12px;font-weight:600;
+        border:${entryForm.note === cat ? "2px solid #8B3A2E" : "1px solid var(--border)"};background:${entryForm.note === cat ? "#8B3A2E1a" : "#fff"};color:${entryForm.note === cat ? "#8B3A2E" : "#6b6455"};">${cat}</button>`).join("")}
+      </div>` : "";
+
+    const isPartyType = ["creditGiven", "credit", "supplierPayment"].includes(entryForm.type);
+    const partyLabel = entryForm.type === "supplierPayment" ? "Enter the supplier name to track their balance" : "Enter the customer name to track their balance";
+    const partyHint = isPartyType ? `<div style="font-size:11px;color:var(--brass);margin-bottom:4px;">${partyLabel}</div>` : "";
+
+    const phoneField = entryForm.type === "creditGiven" ? `
+      <label class="field-label">Phone Number</label>
+      <input type="tel" inputmode="tel" class="field-input" style="margin-bottom:12px;" value="${esc(entryForm.phone)}" oninput="MUS.Dashboard.setEntryField('phone', this.value)" placeholder="10-digit mobile number">` : "";
+
+    return `
+    <div class="modal-overlay" onclick="MUS.App.closeModal()">
+      <div class="modal-sheet" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div class="stencil" style="font-size:13px;font-weight:700;">New Entry</div>
+          <button onclick="MUS.App.closeModal()" style="background:none;border:none;font-size:18px;">✕</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">${typeButtons}</div>
+        <label class="field-label">Amount (₹)</label>
+        <input type="number" inputmode="decimal" class="field-input" style="font-size:20px;font-weight:700;margin-bottom:12px;" value="${entryForm.amount}" oninput="MUS.Dashboard.setEntryField('amount', this.value)" placeholder="0">
+        <label class="field-label">${entryForm.type === "supplierPayment" ? "Supplier Name" : "Customer Name"} (optional)</label>
+        ${partyHint}
+        <input type="text" class="field-input" style="margin-bottom:12px;" value="${esc(entryForm.customer)}" oninput="MUS.Dashboard.setEntryField('customer', this.value)" placeholder="Name">
+        ${phoneField}
+        <label class="field-label">Note (optional)</label>
+        ${catChips}
+        <input type="text" class="field-input" style="margin-bottom:12px;" value="${esc(entryForm.note)}" oninput="MUS.Dashboard.setEntryField('note', this.value)" placeholder="e.g. 3 shirts, 2 pants">
+        <label class="field-label">Date</label>
+        <input type="date" class="field-input" style="margin-bottom:18px;" value="${entryForm.date}" oninput="MUS.Dashboard.setEntryField('date', this.value)">
+        <button class="btn-primary" onclick="MUS.Dashboard.saveEntry()">Add Entry</button>
+      </div>
+    </div>`;
+  }
+
+  function setEntryType(type) { entryForm.type = type; refreshEntryModal(); }
+  function setEntryNote(note) { entryForm.note = note; refreshEntryModal(); }
+  function setEntryField(field, value) { entryForm[field] = value; }
+
+  function saveEntry() {
+    const amt = parseFloat(entryForm.amount);
+    if (!amt || amt <= 0) return;
+    MUS.App.addEntry({
+      id: uid(), type: entryForm.type, amount: amt,
+      note: entryForm.note.trim(), customer: entryForm.customer.trim(),
+      phone: (entryForm.phone || "").trim(), date: entryForm.date,
+    });
+    MUS.App.saveState();
+    MUS.App.closeModal();
+    render();
+  }
+
+  /* ==========================================================================
+     Dashboard tab — summary cards, low-stock warnings, and the Reports modal.
+     Everything here reads from MUS.Reports / MUS.Products / MUS.Customers —
+     no calculations happen in this file, only rendering.
+     ========================================================================== */
+
+  function dashCard(label, value, color) {
+    return `<div class="card"><div style="font-size:11px;color:#6b6455;margin-bottom:4px;">${label}</div>
+      <div style="font-size:18px;font-weight:800;color:${color};">${value}</div></div>`;
+  }
+
+  function renderDashboard() {
+    const state = MUS.App.state;
+    const today = todayStr();
+    const todaysSales = MUS.Reports.todaysSales(state.invoices, today);
+    const todaysProfit = MUS.Reports.dailyProfit(state.invoices, today);
+    const monthProfit = MUS.Reports.monthlyProfit(state.invoices, today.slice(0, 7));
+    const yearProfit = MUS.Reports.yearlyProfit(state.invoices, today.slice(0, 4));
+    const pendingCustomerAmount = MUS.Reports.customerBalances(state.entries).reduce((s, c) => s + Math.max(0, c.balance), 0);
+    const stockValue = MUS.Products.stockValue(state);
+    const lowStock = MUS.Products.lowStockList(state);
+    const totalCustomers = MUS.Customers.list(state).length;
+
+    const lowStockHtml = lowStock.length ? `
+      <div style="padding:6px 14px 4px;">
+        <span class="stencil" style="font-size:11px;color:#6b6455;">⚠ Low Stock</span>
+        <div style="margin-top:8px;">
+          ${lowStock.map((p) => `
+            <div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;border-color:#8B3A2E;">
+              <span style="font-size:13px;font-weight:700;">${esc(p.productName)}</span>
+              <span style="font-size:12px;font-weight:700;color:#8B3A2E;background:#8B3A2E1a;padding:3px 8px;border-radius:6px;">
+                ${MUS.Products.currentStock(p)} left (min ${p.minStock})</span>
+            </div>`).join("")}
+        </div>
+      </div>` : "";
+
+    document.getElementById("dashboardView").innerHTML = `
+      <div style="padding:16px 14px 100px;">
+        <div class="grid2" style="margin-bottom:10px;">
+          ${dashCard("Today's Sales", money(todaysSales), "#4A5D3A")}
+          ${dashCard("Today's Profit", money(todaysProfit), "#1C6758")}
+          ${dashCard("Pending Customer Amt", money(pendingCustomerAmount), "#8B3A2E")}
+          ${dashCard("Stock Value", money(stockValue), "#5A4632")}
+          ${dashCard("Low Stock Items", lowStock.length, lowStock.length > 0 ? "#8B3A2E" : "#4A5D3A")}
+          ${dashCard("Total Customers", totalCustomers, "#6b5b95")}
+        </div>
+
+        <div class="card" style="margin-bottom:10px;">
+          <div class="stencil" style="font-size:11px;color:#6b6455;margin-bottom:8px;">Profit Summary</div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span>This Month</span><span style="font-weight:800;color:#1C6758;">${money(monthProfit)}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;"><span>This Year</span><span style="font-weight:800;color:#1C6758;">${money(yearProfit)}</span></div>
+        </div>
+
+        ${lowStockHtml}
+
+        <button class="btn-primary" onclick="MUS.Dashboard.openReports()" style="margin-top:6px;">📈 View Reports</button>
+      </div>`;
+  }
+
+  /* ---------------- Reports modal ---------------- */
+  let activeReport = "daily";
+  const REPORT_TABS = [
+    { key: "daily", label: "Daily Sales" },
+    { key: "monthly", label: "Monthly Sales" },
+    { key: "productProfit", label: "Product Profit" },
+    { key: "companySales", label: "Company Sales" },
+    { key: "pending", label: "Customer Pending" },
+  ];
+
+  function openReports() {
+    activeReport = "daily";
+    MUS.App.openModal(reportsModalHtml());
+  }
+  function setReportView(key) {
+    activeReport = key;
+    MUS.App.openModal(reportsModalHtml());
+  }
+
+  function reportsModalHtml() {
+    const state = MUS.App.state;
+    const tabsHtml = REPORT_TABS.map((t) => `
+      <button onclick="MUS.Dashboard.setReportView('${t.key}')" style="padding:8px 10px;border-radius:16px;font-size:11px;font-weight:700;flex-shrink:0;
+        border:2px solid ${activeReport === t.key ? "var(--navy)" : "var(--border)"};
+        background:${activeReport === t.key ? "var(--navy)" : "#fff"};color:${activeReport === t.key ? "var(--cream)" : "#6b6455"};">${t.label}</button>`).join("");
+
+    let body = "";
+    if (activeReport === "daily") {
+      const rows = MUS.Reports.dailySalesReport(state.invoices);
+      body = rows.length ? rows.map((r) => `
+        <div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;font-weight:700;">${fmtDate(r.date)}</div><div style="font-size:11px;color:#8a8270;">${r.count} bill${r.count !== 1 ? "s" : ""}</div></div>
+          <div style="text-align:right;"><div style="font-size:14px;font-weight:800;color:#4A5D3A;">${money(r.sales)}</div><div style="font-size:11px;color:#1C6758;">Profit ${money(r.profit)}</div></div>
+        </div>`).join("") : emptyMsg("No sales yet.");
+    } else if (activeReport === "monthly") {
+      const rows = MUS.Reports.monthlySalesReport(state.invoices);
+      body = rows.length ? rows.map((r) => `
+        <div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;font-weight:700;">${r.month}</div><div style="font-size:11px;color:#8a8270;">${r.count} bill${r.count !== 1 ? "s" : ""}</div></div>
+          <div style="text-align:right;"><div style="font-size:14px;font-weight:800;color:#4A5D3A;">${money(r.sales)}</div><div style="font-size:11px;color:#1C6758;">Profit ${money(r.profit)}</div></div>
+        </div>`).join("") : emptyMsg("No sales yet.");
+    } else if (activeReport === "productProfit") {
+      const rows = MUS.Reports.productWiseProfit(state.invoices);
+      body = rows.length ? rows.map((r) => `
+        <div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;font-weight:700;">${esc(r.name)}</div><div style="font-size:11px;color:#8a8270;">Qty sold: ${r.qty}</div></div>
+          <div style="text-align:right;"><div style="font-size:14px;font-weight:800;color:#4A5D3A;">${money(r.sales)}</div><div style="font-size:11px;color:#1C6758;">Profit ${money(r.profit)}</div></div>
+        </div>`).join("") : emptyMsg("No sales yet.");
+    } else if (activeReport === "companySales") {
+      const rows = MUS.Reports.companyWiseSales(state.invoices);
+      body = rows.length ? rows.map((r) => `
+        <div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;font-weight:700;">${esc(r.company)}</div><div style="font-size:11px;color:#8a8270;">Qty sold: ${r.qty}</div></div>
+          <div style="text-align:right;"><div style="font-size:14px;font-weight:800;color:#4A5D3A;">${money(r.sales)}</div><div style="font-size:11px;color:#1C6758;">Profit ${money(r.profit)}</div></div>
+        </div>`).join("") : emptyMsg("No sales yet.");
+    } else if (activeReport === "pending") {
+      const rows = MUS.Reports.customerPendingReport(state.entries);
+      body = rows.length ? rows.map((c) => `
+        <div class="card" style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+          <div><div style="font-size:13px;font-weight:700;">${esc(c.name)}</div><div style="font-size:11px;color:#8a8270;">Given ${money(c.given)} · Paid ${money(c.paid)}</div></div>
+          <div style="font-size:15px;font-weight:800;color:#8B3A2E;">${money(c.balance)}</div>
+        </div>`).join("") : emptyMsg("No pending customer balances.");
+    }
+
+    return `
+    <div class="modal-overlay" onclick="MUS.App.closeModal()">
+      <div class="modal-sheet" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div class="stencil" style="font-size:13px;font-weight:700;">Reports</div>
+          <button onclick="MUS.App.closeModal()" style="background:none;border:none;font-size:18px;">✕</button>
+        </div>
+        <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:10px;">${tabsHtml}</div>
+        ${body}
+        <button class="btn-primary" style="margin-top:6px;" onclick="MUS.App.closeModal()">Done</button>
+      </div>
+    </div>`;
+  }
+  function emptyMsg(text) {
+    return `<div style="text-align:center;color:#9a9280;padding:30px 10px;font-size:13px;">${text}</div>`;
+  }
+
+  return {
+    render, renderTodayStrip, setFilterMonth, deleteEntry, openEntryForm, setEntryType, setEntryNote, setEntryField, saveEntry,
+    renderDashboard, openReports, setReportView,
+  };
+})();
+
+
+
+/* ===== app.js ===== */
+/* ==========================================================================
+   app.js
+   Orchestrates the whole app: owns the single in-memory `state` object,
+   wires up tab switching, generic modal open/close, the Shop Settings
+   modal, and boots everything on load. Every feature module (Products,
+   Purchase, Sales, Dashboard) talks to state only through MUS.App.
+   ========================================================================== */
+
+window.MUS = window.MUS || {};
+
+MUS.App = (function () {
+  let state = null;
+  let currentTab = "ledger";
+
+  /* ---------------- State helpers (shared by every module) ---------------- */
+  function addEntry(entry) {
+    state.entries.unshift(entry);
+  }
+  function saveState() {
+    MUS.Storage.save(state);
+  }
+
+  /* ---------------- Generic modal plumbing ---------------- */
+  function openModal(html) {
+    document.getElementById("modalRoot").innerHTML = html;
+  }
+  function closeModal() {
+    document.getElementById("modalRoot").innerHTML = "";
+    render();
+  }
+
+  /* ---------------- Tabs ---------------- */
+  function switchTab(tab) {
+    currentTab = tab;
+    const dashBtn = document.getElementById("tabDashboardBtn");
+    const ledgerBtn = document.getElementById("tabLedgerBtn");
+    const billBtn = document.getElementById("tabBillBtn");
+    const active = { background: "var(--navy)", color: "var(--cream)", border: "2px solid var(--navy)" };
+    const inactive = { background: "#fff", color: "#6b6455", border: "2px solid var(--border)" };
+    Object.assign(dashBtn.style, tab === "dashboard" ? active : inactive);
+    Object.assign(ledgerBtn.style, tab === "ledger" ? active : inactive);
+    Object.assign(billBtn.style, tab === "bill" ? active : inactive);
+
+    document.getElementById("dashboardView").classList.toggle("hidden", tab !== "dashboard");
+    document.getElementById("ledgerView").classList.toggle("hidden", tab !== "ledger");
+    document.getElementById("billView").classList.toggle("hidden", tab !== "bill");
+    document.getElementById("fabAdd").classList.toggle("hidden", tab !== "ledger");
+    document.getElementById("headerTitle").textContent =
+      tab === "dashboard" ? "Dashboard" : tab === "ledger" ? "Daily Accounts" : "Create Bill";
+    document.getElementById("todayStrip").style.display = tab === "ledger" ? "flex" : "none";
+    render();
+  }
+
+  function render() {
+    try {
+      if (currentTab === "dashboard") {
+        MUS.Dashboard.renderDashboard();
+      } else if (currentTab === "ledger") {
+        MUS.Dashboard.render();
+      } else {
+        MUS.Sales.render();
+        MUS.Dashboard.renderTodayStrip();
+      }
+    } catch (err) {
+      console.error("Render error on tab '" + currentTab + "':", err);
+      showRenderError(err);
+    }
+  }
+
+  function showRenderError(err) {
+    const containerId = currentTab === "dashboard" ? "dashboardView" : currentTab === "ledger" ? "ledgerView" : "billView";
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = `
+      <div style="padding:20px 14px;">
+        <div class="card" style="border-color:#8B3A2E;">
+          <div style="font-weight:800;color:#8B3A2E;margin-bottom:6px;">⚠ Something went wrong loading this screen</div>
+          <div style="font-size:12px;color:#6b6455;font-family:monospace;word-break:break-word;">${MUS.Utils.esc(err && err.message ? err.message : String(err))}</div>
+          <div style="font-size:12px;color:#8a8270;margin-top:8px;">Try switching tabs again. If this keeps happening, the app files may need re-downloading.</div>
+        </div>
+      </div>`;
+  }
+
+  /* ---------------- Shop Settings modal ---------------- */
+  function openShopSettings() {
+    const s = state.shopInfo;
+    const lastBackup = state.lastBackupAt ? MUS.Utils.fmtDate(state.lastBackupAt) : "Never";
+    const html = `
+    <div class="modal-overlay" onclick="MUS.App.closeModal()">
+      <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:80vh;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div class="stencil" style="font-size:13px;font-weight:700;">Shop Details</div>
+          <button onclick="MUS.App.closeModal()" style="background:none;border:none;font-size:18px;">✕</button>
+        </div>
+        <label class="field-label">Shop Name</label>
+        <input type="text" class="field-input" id="shopName" style="margin-bottom:10px;" value="${MUS.Utils.esc(s.name)}">
+        <label class="field-label">Address</label>
+        <input type="text" class="field-input" id="shopAddress" style="margin-bottom:10px;" value="${MUS.Utils.esc(s.address)}">
+        <label class="field-label">Phone Number</label>
+        <input type="text" class="field-input" id="shopPhone" style="margin-bottom:18px;" value="${MUS.Utils.esc(s.phone)}">
+        <button class="btn-primary" onclick="MUS.App.saveShopSettings()">Save</button>
+
+        <div class="card" style="margin-top:18px;">
+          <div class="stencil" style="font-size:11px;color:#6b6455;margin-bottom:8px;">Backup & Restore</div>
+          <div style="font-size:12px;color:#8a8270;margin-bottom:10px;">Last backup: <b style="color:var(--navy);">${lastBackup}</b></div>
+          <button class="btn-gold" style="margin-bottom:8px;" onclick="MUS.App.exportBackup()">💾 Backup Data (Save to Drive)</button>
+          <div style="font-size:11px;color:#8a8270;margin-bottom:10px;">Opens your share menu — pick <b>Drive</b> to save it there. Falls back to a normal download if sharing isn't available.</div>
+          <input type="file" id="restoreFileInput" accept="application/json" style="display:none;" onchange="MUS.App.importBackup(this.files[0])">
+          <button class="btn-primary" onclick="document.getElementById('restoreFileInput').click()">📂 Restore from Backup</button>
+        </div>
+      </div>
+    </div>`;
+    openModal(html);
+  }
+  function saveShopSettings() {
+    state.shopInfo = {
+      name: document.getElementById("shopName").value,
+      address: document.getElementById("shopAddress").value,
+      phone: document.getElementById("shopPhone").value,
+    };
+    saveState();
+    closeModal();
+  }
+
+  /* ---------------- Backup & Restore ---------------- */
+  async function exportBackup() {
+    const dataStr = JSON.stringify(state, null, 2);
+    const filename = `mus-backup-${MUS.Utils.todayStr()}.json`;
+    const blob = new Blob([dataStr], { type: "application/json" });
+
+    // Prefer the native share sheet so the person can pick "Drive" and
+    // save the backup straight into Google Drive with one tap. Falls
+    // back to a plain file download if the browser can't share files.
+    let sharedToDrive = false;
+    try {
+      const file = new File([blob], filename, { type: "application/json" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: "Mass Uniform Store Backup",
+          text: `Backup from ${MUS.Utils.todayStr()} — save this to Google Drive.`,
+        });
+        sharedToDrive = true;
+      }
+    } catch (err) {
+      // User cancelled the share sheet, or share isn't supported — fall
+      // through to a normal download instead of treating this as fatal.
+      if (err && err.name === "AbortError") { return; }
+      console.error("Share failed, falling back to download:", err);
+    }
+
+    if (!sharedToDrive) {
+      try {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+      } catch (err) {
+        console.error("Backup failed:", err);
+        alert("Backup failed: " + err.message);
+        return;
+      }
+    }
+
+    state.lastBackupAt = MUS.Utils.todayStr();
+    saveState();
+    closeModal();
+    if (!sharedToDrive) {
+      alert("Backup downloaded! Keep this file safe (e.g. save it to Google Drive or WhatsApp it to yourself).");
+    }
+  }
+
+  function importBackup(file) {
+    if (!file) return;
+    const ok = window.confirm("Restoring will REPLACE all current data (ledger, bills, products, customers) with the backup file. Continue?");
+    if (!ok) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        state = Object.assign(MUS.Storage.defaultState(), parsed);
+        saveState();
+        closeModal();
+        switchTab("dashboard");
+        alert("Backup restored successfully!");
+      } catch (err) {
+        console.error("Restore failed:", err);
+        alert("Restore failed — this doesn't look like a valid backup file.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function checkBackupReminder() {
+    const last = state.lastBackupAt;
+    const daysSince = last ? Math.floor((new Date(MUS.Utils.todayStr()) - new Date(last)) / 86400000) : Infinity;
+    if (daysSince < 7) return;
+
+    const banner = document.createElement("div");
+    banner.style.cssText = "position:fixed;top:0;left:0;right:0;background:#B8860B;color:#1C2B3A;padding:10px 14px;font-size:13px;font-weight:700;z-index:100;display:flex;justify-content:space-between;align-items:center;gap:10px;";
+    banner.innerHTML = `<span>⚠️ ${last ? `It's been ${daysSince} days since your last backup.` : "You haven't backed up your data yet."} Back up weekly to avoid losing data.</span>`;
+    const btn = document.createElement("button");
+    btn.textContent = "Backup Now";
+    btn.style.cssText = "background:#1C2B3A;color:#F3EFE3;border:none;border-radius:6px;padding:6px 10px;font-weight:700;font-size:12px;flex-shrink:0;";
+    btn.onclick = () => { banner.remove(); exportBackup(); };
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "✕";
+    closeBtn.style.cssText = "background:none;border:none;color:#1C2B3A;font-size:16px;flex-shrink:0;";
+    closeBtn.onclick = () => banner.remove();
+    banner.appendChild(btn);
+    banner.appendChild(closeBtn);
+    document.body.prepend(banner);
+
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    } else if ("Notification" in window && Notification.permission === "granted") {
+      try { new Notification("Mass Uniform Store", { body: "Weekly backup reminder — please back up your data." }); } catch (e) {}
+    }
+  }
+
+  /* ---------------- Boot ---------------- */
+  function init() {
+    try {
+      state = MUS.Storage.load();
+      switchTab("dashboard");
+      checkBackupReminder();
+    } catch (err) {
+      console.error("App failed to start:", err);
+      document.body.innerHTML = `
+        <div style="padding:24px 16px;font-family:sans-serif;">
+          <div style="font-weight:800;color:#8B3A2E;font-size:16px;margin-bottom:8px;">⚠ App failed to start</div>
+          <div style="font-size:13px;color:#444;font-family:monospace;word-break:break-word;">${(err && err.message) || err}</div>
+          <div style="font-size:13px;color:#666;margin-top:12px;">Please make sure all files (index.html, css/, js/) were unzipped together into the same folder, then reopen index.html.</div>
+        </div>`;
+    }
+  }
+
+  /* ---------------- Install App (beforeinstallprompt) ----------------
+     Chrome only fires "beforeinstallprompt" when the page passes its
+     installability checks (valid manifest + registered service worker +
+     HTTPS). We stash the event and reveal the header button once it
+     fires, instead of showing a button that might not actually work. */
+  let deferredInstallPrompt = null;
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    const btn = document.getElementById("installAppBtn");
+    if (btn) btn.classList.remove("hidden");
+  });
+
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    const btn = document.getElementById("installAppBtn");
+    if (btn) btn.classList.add("hidden");
+  });
+
+  async function installApp() {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    try {
+      await deferredInstallPrompt.userChoice;
+    } finally {
+      deferredInstallPrompt = null;
+      const btn = document.getElementById("installAppBtn");
+      if (btn) btn.classList.add("hidden");
+    }
+  }
+
+  return {
+    get state() { return state; },
+    addEntry, saveState, openModal, closeModal, switchTab, render,
+    openShopSettings, saveShopSettings, exportBackup, importBackup, installApp, init,
+  };
+})();
+
+document.addEventListener("DOMContentLoaded", MUS.App.init);
+
+</script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch((err) => console.error("SW registration failed:", err));
+    });
+  }
+</script>
+</body>
+</html>
