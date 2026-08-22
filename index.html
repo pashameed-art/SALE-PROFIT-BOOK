@@ -635,7 +635,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.39',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.40',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -707,11 +707,23 @@ body.page-open-mode .install-wrap{display:none!important}
   background:#e9f5f3;color:#145f59;font-weight:800;font-size:14px;
 }
 </style>
+<style id="v540-history-clicks">
+.history-click-stat{
+  cursor:pointer!important;
+  position:relative;
+  transition:transform .12s ease,box-shadow .12s ease;
+}
+.history-click-stat:active{transform:scale(.98)}
+.history-click-stat small{
+  display:block;margin-top:4px;font-size:10px;font-weight:700;
+  color:#718080;
+}
+</style>
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.39</div>
+<div class="version">Version 5.40</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1209,10 +1221,25 @@ function generateReport(){
  <div class="history-card"><b>📅 Date-wise Summary</b><div class="meta" style="margin-top:6px">Tap a date to view Sale Amount, Expense Amount and full details.</div>${reportDateCards}</div>
  <div class="history-card"><b>💸 Expense Breakdown</b>${expenseBreakdown}</div>`;
 }
-function toggleReportDateDetails(id){
+function toggleReportDateDetails(id, mode){
  const el=document.getElementById(id); if(!el)return;
- const isOpen=el.classList.toggle('open');
- const arrow=document.getElementById('arrow'+id); if(arrow)arrow.textContent=isOpen?'−':'＋';
+ const card=el.closest('.report-date-card');
+ const isOpen=el.classList.contains('open');
+
+ if(mode==='sale' || mode==='expense'){
+   el.classList.add('open');
+   if(card)card.classList.add('open');
+   el.querySelectorAll('.history-sale-row').forEach(r=>r.style.display=(mode==='sale'?'block':'none'));
+   el.querySelectorAll('.history-expense-row').forEach(r=>r.style.display=(mode==='expense'?'block':'none'));
+   const arrow=document.getElementById('arrow'+id); if(arrow)arrow.textContent='−';
+   return;
+ }
+
+ el.classList.toggle('open');
+ if(card)card.classList.toggle('open',el.classList.contains('open'));
+ el.querySelectorAll('.history-sale-row,.history-expense-row').forEach(r=>r.style.display='block');
+ const arrow=document.getElementById('arrow'+id);
+ if(arrow)arrow.textContent=el.classList.contains('open')?'−':'＋';
 }
 
 function refreshDashboard(){
@@ -1385,14 +1412,20 @@ function renderHistory(){
 
   listEl.innerHTML=dates.map((d,i)=>{
     const g=grouped[d], key='hd'+d.replace(/-/g,'')+'_'+i;
-    const saleRows=g.sales.map(x=>`<div class="report-detail-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div></div>`).join('');
-    const expenseRows=g.expenses.map(x=>`<div class="report-detail-row"><b>💸 Expense: ${esc(x.name)} — ${money(x.amount)}</b><div class="report-detail-meta">Expense</div></div>`).join('');
+    const saleRows=g.sales.map(x=>`<div class="report-detail-row history-sale-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div></div>`).join('');
+    const expenseRows=g.expenses.map(x=>`<div class="report-detail-row history-expense-row"><b>💸 Expense: ${esc(x.name)} — ${money(x.amount)}</b><div class="report-detail-meta">Expense</div></div>`).join('');
     const details=(saleRows+expenseRows)||'<div class="empty">No details found</div>';
-    return `<div class="report-date-card open" onclick="toggleReportDateDetails('${key}')">
-      <div class="report-date-head"><span class="report-date-title">📅 ${fmtDate(d)}</span><span class="report-date-arrow" id="arrow${key}">−</span></div>
+    return `<div class="report-date-card open" id="card${key}">
+      <div class="report-date-head" onclick="toggleReportDateDetails('${key}','all')">
+        <span class="report-date-title">📅 ${fmtDate(d)}</span><span class="report-date-arrow" id="arrow${key}">−</span>
+      </div>
       <div class="report-date-summary">
-        <div class="report-date-stat"><span>💰 Sale Amount</span><b>${money(g.sale)}</b></div>
-        <div class="report-date-stat"><span>💸 Expense Amount</span><b>${money(g.expense)}</b></div>
+        <div class="report-date-stat history-click-stat" onclick="event.stopPropagation();toggleReportDateDetails('${key}','sale')">
+          <span>💰 Sale Amount</span><b>${money(g.sale)}</b><small>Tap to view sales</small>
+        </div>
+        <div class="report-date-stat history-click-stat" onclick="event.stopPropagation();toggleReportDateDetails('${key}','expense')">
+          <span>💸 Expense Amount</span><b>${money(g.expense)}</b><small>Tap to view expenses</small>
+        </div>
       </div>
       <div class="report-date-details" id="${key}">${details}
         <div class="report-date-total"><span>Total</span><span>Sale ${money(g.sale)} • Expense ${money(g.expense)}</span></div>
