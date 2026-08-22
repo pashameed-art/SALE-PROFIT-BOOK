@@ -392,7 +392,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta name="app-version" content="4.89"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta name="app-version" content="4.93"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 
@@ -433,7 +433,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.91</div>
+  <div class="version">Version 4.93</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -867,7 +867,10 @@ function showPage(page,btn){
   updateTodayExpenseTotal(); }
  refreshDashboard();
  if(page==='report'){
-   const d=today(); if(!$('reportFrom').value)$('reportFrom').value=d.slice(0,8)+'01'; if(!$('reportTo').value)$('reportTo').value=d;
+   const d=today();
+   if(!$('reportFrom').value)$('reportFrom').value=d.slice(0,8)+'01';
+   if(!$('reportTo').value)$('reportTo').value=d;
+   setTimeout(generateReport,0);
  }
 }
 function generateReport(){
@@ -938,8 +941,8 @@ function generateReport(){
   <div class="stat">💵 Cash<b>${money(total.cash)}</b></div>
  </div>
  <div class="history-card"><b>📅 ${esc(from)} → ${esc(to)}</b><br><span class="meta">Sales: ${sales.length} • Expenses: ${exps.length}</span></div>
- <div class="history-card"><b>💸 Expense Breakdown</b>${expenseBreakdown}</div>
- <div class="history-card"><b>📋 Date-wise Summary</b><div class="meta" style="margin-top:6px">Tap a date to view full details.</div>${reportDateCards}</div>`;
+ <div class="history-card"><b>📅 Date-wise Summary</b><div class="meta" style="margin-top:6px">Tap a date to view Sale Amount, Expense Amount and full details.</div>${reportDateCards}</div>
+ <div class="history-card"><b>💸 Expense Breakdown</b>${expenseBreakdown}</div>`;
 }
 function toggleReportDateDetails(id){
  const el=document.getElementById(id); if(!el)return;
@@ -1032,45 +1035,68 @@ function renderHistory(){
   const q=($('historySearch')?.value||'').trim().toLowerCase();
   const from=normalizeEntryDate($('historyFrom')?.value||'');
   const to=normalizeEntryDate($('historyTo')?.value||'');
-  const list=entries
-    .filter(x=>{
-      const d=normalizeEntryDate(x.date);
-      const text=(x.item||'').toLowerCase();
-      return (!q||text.includes(q))&&(!from||d>=from)&&(!to||d<=to);
-    })
-    .sort((a,b)=>{
-      const da=normalizeEntryDate(a.date), db=normalizeEntryDate(b.date);
-      if(db!==da)return db.localeCompare(da);
-      return Number(b.id||0)-Number(a.id||0);
-    });
-  const total=list.reduce((a,x)=>({
+
+  const sales=(Array.isArray(entries)?entries:[]).filter(x=>{
+    const d=normalizeEntryDate(x.date), text=String(x.item||'').toLowerCase();
+    return (!from||d>=from)&&(!to||d<=to)&&(!q||text.includes(q));
+  });
+  const exps=(Array.isArray(expenses)?expenses:[]).filter(x=>{
+    const d=normalizeEntryDate(x.date), text=String(x.name||'').toLowerCase();
+    return (!from||d>=from)&&(!to||d<=to)&&(!q||text.includes(q));
+  });
+
+  const total=sales.reduce((a,x)=>({
     meter:a.meter+Number(x.meter||0),
     sale:a.sale+Number(x.sale||0),
     purchase:a.purchase+Number(x.purchase||0),
     profit:a.profit+Number(x.profit||0)
   }),{meter:0,sale:0,purchase:0,profit:0});
+  const expenseTotal=exps.reduce((a,x)=>a+Number(x.amount||0),0);
   $('sumMeter').textContent=Number(total.meter.toFixed(2)).toLocaleString('en-IN');
   $('sumSale').textContent=money(total.sale);
   $('sumPurchase').textContent=money(total.purchase);
   $('sumProfit').textContent=money(total.profit);
-  const listEl=$('historyList'); $('historyCount') && ($('historyCount').textContent = `Entries (${list.length})`);
-  if(!list.length){
+
+  const grouped={};
+  sales.forEach(x=>{
+    const d=normalizeEntryDate(x.date);
+    if(!grouped[d]) grouped[d]={sales:[],expenses:[],sale:0,expense:0};
+    grouped[d].sales.push(x); grouped[d].sale+=Number(x.sale||0);
+  });
+  exps.forEach(x=>{
+    const d=normalizeEntryDate(x.date);
+    if(!grouped[d]) grouped[d]={sales:[],expenses:[],sale:0,expense:0};
+    grouped[d].expenses.push(x); grouped[d].expense+=Number(x.amount||0);
+  });
+
+  const fmtDate=d=>{const [y,m,day]=d.split('-'); return `${day}.${m}.${String(y).slice(-2)}`};
+  const dates=Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
+  const listEl=$('historyList');
+  $('historyCount') && ($('historyCount').textContent = `Dates (${dates.length})`);
+
+  if(!dates.length){
     listEl.innerHTML='<div class="history-card empty">No records found</div>';
     return;
   }
-  listEl.innerHTML=list.map(x=>`
-    <div class="history-card">
-      <div class="history-head"><span>${esc(x.item)}</span><span>${money(x.profit)}</span></div>
-      <div class="meta">${esc(normalizeEntryDate(x.date))} • ${esc(x.place||'Kerala')} • ${x.meter} m</div>
-      <div class="time-line">Time: ${esc(x.time||'—')}</div>
-      <div style="margin-top:9px">Sale ${money(x.sale)} • ${esc(x.paidBy||'GPay')} − Purchase ${money(x.purchase)}</div>
-      <div class="meta">Purchase / Meter: ${money(x.rate)}</div>
-      <div class="history-actions">
-        <button class="edit-btn" onclick="editEntry(${x.id})">Edit</button>
-        <button class="danger" onclick="deleteEntry(${x.id})">Delete</button>
+
+  listEl.innerHTML=dates.map((d,i)=>{
+    const g=grouped[d], key='hd'+d.replace(/-/g,'')+'_'+i;
+    const saleRows=g.sales.map(x=>`<div class="report-detail-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div></div>`).join('');
+    const expenseRows=g.expenses.map(x=>`<div class="report-detail-row"><b>💸 Expense: ${esc(x.name)} — ${money(x.amount)}</b><div class="report-detail-meta">Expense</div></div>`).join('');
+    const details=(saleRows+expenseRows)||'<div class="empty">No details found</div>';
+    return `<div class="report-date-card" onclick="toggleReportDateDetails('${key}')">
+      <div class="report-date-head"><span class="report-date-title">📅 ${fmtDate(d)}</span><span class="report-date-arrow" id="arrow${key}">＋</span></div>
+      <div class="report-date-summary">
+        <div class="report-date-stat"><span>💰 Sale Amount</span><b>${money(g.sale)}</b></div>
+        <div class="report-date-stat"><span>💸 Expense Amount</span><b>${money(g.expense)}</b></div>
       </div>
-    </div>`).join('');
+      <div class="report-date-details" id="${key}">${details}
+        <div class="report-date-total"><span>Total</span><span>Sale ${money(g.sale)} • Expense ${money(g.expense)}</span></div>
+      </div>
+    </div>`;
+  }).join('');
 }
+
 function setHistoryFilter(type){
   const d=new Date(), pad=n=>String(n).padStart(2,'0');
   const fmt=x=>`${x.getFullYear()}-${pad(x.getMonth()+1)}-${pad(x.getDate())}`;
@@ -1181,7 +1207,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.72: build marker / cache refresh helper.
 (function(){
-  const BUILD = '4.88';
+  const BUILD = '4.93';
   try {
     const old = localStorage.getItem('__spb_build__');
     if(old && old !== BUILD && 'serviceWorker' in navigator){
@@ -1196,7 +1222,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js', {sc
 
 // V4.74 FULL APP UPDATE
 (function(){
-  const BUILD = '4.88';
+  const BUILD = '4.93';
   try { localStorage.setItem('__spb_build__', BUILD); } catch(e) {}
 })();
 
