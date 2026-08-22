@@ -596,16 +596,16 @@ html.modal-open, body.modal-open{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.24</div>
+<div class="version">Version 5.25</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
-<button class="nav-active" onclick="showPage('home',this)">Home</button>
-<button onclick="showPage('expense',this)">Expense</button>
-<button onclick="showMansoor();setActive(this)">Mansoor</button>
-<button onclick="showPage('report',this)">Reports</button>
-<button onclick="showPage('backup',this)">Backup</button>
+<button class="nav-active" onclick="goHome(this)">Home</button>
+<button onclick="goExpense(this)">Expense</button>
+<button onclick="goMansoor(this)">Mansoor</button>
+<button onclick="goReports(this)">Reports</button>
+<button onclick="goBackup(this)">Backup</button>
 <button onclick="openItemModal();setActive(this)">Add Item</button>
 </nav>
 <div class="state-date-row">
@@ -1022,19 +1022,21 @@ function setActive(btn){
  document.querySelectorAll('.nav-bar button').forEach(b=>b.classList.remove('nav-active'));
  btn.classList.add('nav-active');
 }
-function showPage(page,btn){
- document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
- $(page+'Page').classList.add('active');
- setActive(btn);
- if(page==='expense'){ if(!editingExpenseId) $('expenseDate').value=today(); renderExpenses();
-  updateTodayExpenseTotal(); }
- refreshDashboard();
- if(page==='report'){
-   const d=today();
-   if(!$('reportFrom').value)$('reportFrom').value=d.slice(0,8)+'01';
-   if(!$('reportTo').value)$('reportTo').value=d;
-   setTimeout(generateReport,0);
- }
+function showPage(name,btn){
+  try{
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+    var id = name==='home' ? 'homePage' :
+             name==='expense' ? 'expensePage' :
+             name==='report' ? 'reportPage' :
+             name==='backup' ? 'backupPage' : name+'Page';
+    var page=document.getElementById(id);
+    if(page) page.classList.add('active');
+    if(btn && typeof setActive==='function') setActive(btn);
+    if(name==='home' && typeof refresh==='function') refresh();
+    if(name==='expense' && typeof renderExpense==='function') renderExpense();
+    if(name==='report' && typeof renderReports==='function') renderReports();
+    if(name==='backup' && typeof renderBackup==='function') renderBackup();
+  }catch(e){console.error('Navigation error:',e);}
 }
 function generateReport(){
  const from=normalizeEntryDate($('reportFrom').value), to=normalizeEntryDate($('reportTo').value);
@@ -1934,6 +1936,22 @@ window.printReport=function(){
 /* V5.00 Stock Meter */
 .stock-card{margin-top:14px}.stock-item{background:#f8fbfb;border:1px solid #e2eaea;border-radius:16px;padding:14px;margin-top:10px}.stock-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.stock-balance{font-size:18px;font-weight:900;color:var(--primary)}.stock-movement{padding:9px 0;border-bottom:1px solid #e8eeee}.stock-movement:last-child{border-bottom:0}.stock-positive{color:#087f5b}.stock-negative{color:#b42318}.stock-ledger{margin-top:10px}.stock-muted{color:var(--muted);font-size:13px}
 </style></head><body><h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+box.innerHTML+'\\n
+
+
+<script id="v525-nav-fix">
+(function(){
+  function activate(id){
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+    var el=document.getElementById(id);
+    if(el) el.classList.add('active');
+  }
+  window.goHome=function(btn){activate('homePage');if(window.setActive)setActive(btn);if(window.refresh)refresh();};
+  window.goExpense=function(btn){activate('expensePage');if(window.setActive)setActive(btn);if(window.renderExpense)renderExpense();};
+  window.goMansoor=function(btn){if(window.showMansoor)showMansoor();else activate('mansoorPage');if(window.setActive)setActive(btn);};
+  window.goReports=function(btn){activate('reportPage');if(window.setActive)setActive(btn);if(window.renderReports)renderReports();};
+  window.goBackup=function(btn){activate('backupPage');if(window.setActive)setActive(btn);if(window.renderBackup)renderBackup();};
+})();
+</script>
 
 </body></html>');
   w.document.close(); w.focus(); setTimeout(function(){w.print();},300);
