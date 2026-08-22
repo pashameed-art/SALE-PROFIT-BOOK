@@ -200,6 +200,16 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
   }
 }
 
+
+/* V4.91 report date-wise summary */
+.report-date-card{background:#fff;border:1px solid #e2e8e8;border-radius:18px;padding:16px;margin-top:12px;cursor:pointer}
+.report-date-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:800}
+.report-date-title{font-size:18px;color:#263238}.report-date-arrow{font-size:18px;color:var(--primary)}
+.report-date-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.report-date-stat{background:#eef7f6;border-radius:12px;padding:11px 12px}.report-date-stat span{display:block;color:var(--muted);font-size:13px;font-weight:700}.report-date-stat b{display:block;margin-top:3px;font-size:17px}
+.report-date-details{display:none;margin-top:14px;padding-top:12px;border-top:1px solid #e5eaea}.report-date-details.open{display:block}
+.report-detail-row{padding:10px 0;border-bottom:1px solid #edf0f0}.report-detail-row:last-child{border-bottom:0}.report-detail-row b{display:block}.report-detail-meta{color:var(--muted);font-size:13px;margin-top:4px}
+.report-date-total{display:flex;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid #dfe7e6;font-weight:800}
 </style>
 
 <style>
@@ -423,7 +433,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.90</div>
+  <div class="version">Version 4.91</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -897,18 +907,24 @@ function generateReport(){
    .map(([name,amt])=>`<div class="item-row"><div><b>${esc(name)}</b></div><b>${money(amt)}</b></div>`)
    .join('') || '<div class="empty">No expenses found</div>';
 
- const saleEntries=sales.map(x=>`
-   <div class="history-card">
-    <div class="history-head"><span>${esc(x.item)}</span><span>${money(x.profit)}</span></div>
-    <div class="meta">${esc(normalizeEntryDate(x.date))} • Meter ${Number(x.meter||0).toFixed(2)} • Sale ${money(x.sale)}</div>
-    <div class="meta">Purchase ${money(x.purchase)} • ${esc(x.paidBy||'GPay')}</div>
-   </div>`).join('');
-
- const expenseEntries=exps.map(x=>`
-   <div class="history-card">
-    <div class="history-head"><span>Expense: ${esc(x.name)}</span><span>${money(x.amount)}</span></div>
-    <div class="meta">${esc(normalizeEntryDate(x.date))} • Expense</div>
-   </div>`).join('');
+ const groupedDates={};
+ [...sales.map(x=>({...x,_kind:'sale'})), ...exps.map(x=>({...x,_kind:'expense'}))].forEach(x=>{
+   const d=normalizeEntryDate(x.date);
+   if(!groupedDates[d]) groupedDates[d]={sales:[],expenses:[],sale:0,expense:0};
+   if(x._kind==='sale'){ groupedDates[d].sales.push(x); groupedDates[d].sale+=Number(x.sale||0); }
+   else { groupedDates[d].expenses.push(x); groupedDates[d].expense+=Number(x.amount||0); }
+ });
+ const reportDateCards=Object.keys(groupedDates).sort((a,b)=>b.localeCompare(a)).map(d=>{
+   const g=groupedDates[d], key=d.replace(/-/g,'');
+   const saleRows=g.sales.map(x=>`<div class="report-detail-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div></div>`).join('');
+   const expenseRows=g.expenses.map(x=>`<div class="report-detail-row"><b>💸 Expense: ${esc(x.name)} — ${money(x.amount)}</b><div class="report-detail-meta">Expense</div></div>`).join('');
+   const details=(saleRows+expenseRows)||'<div class="empty">No details found</div>';
+   return `<div class="report-date-card" onclick="toggleReportDateDetails('rd${key}')">
+     <div class="report-date-head"><span class="report-date-title">📅 ${esc(d)}</span><span class="report-date-arrow" id="arrowrd${key}">＋</span></div>
+     <div class="report-date-summary"><div class="report-date-stat"><span>💰 Sale Amount</span><b>${money(g.sale)}</b></div><div class="report-date-stat"><span>💸 Expense Amount</span><b>${money(g.expense)}</b></div></div>
+     <div class="report-date-details" id="rd${key}">${details}<div class="report-date-total"><span>Total</span><span>Sale ${money(g.sale)} • Expense ${money(g.expense)}</span></div></div>
+   </div>`;
+ }).join('') || '<div class="history-card empty">No entries found for this date range</div>';
 
  $('reportResult').innerHTML=`
  <div class="report-summary">
@@ -923,9 +939,12 @@ function generateReport(){
  </div>
  <div class="history-card"><b>📅 ${esc(from)} → ${esc(to)}</b><br><span class="meta">Sales: ${sales.length} • Expenses: ${exps.length}</span></div>
  <div class="history-card"><b>💸 Expense Breakdown</b>${expenseBreakdown}</div>
- <div class="history-card"><b>📋 Entries (${sales.length+exps.length})</b>
-   ${saleEntries}${expenseEntries || '<div class="empty">No entries found for this date range</div>'}
- </div>`;
+ <div class="history-card"><b>📋 Date-wise Summary</b><div class="meta" style="margin-top:6px">Tap a date to view full details.</div>${reportDateCards}</div>`;
+}
+function toggleReportDateDetails(id){
+ const el=document.getElementById(id); if(!el)return;
+ const isOpen=el.classList.toggle('open');
+ const arrow=document.getElementById('arrow'+id); if(arrow)arrow.textContent=isOpen?'−':'＋';
 }
 
 function refreshDashboard(){
