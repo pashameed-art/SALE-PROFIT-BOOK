@@ -1,4 +1,4 @@
-const CACHE_NAME='sale-profit-book-v5.08';
+const CACHE_NAME='sale-profit-book-v5.11';
 self.addEventListener('install',event=>event.waitUntil(
   caches.open(CACHE_NAME).then(c=>c.addAll(['./','./index.html','./manifest.json'])).then(()=>self.skipWaiting())
 ));
@@ -12,5 +12,7 @@ self.addEventListener('fetch',event=>{
     event.respondWith(fetch(event.request,{cache:'no-store'}).then(r=>{
       const c=r.clone(); caches.open(CACHE_NAME).then(x=>x.put(event.request,c)); return r;
     }).catch(()=>caches.match(event.request)));
-  } else event.respondWith(caches.match(event.request).then(r=>r||fetch(event.request)));
+  } else {
+    event.respondWith(caches.match(event.request).then(r=>r||fetch(event.request)));
+  }
 });

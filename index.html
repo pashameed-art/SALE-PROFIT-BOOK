@@ -1,14 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f766e">
-<link rel="manifest" href="./manifest.json">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>Sale Profit Book • V5.10</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
+<meta content="#0f766e" name="theme-color"/>
+<link href="./manifest.json" rel="manifest"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
+<title>Sale Profit Book • V5.11</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -219,7 +219,6 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 @media(max-width:520px){.home-entry-history{gap:10px}.home-entry-history button{font-size:18px;min-height:68px}}
 
 </style>
-
 <style>
 .expense-action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .expense-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
@@ -230,16 +229,12 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
   .expense-actions{grid-template-columns:1fr 1fr;gap:7px}
 }
 </style>
-
-
 <style>
 .mansoor-balance{background:#eef7f5;border-radius:12px;padding:14px;text-align:center;margin-bottom:14px}
 .mansoor-balance strong{display:block;font-size:25px;margin-top:4px}
 .mansoor-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid #e5e7eb}
 .mansoor-delete{padding:7px 10px}
 </style>
-
-
 <style>
 /* V4.41 stable navigation */
 .nav-bar{
@@ -260,8 +255,6 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
   .nav-bar button{font-size:12px !important;padding-left:3px !important;padding-right:3px !important;}
 }
 </style>
-
-
 <style>
 .report-date-row{
   display:grid !important;
@@ -289,8 +282,6 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
   .report-summary-grid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
-
-
 <style id="v444-add-item-fix">
 /* V4.44 — Add Item modal: always fully usable on mobile */
 html.modal-open, body.modal-open{
@@ -347,8 +338,6 @@ html.modal-open, body.modal-open{
   }
 }
 </style>
-
-
 <style id="v445-expense-bottom">
 /* V4.45 — Today's Total Expense appears at the bottom of the Expense page */
 #expensePage .expense-card,
@@ -369,8 +358,6 @@ html.modal-open, body.modal-open{
   order: 1 !important;
 }
 </style>
-
-
 <style id="v446-today-total-expense">
 .today-expense-total{
   margin-top:18px !important;
@@ -391,8 +378,6 @@ html.modal-open, body.modal-open{
   font-weight:900 !important;
 }
 </style>
-
-
 <style id="v448-report-breakdown">
 .report-breakdown{margin:18px 0 22px;padding:16px 18px;border:1px solid #e2e8e8;border-radius:16px;background:#f7fbfa}
 .report-breakdown .breakdown-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #e5eceb}
@@ -400,13 +385,9 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta name="app-version" content="5.05"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="5.05" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
-
-
-
-
 <style id="v455-backup">
 .backup-actions-v455{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
 .backup-actions-v455 button,.backup-restore-label-v455{min-height:52px;border:0;border-radius:14px;padding:12px 10px;font-size:16px;font-weight:800;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
@@ -416,11 +397,9 @@ html.modal-open, body.modal-open{
 .backup-actions-v455 .full-restore{background:#e8f4f2;color:#126d66}
 @media(max-width:520px){.backup-actions-v455{grid-template-columns:1fr 1fr}}
 </style>
-
 <style id="v480-expense-summary">
 .expense-section-title{font-size:20px;font-weight:900;margin:24px 4px 10px;color:#164e4a}.old-expense-title{margin-top:28px}.expense-old-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:14px;padding:15px 16px;margin-top:8px;font-size:18px;font-weight:800}.expense-old-row strong{font-size:19px}.expense-row{background:#fff;border-radius:18px;padding:15px;margin-top:10px}.expense-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.expense-actions button{width:100%;height:42px;font-size:14px}
 </style>
-
 <style id="v482-dashboard">
 .dashboard-title{font-size:22px;font-weight:900;margin:0 0 12px;color:#164e4a}
 .dashboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -437,11 +416,9 @@ html.modal-open, body.modal-open{
 .mansoor-detail-hidden{display:none!important}
 </style>
 <style id="v489-mansoor-opening">.mansoor-opening-balance{margin-top:8px;background:#f7fbfa;border:1px solid #e2efed}</style>
-
 <style id="v500-stock-meter">
 #newStockMeter{font-size:18px;font-weight:800;border:2px solid #167a70;background:#f5fbfa;padding:12px;border-radius:12px}
 </style>
-
 <style id="v501-item-autocomplete">
 #newItemNameWrap{position:relative}
 #newItemSuggestions{display:none;position:absolute;left:0;right:0;top:100%;z-index:10050;background:#fff;border:1px solid #d9e3e3;border-radius:0 0 14px 14px;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:220px;overflow:auto}
@@ -452,164 +429,147 @@ html.modal-open, body.modal-open{
 </head>
 <body>
 <header>
-  <h1>Sale Profit Book</h1>
-  <div class="version">Version 5.10</div>
-  <div class="subtitle">Sale • Purchase • Profit</div>
+<h1>Sale Profit Book</h1>
+<div class="version">Version 5.11</div>
+<div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
-  <button class="nav-active" onclick="showPage('home',this)">Home</button>
-  <button onclick="showPage('expense',this)">Expense</button>
-  <button onclick="showMansoor();setActive(this)">Mansoor</button>
-  <button onclick="showPage('report',this)">Reports</button>
-  <button onclick="showPage('backup',this)">Backup</button>
-  <button onclick="openItemModal();setActive(this)">Add Item</button>
+<button class="nav-active" onclick="showPage('home',this)">Home</button>
+<button onclick="showPage('expense',this)">Expense</button>
+<button onclick="showMansoor();setActive(this)">Mansoor</button>
+<button onclick="showPage('report',this)">Reports</button>
+<button onclick="showPage('backup',this)">Backup</button>
+<button onclick="openItemModal();setActive(this)">Add Item</button>
 </nav>
-<div class="install-wrap"><button id="installBtn" class="secondary install-btn" onclick="installPWA()">Install App</button></div>
-
-
+<div class="install-wrap"><button class="secondary install-btn" id="installBtn" onclick="installPWA()">Install App</button></div>
 <main>
-<div id="homePage" class="page active">
+<div class="page active" id="homePage">
 
-<div class="card stock-card" id="stockCard">
-  
-  <div class="field" style="margin-bottom:12px">
-    <label>Item</label>
-    <select id="stockItemSelect" onchange="renderStock()">
-      <option value="">Select Item</option>
-    </select>
-  </div>
-  <div id="stockSummary"></div>
-</div>
-<div class="card" id="dashboardCard">
-  <div class="dashboard-title">📊 Today Dashboard</div>
-  
-  <!-- ROW 1 -->
-  <div class="row1">
-    <div>
-      <label>State / Place</label>
-      <input id="place" value="Kerala" autocomplete="off">
-    </div>
-    <div>
-      <label>Date</label>
-      <input id="date" type="date">
-    </div>
-  </div>
-<div class="dashboard-grid">
-    <div class="dashboard-stat"><span>💰 Sale</span><b id="dashSale">₹0</b></div>
-    <div class="dashboard-stat"><span>🧾 Purchase</span><b id="dashPurchase">₹0</b></div>
-    <div class="dashboard-stat"><span>📈 Profit</span><b id="dashProfit">₹0</b></div>
-    <div class="dashboard-stat"><span>💸 Expense</span><b id="dashExpense">₹0</b></div>
-    <div class="dashboard-stat"><span>💳 GPay</span><b id="dashGpay">₹0</b></div>
-    <div class="dashboard-stat"><span>💵 Cash</span><b id="dashCash">₹0</b></div>
-  </div>
-  <div class="dashboard-net">💵 Net Profit <span id="dashNet">₹0</span></div>
-</div>
+
+
+<!-- ROW 2 -->
+<!-- ROW 3 -->
+
+
 <div class="new-history-row">
-  <button class="primary" onclick="openNewEntry()">New Entry</button>
-  <button class="secondary" onclick="showHistory()">History</button>
-</div>
+<button class="primary" onclick="goToNewEntry()">📝 New Entry</button>
+<button class="secondary" onclick="showHistory()">📜 History</button>
+</div><section class="card" id="entryCard">
 
-
-  <!-- ROW 2 -->
-  <!-- ROW 3 -->
-  <section id="entryCard" class="card">
-    <div class="home-entry-history">
-  <button class="home-entry-btn" onclick="goToNewEntry()">📝 New Entry</button>
-  <button class="home-history-btn" onclick="showHistory()">📜 History</button>
-</div>
 <div class="dashboard-title">📦 Stock</div>
 <div class="field">
-      <label>Item Name</label>
-      <select id="item" onchange="calculate()">
-        <option value="">Select Item</option>
-      </select>
-    </div>
-
-    <div class="entry-three"><div class="field">
-      <label>Meter</label>
-      <input id="meter" type="number" min="0" step="0.01" inputmode="decimal" placeholder="3" oninput="calculate()">
-    </div>
-
-    <div class="field">
-      <label>Sale ₹</label>
-      <input id="sale" type="number" min="0" step="0.01" inputmode="decimal" placeholder="1500" oninput="calculate()">
-    </div>
-    <div class="field">
-      <label>Paid By</label>
-      <select id="paidBy">
-        <option value="GPay" selected>GPay</option>
-        <option value="Cash">Cash</option>
-      </select>
-    </div></div>
-
-    <div class="purchase-profit-row"><div class="field">
-      <label>Purchase ₹</label>
-      <input id="purchase" class="auto" type="text" readonly placeholder="Auto">
-    </div><div class="field">
-      <label>Profit ₹</label>
-      <input id="profit" class="auto profit" type="text" readonly placeholder="Auto">
-    </div></div>
-
-    <div class="field">
-      <button id="saveBtn" class="primary" onclick="saveEntry()">Save Entry</button>
-    </div>
-  </section>
-
-<section id="historyCard" class="hidden">
-    <button id="historyAllBtn" type="button" class="secondary" style="margin:0 0 14px;width:100%;">
+<label>Item Name</label>
+<select id="item" onchange="calculate()">
+<option value="">Select Item</option>
+</select>
+</div>
+<div class="entry-three"><div class="field">
+<label>Meter</label>
+<input id="meter" inputmode="decimal" min="0" oninput="calculate()" placeholder="3" step="0.01" type="number"/>
+</div>
+<div class="field">
+<label>Sale ₹</label>
+<input id="sale" inputmode="decimal" min="0" oninput="calculate()" placeholder="1500" step="0.01" type="number"/>
+</div>
+<div class="field">
+<label>Paid By</label>
+<select id="paidBy">
+<option selected="" value="GPay">GPay</option>
+<option value="Cash">Cash</option>
+</select>
+</div></div>
+<div class="purchase-profit-row"><div class="field">
+<label>Purchase ₹</label>
+<input class="auto" id="purchase" placeholder="Auto" readonly="" type="text"/>
+</div><div class="field">
+<label>Profit ₹</label>
+<input class="auto profit" id="profit" placeholder="Auto" readonly="" type="text"/>
+</div></div>
+<div class="field">
+<button class="primary" id="saveBtn" onclick="saveEntry()">Save Entry</button>
+</div>
+</section><div class="card stock-card" id="stockCard">
+<div class="field" style="margin-bottom:12px">
+<label>Item</label>
+<select id="stockItemSelect" onchange="renderStock()">
+<option value="">Select Item</option>
+</select>
+</div>
+<div id="stockSummary"></div>
+</div><div class="card" id="dashboardCard">
+<div class="dashboard-title">📊 Today Dashboard</div>
+<!-- ROW 1 -->
+<div class="row1">
+<div>
+<label>State / Place</label>
+<input autocomplete="off" id="place" value="Kerala"/>
+</div>
+<div>
+<label>Date</label>
+<input id="date" type="date"/>
+</div>
+</div>
+<div class="dashboard-grid">
+<div class="dashboard-stat"><span>💰 Sale</span><b id="dashSale">₹0</b></div>
+<div class="dashboard-stat"><span>🧾 Purchase</span><b id="dashPurchase">₹0</b></div>
+<div class="dashboard-stat"><span>📈 Profit</span><b id="dashProfit">₹0</b></div>
+<div class="dashboard-stat"><span>💸 Expense</span><b id="dashExpense">₹0</b></div>
+<div class="dashboard-stat"><span>💳 GPay</span><b id="dashGpay">₹0</b></div>
+<div class="dashboard-stat"><span>💵 Cash</span><b id="dashCash">₹0</b></div>
+</div>
+<div class="dashboard-net">💵 Net Profit <span id="dashNet">₹0</span></div>
+</div><section class="hidden" id="historyCard">
+<button class="secondary" id="historyAllBtn" style="margin:0 0 14px;width:100%;" type="button">
       📋 Show All History
     </button>
-    <div class="dua-card">
-      <div class="dua-title">Dua</div>
-      <div class="dua-text">யா அல்லாஹ்! எங்கள் வாழ்வில் பரக்கத்தையும், ஹலாலான ரிஸ்க்கையும் வழங்குவாயாக.<br>எங்கள் காரியங்களை எளிதாக்கி, நன்மையைத் தந்து, தீமையிலிருந்து எங்களைப் பாதுகாப்பாயாக.</div>
-    </div>
-    <div class="history-filters">
-  <input id="historySearch" placeholder="Search Item Name" oninput="renderHistory()">
-  <div class="report-grid">
-    <div><label>Date From</label><input id="historyFrom" type="date" onchange="renderHistory()"></div>
-    <div><label>Date To</label><input id="historyTo" type="date" onchange="renderHistory()"></div>
-  </div>
-  <div class="filter-buttons">
-    <button class="secondary" onclick="setHistoryFilter('today')">Today</button>
-    <button class="secondary" onclick="setHistoryFilter('week')">This Week</button>
-    <button class="secondary" onclick="setHistoryFilter('month')">This Month</button>
-    <button class="secondary" onclick="clearHistoryFilter()">Clear</button>
-  </div>
+<div class="dua-card">
+<div class="dua-title">Dua</div>
+<div class="dua-text">யா அல்லாஹ்! எங்கள் வாழ்வில் பரக்கத்தையும், ஹலாலான ரிஸ்க்கையும் வழங்குவாயாக.<br/>எங்கள் காரியங்களை எளிதாக்கி, நன்மையைத் தந்து, தீமையிலிருந்து எங்களைப் பாதுகாப்பாயாக.</div>
+</div>
+<div class="history-filters">
+<input id="historySearch" oninput="renderHistory()" placeholder="Search Item Name"/>
+<div class="report-grid">
+<div><label>Date From</label><input id="historyFrom" onchange="renderHistory()" type="date"/></div>
+<div><label>Date To</label><input id="historyTo" onchange="renderHistory()" type="date"/></div>
+</div>
+<div class="filter-buttons">
+<button class="secondary" onclick="setHistoryFilter('today')">Today</button>
+<button class="secondary" onclick="setHistoryFilter('week')">This Week</button>
+<button class="secondary" onclick="setHistoryFilter('month')">This Month</button>
+<button class="secondary" onclick="clearHistoryFilter()">Clear</button>
+</div>
 </div>
 <div class="report-summary-grid" style="margin:14px 0">
-  <div><span>📏 Meter</span><b id="sumMeter">0.00</b></div>
-  <div><span>💰 Sale</span><b id="sumSale">₹0</b></div>
-  <div><span>🧾 Purchase</span><b id="sumPurchase">₹0</b></div>
-  <div><span>📈 Profit</span><b id="sumProfit">₹0</b></div>
+<div><span>📏 Meter</span><b id="sumMeter">0.00</b></div>
+<div><span>💰 Sale</span><b id="sumSale">₹0</b></div>
+<div><span>🧾 Purchase</span><b id="sumPurchase">₹0</b></div>
+<div><span>📈 Profit</span><b id="sumProfit">₹0</b></div>
 </div>
 <div id="historyList"></div>
-  </section>
+</section></div>
+<div class="page" id="reportPage">
+<div class="report-box">
+<h2 style="margin-top:0">Report</h2>
+<div class="report-grid">
+<div><label>Date From</label><input id="reportFrom" type="date"/></div>
+<div><label>Date To</label><input id="reportTo" type="date"/></div>
 </div>
-
-<div id="reportPage" class="page">
-  <div class="report-box">
-    <h2 style="margin-top:0">Report</h2>
-    <div class="report-grid">
-      <div><label>Date From</label><input id="reportFrom" type="date"></div>
-      <div><label>Date To</label><input id="reportTo" type="date"></div>
-    </div>
-    <button class="primary" style="margin-top:12px" onclick="generateReport()">Generate Report</button>
-    <button id="reportExportBtn" class="secondary" style="margin-top:10px" onclick="exportReportCSV()">Export Report CSV</button>
-    <button id="reportShareBtn" class="secondary" style="margin-top:10px" onclick="shareReport()">Share Report</button>
-    <button id="reportPrintBtn" class="secondary" style="margin-top:10px" onclick="printReport()">Print Report</button>
-    <div id="reportResult"></div>
-  </div>
+<button class="primary" onclick="generateReport()" style="margin-top:12px">Generate Report</button>
+<button class="secondary" id="reportExportBtn" onclick="exportReportCSV()" style="margin-top:10px">Export Report CSV</button>
+<button class="secondary" id="reportShareBtn" onclick="shareReport()" style="margin-top:10px">Share Report</button>
+<button class="secondary" id="reportPrintBtn" onclick="printReport()" style="margin-top:10px">Print Report</button>
+<div id="reportResult"></div>
 </div>
-
-<div id="expensePage" class="page">
-  <div class="backup-box">
-    <h2 style="margin-top:0">Expense</h2>
-    <div class="report-grid">
-      <div><label>Date</label><input id="expenseDate" type="date"></div>
-      <div><label>Amount ₹</label><input id="expenseAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="500"></div>
-    </div>
-    <div class="field"><label>Expense</label>
-    <input id="expenseName" type="text" placeholder="Select or type Expense Name" list="expenseNameList" autocomplete="off">
+</div>
+<div class="page" id="expensePage">
+<div class="backup-box">
+<h2 style="margin-top:0">Expense</h2>
+<div class="report-grid">
+<div><label>Date</label><input id="expenseDate" type="date"/></div>
+<div><label>Amount ₹</label><input id="expenseAmount" inputmode="decimal" min="0" placeholder="500" step="0.01" type="number"/></div>
+</div>
+<div class="field"><label>Expense</label>
+<input autocomplete="off" id="expenseName" list="expenseNameList" placeholder="Select or type Expense Name" type="text"/>
 <datalist id="expenseNameList">
 <option value="Breakfast">
 <option value="Car Rent">
@@ -621,130 +581,116 @@ html.modal-open, body.modal-open{
 <option value="Room Rent">
 <option value="Tea">
 <option value="Water">
-</datalist>
-  </div>
-    <div class="expense-action-row">
-      <button id="expenseSaveBtn" class="primary" style="margin-top:12px" onclick="saveExpense()">Add Expense</button>
-      <button id="expenseClearBtn" class="secondary" style="margin-top:12px" onclick="clearExpenseForm()">Clear</button>
-    </div>
-    <div id="expenseList" class="expense-list"></div>
-  </div>
+</option></option></option></option></option></option></option></option></option></option></datalist>
 </div>
-
-
-<div id="backupPage" class="page">
-  <div class="backup-box">
-    <h2 style="margin-top:0">Backup</h2>
-    <div class="backup-actions-v455">
-      <button type="button" class="full-backup" onclick="fullBackupV455()">📦 Full Backup (No Login)</button>
-      <label class="backup-restore-label-v455 full-restore">♻️ Full Restore (No Login)
-        <input type="file" accept=".json,application/json" hidden onchange="restoreV455(this.files[0])">
-      </label>
-    </div>
-    <button class="primary" onclick="googleDriveBackup()">☁️ Google Drive Backup</button>
-    <button class="secondary" style="margin-top:10px" onclick="googleDriveRestore()">☁️ Google Drive Restore</button>
-    <div class="meta" style="margin-top:10px">📦 Full Backup / Restore works without Google login. ☁️ Google Drive Backup / Restore requires Google OAuth Client ID.</div>
-    <button class="secondary" style="margin-top:10px" onclick="exportCSV()">Export CSV</button>
-  </div>
+<div class="expense-action-row">
+<button class="primary" id="expenseSaveBtn" onclick="saveExpense()" style="margin-top:12px">Add Expense</button>
+<button class="secondary" id="expenseClearBtn" onclick="clearExpenseForm()" style="margin-top:12px">Clear</button>
 </div>
-
-
-<section id="mansoorPage" class="page hidden">
-  <div class="card">
-    <h2>🤝 Mansoor கொடுக்கல் வாங்கல்</h2>
-    <div class="mansoor-balance">
-      <div>தற்போது பெற வேண்டியது</div>
-      <strong id="mansoorBalance">₹43,334</strong>
-    </div>
-
-    <div class="form-grid">
-      <div class="field">
-        <label>வகை</label>
-        <select id="mansoorType">
-          <option value="taken">பணம் வாங்கியது</option>
-          <option value="given">பணம் தந்தது</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>தேதி</label>
-        <input id="mansoorDate" type="date">
-      </div>
-      <div class="field">
-        <label>தொகை ₹</label>
-        <input id="mansoorAmount" type="number" inputmode="decimal" min="0" step="1" placeholder="Amount">
-      </div>
-      <div class="field">
-        <label>குறிப்பு</label>
-        <input id="mansoorNote" type="text" placeholder="குறிப்பு (விருப்பம்)">
-      </div>
-    </div>
-
-    <div class="expense-action-row">
-      <button class="primary" onclick="saveMansoor()">Save</button>
-      <button class="secondary" onclick="clearMansoor()">Clear</button>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>வரவு / கொடுப்பு History</h3>
-    <div id="mansoorHistory"></div>
-  </div>
-
+<div class="expense-list" id="expenseList"></div>
+</div>
+</div>
+<div class="page" id="backupPage">
+<div class="backup-box">
+<h2 style="margin-top:0">Backup</h2>
+<div class="backup-actions-v455">
+<button class="full-backup" onclick="fullBackupV455()" type="button">📦 Full Backup (No Login)</button>
+<label class="backup-restore-label-v455 full-restore">♻️ Full Restore (No Login)
+        <input accept=".json,application/json" hidden="" onchange="restoreV455(this.files[0])" type="file"/>
+</label>
+</div>
+<button class="primary" onclick="googleDriveBackup()">☁️ Google Drive Backup</button>
+<button class="secondary" onclick="googleDriveRestore()" style="margin-top:10px">☁️ Google Drive Restore</button>
+<div class="meta" style="margin-top:10px">📦 Full Backup / Restore works without Google login. ☁️ Google Drive Backup / Restore requires Google OAuth Client ID.</div>
+<button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
+</div>
+</div>
+<section class="page hidden" id="mansoorPage">
+<div class="card">
+<h2>🤝 Mansoor கொடுக்கல் வாங்கல்</h2>
+<div class="mansoor-balance">
+<div>தற்போது பெற வேண்டியது</div>
+<strong id="mansoorBalance">₹43,334</strong>
+</div>
+<div class="form-grid">
+<div class="field">
+<label>வகை</label>
+<select id="mansoorType">
+<option value="taken">பணம் வாங்கியது</option>
+<option value="given">பணம் தந்தது</option>
+</select>
+</div>
+<div class="field">
+<label>தேதி</label>
+<input id="mansoorDate" type="date"/>
+</div>
+<div class="field">
+<label>தொகை ₹</label>
+<input id="mansoorAmount" inputmode="decimal" min="0" placeholder="Amount" step="1" type="number"/>
+</div>
+<div class="field">
+<label>குறிப்பு</label>
+<input id="mansoorNote" placeholder="குறிப்பு (விருப்பம்)" type="text"/>
+</div>
+</div>
+<div class="expense-action-row">
+<button class="primary" onclick="saveMansoor()">Save</button>
+<button class="secondary" onclick="clearMansoor()">Clear</button>
+</div>
+</div>
+<div class="card">
+<h3>வரவு / கொடுப்பு History</h3>
+<div id="mansoorHistory"></div>
+</div>
 </section>
-
-
-<section id="reportPage" class="page">
-  <div class="card">
-    <h2>Reports</h2>
-    <div class="report-date-row">
-      <div class="field">
-        <label>📅 Date From</label>
-        <input id="reportFrom" type="date">
-      </div>
-      <div class="field">
-        <label>📅 Date To</label>
-        <input id="reportTo" type="date">
-      </div>
-    </div>
-    <button class="primary" onclick="generateReport()">Generate Report</button>
-  </div>
-
-  <div id="reportResult" class="card hidden"></div>
+<section class="page" id="reportPage">
+<div class="card">
+<h2>Reports</h2>
+<div class="report-date-row">
+<div class="field">
+<label>📅 Date From</label>
+<input id="reportFrom" type="date"/>
+</div>
+<div class="field">
+<label>📅 Date To</label>
+<input id="reportTo" type="date"/>
+</div>
+</div>
+<button class="primary" onclick="generateReport()">Generate Report</button>
+</div>
+<div class="card hidden" id="reportResult"></div>
 </section>
-
 </main>
-
-<div id="itemModal" class="modal">
-  <div class="modal-box">
-    <h2 style="margin-top:0">Add Item</h2>
-    <div class="field" id="newItemNameWrap">
-      <label>Item Name</label>
-      <input id="newItemName" placeholder="Type first 2 letters…" autocomplete="off">
-      <div id="newItemSuggestions"></div>
-    </div>
-    <div class="field">
-      <label>Purchase / Meter ₹</label>
-      <input id="newItemRate" type="number" min="0" step="0.01" inputmode="decimal" placeholder="225">
-    </div>
-    <div class="report-grid">
-      <div class="field">
-        <label>Stock Date</label>
-        <input id="newStockDate" type="date">
-      </div>
-      <div class="field">
-        <label>Stock Meter</label>
-        <input id="newStockMeter" type="number" min="0" step="0.01" inputmode="decimal" placeholder="30"><div class="meta">Add Item செய்யும் போது ஆரம்ப Stock Meter இங்கே உள்ளிடவும்</div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="primary" onclick="saveItem()">Save Item</button>
-      <button class="secondary" onclick="closeItemModal()">Close</button>
-    </div>
-    <div id="itemList" class="item-list"></div>
-    <div class="meta" style="margin-top:10px">📦 Stock: Add Item-ல் உள்ளிடும் Meter சேமிக்கப்படும்; Sale செய்தால் அதே Item-ன் Stock குறையும்.</div>
-  </div>
+<div class="modal" id="itemModal">
+<div class="modal-box">
+<h2 style="margin-top:0">Add Item</h2>
+<div class="field" id="newItemNameWrap">
+<label>Item Name</label>
+<input autocomplete="off" id="newItemName" placeholder="Type first 2 letters…"/>
+<div id="newItemSuggestions"></div>
 </div>
-
+<div class="field">
+<label>Purchase / Meter ₹</label>
+<input id="newItemRate" inputmode="decimal" min="0" placeholder="225" step="0.01" type="number"/>
+</div>
+<div class="report-grid">
+<div class="field">
+<label>Stock Date</label>
+<input id="newStockDate" type="date"/>
+</div>
+<div class="field">
+<label>Stock Meter</label>
+<input id="newStockMeter" inputmode="decimal" min="0" placeholder="30" step="0.01" type="number"/><div class="meta">Add Item செய்யும் போது ஆரம்ப Stock Meter இங்கே உள்ளிடவும்</div>
+</div>
+</div>
+<div class="modal-actions">
+<button class="primary" onclick="saveItem()">Save Item</button>
+<button class="secondary" onclick="closeItemModal()">Close</button>
+</div>
+<div class="item-list" id="itemList"></div>
+<div class="meta" style="margin-top:10px">📦 Stock: Add Item-ல் உள்ளிடும் Meter சேமிக்கப்படும்; Sale செய்தால் அதே Item-ன் Stock குறையும்.</div>
+</div>
+</div>
 <script>
 const ITEMS_KEY='spb_v4_items';
 const ENTRIES_KEY='spb_v4_entries';
@@ -1338,7 +1284,7 @@ function deleteItem(name){
 }
 
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=5.10', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=5.11', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
 
 // V4.75: Clean Today Total Expense — expense records only.
 
@@ -1441,7 +1387,7 @@ window.addEventListener('load',function(){try{$('date').value=today();if(!editin
 })();
 
 </script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script async="" defer="" src="https://accounts.google.com/gsi/client"></script>
 <script>
 
 // V4.77 — Today Total Expense is based on the selected Expense date.
@@ -1507,14 +1453,10 @@ async function googleDriveRestore(){
 <script>
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.10',{scope:'./'}).then(function(r){return r.update();}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.11',{scope:'./'}).then(function(r){return r.update();}).catch(function(){});
   }
 });
 </script>
-
-
-
-
 <script>
 (function(){
   const MKEY='saleProfitBookMansoorV1';
@@ -1655,8 +1597,6 @@ window.addEventListener('load',function(){
   });
 })();
 </script>
-
-
 <script>
 /* V4.47 REPORTS — expense and sales data fix */
 (function(){
@@ -1787,7 +1727,6 @@ window.addEventListener('load',function(){
   };
 })();
 </script>
-
 <script>
 /* V4.49 — Export the currently selected report range as CSV. */
 window.exportReportCSV=function(){
@@ -1810,7 +1749,6 @@ window.exportReportCSV=function(){
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
 };
 </script>
-
 <script>
 /* V4.50 — Share / Print the generated report. */
 window.shareReport=function(){
@@ -1841,8 +1779,6 @@ window.printReport=function(){
   w.document.close(); w.focus(); setTimeout(function(){w.print();},300);
 };
 </script>
-
-
 <script id="v455-backup-script">
 (function(){
   function fullBackupV455(){
@@ -1883,8 +1819,6 @@ window.printReport=function(){
   window.restoreV455=restoreV455;
 })();
 </script>
-
-
 <script id="v484-stability-fix">
 // V4.85 — stability: refresh local dates/dashboard whenever the PWA resumes.
 (function(){
