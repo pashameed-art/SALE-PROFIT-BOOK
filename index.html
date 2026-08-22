@@ -392,7 +392,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta name="app-version" content="4.97"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta name="app-version" content="5.01"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 
@@ -432,6 +432,14 @@ html.modal-open, body.modal-open{
 
 <style id="v500-stock-meter">
 #newStockMeter{font-size:18px;font-weight:800;border:2px solid #167a70;background:#f5fbfa;padding:12px;border-radius:12px}
+</style>
+
+<style id="v501-item-autocomplete">
+#newItemNameWrap{position:relative}
+#newItemSuggestions{display:none;position:absolute;left:0;right:0;top:100%;z-index:10050;background:#fff;border:1px solid #d9e3e3;border-radius:0 0 14px 14px;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:220px;overflow:auto}
+#newItemSuggestions .item-suggestion{padding:13px 15px;font-weight:700;cursor:pointer;border-bottom:1px solid #eef2f2}
+#newItemSuggestions .item-suggestion:last-child{border-bottom:0}
+#newItemSuggestions .item-suggestion:active{background:#eaf5f3}
 </style>
 </head>
 <body>
@@ -689,9 +697,10 @@ html.modal-open, body.modal-open{
 <div id="itemModal" class="modal">
   <div class="modal-box">
     <h2 style="margin-top:0">Add Item</h2>
-    <div class="field">
+    <div class="field" id="newItemNameWrap">
       <label>Item Name</label>
-      <input id="newItemName" placeholder="BSL EXECUTIVE CHOICE">
+      <input id="newItemName" placeholder="Type first 2 letters…" autocomplete="off">
+      <div id="newItemSuggestions"></div>
     </div>
     <div class="field">
       <label>Purchase / Meter ₹</label>
@@ -991,6 +1000,7 @@ function init(){
   normalizeAllEntryDates();
   $('date').value=today();
   populateItems();
+  initNewItemAutocomplete();
   renderItems();
   renderHistory();
   renderStock();
@@ -1187,6 +1197,31 @@ function renderStock(){
   el.innerHTML=cards.join('')||'<div class="empty">No stock added yet. Use Add Item → Stock Meter.</div>';
 }
 
+function renderNewItemSuggestions(){
+  const input=$('newItemName'), box=$('newItemSuggestions');
+  if(!input||!box)return;
+  const q=input.value.trim().toLowerCase();
+  if(q.length<2){box.style.display='none';box.innerHTML='';return}
+  const matches=(Array.isArray(items)?items:[]).filter(x=>String(x.name||'').toLowerCase().startsWith(q)).slice(0,12);
+  if(!matches.length){box.style.display='none';box.innerHTML='';return}
+  box.innerHTML=matches.map(x=>`<div class="item-suggestion" data-name="${esc(x.name)}">${esc(x.name)} <span class="meta">— ${money(x.rate)}/m</span></div>`).join('');
+  box.style.display='block';
+  box.querySelectorAll('.item-suggestion').forEach(el=>el.addEventListener('click',()=>{
+    const name=el.getAttribute('data-name')||'';
+    input.value=name;
+    const it=items.find(x=>x.name===name);
+    if(it) $('newItemRate').value=it.rate||'';
+    box.style.display='none';
+  }));
+}
+function initNewItemAutocomplete(){
+  const input=$('newItemName'), box=$('newItemSuggestions');
+  if(!input||input.dataset.autocompleteReady)return;
+  input.dataset.autocompleteReady='1';
+  input.addEventListener('input',renderNewItemSuggestions);
+  input.addEventListener('focus',renderNewItemSuggestions);
+  document.addEventListener('click',e=>{if(!e.target.closest('#newItemNameWrap') && box)box.style.display='none';});
+}
 function saveItem(){
   const name=$('newItemName').value.trim(),rate=Number($('newItemRate').value),stock=Number($('newStockMeter').value)||0;
   if(!name||!(rate>0)){alert('Enter Item Name and Purchase / Meter.');return}
