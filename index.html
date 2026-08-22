@@ -8,7 +8,7 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>Sale Profit Book • V5.09</title>
+<title>Sale Profit Book • V5.10</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -211,6 +211,13 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 .report-detail-row{padding:10px 0;border-bottom:1px solid #edf0f0}.report-detail-row:last-child{border-bottom:0}.report-detail-row b{display:block}.report-detail-meta{color:var(--muted);font-size:13px;margin-top:4px}
 .report-date-total{display:flex;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid #dfe7e6;font-weight:800}
 .home-shortcuts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 0 16px}.home-shortcut{min-height:58px;border-radius:16px;font-size:16px;font-weight:800;padding:10px 8px}@media(max-width:520px){.home-shortcuts{gap:8px}.home-shortcut{font-size:14px;padding:9px 5px}}
+
+.home-entry-history{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 16px}
+.home-entry-history button{border:0;border-radius:22px;min-height:78px;padding:14px 10px;font-size:20px;font-weight:800;cursor:pointer}
+.home-entry-btn{background:#138a7e;color:#fff}
+.home-history-btn{background:#e8f4f3;color:#126f68}
+@media(max-width:520px){.home-entry-history{gap:10px}.home-entry-history button{font-size:18px;min-height:68px}}
+
 </style>
 
 <style>
@@ -446,7 +453,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 5.09</div>
+  <div class="version">Version 5.10</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -506,7 +513,11 @@ html.modal-open, body.modal-open{
   <!-- ROW 2 -->
   <!-- ROW 3 -->
   <section id="entryCard" class="card">
-    <div class="dashboard-title">📦 Stock</div>
+    <div class="home-entry-history">
+  <button class="home-entry-btn" onclick="goToNewEntry()">📝 New Entry</button>
+  <button class="home-history-btn" onclick="showHistory()">📜 History</button>
+</div>
+<div class="dashboard-title">📦 Stock</div>
 <div class="field">
       <label>Item Name</label>
       <select id="item" onchange="calculate()">
@@ -1327,7 +1338,7 @@ function deleteItem(name){
 }
 
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=5.09', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=5.10', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
 
 // V4.75: Clean Today Total Expense — expense records only.
 
@@ -1496,7 +1507,7 @@ async function googleDriveRestore(){
 <script>
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.09',{scope:'./'}).then(function(r){return r.update();}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.10',{scope:'./'}).then(function(r){return r.update();}).catch(function(){});
   }
 });
 </script>
