@@ -8,7 +8,7 @@
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<title>Sale Profit Book • V4.81</title>
+<title>Sale Profit Book • V5.04</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -463,7 +463,7 @@ html.modal-open, body.modal-open{
 <main>
 <div id="homePage" class="page active">
 <div class="home-shortcuts" aria-label="Home shortcuts">
-  <button class="home-shortcut primary" onclick="newEntry()">📝 New Entry</button>
+  <button class="home-shortcut primary" onclick="openNewEntry()">📝 New Entry</button>
   <button class="home-shortcut secondary" onclick="document.getElementById('stockCard')?.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>document.getElementById('stockItemSelect')?.focus(),350)">📦 Stock</button>
   <button class="home-shortcut secondary" onclick="document.getElementById('dashboardCard')?.scrollIntoView({behavior:'smooth',block:'start'})">📊 Dashboard</button>
 </div>
@@ -502,7 +502,7 @@ html.modal-open, body.modal-open{
     </div>
   </div>
 <div class="new-history-row">
-  <button class="primary" onclick="newEntry()">New Entry</button>
+  <button class="primary" onclick="openNewEntry()">New Entry</button>
   <button class="secondary" onclick="showHistory()">History</button>
 </div>
 
@@ -1060,6 +1060,20 @@ function saveEntry(){
   renderStock();
   refreshDashboard();
 }
+function openNewEntry(){
+  try{
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const home=document.getElementById('homePage');
+    if(home) home.classList.add('active');
+    const entry=document.getElementById('entryCard');
+    const history=document.getElementById('historyCard');
+    if(history) history.classList.add('hidden');
+    if(entry) entry.classList.remove('hidden');
+    newEntry();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){ console.error('New Entry error:',e); alert('New Entry could not be opened.'); }
+}
+
 function newEntry(){
   editingId=null;$('saveBtn').textContent='Save Entry';
   $('historyCard').classList.add('hidden');$('entryCard').classList.remove('hidden');
