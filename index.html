@@ -382,7 +382,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta name="app-version" content="4.88"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta name="app-version" content="4.89"><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 
@@ -418,11 +418,12 @@ html.modal-open, body.modal-open{
 .mansoor-detail-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #e1e9e8}.mansoor-detail-row:last-child{border-bottom:0}.mansoor-detail-row strong{white-space:nowrap}
 .mansoor-detail-hidden{display:none!important}
 </style>
+<style id="v489-mansoor-opening">.mansoor-opening-balance{margin-top:8px;background:#f7fbfa;border:1px solid #e2efed}</style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.88</div>
+  <div class="version">Version 4.89</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -606,7 +607,7 @@ html.modal-open, body.modal-open{
     <h2>🤝 Mansoor கொடுக்கல் வாங்கல்</h2>
     <div class="mansoor-balance">
       <div>தற்போது பெற வேண்டியது</div>
-      <strong id="mansoorBalance">₹43,334</strong><small style="display:block;margin-top:4px">19-08-2026 வரை</small>
+      <strong id="mansoorBalance">₹43,334</strong><small style="display:block;margin-top:4px">19.08.26</small>
     </div>
 
     <div class="form-grid">
@@ -1401,8 +1402,9 @@ window.addEventListener('load',function(){
     }
 
     const oldDates=Object.keys(oldMap).sort((a,b)=>b.localeCompare(a));
-    if(oldDates.length){
+    if(oldDates.length || INITIAL_BALANCE>0){
       html += '<div class="expense-section-title old-expense-title">📜 Previous History</div>';
+      html += '<div class="expense-old-row mansoor-old-toggle mansoor-opening-balance"><span>📅 19.08.26</span><strong>₹'+INITIAL_BALANCE.toLocaleString('en-IN')+'</strong></div>';
       html += oldDates.map(d=>{
         const net=oldMap[d].taken-oldMap[d].given;
         const sign=net>=0?'+':'-';
