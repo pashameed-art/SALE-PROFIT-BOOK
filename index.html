@@ -534,11 +534,69 @@ html.modal-open, body.modal-open{
 }
 </style>
 
+
+<style id="v524-history-direct-detail">
+.report-date-card.open .report-date-details{
+  display:block!important;
+}
+.report-date-details{
+  display:none;
+  padding-top:8px;
+}
+.report-detail-row{
+  padding:10px 0;
+  border-top:1px solid var(--line,#e5eeee);
+}
+.report-detail-meta{
+  color:var(--muted,#708080);
+  font-size:13px;
+  margin-top:4px;
+  line-height:1.45;
+}
+.report-date-card{
+  background:#fff;
+  border:1px solid #e3eceb;
+  border-radius:18px;
+  margin:10px 0;
+  padding:14px;
+}
+.report-date-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  font-weight:800;
+}
+.report-date-summary{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+.report-date-stat{
+  background:#eef6f5;
+  border-radius:12px;
+  padding:10px;
+}
+.report-date-stat span{
+  display:block;
+  font-size:12px;
+  color:#708080;
+}
+.report-date-stat b{
+  display:block;
+  margin-top:4px;
+}
+@media(max-width:520px){
+  .report-date-summary{grid-template-columns:1fr 1fr}
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.23</div>
+<div class="version">Version 5.24</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1228,8 +1286,8 @@ function renderHistory(){
     const saleRows=g.sales.map(x=>`<div class="report-detail-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div></div>`).join('');
     const expenseRows=g.expenses.map(x=>`<div class="report-detail-row"><b>💸 Expense: ${esc(x.name)} — ${money(x.amount)}</b><div class="report-detail-meta">Expense</div></div>`).join('');
     const details=(saleRows+expenseRows)||'<div class="empty">No details found</div>';
-    return `<div class="report-date-card" onclick="toggleReportDateDetails('${key}')">
-      <div class="report-date-head"><span class="report-date-title">📅 ${fmtDate(d)}</span><span class="report-date-arrow" id="arrow${key}">＋</span></div>
+    return `<div class="report-date-card open" onclick="toggleReportDateDetails('${key}')">
+      <div class="report-date-head"><span class="report-date-title">📅 ${fmtDate(d)}</span><span class="report-date-arrow" id="arrow${key}">−</span></div>
       <div class="report-date-summary">
         <div class="report-date-stat"><span>💰 Sale Amount</span><b>${money(g.sale)}</b></div>
         <div class="report-date-stat"><span>💸 Expense Amount</span><b>${money(g.expense)}</b></div>
