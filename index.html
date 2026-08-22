@@ -440,26 +440,54 @@ html.modal-open, body.modal-open{
 </style>
 
 
-<style id="v521-netprofit-dashboard">
-.today-net-profit{
-  margin:14px 0 18px;
-  padding:18px 20px;
-  border-radius:22px;
-  background:#eaf5f4;
-  color:#174f4b;
-  text-align:center;
-  font-size:22px;
-  font-weight:800;
+
+
+
+<style id="v522-clean-layout">
+.state-date-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:16px!important;
+  width:100%!important;
+  margin:18px 0 14px!important;
+  align-items:end!important;
 }
-.today-net-profit strong{font-weight:800}
+.state-date-row .field{
+  min-width:0!important;
+  margin:0!important;
+}
+.state-date-row label{
+  display:block!important;
+  margin:0 0 8px!important;
+}
+.state-date-row input{
+  width:100%!important;
+  box-sizing:border-box!important;
+  height:72px!important;
+  margin:0!important;
+}
+.new-history-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:16px!important;
+  width:100%!important;
+  margin:12px 0 18px!important;
+}
+.new-history-row>*{min-width:0!important}
+@media(max-width:600px){
+  .state-date-row,.new-history-row{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    gap:10px!important;
+  }
+}
 </style>
 
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.21</div>
-<div class="dashboard-net">💵 Net Profit <span id="dashNet">₹0</span></div>
+<div class="version">Version 5.22</div>
+
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
