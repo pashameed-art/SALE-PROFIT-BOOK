@@ -433,7 +433,7 @@ html.modal-open, body.modal-open{
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.94</div>
+  <div class="version">Version 4.95</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -460,6 +460,11 @@ html.modal-open, body.modal-open{
     <div class="dashboard-stat"><span>💵 Cash</span><b id="dashCash">₹0</b></div>
   </div>
   <div class="dashboard-net">💵 Net Profit <span id="dashNet">₹0</span></div>
+</div>
+
+<div class="card stock-card" id="stockCard">
+  <div class="dashboard-title">📦 Stock</div>
+  <div id="stockSummary"></div>
 </div>
   <!-- ROW 1 -->
   <div class="row1">
@@ -688,6 +693,16 @@ html.modal-open, body.modal-open{
       <label>Purchase / Meter ₹</label>
       <input id="newItemRate" type="number" min="0" step="0.01" inputmode="decimal" placeholder="225">
     </div>
+    <div class="report-grid">
+      <div class="field">
+        <label>Stock Date</label>
+        <input id="newStockDate" type="date">
+      </div>
+      <div class="field">
+        <label>Stock Meter (Add)</label>
+        <input id="newStockMeter" type="number" min="0" step="0.01" inputmode="decimal" placeholder="30">
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="primary" onclick="saveItem()">Save Item</button>
       <button class="secondary" onclick="closeItemModal()">Close</button>
@@ -700,10 +715,12 @@ html.modal-open, body.modal-open{
 const ITEMS_KEY='spb_v4_items';
 const ENTRIES_KEY='spb_v4_entries';
 const EXPENSES_KEY='spb_v4_expenses';
+const STOCK_KEY='spb_v4_stock';
 let expenses=JSON.parse(localStorage.getItem(EXPENSES_KEY)||'[]');
 let editingExpenseId=null;
 let items=JSON.parse(localStorage.getItem(ITEMS_KEY)||'[]');
 let entries=JSON.parse(localStorage.getItem(ENTRIES_KEY)||'[]');
+let stockMovements=JSON.parse(localStorage.getItem(STOCK_KEY)||'[]');
 // V4.67: clean synthetic expense-as-sale records from earlier recovery.
 (function cleanSyntheticExpenseEntries(){
   const expenseKeys = new Set((Array.isArray(expenses)?expenses:[]).map(x =>
@@ -751,7 +768,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;',
 
 
 function backupData(){
-  const data={version:"4.10",items,entries,expenses,exportedAt:new Date().toISOString()};
+  const data={version:"4.95",items,entries,expenses,stockMovements,exportedAt:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);
   a.download="sale-profit-book-backup.json";a.click();URL.revokeObjectURL(a.href);
@@ -764,10 +781,11 @@ function restoreData(event){
       const data=JSON.parse(reader.result);
       if(!Array.isArray(data.items)||!Array.isArray(data.entries))throw new Error();
       expenses=Array.isArray(data.expenses)?data.expenses:[];
+      stockMovements=Array.isArray(data.stockMovements)?data.stockMovements:[];
       items=data.items;entries=data.entries;
       localStorage.setItem(ITEMS_KEY,JSON.stringify(items));
-      localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));
-      populateItems();renderItems();renderHistory();alert("Backup restored successfully.");
+      localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));localStorage.setItem(EXPENSES_KEY,JSON.stringify(expenses));localStorage.setItem(STOCK_KEY,JSON.stringify(stockMovements));
+      populateItems();renderItems();renderHistory();renderStock();alert("Backup restored successfully.");
     }catch(e){alert("Invalid backup file.");}
     event.target.value="";
   };
@@ -970,6 +988,7 @@ function init(){
   populateItems();
   renderItems();
   renderHistory();
+  renderStock();
   refreshDashboard();
 }
 function populateItems(){
@@ -1010,6 +1029,7 @@ function saveEntry(){
   alert(wasEditing?'Entry updated successfully.':'Entry saved successfully.');
   newEntry();
   renderHistory();
+  renderStock();
   refreshDashboard();
 }
 function newEntry(){
@@ -1117,10 +1137,11 @@ function editEntry(id){
 }
 function deleteEntry(id){
   if(!confirm('Delete this entry?'))return;
-  entries=entries.filter(x=>x.id!==id);localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));renderHistory();refreshDashboard();
+  entries=entries.filter(x=>x.id!==id);localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));renderHistory();renderStock();refreshDashboard();
 }
 function openItemModal(){
   $('itemModal').style.display='flex';
+  if($('newStockDate') && !$('newStockDate').value) $('newStockDate').value=today();
   document.documentElement.classList.add('modal-open');
   document.body.classList.add('modal-open');
   renderItems();
@@ -1130,13 +1151,48 @@ function closeItemModal(){
   document.documentElement.classList.remove('modal-open');
   document.body.classList.remove('modal-open');
 }
+
+function fmtStockDate(d){
+  const n=normalizeEntryDate(d); if(!n)return '';
+  const [y,m,day]=n.split('-'); return `${day}.${m}.${String(y).slice(-2)}`;
+}
+function renderStock(){
+  const el=$('stockSummary'); if(!el)return;
+  const names=new Set();
+  (Array.isArray(items)?items:[]).forEach(x=>names.add(x.name));
+  (Array.isArray(stockMovements)?stockMovements:[]).forEach(x=>names.add(x.item));
+  (Array.isArray(entries)?entries:[]).forEach(x=>names.add(x.item));
+  const cards=[];
+  [...names].filter(Boolean).sort((a,b)=>a.localeCompare(b)).forEach(name=>{
+    const ins=(Array.isArray(stockMovements)?stockMovements:[]).filter(x=>x.item===name).map(x=>({...x,date:normalizeEntryDate(x.date)}));
+    const firstIn=ins.length?ins.reduce((m,x)=>!m||x.date<m?x.date:m,''):'';
+    const sales=(Array.isArray(entries)?entries:[]).filter(x=>x.item===name && (!firstIn || normalizeEntryDate(x.date)>=firstIn));
+    const inTotal=ins.reduce((a,x)=>a+Number(x.meter||0),0);
+    const saleTotal=sales.reduce((a,x)=>a+Number(x.meter||0),0);
+    const balance=inTotal-saleTotal;
+    if(!ins.length && !sales.length)return;
+    const all=[];
+    ins.forEach(x=>all.push({date:x.date,meter:Number(x.meter||0),type:'Stock In',sign:'+'}));
+    sales.forEach(x=>all.push({date:normalizeEntryDate(x.date),meter:Number(x.meter||0),type:'Sale',sign:'-'}));
+    all.sort((a,b)=>a.date.localeCompare(b.date));
+    let running=0;
+    const ledger=all.map(x=>{running+=x.sign==='+'?x.meter:-x.meter;return `<div class="stock-movement"><b>${fmtStockDate(x.date)}</b> — ${esc(name)} <span class="${x.sign==='+'?'stock-positive':'stock-negative'}">${x.sign}${x.meter.toFixed(2)} m</span><div class="stock-muted">${x.type} • Stock ${running.toFixed(2)} m</div></div>`}).join('');
+    cards.push(`<div class="stock-item"><div class="stock-head"><b>${esc(name)}</b><span class="stock-balance">${balance.toFixed(2)} m</span></div><div class="stock-muted">Stock ${inTotal.toFixed(2)} m − Sale ${saleTotal.toFixed(2)} m</div><div class="stock-ledger">${ledger}</div></div>`);
+  });
+  el.innerHTML=cards.join('')||'<div class="empty">No stock added yet. Use Add Item → Stock Meter (Add).</div>';
+}
+
 function saveItem(){
-  const name=$('newItemName').value.trim(),rate=Number($('newItemRate').value);
+  const name=$('newItemName').value.trim(),rate=Number($('newItemRate').value),stock=Number($('newStockMeter').value)||0;
   if(!name||!(rate>0)){alert('Enter Item Name and Purchase / Meter.');return}
   const old=items.find(x=>x.name.toLowerCase()===name.toLowerCase());
   if(old)old.rate=rate;else items.push({name,rate});
+  if(stock>0){
+    stockMovements.unshift({id:Date.now(),date:$('newStockDate').value||today(),item:name,meter:stock,type:'Stock In'});
+    localStorage.setItem(STOCK_KEY,JSON.stringify(stockMovements));
+  }
   localStorage.setItem(ITEMS_KEY,JSON.stringify(items));
-  $('newItemName').value='';$('newItemRate').value='';populateItems();renderItems();calculate();
+  $('newItemName').value='';$('newItemRate').value='';$('newStockMeter').value='';$('newStockDate').value=today();populateItems();renderItems();renderStock();calculate();
 }
 function renderItems(){
   const list=$('itemList');
@@ -1646,7 +1702,10 @@ window.printReport=function(){
   var to=document.getElementById('reportTo')?.value||'';
   var w=window.open('','_blank');
   if(!w){ alert('Please allow pop-ups to print the report.'); return; }
-  w.document.write('<!doctype html><html><head><title>Sale Profit Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin:0 0 6px}h2,h3{margin-top:22px}.report-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.report-summary-grid>div{border:1px solid #ddd;border-radius:12px;padding:12px}.report-summary-grid b{display:block;margin-top:6px;font-size:18px}.breakdown-row,.report-entry{padding:10px 0;border-bottom:1px solid #ddd}.meta{margin-top:5px;color:#666;font-size:13px}@media print{body{padding:0}}</style></head><body><h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+box.innerHTML+'\\n
+  w.document.write('<!doctype html><html><head><title>Sale Profit Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin:0 0 6px}h2,h3{margin-top:22px}.report-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.report-summary-grid>div{border:1px solid #ddd;border-radius:12px;padding:12px}.report-summary-grid b{display:block;margin-top:6px;font-size:18px}.breakdown-row,.report-entry{padding:10px 0;border-bottom:1px solid #ddd}.meta{margin-top:5px;color:#666;font-size:13px}@media print{body{padding:0}}
+/* V4.95 Stock */
+.stock-card{margin-top:14px}.stock-item{background:#f8fbfb;border:1px solid #e2eaea;border-radius:16px;padding:14px;margin-top:10px}.stock-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.stock-balance{font-size:18px;font-weight:900;color:var(--primary)}.stock-movement{padding:9px 0;border-bottom:1px solid #e8eeee}.stock-movement:last-child{border-bottom:0}.stock-positive{color:#087f5b}.stock-negative{color:#b42318}.stock-ledger{margin-top:10px}.stock-muted{color:var(--muted);font-size:13px}
+</style></head><body><h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+box.innerHTML+'\\n
 
 </body></html>');
   w.document.close(); w.focus(); setTimeout(function(){w.print();},300);
