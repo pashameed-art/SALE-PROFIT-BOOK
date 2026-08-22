@@ -592,70 +592,59 @@ html.modal-open, body.modal-open{
 }
 </style>
 
-
-<script id="v528-navigation-fix">
+<script id="clean-navigation">
 (function(){
   function hidePages(){
-    document.querySelectorAll('.page').forEach(function(p){
-      p.classList.remove('active');
-      p.classList.add('hidden');
-    });
-  }
-  function active(btn){
-    document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
-    if(btn) btn.classList.add('nav-active');
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   }
   window.goHome=function(btn){
     hidePages();
-    active(btn);
-    var h=document.getElementById('historyCard');
-    if(h) h.classList.add('hidden');
-    if(typeof refresh==='function') refresh();
-    if(typeof refreshDashboard==='function') refreshDashboard();
+    if(typeof setActive==='function')setActive(btn);
+    var h=document.getElementById('historyCard'); if(h)h.classList.add('hidden');
+    var e=document.getElementById('entryCard'); if(e)e.classList.remove('hidden');
+    if(typeof refresh==='function')refresh();
+    if(typeof refreshDashboard==='function')refreshDashboard();
   };
   window.goExpense=function(btn){
     hidePages();
-    active(btn);
-    var p=document.getElementById('expensePage');
-    if(p){p.classList.remove('hidden');p.classList.add('active');}
-    if(typeof renderExpenses==='function') renderExpenses();
-    if(typeof updateTodayExpenseTotal==='function') updateTodayExpenseTotal();
+    if(typeof setActive==='function')setActive(btn);
+    var p=document.getElementById('expensePage'); if(p)p.classList.add('active');
+    if(typeof renderExpenses==='function')renderExpenses();
+    if(typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal();
   };
   window.goMansoor=function(btn){
     hidePages();
-    active(btn);
-    if(typeof window.showMansoor==='function'){
-      window.showMansoor();
-    }else{
-      var p=document.getElementById('mansoorPage');
-      if(p){p.classList.remove('hidden');p.classList.add('active');}
-      if(typeof renderMansoor==='function') renderMansoor();
-    }
-    active(btn);
+    if(typeof setActive==='function')setActive(btn);
+    if(typeof showMansoor==='function')showMansoor();
+    else {var p=document.getElementById('mansoorPage');if(p)p.classList.add('active');}
   };
   window.goReports=function(btn){
     hidePages();
-    active(btn);
-    var pages=document.querySelectorAll('[id="reportPage"]');
-    if(pages.length){
-      pages.forEach(function(p){p.classList.remove('hidden');p.classList.add('active');});
-    }
-    if(typeof renderReports==='function') renderReports();
+    if(typeof setActive==='function')setActive(btn);
+    var p=document.getElementById('reportPage');if(p)p.classList.add('active');
+    if(typeof showDateDefaults==='function')showDateDefaults();
   };
   window.goBackup=function(btn){
     hidePages();
-    active(btn);
-    var p=document.getElementById('backupPage');
-    if(p){p.classList.remove('hidden');p.classList.add('active');}
+    if(typeof setActive==='function')setActive(btn);
+    var p=document.getElementById('backupPage');if(p)p.classList.add('active');
   };
 })();
+</script>
+
+<script id="clean-sw-registration">
+window.addEventListener('load',function(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js?v=5.34',{scope:'./'}).catch(function(){});
+  }
+});
 </script>
 
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.28</div>
+<div class="version">Version 5.34</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -770,20 +759,7 @@ html.modal-open, body.modal-open{
 <div id="historyList"></div>
 </section>
 
-<div class="page" id="reportPage">
-<div class="report-box">
-<h2 style="margin-top:0">Report</h2>
-<div class="report-grid">
-<div><label>Date From</label><input id="reportFrom" type="date"/></div>
-<div><label>Date To</label><input id="reportTo" type="date"/></div>
-</div>
-<button class="primary" onclick="generateReport()" style="margin-top:12px">Generate Report</button>
-<button class="secondary" id="reportExportBtn" onclick="exportReportCSV()" style="margin-top:10px">Export Report CSV</button>
-<button class="secondary" id="reportShareBtn" onclick="shareReport()" style="margin-top:10px">Share Report</button>
-<button class="secondary" id="reportPrintBtn" onclick="printReport()" style="margin-top:10px">Print Report</button>
-<div id="reportResult"></div>
-</div>
-</div>
+
 <div class="page" id="expensePage">
 <div class="backup-box">
 <h2 style="margin-top:0">Expense</h2>
@@ -1505,7 +1481,6 @@ function deleteItem(name){
 }
 
 init();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=5.18', {scope:'./'}).then(r=>r.update()).catch(()=>{});}
 
 // V4.75: Clean Today Total Expense — expense records only.
 
@@ -1670,13 +1645,6 @@ async function googleDriveBackup(){
 async function googleDriveRestore(){
   alert('Google Drive Restore will be enabled after the Google OAuth Client ID is configured and authorized.');
 }
-</script>
-<script>
-window.addEventListener('load',function(){
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.18',{scope:'./'}).then(function(r){return r.update();}).catch(function(){});
-  }
-});
 </script>
 <script>
 (function(){
@@ -1971,10 +1939,10 @@ window.exportReportCSV=function(){
 };
 </script>
 <script>
-/* V4.50 — Share / Print the generated report. */
+/* Share / Print */
 window.shareReport=function(){
   var box=document.getElementById('reportResult');
-  if(!box || !box.innerText.trim()){ alert('Please Generate Report first.'); return; }
+  if(!box || !box.innerText.trim()){alert('Please Generate Report first.');return;}
   var from=document.getElementById('reportFrom')?.value||'';
   var to=document.getElementById('reportTo')?.value||'';
   var text='Sale Profit Book Report\n'+from+' to '+to+'\n\n'+box.innerText.trim();
@@ -1982,43 +1950,23 @@ window.shareReport=function(){
     navigator.share({title:'Sale Profit Book Report',text:text}).catch(function(){});
   }else if(navigator.clipboard){
     navigator.clipboard.writeText(text).then(function(){alert('Report copied.');}).catch(function(){alert('Sharing is not supported on this device.');});
-  }else{ alert('Sharing is not supported on this device.'); }
+  }else{alert('Sharing is not supported on this device.');}
 };
 window.printReport=function(){
   var box=document.getElementById('reportResult');
-  if(!box || !box.innerText.trim()){
-    alert('Please Generate Report first.');
-    return;
-  }
-  var from=document.getElementById('reportFrom')?.value||'';
-  var to=document.getElementById('reportTo')?.value||'';
+  if(!box || !box.innerHTML.trim()){alert('Please Generate Report first.');return;}
   var w=window.open('','_blank');
-  if(!w){
-    alert('Please allow pop-ups to print the report.');
-    return;
-  }
-  var printHtml='<!doctype html><html><head><title>Sale Profit Report</title>'+
-    '<meta name="viewport" content="width=device-width,initial-scale=1">'+
-    '<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}'+
-    'h1{margin:0 0 6px}h2,h3{margin-top:22px}'+
-    '.report-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}'+
-    '.report-summary-grid>div{border:1px solid #ddd;border-radius:12px;padding:12px}'+
-    '.report-summary-grid b{display:block;margin-top:6px;font-size:18px}'+
-    '.breakdown-row,.report-entry{padding:10px 0;border-bottom:1px solid #ddd}'+
-    '.meta{margin-top:5px;color:#666;font-size:13px}'+
-    '@media print{body{padding:0}}</style></head><body>'+
-    '<h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+
-    box.innerHTML+'</body></html>';
+  if(!w){alert('Please allow pop-ups to print the report.');return;}
   w.document.open();
-  w.document.write(printHtml);
+  w.document.write('<!doctype html><html><head><title>Sale Profit Report</title>');
+  w.document.write('<meta name="viewport" content="width=device-width,initial-scale=1">');
+  w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
+  w.document.write('</head><body><h1>Sale Profit Report</h1>');
+  w.document.write(box.innerHTML);
+  w.document.write('</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
-};
-</script>
-
-</body></html>');
-  w.document.close(); w.focus(); setTimeout(function(){w.print();},300);
 };
 </script>
 <script id="v455-backup-script">
