@@ -592,11 +592,70 @@ html.modal-open, body.modal-open{
 }
 </style>
 
+
+<script id="v528-navigation-fix">
+(function(){
+  function hidePages(){
+    document.querySelectorAll('.page').forEach(function(p){
+      p.classList.remove('active');
+      p.classList.add('hidden');
+    });
+  }
+  function active(btn){
+    document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
+    if(btn) btn.classList.add('nav-active');
+  }
+  window.goHome=function(btn){
+    hidePages();
+    active(btn);
+    var h=document.getElementById('historyCard');
+    if(h) h.classList.add('hidden');
+    if(typeof refresh==='function') refresh();
+    if(typeof refreshDashboard==='function') refreshDashboard();
+  };
+  window.goExpense=function(btn){
+    hidePages();
+    active(btn);
+    var p=document.getElementById('expensePage');
+    if(p){p.classList.remove('hidden');p.classList.add('active');}
+    if(typeof renderExpenses==='function') renderExpenses();
+    if(typeof updateTodayExpenseTotal==='function') updateTodayExpenseTotal();
+  };
+  window.goMansoor=function(btn){
+    hidePages();
+    active(btn);
+    if(typeof window.showMansoor==='function'){
+      window.showMansoor();
+    }else{
+      var p=document.getElementById('mansoorPage');
+      if(p){p.classList.remove('hidden');p.classList.add('active');}
+      if(typeof renderMansoor==='function') renderMansoor();
+    }
+    active(btn);
+  };
+  window.goReports=function(btn){
+    hidePages();
+    active(btn);
+    var pages=document.querySelectorAll('[id="reportPage"]');
+    if(pages.length){
+      pages.forEach(function(p){p.classList.remove('hidden');p.classList.add('active');});
+    }
+    if(typeof renderReports==='function') renderReports();
+  };
+  window.goBackup=function(btn){
+    hidePages();
+    active(btn);
+    var p=document.getElementById('backupPage');
+    if(p){p.classList.remove('hidden');p.classList.add('active');}
+  };
+})();
+</script>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.26</div>
+<div class="version">Version 5.28</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1927,64 +1986,35 @@ window.shareReport=function(){
 };
 window.printReport=function(){
   var box=document.getElementById('reportResult');
-  if(!box || !box.innerText.trim()){ alert('Please Generate Report first.'); return; }
+  if(!box || !box.innerText.trim()){
+    alert('Please Generate Report first.');
+    return;
+  }
   var from=document.getElementById('reportFrom')?.value||'';
   var to=document.getElementById('reportTo')?.value||'';
   var w=window.open('','_blank');
-  if(!w){ alert('Please allow pop-ups to print the report.'); return; }
-  w.document.write('<!doctype html><html><head><title>Sale Profit Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin:0 0 6px}h2,h3{margin-top:22px}.report-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.report-summary-grid>div{border:1px solid #ddd;border-radius:12px;padding:12px}.report-summary-grid b{display:block;margin-top:6px;font-size:18px}.breakdown-row,.report-entry{padding:10px 0;border-bottom:1px solid #ddd}.meta{margin-top:5px;color:#666;font-size:13px}@media print{body{padding:0}}
-/* V5.00 Stock Meter */
-.stock-card{margin-top:14px}.stock-item{background:#f8fbfb;border:1px solid #e2eaea;border-radius:16px;padding:14px;margin-top:10px}.stock-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.stock-balance{font-size:18px;font-weight:900;color:var(--primary)}.stock-movement{padding:9px 0;border-bottom:1px solid #e8eeee}.stock-movement:last-child{border-bottom:0}.stock-positive{color:#087f5b}.stock-negative{color:#b42318}.stock-ledger{margin-top:10px}.stock-muted{color:var(--muted);font-size:13px}
-</style></head><body><h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+box.innerHTML+'\\n
-
-
-
-
-<script id="v526-nav-fix">
-(function(){
-  function activatePage(id){
-    document.querySelectorAll('.page').forEach(function(p){
-      p.classList.remove('active');
-      p.classList.add('hidden');
-    });
-    var el=document.getElementById(id);
-    if(el){
-      el.classList.remove('hidden');
-      el.classList.add('active');
-    }
+  if(!w){
+    alert('Please allow pop-ups to print the report.');
+    return;
   }
-  function activateButton(btn){
-    document.querySelectorAll('.nav-bar button').forEach(function(b){
-      b.classList.remove('nav-active');
-    });
-    if(btn) btn.classList.add('nav-active');
-  }
-
-  window.goHome=function(btn){
-    activatePage('homePage');
-    activateButton(btn);
-    if(typeof refresh==='function') refresh();
-  };
-  window.goExpense=function(btn){
-    activatePage('expensePage');
-    activateButton(btn);
-    if(typeof renderExpenses==='function') renderExpenses();
-  };
-  window.goMansoor=function(btn){
-    activatePage('mansoorPage');
-    activateButton(btn);
-    if(typeof renderMansoor==='function') renderMansoor();
-  };
-  window.goReports=function(btn){
-    activatePage('reportPage');
-    activateButton(btn);
-    if(typeof renderReports==='function') renderReports();
-  };
-  window.goBackup=function(btn){
-    activatePage('backupPage');
-    activateButton(btn);
-  };
-})();
+  var printHtml='<!doctype html><html><head><title>Sale Profit Report</title>'+
+    '<meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}'+
+    'h1{margin:0 0 6px}h2,h3{margin-top:22px}'+
+    '.report-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}'+
+    '.report-summary-grid>div{border:1px solid #ddd;border-radius:12px;padding:12px}'+
+    '.report-summary-grid b{display:block;margin-top:6px;font-size:18px}'+
+    '.breakdown-row,.report-entry{padding:10px 0;border-bottom:1px solid #ddd}'+
+    '.meta{margin-top:5px;color:#666;font-size:13px}'+
+    '@media print{body{padding:0}}</style></head><body>'+
+    '<h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+
+    box.innerHTML+'</body></html>';
+  w.document.open();
+  w.document.write(printHtml);
+  w.document.close();
+  w.focus();
+  setTimeout(function(){w.print();},300);
+};
 </script>
 
 </body></html>');
