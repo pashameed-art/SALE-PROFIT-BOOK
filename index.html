@@ -429,11 +429,15 @@ html.modal-open, body.modal-open{
 .mansoor-detail-hidden{display:none!important}
 </style>
 <style id="v489-mansoor-opening">.mansoor-opening-balance{margin-top:8px;background:#f7fbfa;border:1px solid #e2efed}</style>
+
+<style id="v500-stock-meter">
+#newStockMeter{font-size:18px;font-weight:800;border:2px solid #167a70;background:#f5fbfa;padding:12px;border-radius:12px}
+</style>
 </head>
 <body>
 <header>
   <h1>Sale Profit Book</h1>
-  <div class="version">Version 4.99</div>
+  <div class="version">Version 5.00</div>
   <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -699,8 +703,8 @@ html.modal-open, body.modal-open{
         <input id="newStockDate" type="date">
       </div>
       <div class="field">
-        <label>Stock Meter (Add)</label>
-        <input id="newStockMeter" type="number" min="0" step="0.01" inputmode="decimal" placeholder="30">
+        <label>Stock Meter</label>
+        <input id="newStockMeter" type="number" min="0" step="0.01" inputmode="decimal" placeholder="30"><div class="meta">Add Item செய்யும் போது ஆரம்ப Stock Meter இங்கே உள்ளிடவும்</div>
       </div>
     </div>
     <div class="modal-actions">
@@ -708,6 +712,7 @@ html.modal-open, body.modal-open{
       <button class="secondary" onclick="closeItemModal()">Close</button>
     </div>
     <div id="itemList" class="item-list"></div>
+    <div class="meta" style="margin-top:10px">📦 Stock: Add Item-ல் உள்ளிடும் Meter சேமிக்கப்படும்; Sale செய்தால் அதே Item-ன் Stock குறையும்.</div>
   </div>
 </div>
 
@@ -768,7 +773,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;',
 
 
 function backupData(){
-  const data={version:"4.99",items,entries,expenses,stockMovements,exportedAt:new Date().toISOString()};
+  const data={version:"5.00",items,entries,expenses,stockMovements,exportedAt:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);
   a.download="sale-profit-book-backup.json";a.click();URL.revokeObjectURL(a.href);
@@ -1179,7 +1184,7 @@ function renderStock(){
     const ledger=all.map(x=>{running+=x.sign==='+'?x.meter:-x.meter;return `<div class="stock-movement"><b>${fmtStockDate(x.date)}</b> — ${esc(name)} <span class="${x.sign==='+'?'stock-positive':'stock-negative'}">${x.sign}${x.meter.toFixed(2)} m</span><div class="stock-muted">${x.type} • Stock ${running.toFixed(2)} m</div></div>`}).join('');
     cards.push(`<div class="stock-item"><div class="stock-head"><b>${esc(name)}</b><span class="stock-balance">${balance.toFixed(2)} m</span></div><div class="stock-muted">Stock ${inTotal.toFixed(2)} m − Sale ${saleTotal.toFixed(2)} m</div><div class="stock-ledger">${ledger}</div></div>`);
   });
-  el.innerHTML=cards.join('')||'<div class="empty">No stock added yet. Use Add Item → Stock Meter (Add).</div>';
+  el.innerHTML=cards.join('')||'<div class="empty">No stock added yet. Use Add Item → Stock Meter.</div>';
 }
 
 function saveItem(){
@@ -1703,7 +1708,7 @@ window.printReport=function(){
   var w=window.open('','_blank');
   if(!w){ alert('Please allow pop-ups to print the report.'); return; }
   w.document.write('<!doctype html><html><head><title>Sale Profit Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin:0 0 6px}h2,h3{margin-top:22px}.report-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.report-summary-grid>div{border:1px solid #ddd;border-radius:12px;padding:12px}.report-summary-grid b{display:block;margin-top:6px;font-size:18px}.breakdown-row,.report-entry{padding:10px 0;border-bottom:1px solid #ddd}.meta{margin-top:5px;color:#666;font-size:13px}@media print{body{padding:0}}
-/* V4.96 Stock */
+/* V5.00 Stock Meter */
 .stock-card{margin-top:14px}.stock-item{background:#f8fbfb;border:1px solid #e2eaea;border-radius:16px;padding:14px;margin-top:10px}.stock-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.stock-balance{font-size:18px;font-weight:900;color:var(--primary)}.stock-movement{padding:9px 0;border-bottom:1px solid #e8eeee}.stock-movement:last-child{border-bottom:0}.stock-positive{color:#087f5b}.stock-negative{color:#b42318}.stock-ledger{margin-top:10px}.stock-muted{color:var(--muted);font-size:13px}
 </style></head><body><h1>Sale Profit Book</h1><div>Report: '+from+' to '+to+'</div>'+box.innerHTML+'\\n
 
