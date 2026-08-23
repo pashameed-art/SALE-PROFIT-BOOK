@@ -871,6 +871,12 @@ body.page-open-mode #historyCard{display:none!important}
 })();
 </script>
 
+<style id="v559-history-visible-fix">
+/* History tab: the history card is intentionally moved inside historyPage. */
+body.page-open-mode #historyPage.active #historyCard{
+  display:block!important;
+}
+</style>
 </head>
 <body>
 <header>
