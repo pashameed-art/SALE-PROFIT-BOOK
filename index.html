@@ -852,11 +852,29 @@ body.page-open-mode #backupPage.active #historyCard {
 }
 </style>
 
+
+<style id="v560-mansoor-ledger">
+.mansoor-ledger-card{margin-top:12px}
+.mansoor-entry-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.mansoor-entry-grid input,.mansoor-entry-grid select,#mansoorNote{width:100%;box-sizing:border-box}
+.mansoor-balance-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.mansoor-balance-grid>div{padding:10px;border-radius:12px;background:#f2f8f7;text-align:center}
+.mansoor-balance-grid small{display:block;font-size:11px;color:#55706c}
+.mansoor-balance-grid b{display:block;margin-top:3px;font-size:16px;color:#174f3d}
+.mansoor-weekly-head,.mansoor-history-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:12px 0 8px}
+.mansoor-weekly-head button{min-height:36px;padding:7px 10px;border-radius:10px}
+.mansoor-week{padding:10px;border:1px solid #dce9e7;border-radius:12px;margin-bottom:8px;background:#fff}
+.mansoor-row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #edf2f1}
+.mansoor-row:last-child{border-bottom:0}
+.mansoor-given{color:#b34a4a;font-weight:800}.mansoor-received{color:#16805f;font-weight:800}
+@media(max-width:600px){.mansoor-entry-grid{grid-template-columns:1fr 1fr}.mansoor-entry-grid .field:last-child{grid-column:1/-1}.mansoor-balance-grid{grid-template-columns:1fr 1fr}.mansoor-balance-grid>div:last-child{grid-column:1/-1}}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.59</div>
+<div class="version">Version 5.60</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1055,6 +1073,47 @@ body.page-open-mode #backupPage.active #historyCard {
 <div id="mansoorHistory"></div>
 </div>
 </section>
+<div class="card mansoor-ledger-card" id="mansoorLedger">
+  <div class="section-title">🤝 Mansoor கொடுக்கல் – வாங்கல்</div>
+  <div class="mansoor-entry-grid">
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="mansoorDate">
+    </div>
+    <div class="field">
+      <label>Type</label>
+      <select id="mansoorType">
+        <option value="given">கொடுத்தது</option>
+        <option value="received">வாங்கியது</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Amount</label>
+      <input type="number" id="mansoorAmount" min="0" step="0.01" placeholder="₹0">
+    </div>
+  </div>
+  <div class="field">
+    <label>Note</label>
+    <input type="text" id="mansoorNote" placeholder="குறிப்பு (விருப்பம்)">
+  </div>
+  <button type="button" id="mansoorSaveBtn" onclick="saveMansoorEntry()">💾 Save</button>
+
+  <div class="mansoor-balance-grid">
+    <div><small>கொடுத்தது</small><b id="mansoorGivenTotal">₹0</b></div>
+    <div><small>வாங்கியது</small><b id="mansoorReceivedTotal">₹0</b></div>
+    <div><small>Balance</small><b id="mansoorBalance">₹0</b></div>
+  </div>
+
+  <div class="mansoor-weekly-head">
+    <b>📅 Weekly Report</b>
+    <button type="button" onclick="shareMansoorWeeklyWhatsApp()">📲 WhatsApp</button>
+  </div>
+  <div id="mansoorWeeklyReport"></div>
+
+  <div class="mansoor-history-head"><b>Date-wise கொடுக்கல்–வாங்கல்</b></div>
+  <div id="mansoorLedgerList"></div>
+</div>
+
 <section class="page" id="reportPage">
 <div class="card">
 <h2>Reports</h2>
@@ -2210,6 +2269,72 @@ window.printReport=function(){
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
   w.document.write('
+
+<script id="v560-mansoor-ledger-js">
+(function(){
+  function mansoorData(){
+    try{return JSON.parse(localStorage.getItem('mansoorLedger')||'[]')}catch(e){return []}
+  }
+  function saveMansoorData(a){localStorage.setItem('mansoorLedger',JSON.stringify(a))}
+  function money(n){return '₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2})}
+  function escM(v){return String(v??'').replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+  function fmtDate(d){
+    if(!d)return '-';
+    var p=d.split('-'); return p.length===3 ? p[2]+'-'+p[1]+'-'+p[0] : d;
+  }
+  function weekStart(d){
+    var x=new Date(d+'T00:00:00'); var day=x.getDay(); x.setDate(x.getDate()-day);
+    return x.toISOString().slice(0,10);
+  }
+  window.renderMansoorLedger=function(){
+    var data=mansoorData();
+    var given=data.filter(x=>x.type==='given').reduce((a,x)=>a+Number(x.amount||0),0);
+    var received=data.filter(x=>x.type==='received').reduce((a,x)=>a+Number(x.amount||0),0);
+    var g=document.getElementById('mansoorGivenTotal'),r=document.getElementById('mansoorReceivedTotal'),b=document.getElementById('mansoorBalance');
+    if(g)g.textContent=money(given); if(r)r.textContent=money(received); if(b)b.textContent=money(given-received);
+
+    var groups={};
+    data.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).forEach(x=>{
+      var ws=weekStart(x.date); (groups[ws] ||= []).push(x);
+    });
+    var html='';
+    Object.keys(groups).sort().forEach(ws=>{
+      var arr=groups[ws], ge=arr.filter(x=>x.type==='given').reduce((a,x)=>a+Number(x.amount||0),0);
+      var re=arr.filter(x=>x.type==='received').reduce((a,x)=>a+Number(x.amount||0),0);
+      html+='<div class="mansoor-week"><b>Week from '+escM(fmtDate(ws))+'</b>';
+      arr.forEach(x=>html+='<div class="mansoor-row"><span>'+escM(fmtDate(x.date))+' • '+escM(x.note||'')+'</span><span class="'+(x.type==='given'?'mansoor-given':'mansoor-received')+'">'+(x.type==='given'?'கொடுத்தது ':'வாங்கியது ')+money(x.amount)+'</span></div>');
+      html+='<div class="mansoor-row"><b>Weekly Total</b><b>'+money(ge-re)+'</b></div></div>';
+    });
+    var list=document.getElementById('mansoorLedgerList'); if(list)list.innerHTML=html||'<div class="empty">Mansoor கொடுக்கல்–வாங்கல் entries இல்லை.</div>';
+
+    var now=new Date(), sunday=new Date(now); sunday.setDate(now.getDate()-now.getDay());
+    var ws=sunday.toISOString().slice(0,10), week=data.filter(x=>weekStart(x.date)===ws);
+    var wg=week.filter(x=>x.type==='given').reduce((a,x)=>a+Number(x.amount||0),0), wr=week.filter(x=>x.type==='received').reduce((a,x)=>a+Number(x.amount||0),0);
+    var wrEl=document.getElementById('mansoorWeeklyReport');
+    if(wrEl)wrEl.innerHTML='<div class="mansoor-week"><b>This Week</b><div class="mansoor-row"><span>கொடுத்தது</span><b class="mansoor-given">'+money(wg)+'</b></div><div class="mansoor-row"><span>வாங்கியது</span><b class="mansoor-received">'+money(wr)+'</b></div><div class="mansoor-row"><span>Balance</span><b>'+money(wg-wr)+'</b></div></div>';
+  };
+  window.saveMansoorEntry=function(){
+    var date=document.getElementById('mansoorDate')?.value, type=document.getElementById('mansoorType')?.value, amount=Number(document.getElementById('mansoorAmount')?.value||0), note=document.getElementById('mansoorNote')?.value.trim()||'';
+    if(!date||amount<=0){alert('Date மற்றும் Amount கொடுக்கவும்.');return}
+    var data=mansoorData(); data.push({id:Date.now(),date,type,amount,note}); saveMansoorData(data);
+    document.getElementById('mansoorAmount').value=''; document.getElementById('mansoorNote').value='';
+    renderMansoorLedger();
+  };
+  window.shareMansoorWeeklyWhatsApp=function(){
+    var data=mansoorData(), now=new Date(), sunday=new Date(now); sunday.setDate(now.getDate()-now.getDay());
+    var ws=sunday.toISOString().slice(0,10), week=data.filter(x=>weekStart(x.date)===ws);
+    var wg=week.filter(x=>x.type==='given').reduce((a,x)=>a+Number(x.amount||0),0), wr=week.filter(x=>x.type==='received').reduce((a,x)=>a+Number(x.amount||0),0);
+    var lines=['🤝 Mansoor – Weekly Report','', 'கொடுத்தது: '+money(wg),'வாங்கியது: '+money(wr),'Balance: '+money(wg-wr),''];
+    week.sort((a,b)=>String(a.date).localeCompare(String(b.date))).forEach(x=>lines.push(fmtDate(x.date)+' – '+(x.type==='given'?'கொடுத்தது':'வாங்கியது')+': '+money(x.amount)+(x.note?' – '+x.note:'')));
+    window.open('https://wa.me/?text='+encodeURIComponent(lines.join('\n')),'_blank');
+  };
+  window.addEventListener('DOMContentLoaded',function(){
+    var d=document.getElementById('mansoorDate'); if(d&&!d.value)d.value=new Date().toISOString().slice(0,10);
+    renderMansoorLedger();
+  });
+})();
+</script>
+
 </body></html>');
   
 };
