@@ -848,6 +848,29 @@ body.page-open-mode #homeStockDetails.hidden,
 body.page-open-mode #homeStockDetails.visible{display:none!important}
 </style>
 
+<style id="v559-history-isolation">
+/* History details are History-tab only. */
+body.page-open-mode #historyPage:not(.history-force-open){display:none!important}
+body.page-open-mode #historyCard{display:none!important}
+</style>
+<script id="v559-history-isolation-script">
+(function(){
+  function isolate(){
+    var hp=document.getElementById('historyPage');
+    var hc=document.getElementById('historyCard');
+    var active=hp && hp.classList.contains('active');
+    if(document.body.classList.contains('page-open-mode') && !active){
+      if(hc) hc.classList.add('hidden');
+    }
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest && e.target.closest('nav button');
+    if(b && (b.textContent||'').trim()!=='History') setTimeout(isolate,0);
+  });
+  window.addEventListener('DOMContentLoaded',isolate);
+})();
+</script>
+
 </head>
 <body>
 <header>
@@ -2345,6 +2368,10 @@ function updateTodayNetProfit(){
   function openPage(name,btn){
     document.body.classList.add('page-open-mode');
     clearActive();
+    var hp=document.getElementById('historyPage');
+    if(hp) hp.classList.remove('active');
+    var hc=document.getElementById('historyCard');
+    if(hc) hc.classList.add('hidden');
     var el=document.getElementById(pageIds[name]);
     if(!el) return;
     el.classList.remove('hidden');
@@ -2363,6 +2390,10 @@ function updateTodayNetProfit(){
   function openHome(btn){
     document.body.classList.remove('page-open-mode');
     clearActive();
+    var hp=document.getElementById('historyPage');
+    if(hp) hp.classList.remove('active');
+    var hc=document.getElementById('historyCard');
+    if(hc) hc.classList.add('hidden');
     setNavActive(btn);
     window.scrollTo(0,0);
     if(typeof refresh==='function') refresh();
