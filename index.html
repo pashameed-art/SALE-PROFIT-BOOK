@@ -759,7 +759,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.48</div>
+<div class="version">Version 5.49</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -784,8 +784,9 @@ body.page-open-mode #backupPage.active{display:block!important}
 <div class="new-history-row">
 <button class="primary" onclick="goToNewEntry()">📝 New Entry</button>
 <button type="button" id="homeStockButton" onclick="toggleHomeStock()">📦 Stock</button>
+</div>
 
-</div><div id="homeStockDetails" class="home-stock-details hidden"><section class="card" id="entryCard">
+<section class="card" id="entryCard">
 <div class="field">
 <label>Item Name</label>
 <select id="item" onchange="calculate()">
@@ -817,16 +818,21 @@ body.page-open-mode #backupPage.active{display:block!important}
 <div class="field">
 <button class="primary" id="saveBtn" onclick="saveEntry()">Save Entry</button>
 </div>
-</section><div class="card stock-card" id="stockCard">
+</section>
+
+<div id="homeStockDetails" class="home-stock-details hidden">
+<div class="card stock-card" id="stockCard">
 <div class="field" style="margin-bottom:12px">
 <h2 class="stock-section-title">📦 Stock</h2>
 <label>Item</label>
 <select id="stockItemSelect" onchange="renderStock()">
 <option value="">Select Item</option>
 </select>
-</div></div>
+</div>
+</div>
 <div id="stockSummary"></div>
 </div>
+
 <div class="card" id="dashboardCard">
 
 <div class="dashboard-title">📊 Today Dashboard</div>
@@ -1155,7 +1161,7 @@ function editExpense(id){
   $('expenseName').value=x.name;
   $('expenseAmount').value=x.amount;
   $('expenseSaveBtn').textContent='Update Expense';
-  setTimeout(function(){var target=document.getElementById('entryCard');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});},50);
+  
 }
 function deleteExpense(id){
   if(!confirm('Delete this expense?'))return;
@@ -2336,14 +2342,11 @@ function toggleHomeStock(){
   var box=document.getElementById('homeStockDetails');
   var btn=document.getElementById('homeStockButton');
   if(!box)return;
-  var open=!box.classList.contains('hidden');
-  box.classList.toggle('hidden',open);
-  box.classList.toggle('visible',!open);
-  if(btn)btn.textContent=open?'📦 Stock':'📦 Close Stock';
-  if(!open){
-    box.scrollIntoView({behavior:'smooth',block:'start'});
-    if(typeof renderStock==='function')renderStock();
-  }
+  var open=box.classList.contains('hidden');
+  box.classList.toggle('hidden',!open);
+  box.classList.toggle('visible',open);
+  if(btn)btn.textContent=open?'📦 Close Stock':'📦 Stock';
+  if(open && typeof renderStock==='function')renderStock();
 }
 </script>
 </body>
