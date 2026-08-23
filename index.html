@@ -848,35 +848,23 @@ body.page-open-mode #homeStockDetails.hidden,
 body.page-open-mode #homeStockDetails.visible{display:none!important}
 </style>
 
-<style id="v559-history-isolation">
-/* History details are History-tab only. */
-body.page-open-mode #historyPage:not(.history-force-open){display:none!important}
-body.page-open-mode #historyCard{display:none!important}
-</style>
-<script id="v559-history-isolation-script">
-(function(){
-  function isolate(){
-    var hp=document.getElementById('historyPage');
-    var hc=document.getElementById('historyCard');
-    var active=hp && hp.classList.contains('active');
-    if(document.body.classList.contains('page-open-mode') && !active){
-      if(hc) hc.classList.add('hidden');
-    }
-  }
-  document.addEventListener('click',function(e){
-    var b=e.target.closest && e.target.closest('nav button');
-    if(b && (b.textContent||'').trim()!=='History') setTimeout(isolate,0);
-  });
-  window.addEventListener('DOMContentLoaded',isolate);
-})();
-</script>
 
-<style id="v559-history-visible-fix">
-/* History tab: the history card is intentionally moved inside historyPage. */
-body.page-open-mode #historyPage.active #historyCard{
+
+<style id="v559-history-only-final">
+/* FINAL: History content exists only while the History tab is active. */
+body.page-open-mode #historyPage { display:none!important; }
+body.page-open-mode #historyPage.active { display:block!important; }
+body.page-open-mode #historyPage.active #historyCard {
   display:block!important;
 }
+body.page-open-mode #expensePage.active #historyCard,
+body.page-open-mode #mansoorPage.active #historyCard,
+body.page-open-mode #reportPage.active #historyCard,
+body.page-open-mode #backupPage.active #historyCard {
+  display:none!important;
+}
 </style>
+
 </head>
 <body>
 <header>
