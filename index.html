@@ -687,6 +687,12 @@ window.addEventListener('load',function(){
 </script>
 
 
+<style id="v557-stock-add-item">
+.stock-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.stock-title-row .stock-section-title{margin:0!important}
+.stock-add-item-btn{height:42px!important;padding:0 16px!important;white-space:nowrap;font-size:14px!important}
+@media(max-width:520px){.stock-title-row{align-items:center}.stock-add-item-btn{height:40px!important;padding:0 12px!important;font-size:13px!important}}
+</style>
 <style id="stock-section-title-style">
 .stock-section-title{
   margin:0 0 14px 0;
@@ -832,7 +838,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.56</div>
+<div class="version">Version 5.57</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -843,7 +849,6 @@ body.page-open-mode #backupPage.active{display:block!important}
 <button onclick="goMansoor(this)">Mansoor</button>
 <button onclick="goReports(this)">Reports</button>
 <button onclick="goBackup(this)">Backup</button>
-<button onclick="openItemModal();setActive(this)">Add Item</button>
 </nav>
 <div class="state-date-row">
 <div class="field">
@@ -897,7 +902,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 <div id="homeStockDetails" class="home-stock-details hidden">
 <div class="card stock-card" id="stockCard">
 <div class="field" style="margin-bottom:12px">
-<h2 class="stock-section-title">📦 Stock</h2>
+<div class="stock-title-row"><h2 class="stock-section-title">📦 Stock</h2><button type="button" class="secondary stock-add-item-btn" onclick="openItemModal()">➕ Add Item</button></div>
 <label>Item</label>
 <select id="stockItemSelect" onchange="renderStock()">
 <option value="">Select Item</option>
