@@ -840,6 +840,14 @@ body.page-open-mode #backupPage.active{display:block!important}
 background:#174f3d!important;color:#fff!important;border-color:#174f3d!important;
 box-shadow:0 3px 10px rgba(23,79,61,.22)!important}
 </style>
+
+<style id="v559-stock-page-isolation-fix">
+/* Stock is Home-only. Never show its empty/select message on other tabs. */
+body.page-open-mode #homeStockDetails{display:none!important}
+body.page-open-mode #homeStockDetails.hidden,
+body.page-open-mode #homeStockDetails.visible{display:none!important}
+</style>
+
 </head>
 <body>
 <header>
