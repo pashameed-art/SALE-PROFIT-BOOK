@@ -635,7 +635,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.42',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.43',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -698,7 +698,6 @@ body.page-open-mode #stockCard,
 body.page-open-mode #dashboardCard,
 body.page-open-mode .state-date-row,
 body.page-open-mode .new-history-row,
-body.page-open-mode #historyCard,
 body.page-open-mode .install-wrap{display:none!important}
 
 .tab-page-back{
@@ -743,7 +742,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.42</div>
+<div class="version">Version 5.43</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2248,6 +2247,8 @@ function openHistory(btn){
  if(card&&page){
    if(!originalParent){originalParent=card.parentNode;originalNext=card.nextSibling}
    page.innerHTML='<button class="tab-page-back" onclick="returnHomeTab()">← Home</button>';
+   card.classList.remove('hidden');
+   card.style.display='';
    page.appendChild(card);
  }
  document.body.classList.add('page-open-mode');hideOtherPages();
@@ -2263,7 +2264,9 @@ function home(){
    if(originalNext&&originalNext.parentNode===originalParent)originalParent.insertBefore(card,originalNext);
    else originalParent.appendChild(card);
  }
- var page=document.getElementById('historyPage');if(page){page.classList.remove('active');page.innerHTML=''}
+ var page=document.getElementById('historyPage');
+ if(page){page.classList.remove('active');page.innerHTML=''}
+ if(card)card.classList.add('hidden');
  document.body.classList.remove('page-open-mode');
  document.querySelectorAll('nav button,.nav button,.topnav button').forEach(function(b){b.classList.remove('active')});
  window.scrollTo(0,0);
