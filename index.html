@@ -965,7 +965,7 @@ box-shadow:0 3px 10px rgba(23,79,61,.22)!important}
 </section>
 
 
-<div class="page" id="expensePage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
+<div class="page" id="expensePage">
 <div class="backup-box">
 <h2 style="margin-top:0">Expense</h2>
 <div class="report-grid">
@@ -994,7 +994,7 @@ box-shadow:0 3px 10px rgba(23,79,61,.22)!important}
 <div class="expense-list" id="expenseList"></div>
 </div>
 </div>
-<div class="page" id="backupPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
+<div class="page" id="backupPage">
 <div class="backup-box">
 <h2 style="margin-top:0">Backup</h2>
 <div class="backup-actions-v455">
@@ -1008,7 +1008,7 @@ box-shadow:0 3px 10px rgba(23,79,61,.22)!important}
 <button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
 </div>
 </div>
-<section class="page hidden" id="mansoorPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
+<section class="page hidden" id="mansoorPage">
 <div class="card">
 <h2>🤝 Mansoor கொடுக்கல் வாங்கல்</h2>
 <div class="mansoor-balance">
@@ -1046,7 +1046,7 @@ box-shadow:0 3px 10px rgba(23,79,61,.22)!important}
 <div id="mansoorHistory"></div>
 </div>
 </section>
-<section class="page" id="reportPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
+<section class="page" id="reportPage">
 <div class="card">
 <h2>Reports</h2>
 <div class="report-date-row">
@@ -2212,9 +2212,7 @@ window.printReport=function(){
   w.document.write(box.innerHTML);
   w.document.write('
 </body></html>');
-  w.document.close();
-  w.focus();
-  setTimeout(function(){w.print();},300);
+  
 };
 </script>
 <script id="v551-backup-script">
@@ -2395,7 +2393,7 @@ function openHistory(btn){
  var card=document.getElementById('historyCard'), page=document.getElementById('historyPage');
  if(card&&page){
    if(!originalParent){originalParent=card.parentNode;originalNext=card.nextSibling}
-   page.innerHTML='<button class="tab-page-back" onclick="returnHomeTab()">← Home</button>';
+   page.innerHTML='';
    card.classList.remove('hidden');
    card.style.display='';
    page.appendChild(card);
