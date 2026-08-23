@@ -635,7 +635,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.40',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.41',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -719,11 +719,32 @@ body.page-open-mode .install-wrap{display:none!important}
   color:#718080;
 }
 </style>
+<style id="v541-history-actions">
+.history-actions{
+  display:flex;
+  gap:8px;
+  margin-top:9px;
+}
+.history-actions button{
+  min-height:34px;
+  padding:6px 12px;
+  border-radius:10px;
+  font-size:13px;
+  font-weight:800;
+}
+.history-sale-row,.history-expense-row{
+  padding-bottom:10px;
+}
+.history-sale-row + .history-sale-row,
+.history-expense-row + .history-expense-row{
+  margin-top:4px;
+}
+</style>
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.40</div>
+<div class="version">Version 5.41</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1412,8 +1433,8 @@ function renderHistory(){
 
   listEl.innerHTML=dates.map((d,i)=>{
     const g=grouped[d], key='hd'+d.replace(/-/g,'')+'_'+i;
-    const saleRows=g.sales.map(x=>`<div class="report-detail-row history-sale-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div></div>`).join('');
-    const expenseRows=g.expenses.map(x=>`<div class="report-detail-row history-expense-row"><b>💸 Expense: ${esc(x.name)} — ${money(x.amount)}</b><div class="report-detail-meta">Expense</div></div>`).join('');
+    const saleRows=g.sales.map(x=>`<div class="report-detail-row history-sale-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editEntry(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteEntry(${x.id})">Delete</button></div></div>`).join('');
+    const expenseRows=g.expenses.map(x=>`<div class="report-detail-row history-expense-row"><b>💸 Expense: ${esc(x.name)} — ${money(x.amount)}</b><div class="report-detail-meta">Expense</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editExpense(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteExpense(${x.id})">Delete</button></div></div>`).join('');
     const details=(saleRows+expenseRows)||'<div class="empty">No details found</div>';
     return `<div class="report-date-card open" id="card${key}">
       <div class="report-date-head" onclick="toggleReportDateDetails('${key}','all')">
