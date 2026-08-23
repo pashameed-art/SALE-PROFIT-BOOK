@@ -635,7 +635,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.45',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.46',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -748,11 +748,18 @@ body.page-open-mode #backupPage.active{display:block!important}
 .stock-added{color:#16805f;font-weight:800}.stock-sold{color:#b34a4a;font-weight:800}.stock-balance-cell{color:#145f59;font-weight:900}
 @media(max-width:560px){.stock-table{font-size:12px}.stock-table th,.stock-table td{padding:9px 7px}}
 </style>
+<style id="v546-home-stock">
+#homeStockButton{min-width:150px}
+.home-stock-details{margin-top:16px}
+.home-stock-details.hidden{display:none!important}
+.home-stock-details.visible{display:block!important}
+.home-stock-details .stock-table-wrap{overflow-x:auto}
+</style>
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.45</div>
+<div class="version">Version 5.46</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -776,8 +783,9 @@ body.page-open-mode #backupPage.active{display:block!important}
 </div>
 <div class="new-history-row">
 <button class="primary" onclick="goToNewEntry()">📝 New Entry</button>
+<button type="button" id="homeStockButton" onclick="toggleHomeStock()">📦 Stock</button>
 
-</div><section class="card" id="entryCard">
+</div><div id="homeStockDetails" class="home-stock-details hidden"><section class="card" id="entryCard">
 <div class="field">
 <label>Item Name</label>
 <select id="item" onchange="calculate()">
@@ -816,7 +824,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 <select id="stockItemSelect" onchange="renderStock()">
 <option value="">Select Item</option>
 </select>
-</div>
+</div></div>
 <div id="stockSummary"></div>
 </div>
 <div class="card" id="dashboardCard">
@@ -2119,7 +2127,23 @@ window.printReport=function(){
   w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
-  w.document.write('</body></html>');
+  w.document.write('<script id="v546-home-stock-script">
+function toggleHomeStock(){
+  var box=document.getElementById('homeStockDetails');
+  var btn=document.getElementById('homeStockButton');
+  if(!box)return;
+  var open=!box.classList.contains('hidden');
+  box.classList.toggle('hidden',open);
+  box.classList.toggle('visible',!open);
+  if(btn)btn.textContent=open?'📦 Stock':'📦 Close Stock';
+  if(!open){
+    box.scrollIntoView({behavior:'smooth',block:'start'});
+    if(typeof renderStock==='function')renderStock();
+    if(typeof updateStock==='function')updateStock();
+  }
+}
+</script>
+</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
