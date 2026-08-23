@@ -834,11 +834,17 @@ body.page-open-mode #backupPage.active{display:block!important}
 .report-date-stat.history-click-stat small{display:block;margin-top:4px;font-size:10px;font-weight:700;color:#718080}
 .report-date-details.closed{display:none!important}
 </style>
+<style id="v559-nav-active-dark">
+.nav-bar button{transition:background .18s ease,color .18s ease,box-shadow .18s ease}
+.nav-bar button.nav-active,.nav-bar button.active,.nav-bar button[aria-current="page"]{
+background:#174f3d!important;color:#fff!important;border-color:#174f3d!important;
+box-shadow:0 3px 10px rgba(23,79,61,.22)!important}
+</style>
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.57</div>
+<div class="version">Version 5.59</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2204,7 +2210,24 @@ window.printReport=function(){
   w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
-  w.document.write('</body></html>');
+  w.document.write('<script id="v559-nav-active-script">
+(function(){
+function markActive(btn){
+ var nav=btn&&btn.closest(".nav-bar");if(!nav)return;
+ nav.querySelectorAll("button").forEach(function(b){
+  b.classList.remove("nav-active","active");b.removeAttribute("aria-current");
+ });
+ btn.classList.add("nav-active","active");btn.setAttribute("aria-current","page");
+}
+window.addEventListener("DOMContentLoaded",function(){
+ var nav=document.querySelector(".nav-bar");if(!nav)return;
+ nav.querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){markActive(b)})});
+ var home=nav.querySelector('button[onclick*="goHome"],button[onclick*="showPage"][onclick*="home"]');
+ if(home)markActive(home);
+});
+})();
+</script>
+</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
