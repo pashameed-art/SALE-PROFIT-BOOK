@@ -804,7 +804,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.51</div>
+<div class="version">Version 5.52</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -954,7 +954,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 <div class="expense-list" id="expenseList"></div>
 </div>
 </div>
-<div class="page" id="backupPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
+<div class="page" id="backupPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
 <div class="backup-box">
 <h2 style="margin-top:0">Backup</h2>
 <div class="backup-actions-v455">
@@ -964,9 +964,9 @@ body.page-open-mode #backupPage.active{display:block!important}
 </label>
 </div>
 <div id="backupStatusV551" class="meta" style="margin-top:12px">Backup saves all app data to a JSON file. Restore replaces the current app data only after the file is validated.</div>
-<button class="primary" onclick="googleDriveBackup()">☁️ Google Drive Backup</button>
-<button class="secondary" onclick="googleDriveRestore()" style="margin-top:10px">☁️ Google Drive Restore</button>
-<div class="meta" style="margin-top:10px">📦 Full Backup / Restore works without Google login. ☁️ Google Drive Backup / Restore requires Google OAuth Client ID.</div>
+<div class="meta" style="margin-top:12px">📦 <strong>Full Backup / Restore</strong> works without Google login. Google Drive is optional and is not used by the normal Backup button.</div>
+<button class="secondary" type="button" onclick="googleDriveBackup()">☁️ Google Drive Backup (Optional)</button>
+<button class="secondary" type="button" onclick="googleDriveRestore()" style="margin-top:10px">☁️ Google Drive Restore (Optional)</button>
 <button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
 </div>
 </div>
@@ -2199,7 +2199,7 @@ window.printReport=function(){
         const k=localStorage.key(i);
         if(k!==null) storage[k]=localStorage.getItem(k);
       }
-      const data={app:APP,version:'5.51',createdAt:new Date().toISOString(),storage:storage};
+      const data={app:APP,version:'5.52',createdAt:new Date().toISOString(),storage:storage};
       const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});
       const url=URL.createObjectURL(blob);
       const a=document.createElement('a');
@@ -2339,13 +2339,13 @@ function updateTodayNetProfit(){
   window.returnHomeTab=function(){openHome(null);};
 
   function bind(){
-    document.querySelectorAll('button').forEach(function(b){
+    document.querySelectorAll('nav button').forEach(function(b){
       var t=(b.textContent||'').trim().replace(/\s+/g,' ');
-      if(t==='Home') b.onclick=function(){openHome(b);};
-      else if(t==='Expense') b.onclick=function(){openPage('expense',b);};
-      else if(t==='Mansoor') b.onclick=function(){openPage('mansoor',b);};
-      else if(t==='Reports') b.onclick=function(){openPage('reports',b);};
-      else if(t==='Backup') b.onclick=function(){openPage('backup',b);};
+      if(t==='Home') b.onclick=function(e){e.preventDefault();e.stopPropagation();openHome(b);};
+      else if(t==='Expense') b.onclick=function(e){e.preventDefault();e.stopPropagation();openPage('expense',b);};
+      else if(t==='Mansoor') b.onclick=function(e){e.preventDefault();e.stopPropagation();openPage('mansoor',b);};
+      else if(t==='Reports') b.onclick=function(e){e.preventDefault();e.stopPropagation();openPage('reports',b);};
+      else if(t==='Backup') b.onclick=function(e){e.preventDefault();e.stopPropagation();openPage('backup',b);};
     });
   }
 
