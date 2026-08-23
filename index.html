@@ -635,7 +635,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.44',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.45',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -752,12 +752,12 @@ body.page-open-mode #backupPage.active{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.44</div>
+<div class="version">Version 5.45</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
-<button class="nav-active" onclick="goHome(this)">Home</button><button type="button">History</button>
+<button class="nav-active" onclick="goHome(this)">Home</button>
 <button onclick="goExpense(this)">Expense</button>
 <button onclick="goMansoor(this)">Mansoor</button>
 <button onclick="goReports(this)">Reports</button>
@@ -776,7 +776,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 </div>
 <div class="new-history-row">
 <button class="primary" onclick="goToNewEntry()">📝 New Entry</button>
-<button class="secondary" onclick="showHistory()">📜 History</button>
+
 </div><section class="card" id="entryCard">
 <div class="field">
 <label>Item Name</label>
