@@ -681,7 +681,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.46',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.54',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -801,11 +801,25 @@ body.page-open-mode #backupPage.active{display:block!important}
 .home-stock-details.visible{display:block!important}
 .home-stock-details .stock-table-wrap{overflow-x:auto}
 </style>
+
+<style id="v554-expense-date-details">
+.expense-old-row{cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+.expense-old-row:active{transform:scale(.99)}
+.expense-old-row.open{background:#edf7f5}
+.expense-old-row .expense-date-arrow{font-size:14px;margin-left:8px}
+.expense-date-details{display:none;background:#fff;border:1px solid #dce9e7;border-top:0;border-radius:0 0 14px 14px;padding:4px 14px 10px;margin:-2px 0 8px}
+.expense-date-details.open{display:block}
+.expense-detail-row{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #e5eceb;font-size:14px}
+.expense-detail-row:last-child{border-bottom:0}
+.expense-detail-row span:first-child{font-weight:800;color:#164e4a}
+.expense-detail-row span:last-child{font-weight:900;color:#263535;white-space:nowrap}
+@media(max-width:520px){.expense-old-row{font-size:16px}.expense-detail-row{font-size:13px}}
+</style>
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.53</div>
+<div class="version">Version 5.54</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -926,7 +940,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 </section>
 
 
-<div class="page" id="expensePage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
+<div class="page" id="expensePage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
 <div class="backup-box">
 <h2 style="margin-top:0">Expense</h2>
 <div class="report-grid">
@@ -969,7 +983,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 <button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
 </div>
 </div>
-<section class="page hidden" id="mansoorPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
+<section class="page hidden" id="mansoorPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
 <div class="card">
 <h2>🤝 Mansoor கொடுக்கல் வாங்கல்</h2>
 <div class="mansoor-balance">
@@ -1007,7 +1021,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 <div id="mansoorHistory"></div>
 </div>
 </section>
-<section class="page" id="reportPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
+<section class="page" id="reportPage"><button class="tab-page-back" onclick="returnHomeTab()">← Home</button>
 <div class="card">
 <h2>Reports</h2>
 <div class="report-date-row">
@@ -1182,9 +1196,14 @@ function clearExpenseForm(){
 function renderExpenses(){
   const el=$('expenseList'); if(!el)return;
   const selected=getSelectedExpenseDate();
-  const todayExpenses=(Array.isArray(expenses)?expenses:[]).filter(x=>expenseDateKey(x.date)===selected).sort((a,b)=>(b.id||0)-(a.id||0));
+  const all=Array.isArray(expenses)?expenses:[];
+  const todayExpenses=all.filter(x=>expenseDateKey(x.date)===selected).sort((a,b)=>(b.id||0)-(a.id||0));
   const oldMap={};
-  (Array.isArray(expenses)?expenses:[]).filter(x=>expenseDateKey(x.date)!==selected).forEach(x=>{const d=expenseDateKey(x.date)||'Unknown';oldMap[d]=(oldMap[d]||0)+Number(x.amount||0);});
+  all.filter(x=>expenseDateKey(x.date)!==selected).forEach(x=>{
+    const d=expenseDateKey(x.date)||'Unknown';
+    if(!oldMap[d]) oldMap[d]=[];
+    oldMap[d].push(x);
+  });
   const oldDates=Object.keys(oldMap).sort((a,b)=>b.localeCompare(a));
   const total=todayExpenses.reduce((sum,x)=>sum+Number(x.amount||0),0);
   let html='';
@@ -1195,9 +1214,23 @@ function renderExpenses(){
   html += `<div id="todayExpenseTotal" class="today-expense-total"><span>💸 Today Total Expense</span><strong>${money(total)}</strong></div>`;
   if(oldDates.length){
     html += `<div class="expense-section-title old-expense-title">📅 Previous Expenses</div>`;
-    html += oldDates.map(d=>`<div class="expense-old-row"><span>${esc(d)}</span><strong>${money(oldMap[d])}</strong></div>`).join('');
+    html += oldDates.map(d=>{
+      const list=oldMap[d];
+      const sum=list.reduce((a,x)=>a+Number(x.amount||0),0);
+      const key='expenseDate_'+d.replace(/[^0-9A-Za-z]/g,'_');
+      const details=list.slice().sort((a,b)=>(b.id||0)-(a.id||0)).map(x=>`<div class="expense-detail-row"><span>💸 ${esc(x.name)}</span><span>${money(x.amount)}</span></div>`).join('');
+      return `<div class="expense-old-row" onclick="toggleExpenseDateDetails(\'${esc(d)}\')"><span>📅 ${esc(d)}</span><span><strong>${money(sum)}</strong><span class="expense-date-arrow">⌄</span></span></div><div id="${key}" class="expense-date-details">${details}</div>`;
+    }).join('');
   }
   el.innerHTML=html;
+}
+function toggleExpenseDateDetails(date){
+  const key='expenseDate_'+String(date).replace(/[^0-9A-Za-z]/g,'_');
+  const box=document.getElementById(key);
+  if(!box)return;
+  const row=box.previousElementSibling;
+  const open=box.classList.toggle('open');
+  if(row)row.classList.toggle('open',open);
 }
 function editExpense(id){
   const x=expenses.find(e=>e.id===id);if(!x)return;
