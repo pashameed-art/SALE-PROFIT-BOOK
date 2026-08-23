@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V5.39</title>
+<title>Sale Profit Book • V5.50</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -218,6 +218,51 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 .home-history-btn{background:#e8f4f3;color:#126f68}
 @media(max-width:520px){.home-entry-history{gap:10px}.home-entry-history button{font-size:18px;min-height:68px}}
 
+
+/* V5.50 — Clean Compact UI */
+header{padding:20px 18px 18px}
+header h1{font-size:28px;letter-spacing:-.3px}
+.version{margin-top:8px;font-size:13px}
+.subtitle{margin-top:5px;font-size:16px}
+main{padding:12px 16px 36px}
+.nav-bar{max-width:720px;margin:10px auto 0;padding:0 16px;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none}
+.nav-bar::-webkit-scrollbar{display:none}
+.nav-bar button{flex:0 0 auto;height:42px;padding:0 14px;border-radius:13px;font-size:14px;white-space:nowrap}
+.state-date-row{gap:10px;margin-top:10px}
+.state-date-row .field{margin-top:0}
+label{font-size:13px;margin-bottom:6px}
+input,select{height:48px;border-radius:13px;padding:0 14px;font-size:15px}
+button{height:48px;border-radius:13px;font-size:15px}
+.new-history-row{gap:8px;margin:10px 0}
+.new-history-row button{height:48px}
+.card{border-radius:20px;padding:20px;margin-top:12px;box-shadow:0 3px 14px #0000000a}
+.field{margin-top:13px}
+.entry-three{margin-top:14px!important;gap:7px!important}
+.entry-three label{font-size:12px}
+.entry-three input,.entry-three select{height:46px;font-size:14px}
+.purchase-profit-row{gap:8px!important}
+.purchase-profit-row input{height:46px}
+.dashboard-title{font-size:24px!important;margin-bottom:10px!important}
+.summary{gap:7px!important;margin:10px 0!important}
+.summary .stat{border-radius:14px;padding:10px 5px}
+.summary .stat b{font-size:15px}
+.home-stock-details .card{margin-top:10px}
+.stock-section-title{font-size:22px!important;margin:0 0 10px}
+@media(max-width:520px){
+ header{padding:18px 16px 16px}
+ header h1{font-size:26px}
+ .subtitle{font-size:15px}
+ .nav-bar{padding:0 16px;gap:6px}
+ .nav-bar button{height:40px;padding:0 12px;font-size:13px}
+ main{padding:10px 12px 32px}
+ .state-date-row{gap:8px}
+ .state-date-row input{font-size:15px;padding:0 12px}
+ .new-history-row{gap:7px}
+ .card{padding:18px 16px;border-radius:18px}
+ .summary{gap:6px!important}
+ .summary .stat{padding:9px 3px}
+ .summary .stat b{font-size:14px}
+}
 </style>
 <style>
 .expense-action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -759,7 +804,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.49</div>
+<div class="version">Version 5.50</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
