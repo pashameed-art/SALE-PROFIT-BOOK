@@ -804,7 +804,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.50</div>
+<div class="version">Version 5.51</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -958,11 +958,12 @@ body.page-open-mode #backupPage.active{display:block!important}
 <div class="backup-box">
 <h2 style="margin-top:0">Backup</h2>
 <div class="backup-actions-v455">
-<button class="full-backup" onclick="fullBackupV455()" type="button">📦 Full Backup (No Login)</button>
-<label class="backup-restore-label-v455 full-restore">♻️ Full Restore (No Login)
-        <input accept=".json,application/json" hidden="" onchange="restoreV455(this.files[0])" type="file"/>
+<button class="full-backup" onclick="fullBackupV551()" type="button">📦 Backup</button>
+<label class="backup-restore-label-v455 full-restore">♻️ Restore
+        <input id="restoreFileV551" accept=".json,application/json" hidden="" onchange="restoreV551(this.files[0])" type="file"/>
 </label>
 </div>
+<div id="backupStatusV551" class="meta" style="margin-top:12px">Backup saves all app data to a JSON file. Restore replaces the current app data only after the file is validated.</div>
 <button class="primary" onclick="googleDriveBackup()">☁️ Google Drive Backup</button>
 <button class="secondary" onclick="googleDriveRestore()" style="margin-top:10px">☁️ Google Drive Restore</button>
 <div class="meta" style="margin-top:10px">📦 Full Backup / Restore works without Google login. ☁️ Google Drive Backup / Restore requires Google OAuth Client ID.</div>
@@ -2184,44 +2185,62 @@ window.printReport=function(){
   setTimeout(function(){w.print();},300);
 };
 </script>
-<script id="v455-backup-script">
+<script id="v551-backup-script">
 (function(){
-  function fullBackupV455(){
-    const storage={};
-    for(let i=0;i<localStorage.length;i++){
-      const k=localStorage.key(i);
-      storage[k]=localStorage.getItem(k);
-    }
-    const data={app:"SALE-PROFIT-BOOK",version:"4.77",createdAt:new Date().toISOString(),storage:storage};
-    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download="SALE-PROFIT-BOOK-FULL-BACKUP-"+new Date().toISOString().slice(0,10)+".json";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  const APP='SALE-PROFIT-BOOK';
+  function setStatus(msg,ok){
+    const el=document.getElementById('backupStatusV551');
+    if(el){el.textContent=msg;el.style.color=ok?'#126d66':'#9b3333';}
   }
-  function restoreV455(file){
+  function fullBackupV551(){
+    try{
+      const storage={};
+      for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(k!==null) storage[k]=localStorage.getItem(k);
+      }
+      const data={app:APP,version:'5.51',createdAt:new Date().toISOString(),storage:storage};
+      const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download='SALE-PROFIT-BOOK-BACKUP-'+new Date().toISOString().slice(0,10)+'.json';
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+      setStatus('✅ Backup created successfully. Keep this JSON file safe.',true);
+    }catch(e){setStatus('❌ Backup failed: '+(e.message||'Unknown error'),false);}
+  }
+  function restoreV551(file){
     if(!file)return;
-    if(!confirm('Restore will replace the current app data with this backup. Continue?')) return;
     const reader=new FileReader();
     reader.onload=function(){
       try{
         const data=JSON.parse(reader.result);
-        if(!data||data.app!=="SALE-PROFIT-BOOK"||!data.storage)throw new Error("invalid");
-        if(!confirm("Restore Full Backup? Current app data will be replaced."))return;
+        let storage=null;
+        if(data && data.app===APP && data.storage && typeof data.storage==='object' && !Array.isArray(data.storage)){
+          storage=data.storage;
+        }else if(data && Array.isArray(data.items) && Array.isArray(data.entries)){
+          storage={};
+          storage['spb_items']=JSON.stringify(data.items);
+          storage['spb_entries']=JSON.stringify(data.entries);
+          storage['spb_expenses']=JSON.stringify(Array.isArray(data.expenses)?data.expenses:[]);
+          storage['spb_stock']=JSON.stringify(Array.isArray(data.stockMovements)?data.stockMovements:[]);
+        }else throw new Error('Invalid backup format');
+        const keys=Object.keys(storage);
+        if(!keys.length)throw new Error('Backup is empty');
+        if(!confirm('Restore this backup? Your current app data will be replaced.')) return;
         localStorage.clear();
-        Object.keys(data.storage).forEach(function(k){localStorage.setItem(k,data.storage[k]);});
-        alert("Full Backup restored successfully.\n\nBackup date: " + (data.createdAt ? new Date(data.createdAt).toLocaleString() : "Unknown") + "\nItems restored: " + Object.keys(data.storage).length);
-        location.reload();
-      }catch(e){alert("Invalid SALE-PROFIT-BOOK backup file.");}
+        keys.forEach(k=>localStorage.setItem(k,String(storage[k]??'')));
+        setStatus('✅ Restore completed. Reloading app…',true);
+        setTimeout(()=>location.reload(),500);
+      }catch(e){setStatus('❌ Restore failed: invalid or damaged backup file.',false);}
     };
+    reader.onerror=function(){setStatus('❌ Could not read the backup file.',false);};
     reader.readAsText(file);
+    const input=document.getElementById('restoreFileV551'); if(input) input.value='';
   }
-  window.fullBackupV455=fullBackupV455;
-  window.restoreV455=restoreV455;
+  window.fullBackupV551=fullBackupV551;
+  window.restoreV551=restoreV551;
 })();
 </script>
 <script id="v484-stability-fix">
