@@ -681,7 +681,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.54',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.55',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -815,16 +815,24 @@ body.page-open-mode #backupPage.active{display:block!important}
 .expense-detail-row span:last-child{font-weight:900;color:#263535;white-space:nowrap}
 @media(max-width:520px){.expense-old-row{font-size:16px}.expense-detail-row{font-size:13px}}
 </style>
+<style id="v555-history-detail-style">
+.report-date-card{overflow:hidden}
+.report-date-head{cursor:pointer;user-select:none}
+.report-date-stat.history-click-stat{cursor:pointer!important}
+.report-date-stat.history-click-stat small{display:block;margin-top:4px;font-size:10px;font-weight:700;color:#718080}
+.report-date-details.closed{display:none!important}
+</style>
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.54</div>
+<div class="version">Version 5.55</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
 <button class="nav-active" onclick="goHome(this)">Home</button>
+<button type="button" onclick="openHistoryTab(this)">History</button>
 <button onclick="goExpense(this)">Expense</button>
 <button onclick="goMansoor(this)">Mansoor</button>
 <button onclick="goReports(this)">Reports</button>
@@ -1343,24 +1351,28 @@ function generateReport(){
  <div class="history-card"><b>💸 Expense Breakdown</b>${expenseBreakdown}</div>`;
 }
 function toggleReportDateDetails(id, mode){
- const el=document.getElementById(id); if(!el)return;
- const card=el.closest('.report-date-card');
- const isOpen=el.classList.contains('open');
+  const el=document.getElementById(id);
+  if(!el)return;
+  const card=el.closest('.report-date-card');
+  const arrow=document.getElementById('arrow'+id);
+  const saleRows=el.querySelectorAll('.history-sale-row');
+  const expenseRows=el.querySelectorAll('.history-expense-row');
 
- if(mode==='sale' || mode==='expense'){
-   el.classList.add('open');
-   if(card)card.classList.add('open');
-   el.querySelectorAll('.history-sale-row').forEach(r=>r.style.display=(mode==='sale'?'block':'none'));
-   el.querySelectorAll('.history-expense-row').forEach(r=>r.style.display=(mode==='expense'?'block':'none'));
-   const arrow=document.getElementById('arrow'+id); if(arrow)arrow.textContent='−';
-   return;
- }
+  if(mode==='sale' || mode==='expense'){
+    el.classList.add('open');
+    if(card)card.classList.add('open');
+    saleRows.forEach(function(r){r.style.display=(mode==='sale'?'block':'none');});
+    expenseRows.forEach(function(r){r.style.display=(mode==='expense'?'block':'none');});
+    if(arrow)arrow.textContent='−';
+    return;
+  }
 
- el.classList.toggle('open');
- if(card)card.classList.toggle('open',el.classList.contains('open'));
- el.querySelectorAll('.history-sale-row,.history-expense-row').forEach(r=>r.style.display='block');
- const arrow=document.getElementById('arrow'+id);
- if(arrow)arrow.textContent=el.classList.contains('open')?'−':'＋';
+  const willOpen=!el.classList.contains('open');
+  el.classList.toggle('open',willOpen);
+  if(card)card.classList.toggle('open',willOpen);
+  saleRows.forEach(function(r){r.style.display=willOpen?'block':'none';});
+  expenseRows.forEach(function(r){r.style.display=willOpen?'block':'none';});
+  if(arrow)arrow.textContent=willOpen?'−':'＋';
 }
 
 function refreshDashboard(){
@@ -2356,7 +2368,7 @@ function updateTodayNetProfit(){
 })();
 </script>
 <div id="historyPage" class="page separate-history-page"></div>
-<script id="v542-history-tab-script">
+<script id="v555-history-tab-script">
 (function(){
 var originalParent=null, originalNext=null;
 function qs(s){return document.querySelector(s)}
