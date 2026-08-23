@@ -815,6 +815,12 @@ body.page-open-mode #backupPage.active{display:block!important}
 .expense-detail-row span:last-child{font-weight:900;color:#263535;white-space:nowrap}
 @media(max-width:520px){.expense-old-row{font-size:16px}.expense-detail-row{font-size:13px}}
 </style>
+<style id="v556-history-collapsed">
+/* V5.56 — History opens as summary only; details appear only after tapping */
+.report-date-details{display:none!important}
+.report-date-card.open .report-date-details{display:block!important}
+.report-date-card:not(.open) .report-date-arrow{content:"＋"}
+</style>
 <style id="v555-history-detail-style">
 .report-date-card{overflow:hidden}
 .report-date-head{cursor:pointer;user-select:none}
@@ -826,7 +832,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.55</div>
+<div class="version">Version 5.56</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1548,9 +1554,9 @@ function renderHistory(){
     const saleRows=g.sales.map(x=>`<div class="report-detail-row history-sale-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editEntry(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteEntry(${x.id})">Delete</button></div></div>`).join('');
     const expenseRows=g.expenses.map(x=>`<div class="report-detail-row history-expense-row"><b>💸 Expense: ${esc(x.name)} — ${money(x.amount)}</b><div class="report-detail-meta">Expense</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editExpense(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteExpense(${x.id})">Delete</button></div></div>`).join('');
     const details=(saleRows+expenseRows)||'<div class="empty">No details found</div>';
-    return `<div class="report-date-card open" id="card${key}">
+    return `<div class="report-date-card" id="card${key}">
       <div class="report-date-head" onclick="toggleReportDateDetails('${key}','all')">
-        <span class="report-date-title">📅 ${fmtDate(d)}</span><span class="report-date-arrow" id="arrow${key}">−</span>
+        <span class="report-date-title">📅 ${fmtDate(d)}</span><span class="report-date-arrow" id="arrow${key}">＋</span>
       </div>
       <div class="report-date-summary">
         <div class="report-date-stat history-click-stat" onclick="event.stopPropagation();toggleReportDateDetails('${key}','sale')">
