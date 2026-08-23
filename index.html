@@ -672,7 +672,8 @@ html.modal-open, body.modal-open{
   window.goBackup=function(btn){
     hidePages();
     if(typeof setActive==='function')setActive(btn);
-    var p=document.getElementById('backupPage');if(p)p.classList.add('active');
+    var p=document.getElementById('backupPage');
+    if(p){p.classList.add('active');}
   };
 })();
 </script>
@@ -804,7 +805,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.52</div>
+<div class="version">Version 5.53</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -964,9 +965,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 </label>
 </div>
 <div id="backupStatusV551" class="meta" style="margin-top:12px">Backup saves all app data to a JSON file. Restore replaces the current app data only after the file is validated.</div>
-<div class="meta" style="margin-top:12px">📦 <strong>Full Backup / Restore</strong> works without Google login. Google Drive is optional and is not used by the normal Backup button.</div>
-<button class="secondary" type="button" onclick="googleDriveBackup()">☁️ Google Drive Backup (Optional)</button>
-<button class="secondary" type="button" onclick="googleDriveRestore()" style="margin-top:10px">☁️ Google Drive Restore (Optional)</button>
+<div class="meta" style="margin-top:12px">📦 <strong>Full Backup / Restore</strong> works completely offline — no Google login or OAuth is required.</div>
 <button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
 </div>
 </div>
@@ -1799,7 +1798,6 @@ window.addEventListener('load',function(){try{$('date').value=today();if(!editin
 })();
 
 </script>
-<script async="" defer="" src="https://accounts.google.com/gsi/client"></script>
 <script>
 
 // V4.77 — Today Total Expense is based on the selected Expense date.
@@ -1832,35 +1830,6 @@ function updateTodayExpenseTotal(){
   el.innerHTML = `<span>💸 Today Total Expense</span><strong>${money(total)}</strong>`;
 }
 
-function saveGoogleClientId(){
-  const id=$('googleClientId').value.trim();
-  if(!id){alert('Enter Google OAuth Client ID.');return}
-  localStorage.setItem('spb_google_client_id',id);alert('Google Client ID saved.');
-}
-function googleDriveData(){
-  return JSON.stringify({version:'4.11',items,entries,expenses,exportedAt:new Date().toISOString()});
-}
-async function googleDriveBackup(){
-  const clientId=localStorage.getItem('spb_google_client_id')||$('googleClientId')?.value.trim();
-  if(!clientId){alert('Google Drive Backup requires a Google OAuth Client ID.\n\nFor normal Full Backup, use 📦 Full Backup (No Login).');return}
-  if(!window.google?.accounts?.oauth2){alert('Google Sign-In is still loading. Please try again.');return}
-  const tokenClient=google.accounts.oauth2.initTokenClient({
-    client_id:clientId,scope:'https://www.googleapis.com/auth/drive.file',
-    callback:async(resp)=>{
-      if(resp.error){alert('Google authorization failed.');return}
-      const file={name:'sale-profit-book-backup.json',mimeType:'application/json'};
-      const meta=JSON.stringify(file);
-      const boundary='-------spb'+Date.now();
-      const body='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+meta+'\r\n--'+boundary+'\r\nContent-Type: application/json\r\n\r\n'+googleDriveData()+'\r\n--'+boundary+'--';
-      const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{Authorization:'Bearer '+resp.access_token,'Content-Type':'multipart/related; boundary='+boundary},body});
-      if(r.ok)alert('Google Drive backup completed.');else alert('Google Drive backup failed.');
-    }
-  });
-  tokenClient.requestAccessToken({prompt:''});
-}
-async function googleDriveRestore(){
-  alert('Google Drive Restore will be enabled after the Google OAuth Client ID is configured and authorized.');
-}
 </script>
 <script>
 (function(){
