@@ -759,7 +759,7 @@ body.page-open-mode #backupPage.active{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.47</div>
+<div class="version">Version 5.48</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2127,23 +2127,7 @@ window.printReport=function(){
   w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
-  w.document.write('<script id="v546-home-stock-script">
-function toggleHomeStock(){
-  var box=document.getElementById('homeStockDetails');
-  var btn=document.getElementById('homeStockButton');
-  if(!box)return;
-  var open=!box.classList.contains('hidden');
-  box.classList.toggle('hidden',open);
-  box.classList.toggle('visible',!open);
-  if(btn)btn.textContent=open?'📦 Stock':'📦 Close Stock';
-  if(!open){
-    box.scrollIntoView({behavior:'smooth',block:'start'});
-    if(typeof renderStock==='function')renderStock();
-    if(typeof updateStock==='function')updateStock();
-  }
-}
-</script>
-</body></html>');
+  w.document.write('</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
@@ -2346,6 +2330,21 @@ function bind(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
 })();
+</script>
+<script id="v546-home-stock-script">
+function toggleHomeStock(){
+  var box=document.getElementById('homeStockDetails');
+  var btn=document.getElementById('homeStockButton');
+  if(!box)return;
+  var open=!box.classList.contains('hidden');
+  box.classList.toggle('hidden',open);
+  box.classList.toggle('visible',!open);
+  if(btn)btn.textContent=open?'📦 Stock':'📦 Close Stock';
+  if(!open){
+    box.scrollIntoView({behavior:'smooth',block:'start'});
+    if(typeof renderStock==='function')renderStock();
+  }
+}
 </script>
 </body>
 </html>
