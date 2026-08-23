@@ -635,7 +635,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.41',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.42',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -719,37 +719,36 @@ body.page-open-mode .install-wrap{display:none!important}
   color:#718080;
 }
 </style>
-<style id="v541-history-actions">
-.history-actions{
-  display:flex;
-  gap:8px;
-  margin-top:9px;
-}
-.history-actions button{
-  min-height:34px;
-  padding:6px 12px;
-  border-radius:10px;
-  font-size:13px;
-  font-weight:800;
-}
-.history-sale-row,.history-expense-row{
-  padding-bottom:10px;
-}
-.history-sale-row + .history-sale-row,
-.history-expense-row + .history-expense-row{
-  margin-top:4px;
-}
+<style id="v542-history-tab">
+body.page-open-mode #homePage,
+body.page-open-mode #entryCard,
+body.page-open-mode #stockCard,
+body.page-open-mode #dashboardCard,
+body.page-open-mode .state-date-row,
+body.page-open-mode .new-history-row,
+body.page-open-mode .install-wrap{display:none!important}
+body.page-open-mode #historyPage.active,
+body.page-open-mode #expensePage.active,
+body.page-open-mode #mansoorPage.active,
+body.page-open-mode #reportPage.active,
+body.page-open-mode #backupPage.active{display:block!important}
+#historyPage{display:none}
+#historyPage.active{display:block}
+.tab-page-back{display:inline-flex;align-items:center;gap:6px;margin:0 0 14px;padding:9px 14px;border:0;border-radius:12px;background:#e9f5f3;color:#145f59;font-weight:800;font-size:14px}
+.history-actions{display:flex;gap:8px;margin-top:9px}
+.history-actions button{min-height:34px;padding:6px 12px;border-radius:10px;font-size:13px;font-weight:800}
+.history-click-stat{cursor:pointer!important}
 </style>
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.41</div>
+<div class="version">Version 5.42</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
-<button class="nav-active" onclick="goHome(this)">Home</button>
+<button class="nav-active" onclick="goHome(this)">Home</button><button type="button">History</button>
 <button onclick="goExpense(this)">Expense</button>
 <button onclick="goMansoor(this)">Mansoor</button>
 <button onclick="goReports(this)">Reports</button>
@@ -2236,6 +2235,50 @@ function updateTodayNetProfit(){
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind);
   else bind();
+})();
+</script>
+<div id="historyPage" class="page separate-history-page"></div>
+<script id="v542-history-tab-script">
+(function(){
+var originalParent=null, originalNext=null;
+function qs(s){return document.querySelector(s)}
+function hideOtherPages(){['expensePage','mansoorPage','reportPage','backupPage'].forEach(function(id){var e=document.getElementById(id);if(e)e.classList.remove('active')})}
+function openHistory(btn){
+ var card=document.getElementById('historyCard'), page=document.getElementById('historyPage');
+ if(card&&page){
+   if(!originalParent){originalParent=card.parentNode;originalNext=card.nextSibling}
+   page.innerHTML='<button class="tab-page-back" onclick="returnHomeTab()">← Home</button>';
+   page.appendChild(card);
+ }
+ document.body.classList.add('page-open-mode');hideOtherPages();
+ if(page)page.classList.add('active');
+ document.querySelectorAll('nav button,.nav button,.topnav button').forEach(function(b){b.classList.remove('active')});
+ if(btn)btn.classList.add('active');
+ window.scrollTo(0,0);
+ if(typeof renderHistory==='function')renderHistory();
+}
+function home(){
+ var card=document.getElementById('historyCard');
+ if(card&&originalParent){
+   if(originalNext&&originalNext.parentNode===originalParent)originalParent.insertBefore(card,originalNext);
+   else originalParent.appendChild(card);
+ }
+ var page=document.getElementById('historyPage');if(page){page.classList.remove('active');page.innerHTML=''}
+ document.body.classList.remove('page-open-mode');
+ document.querySelectorAll('nav button,.nav button,.topnav button').forEach(function(b){b.classList.remove('active')});
+ window.scrollTo(0,0);
+ if(typeof refresh==='function')refresh();
+ if(typeof refreshDashboard==='function')refreshDashboard();
+}
+window.openHistoryTab=openHistory;
+window.returnHomeTab=home;
+function bind(){
+ document.querySelectorAll('button').forEach(function(b){
+   var t=(b.textContent||'').trim().replace(/\s+/g,' ');
+   if(t==='History')b.onclick=function(){openHistory(b)};
+ });
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
 })();
 </script>
 </body>
