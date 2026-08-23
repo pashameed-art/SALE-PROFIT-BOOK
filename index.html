@@ -157,7 +157,6 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
   }
 }
 
-
 /* V4.25: Purchase + Profit must stay on the same horizontal line */
 .purchase-profit-row{
   display:flex !important;
@@ -200,7 +199,6 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
   }
 }
 
-
 /* V4.91 report date-wise summary */
 .report-date-card{background:#fff;border:1px solid #e2e8e8;border-radius:18px;padding:16px;margin-top:12px;cursor:pointer}
 .report-date-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:800}
@@ -217,7 +215,6 @@ font-weight:800;font-size:20px;padding:13px 16px;margin:14px 0 10px}
 .home-entry-btn{background:#138a7e;color:#fff}
 .home-history-btn{background:#e8f4f3;color:#126f68}
 @media(max-width:520px){.home-entry-history{gap:10px}.home-entry-history button{font-size:18px;min-height:68px}}
-
 
 /* V5.50 — Clean Compact UI */
 header{padding:20px 18px 18px}
@@ -484,10 +481,6 @@ html.modal-open, body.modal-open{
 @media(max-width:600px){.new-history-row{gap:10px}}
 </style>
 
-
-
-
-
 <style id="v522-clean-layout">
 .state-date-row{
   display:grid!important;
@@ -526,7 +519,6 @@ html.modal-open, body.modal-open{
   }
 }
 </style>
-
 
 <style id="v523-compact-place-date">
 .state-date-row{
@@ -578,7 +570,6 @@ html.modal-open, body.modal-open{
   }
 }
 </style>
-
 
 <style id="v524-history-direct-detail">
 .report-date-card.open .report-date-details{
@@ -686,7 +677,6 @@ window.addEventListener('load',function(){
 });
 </script>
 
-
 <style id="v557-stock-add-item">
 .stock-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .stock-title-row .stock-section-title{margin:0!important}
@@ -701,7 +691,6 @@ window.addEventListener('load',function(){
   color:#145f59;
 }
 </style>
-
 
 <style id="v536-dashboard-fix">
 #dashboardCard .dashboard-net{
@@ -848,8 +837,6 @@ body.page-open-mode #homeStockDetails.hidden,
 body.page-open-mode #homeStockDetails.visible{display:none!important}
 </style>
 
-
-
 <style id="v559-history-only-final">
 /* FINAL: History content exists only while the History tab is active. */
 body.page-open-mode #historyPage { display:none!important; }
@@ -960,9 +947,7 @@ body.page-open-mode #backupPage.active #historyCard {
 <div class="install-wrap"><button class="secondary install-btn" id="installBtn" onclick="installPWA()">Install App</button></div>
 <main>
 <section class="hidden" id="historyCard">
-<button class="secondary" id="historyAllBtn" style="margin:0 0 14px;width:100%;" type="button">
-      📋 Show All History
-    </button>
+
 <div class="dua-card">
 <div class="dua-title">Dua</div>
 <div class="dua-text">யா அல்லாஹ்! எங்கள் வாழ்வில் பரக்கத்தையும், ஹலாலான ரிஸ்க்கையும் வழங்குவாயாக.<br/>எங்கள் காரியங்களை எளிதாக்கி, நன்மையைத் தந்து, தீமையிலிருந்து எங்களைப் பாதுகாப்பாயாக.</div>
@@ -988,7 +973,6 @@ body.page-open-mode #backupPage.active #historyCard {
 </div>
 <div id="historyList"></div>
 </section>
-
 
 <div class="page" id="expensePage">
 <div class="backup-box">
@@ -1172,9 +1156,7 @@ function normalizeAllEntryDates(){
   if(changed)localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));
 }
 
-
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-
 
 function backupData(){
   const data={version:"5.00",items,entries,expenses,stockMovements,exportedAt:new Date().toISOString()};
@@ -1214,8 +1196,6 @@ function exportCSV(){
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);
   a.download="sale-profit-book.csv";a.click();URL.revokeObjectURL(a.href);
 }
-
-
 
 let deferredInstallPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;$('installBtn').style.display='block';});
@@ -1786,7 +1766,6 @@ init();
 
 // V4.75: Clean Today Total Expense — expense records only.
 
-
 // V4.69: History "Show All" reset — does not modify stored data.
 (function(){
   function bindHistoryAll(){
@@ -1804,7 +1783,6 @@ init();
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindHistoryAll);
   else bindHistoryAll();
 })();
-
 
 // V4.71: Home date defaults to today's local date when blank.
 (function(){
@@ -1834,7 +1812,6 @@ init();
   }
 })();
 
-
 // V4.72: build marker / cache refresh helper.
 (function(){
   const BUILD = '5.05';
@@ -1849,7 +1826,6 @@ init();
   } catch(e) {}
 })();
 
-
 // V4.74 FULL APP UPDATE
 (function(){
   const BUILD = '5.05';
@@ -1858,8 +1834,6 @@ init();
 
 // V4.75 CLEAN TODAY TOTAL
 try{localStorage.setItem('__spb_build__','4.88')}catch(e){}
-
-
 
 // V4.81 today/expense date refresh
 window.addEventListener('load', function(){try{updateTodayTotalExpense();}catch(e){}});
