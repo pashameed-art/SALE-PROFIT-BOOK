@@ -834,11 +834,49 @@ body.page-open-mode #backupPage.active{display:block!important}
 .report-date-stat.history-click-stat small{display:block;margin-top:4px;font-size:10px;font-weight:700;color:#718080}
 .report-date-details.closed{display:none!important}
 </style>
+
+<style id="v558-clean-ui">
+header{padding:12px 14px 10px!important;margin-bottom:8px!important}
+header h1{font-size:22px!important;margin:0!important;line-height:1.15!important}
+header .subtitle{font-size:12px!important;margin-top:3px!important}
+.version{font-size:11px!important;margin-top:3px!important}
+.nav-bar{gap:6px!important;padding:7px!important;margin:7px 0 10px!important;border-radius:14px!important}
+.nav-bar button{min-height:38px!important;padding:7px 9px!important;border-radius:11px!important;font-size:12px!important;white-space:nowrap!important}
+.state-date-row{gap:8px!important;margin:8px 0 10px!important}
+.state-date-row input{height:44px!important;font-size:14px!important;border-radius:11px!important}
+.state-date-row label{font-size:11px!important;margin-bottom:4px!important}
+.new-history-row{gap:8px!important;margin:8px 0 10px!important}
+.new-history-row button{min-height:42px!important;border-radius:12px!important;font-size:13px!important}
+.card{border-radius:14px!important;padding:13px!important;margin:9px 0!important;box-shadow:0 2px 10px rgba(0,0,0,.05)!important}
+.field{margin-bottom:9px!important}
+.field label{font-size:11px!important;margin-bottom:4px!important}
+input,select,textarea{min-height:42px!important;border-radius:10px!important;font-size:14px!important;padding:8px 10px!important}
+#entryCard .entry-three,#entryCard .purchase-profit-row{gap:8px!important}
+#saveBtn{min-height:44px!important;font-size:14px!important}
+.stock-table-wrap{margin-top:9px!important;border-radius:11px!important}
+.stock-table{font-size:12px!important}
+.stock-table th,.stock-table td{padding:8px 7px!important}
+.dashboard-grid{gap:8px!important}
+.dashboard-stat{padding:10px!important;border-radius:12px!important}
+.dashboard-stat span{font-size:11px!important}
+.dashboard-stat b{font-size:17px!important}
+.today-net-profit{margin:8px 0!important;padding:11px!important;border-radius:12px!important}
+@media(max-width:600px){
+body{padding-left:8px!important;padding-right:8px!important}
+.nav-bar{overflow-x:auto!important;justify-content:flex-start!important;scrollbar-width:none!important}
+.nav-bar::-webkit-scrollbar{display:none}
+.nav-bar button{flex:0 0 auto!important}
+.state-date-row,.new-history-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px!important}
+#entryCard .entry-three{grid-template-columns:1fr 1fr 1fr!important}
+#entryCard .purchase-profit-row{grid-template-columns:1fr 1fr!important}
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.57</div>
+<div class="version">Version 5.58</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
