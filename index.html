@@ -635,7 +635,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.43',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.44',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -738,11 +738,21 @@ body.page-open-mode #backupPage.active{display:block!important}
 .history-actions button{min-height:34px;padding:6px 12px;border-radius:10px;font-size:13px;font-weight:800}
 .history-click-stat{cursor:pointer!important}
 </style>
+<style id="v544-stock-table">
+.stock-table-wrap{width:100%;overflow-x:auto;margin-top:14px;border:1px solid #dce9e7;border-radius:14px}
+.stock-table{width:100%;border-collapse:collapse;min-width:620px;background:#fff;font-size:13px}
+.stock-table th,.stock-table td{padding:11px 9px;border-bottom:1px solid #e4eceb;text-align:left;white-space:nowrap}
+.stock-table thead th{background:#edf7f5;color:#145f59;font-weight:900}
+.stock-table tbody tr:last-child td{border-bottom:0}
+.stock-table tfoot th{background:#f2f8f7;color:#173f3c;font-weight:900}
+.stock-added{color:#16805f;font-weight:800}.stock-sold{color:#b34a4a;font-weight:800}.stock-balance-cell{color:#145f59;font-weight:900}
+@media(max-width:560px){.stock-table{font-size:12px}.stock-table th,.stock-table td{padding:9px 7px}}
+</style>
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.43</div>
+<div class="version">Version 5.44</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1497,30 +1507,59 @@ function fmtStockDate(d){
 function renderStock(){
   const el=$('stockSummary'); if(!el)return;
   const select=$('stockItemSelect');
-  const names=[...new Set([...(Array.isArray(items)?items:[]).map(x=>x.name),...(Array.isArray(stockMovements)?stockMovements:[]).map(x=>x.item),...(Array.isArray(entries)?entries:[]).map(x=>x.item)])].filter(Boolean).sort((a,b)=>a.localeCompare(b));
+  const names=[...new Set([
+    ...(Array.isArray(items)?items:[]).map(x=>x.name),
+    ...(Array.isArray(stockMovements)?stockMovements:[]).map(x=>x.item),
+    ...(Array.isArray(entries)?entries:[]).map(x=>x.item)
+  ])].filter(Boolean).sort((a,b)=>a.localeCompare(b));
   const current=select?select.value:'';
   if(select){
     select.innerHTML='<option value="">Select Item</option>'+names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
-    if(names.includes(current)) select.value=current;
+    if(names.includes(current))select.value=current;
   }
   const selected=select?select.value:'';
   if(!selected){
     el.innerHTML='<div class="empty">Select one Item to view Stock details.</div>';
     return;
   }
+
   const name=selected;
-  const ins=(Array.isArray(stockMovements)?stockMovements:[]).filter(x=>x.item===name).map(x=>({...x,date:normalizeEntryDate(x.date)}));
-  const sales=(Array.isArray(entries)?entries:[]).filter(x=>x.item===name).map(x=>({...x,date:normalizeEntryDate(x.date)}));
-  const all=[];
-  ins.forEach(x=>all.push({date:x.date,meter:Number(x.meter||0),type:'Stock Added',sign:'+',id:x.id||0}));
-  sales.forEach(x=>all.push({date:x.date,meter:Number(x.meter||0),type:'Sale',sign:'-',id:x.id||0}));
-  all.sort((a,b)=>a.date.localeCompare(b.date)||Number(a.id)-Number(b.id));
-  let running=0;
-  const ledger=all.map(x=>{running+=x.sign==='+'?x.meter:-x.meter;return `<div class="stock-movement"><b>${fmtStockDate(x.date)}</b> — ${esc(name)} <span class="${x.sign==='+'?'stock-positive':'stock-negative'}">${x.sign}${x.meter.toFixed(2)} m</span><div class="stock-muted">${x.type} • Balance ${running.toFixed(2)} m</div></div>`}).join('');
-  const inTotal=ins.reduce((a,x)=>a+Number(x.meter||0),0);
-  const saleTotal=sales.reduce((a,x)=>a+Number(x.meter||0),0);
-  const balance=inTotal-saleTotal;
-  el.innerHTML=`<div class="stock-item"><div class="stock-head"><b>${esc(name)}</b><span class="stock-balance">${balance.toFixed(2)} m</span></div><div class="stock-muted">Added ${inTotal.toFixed(2)} m − Sale ${saleTotal.toFixed(2)} m</div><div class="stock-ledger">${ledger||'<div class="empty">No stock or sales recorded for this item.</div>'}</div></div>`;
+  const additions=(Array.isArray(stockMovements)?stockMovements:[])
+    .filter(x=>x.item===name)
+    .map(x=>({date:normalizeEntryDate(x.date),added:Number(x.meter||0),id:Number(x.id||0)}));
+  const sales=(Array.isArray(entries)?entries:[])
+    .filter(x=>x.item===name)
+    .map(x=>({date:normalizeEntryDate(x.date),sold:Number(x.meter||0),id:Number(x.id||0)}));
+
+  const dates=[...new Set([...additions.map(x=>x.date),...sales.map(x=>x.date)].filter(Boolean))].sort();
+  let balance=0;
+  const rows=dates.map(date=>{
+    const added=additions.filter(x=>x.date===date).reduce((a,x)=>a+x.added,0);
+    const sold=sales.filter(x=>x.date===date).reduce((a,x)=>a+x.sold,0);
+    balance+=added-sold;
+    return `<tr>
+      <td>${fmtStockDate(date)}</td>
+      <td>${esc(name)}</td>
+      <td class="stock-added">${added.toFixed(2)} m</td>
+      <td class="stock-sold">${sold.toFixed(2)} m</td>
+      <td class="stock-balance-cell">${balance.toFixed(2)} m</td>
+    </tr>`;
+  }).join('');
+
+  const totalAdded=additions.reduce((a,x)=>a+x.added,0);
+  const totalSold=sales.reduce((a,x)=>a+x.sold,0);
+  const finalBalance=totalAdded-totalSold;
+  el.innerHTML=`
+    <div class="stock-item">
+      <div class="stock-head"><b>${esc(name)}</b><span class="stock-balance">${finalBalance.toFixed(2)} m</span></div>
+      <div class="stock-table-wrap">
+        <table class="stock-table">
+          <thead><tr><th>Date</th><th>Item</th><th>Added Meter</th><th>Sold Meter</th><th>Balance Meter</th></tr></thead>
+          <tbody>${rows||'<tr><td colspan="5" class="empty">No stock transactions recorded.</td></tr>'}</tbody>
+          <tfoot><tr><th colspan="2">Total</th><th>${totalAdded.toFixed(2)} m</th><th>${totalSold.toFixed(2)} m</th><th>${finalBalance.toFixed(2)} m</th></tr></tfoot>
+        </table>
+      </div>
+    </div>`;
 }
 
 function renderNewItemSuggestions(){
