@@ -1052,7 +1052,7 @@ body.party-open-mode #historyPage{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.77</div>
+<div class="version">Version 5.78</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3214,7 +3214,11 @@ window.addEventListener("DOMContentLoaded",function(){
 <style id="v576-standalone-navigation-fix">
 body.v576-home #partyPage,body.v576-home #historyPage,body.v576-home #expensePage,body.v576-home #mansoorPage,body.v576-home #supplierPage,body.v576-home #reportPage,body.v576-home #backupPage{display:none!important}
 body.v576-party #partyPage{display:block!important}
-body.v576-party #entryCard,body.v576-party #dashboardCard,body.v576-party #stockCard,body.v576-party #homeStockDetails,body.v576-party .state-date-row,body.v576-party .new-history-row,body.v576-party #historyCard,body.v576-party #homePage,body.v576-party #historyPage,body.v576-party #expensePage,body.v576-party #mansoorPage,body.v576-party #supplierPage,body.v576-party #reportPage,body.v576-party #backupPage{display:none!important}
+body.v576-party #entryCard,body.v576-party #dashboardCard,body.v576-party #stockCard,body.v576-party #homeStockDetails,body.v576-party .state-date-row,body.v576-party .new-history-row,body.v576-party #historyCard,body.v576-party #homePage,body.v576-party #historyPage,body.v576-party #expensePage,body.v576-party #supplierPage,body.v576-party #reportPage,body.v576-party #backupPage{display:none!important}
+/* V5.78: Mansoor detail is shown inside Party without leaving/hiding Party. */
+body.v576-party #partyMansoorHost #mansoorPage{display:block!important;visibility:visible!important;}
+body.v576-party #partyMansoorHost #mansoorPage.hidden{display:block!important;}
+body.v576-party #partyMansoorHost #mansoorPage.active{display:block!important;}
 </style>
 <script id="v576-final-controller">
 (function(){
