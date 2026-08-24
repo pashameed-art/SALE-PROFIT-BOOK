@@ -260,6 +260,10 @@ button{height:48px;border-radius:13px;font-size:15px}
  .summary .stat{padding:9px 3px}
  .summary .stat b{font-size:14px}
 }
+.party-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.party-choice{height:54px!important;border:0;border-radius:16px;background:#e9f3f2;color:#155b50;font-size:17px;font-weight:800}
+.party-choice:active{background:#174f42;color:#fff}
+@media(max-width:520px){.party-row{grid-template-columns:1fr 1fr}.party-choice{font-size:15px!important}}
 </style>
 <style>
 .expense-action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -994,7 +998,7 @@ body.page-open-mode #backupPage.active #historyCard {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.69</div>
+<div class="version">Version 5.70</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1553,7 +1557,7 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
 <section class="page hidden" id="partyPage">
   <div class="card">
     <h2>👥 Party</h2>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;">
+    <div class="party-row">
       <button class="party-choice" onclick="openPartyLedger('mydeen')">🤝 Mydeen</button>
       <button class="party-choice" onclick="openPartyLedger('mansoor')">🤝 Mansoor</button>
     </div>
@@ -1562,145 +1566,7 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
 </section>
 
 
-<script id="v567-party-selector">
-(function(){
-  const PKEY='saleProfitBookSelectedPartyV1';
 
-  function getParty(){
-    return localStorage.getItem(PKEY)||'';
-  }
-  function setParty(v){
-    if(v)localStorage.setItem(PKEY,v);
-    else localStorage.removeItem(PKEY);
-  }
-
-  window.goParty=function(btn){
-    if(typeof hidePages==='function')hidePages();
-    if(typeof setActive==='function')setActive(btn);
-    const p=document.getElementById('partyPage');
-    if(p)p.classList.add('active');
-    const sel=document.getElementById('partySelect');
-    if(sel)sel.value=getParty();
-    renderParty();
-  };
-
-  window.selectParty=function(){
-    const sel=document.getElementById('partySelect');
-    setParty(sel ? sel.value : '');
-    renderParty();
-  };
-
-  window.renderParty=function(){
-    const area=document.getElementById('partyLedgerArea');
-    const sel=document.getElementById('partySelect');
-    if(!area)return;
-    const party=sel ? sel.value : getParty();
-
-    if(!party){
-      area.innerHTML='<div class="card party-empty">👤 Select a Party to view details.</div>';
-      return;
-    }
-
-    // Mansoor already has its own complete ledger. Selecting Mansoor takes the user
-    // to that existing ledger without duplicating or altering its data.
-    if(party==='Mansoor'){
-      area.innerHTML='<div class="card"><div class="party-choice-note">🤝 Mansoor selected</div><button class="primary" type="button" onclick="goMansoorFromParty()">Open Mansoor</button></div>';
-      return;
-    }
-
-    // Mydeen gets a clean, separate party ledger ready for entries.
-    area.innerHTML=`
-      <div class="card">
-        <h3>🤝 Mydeen கொடுக்கல் – வாங்கல்</h3>
-        <div class="field">
-          <label>📅 Date</label>
-          <input type="date" id="mydeenDate">
-        </div>
-        <div class="field">
-          <label>🔄 Type</label>
-          <select id="mydeenType">
-            <option value="given">பணம் கொடுத்தது</option>
-            <option value="taken">பணம் வாங்கியது</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>💰 Amount ₹</label>
-          <input type="number" id="mydeenAmount" min="0" step="1" inputmode="decimal" placeholder="Amount">
-        </div>
-        <div class="field">
-          <label>📝 Note</label>
-          <input type="text" id="mydeenNote" placeholder="குறிப்பு (விருப்பம்)">
-        </div>
-        <button class="primary" type="button" onclick="saveMydeen()">Save</button>
-      </div>
-      <div class="card">
-        <h3>📜 Previous History</h3>
-        <div id="mydeenHistory"></div>
-      </div>`;
-    const d=document.getElementById('mydeenDate');
-    if(d && !d.value){
-      const x=new Date();
-      d.value=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
-    }
-    renderMydeen();
-  };
-
-  window.goMansoorFromParty=function(){
-    const btn=document.querySelector('button[onclick*="goMansoor"]');
-    if(btn && typeof goMansoor==='function')goMansoor(btn);
-    else {
-      const p=document.getElementById('partyPage');if(p)p.classList.remove('active');
-      const m=document.getElementById('mansoorPage');if(m)m.classList.add('active');
-    }
-  };
-
-  function mydeenAll(){
-    try{return JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){return[]}
-  }
-  function saveMydeenAll(a){localStorage.setItem('saleProfitBookMydeenV1',JSON.stringify(a))}
-  function money(n){return '₹'+Number(n||0).toLocaleString('en-IN')}
-  function fmt(v){
-    const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    return m?m[3]+'.'+m[2]+'.'+m[1].slice(2):v;
-  }
-
-  window.saveMydeen=function(){
-    const d=document.getElementById('mydeenDate')?.value;
-    const t=document.getElementById('mydeenType')?.value;
-    const a=Number(document.getElementById('mydeenAmount')?.value||0);
-    const n=(document.getElementById('mydeenNote')?.value||'').trim();
-    if(!d){alert('Date தேர்வு செய்யவும்.');return}
-    if(!(a>0)){alert('Amount உள்ளிடவும்.');return}
-    const rows=mydeenAll();
-    rows.push({id:Date.now(),date:d,type:t,amount:a,note:n});
-    saveMydeenAll(rows);
-    document.getElementById('mydeenAmount').value='';
-    document.getElementById('mydeenNote').value='';
-    renderMydeen();
-  };
-
-  function renderMydeen(){
-    const box=document.getElementById('mydeenHistory');
-    if(!box)return;
-    const rows=mydeenAll().sort((a,b)=>String(b.date).localeCompare(String(a.date))||b.id-a.id);
-    if(!rows.length){
-      box.innerHTML='<div class="party-empty">இதுவரை Mydeen பதிவு இல்லை.</div>';
-      return;
-    }
-    box.innerHTML=rows.map(x=>`
-      <div class="supplier-date-row">
-        <span>📅 ${fmt(x.date)}<br><small>${x.type==='given'?'பணம் கொடுத்தது':'பணம் வாங்கியது'}${x.note?' • '+x.note:''}</small></span>
-        <strong class="${x.type==='given'?'supplier-given':'supplier-taken'}">${x.type==='given'?'-':'+'}${money(x.amount)}</strong>
-      </div>`).join('');
-  }
-
-  document.addEventListener('DOMContentLoaded',function(){
-    const sel=document.getElementById('partySelect');
-    if(sel)sel.value=getParty();
-    renderParty();
-  });
-})();
-</script>
 
 <section class="page" id="reportPage">
 <div class="card">
@@ -3118,3 +2984,67 @@ window.addEventListener("DOMContentLoaded",function(){
 </script>
 </body>
 </html>
+
+<script id="v570-party-standalone-fix">
+(function(){
+  function homeEls(){
+    return [
+      document.querySelector('.state-date-row'),
+      document.querySelector('.new-history-row'),
+      document.getElementById('entryCard'),
+      document.getElementById('homeStockDetails'),
+      document.getElementById('dashboardCard'),
+      document.querySelector('.install-wrap'),
+      document.getElementById('historyCard')
+    ].filter(Boolean);
+  }
+  function hideHome(){
+    homeEls().forEach(function(el){ el.classList.add('hidden'); });
+  }
+  function showHome(){
+    homeEls().forEach(function(el){ el.classList.remove('hidden'); });
+    var h=document.getElementById('historyCard');
+    if(h)h.classList.add('hidden');
+  }
+  function hideAllPages(){
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  }
+
+  window.goParty=function(btn){
+    hideHome();
+    hideAllPages();
+    if(typeof setActive==='function')setActive(btn);
+    var p=document.getElementById('partyPage');
+    if(p)p.classList.add('active');
+    var area=document.getElementById('partyLedgerArea');
+    if(area)area.innerHTML='';
+  };
+
+  window.goHome=function(btn){
+    hideAllPages();
+    showHome();
+    if(typeof setActive==='function')setActive(btn);
+    if(typeof refresh==='function')refresh();
+    if(typeof refreshDashboard==='function')refreshDashboard();
+  };
+
+  window.openPartyLedger=function(value){
+    var area=document.getElementById('partyLedgerArea');
+    if(!area)return;
+    if(value==='mydeen'){
+      area.innerHTML='<div class="card"><h3>🤝 Mydeen கொடுக்கல் – வாங்கல்</h3><p>Mydeen Ledger</p></div>';
+    }else if(value==='mansoor'){
+      area.innerHTML='<div class="card"><h3>🤝 Mansoor கொடுக்கல் – வாங்கல்</h3><button class="primary" type="button" onclick="goMansoorFromParty()">Open Mansoor Ledger</button></div>';
+    }else{
+      area.innerHTML='';
+    }
+  };
+
+  window.goMansoorFromParty=function(){
+    hideHome();
+    hideAllPages();
+    var m=document.getElementById('mansoorPage');
+    if(m)m.classList.add('active');
+  };
+})();
+</script>
