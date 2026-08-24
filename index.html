@@ -874,7 +874,7 @@ body.page-open-mode #backupPage.active #historyCard {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.61</div>
+<div class="version">Version 5.62</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1069,19 +1069,42 @@ body.page-open-mode #backupPage.active #historyCard {
 </div>
 </div>
 <div class="card">
+<h3>📜 Previous History</h3>
+<div id="mansoorHistory"></div>
+</div>
+<div class="card">
 <h3>📅 Weekly Report</h3>
 <div id="mansoorWeeklySummary"></div>
 <button class="primary" type="button" onclick="shareMansoorWeeklyWhatsApp()">📲 WhatsApp</button>
 </div>
 </section>
 
-<script id="v561-mansoor-weekly">
+<script id="v562-mansoor-weekly">
 (function(){
 function md(){try{return JSON.parse(localStorage.getItem("saleProfitBookMansoorV1")||"[]")}catch(e){return []}}
 function money(n){return "₹"+Number(n||0).toLocaleString("en-IN")}
-function weekStart(d){var x=new Date(d+"T00:00:00");x.setDate(x.getDate()-x.getDay());return x.toISOString().slice(0,10)}
-function weekly(){var a=md(),n=new Date(),w=new Date(n);w.setDate(n.getDate()-n.getDay());var st=w.toISOString().slice(0,10),r=a.filter(x=>weekStart(String(x.date))===st),t=r.filter(x=>x.type==="taken").reduce((s,x)=>s+Number(x.amount||0),0),g=r.filter(x=>x.type==="given").reduce((s,x)=>s+Number(x.amount||0),0),e=document.getElementById("mansoorWeeklySummary");if(e)e.innerHTML="<div class=mansoor-weekly-box><div>பணம் வாங்கியது<br><b>"+money(t)+"</b></div><div>பணம் தந்தது<br><b>"+money(g)+"</b></div><div>இந்த வார Balance<br><b>"+money(t-g)+"</b></div></div>"}
-window.shareMansoorWeeklyWhatsApp=function(){var a=md(),n=new Date(),w=new Date(n);w.setDate(n.getDate()-n.getDay());var st=w.toISOString().slice(0,10),r=a.filter(x=>weekStart(String(x.date))===st),t=r.filter(x=>x.type==="taken").reduce((s,x)=>s+Number(x.amount||0),0),g=r.filter(x=>x.type==="given").reduce((s,x)=>s+Number(x.amount||0),0),m=["🤝 Mansoor – Weekly Report","","பணம் வாங்கியது: "+money(t),"பணம் தந்தது: "+money(g),"Balance: "+money(t-g),""];r.forEach(x=>m.push(x.date+" – "+(x.type==="taken"?"பணம் வாங்கியது":"பணம் தந்தது")+": "+money(x.amount)+(x.note?" – "+x.note:"")));window.open("https://wa.me/?text="+encodeURIComponent(m.join("\n")),"_blank")}
+function localKey(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function fmt(d){return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+String(d.getFullYear()).slice(2)}
+function weeklyRange(){
+  var end=new Date(); end.setHours(0,0,0,0);
+  var start=new Date(end); start.setDate(end.getDate()-6);
+  return {start:start,end:end,from:localKey(start),to:localKey(end)};
+}
+function weekly(){
+  var a=md(),q=weeklyRange(),r=a.filter(function(x){return String(x.date)>=q.from&&String(x.date)<=q.to});
+  var taken=r.filter(function(x){return x.type==="taken"}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+  var given=r.filter(function(x){return x.type==="given"}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+  var e=document.getElementById("mansoorWeeklySummary");
+  if(e)e.innerHTML="<div class=mansoor-weekly-box><div style='grid-column:1/-1'><b>📅 "+fmt(q.start)+" – "+fmt(q.end)+"</b></div><div>பணம் வாங்கியது<br><b>"+money(taken)+"</b></div><div>பணம் தந்தது<br><b>"+money(given)+"</b></div><div>இந்த வார Balance<br><b>"+money(taken-given)+"</b></div></div>";
+}
+window.shareMansoorWeeklyWhatsApp=function(){
+  var a=md(),q=weeklyRange(),r=a.filter(function(x){return String(x.date)>=q.from&&String(x.date)<=q.to}).sort(function(x,y){return String(x.date).localeCompare(String(y.date))});
+  var taken=r.filter(function(x){return x.type==="taken"}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+  var given=r.filter(function(x){return x.type==="given"}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+  var m=["🤝 Mansoor – Weekly Report","📅 "+fmt(q.start)+" – "+fmt(q.end),"","பணம் வாங்கியது: "+money(taken),"பணம் தந்தது: "+money(given),"Balance: "+money(taken-given),"","Date-wise:"];
+  r.forEach(function(x){m.push(x.date+" – "+(x.type==="taken"?"பணம் வாங்கியது":"பணம் தந்தது")+": "+money(x.amount)+(x.note?" – "+x.note:""))});
+  window.open("https://wa.me/?text="+encodeURIComponent(m.join("\n")),"_blank");
+}
 document.addEventListener("DOMContentLoaded",weekly);
 })();
 </script>
