@@ -879,11 +879,41 @@ body.page-open-mode #backupPage.active #historyCard {
 @media(max-width:520px){.mansoor-report-dates,.mansoor-report-actions{grid-template-columns:1fr}}
 </style>
 
+
+<style id="v565-mansoor-date-inline">
+.mansoor-report-dates{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:12px !important;
+  align-items:end !important;
+}
+.mansoor-report-dates .field{
+  min-width:0 !important;
+}
+.mansoor-report-dates label{
+  display:block !important;
+  margin-bottom:7px !important;
+  white-space:nowrap !important;
+}
+.mansoor-report-dates input{
+  width:100% !important;
+  box-sizing:border-box !important;
+  min-width:0 !important;
+  margin:0 !important;
+}
+@media(max-width:520px){
+  .mansoor-report-dates{
+    grid-template-columns:1fr 1fr !important;
+    gap:10px !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.64</div>
+<div class="version">Version 5.65</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
