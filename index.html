@@ -1070,7 +1070,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.82</div>
+<div class="version">Version 5.83</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2794,21 +2794,7 @@ window.printReport=function(){
   w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
-  w.document.write('<style id="v577-party-detail-css">body.v576-party #mansoorPage{display:block!important}body.v576-party #partyMansoorHost #mansoorPage{display:none!important}body.v576-party #partyMansoorHost.active #mansoorPage{display:block!important}.party-detail-host{display:none!important}.party-detail-host.active{display:block!important}#partyPage .party-choice.selected{background:#174f3d!important;color:#fff!important;box-shadow:0 3px 10px rgba(23,79,61,.22)}</style>');
-  w.document.write('
-<style id="v580-party-only-visibility">
-/* V5.80 — Party page and its details must appear ONLY when Party is selected. */
-body.v576-party.page-open-mode #partyPage,
-body.page-open-mode #partyPage {
-  display:none !important;
-}
-/* When Party is selected, keep Party visible. */
-body.v576-party:not(.page-open-mode) #partyPage,
-body.party-open-mode #partyPage {
-  display:block !important;
-}
-</style>
-<script id="v582-party-reset-guard">(function(){function reset(){var my=document.getElementById('partyMydeenHost'),mans=document.getElementById('partyMansoorHost');if(my){my.classList.remove('active');my.style.display='none';}if(mans){mans.classList.remove('active');mans.style.display='none';}document.querySelectorAll('#partyPage .party-choice').forEach(function(x){x.classList.remove('selected');});var mp=document.getElementById('mansoorPage');if(mp){mp.style.display='none';mp.classList.remove('active');}}document.querySelectorAll('.nav-bar button').forEach(function(b){var t=(b.textContent||'').trim();if(t==='Home'||t==='Party')b.addEventListener('click',reset,true);});})();</script></body></html>');
+  w.document.write('</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
