@@ -994,11 +994,29 @@ body.page-open-mode #backupPage.active #historyCard {
 }
 </style>
 
+
+<style id="v571-party-hard-isolation">
+body.party-open-mode #entryCard,
+body.party-open-mode #dashboardCard,
+body.party-open-mode #stockCard,
+body.party-open-mode #homeStockDetails,
+body.party-open-mode .state-date-row,
+body.party-open-mode .new-history-row,
+body.party-open-mode .install-wrap,
+body.party-open-mode #historyCard,
+body.party-open-mode #homePage{
+  display:none!important;
+}
+body.party-open-mode #partyPage.active{
+  display:block!important;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.70</div>
+<div class="version">Version 5.71</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2985,47 +3003,57 @@ window.addEventListener("DOMContentLoaded",function(){
 </body>
 </html>
 
-<script id="v570-party-standalone-fix">
+
+<script id="v571-party-standalone-fix">
 (function(){
-  function homeEls(){
-    return [
-      document.querySelector('.state-date-row'),
-      document.querySelector('.new-history-row'),
-      document.getElementById('entryCard'),
-      document.getElementById('homeStockDetails'),
-      document.getElementById('dashboardCard'),
-      document.querySelector('.install-wrap'),
-      document.getElementById('historyCard')
-    ].filter(Boolean);
+  function hidePages(){
+    document.querySelectorAll('.page').forEach(function(p){
+      p.classList.remove('active');
+    });
+  }
+  function clearModes(){
+    document.body.classList.remove('party-open-mode');
+    document.body.classList.remove('page-open-mode');
   }
   function hideHome(){
-    homeEls().forEach(function(el){ el.classList.add('hidden'); });
+    document.querySelectorAll(
+      '.state-date-row,.new-history-row,#entryCard,#stockCard,#homeStockDetails,#dashboardCard,.install-wrap,#historyCard'
+    ).forEach(function(el){el.classList.add('hidden');});
   }
   function showHome(){
-    homeEls().forEach(function(el){ el.classList.remove('hidden'); });
+    document.querySelectorAll(
+      '.state-date-row,.new-history-row,#entryCard,#stockCard,#homeStockDetails,#dashboardCard,.install-wrap'
+    ).forEach(function(el){el.classList.remove('hidden');});
     var h=document.getElementById('historyCard');
     if(h)h.classList.add('hidden');
   }
-  function hideAllPages(){
-    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-  }
 
   window.goParty=function(btn){
+    clearModes();
+    hidePages();
     hideHome();
-    hideAllPages();
+    document.body.classList.add('party-open-mode');
     if(typeof setActive==='function')setActive(btn);
     var p=document.getElementById('partyPage');
-    if(p)p.classList.add('active');
+    if(p){
+      p.classList.remove('hidden');
+      p.classList.add('active');
+    }
     var area=document.getElementById('partyLedgerArea');
     if(area)area.innerHTML='';
+    window.scrollTo(0,0);
   };
 
   window.goHome=function(btn){
-    hideAllPages();
+    clearModes();
+    hidePages();
     showHome();
     if(typeof setActive==='function')setActive(btn);
+    var h=document.getElementById('historyCard');
+    if(h)h.classList.add('hidden');
     if(typeof refresh==='function')refresh();
     if(typeof refreshDashboard==='function')refreshDashboard();
+    window.scrollTo(0,0);
   };
 
   window.openPartyLedger=function(value){
@@ -3041,10 +3069,35 @@ window.addEventListener("DOMContentLoaded",function(){
   };
 
   window.goMansoorFromParty=function(){
+    clearModes();
+    hidePages();
     hideHome();
-    hideAllPages();
     var m=document.getElementById('mansoorPage');
     if(m)m.classList.add('active');
+    window.scrollTo(0,0);
+  };
+
+  // Patch other navigation handlers so leaving Party always restores Home correctly.
+  var oldExpense=window.goExpense;
+  window.goExpense=function(btn){
+    clearModes();
+    if(typeof oldExpense==='function')oldExpense(btn);
+  };
+  var oldReports=window.goReports;
+  window.goReports=function(btn){
+    clearModes();
+    if(typeof oldReports==='function')oldReports(btn);
+  };
+  var oldBackup=window.goBackup;
+  window.goBackup=function(btn){
+    clearModes();
+    if(typeof oldBackup==='function')oldBackup(btn);
+  };
+  var oldHistory=window.openHistoryTab;
+  window.openHistoryTab=function(btn){
+    clearModes();
+    if(typeof oldHistory==='function')oldHistory(btn);
   };
 })();
 </script>
+
