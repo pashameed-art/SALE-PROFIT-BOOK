@@ -870,11 +870,20 @@ body.page-open-mode #backupPage.active #historyCard {
 @media(max-width:600px){.mansoor-entry-grid{grid-template-columns:1fr 1fr}.mansoor-entry-grid .field:last-child{grid-column:1/-1}.mansoor-balance-grid{grid-template-columns:1fr 1fr}.mansoor-balance-grid>div:last-child{grid-column:1/-1}}
 </style>
 
+
+<style id="v563-mansoor-report-css">
+.mansoor-report-dates{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.mansoor-report-dates input{width:100%;box-sizing:border-box}
+.mansoor-report-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.mansoor-report-actions button{min-height:42px;border:0;border-radius:12px;font-weight:800}
+@media(max-width:520px){.mansoor-report-dates,.mansoor-report-actions{grid-template-columns:1fr}}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.62</div>
+<div class="version">Version 5.63</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1074,38 +1083,64 @@ body.page-open-mode #backupPage.active #historyCard {
 </div>
 <div class="card">
 <h3>📅 Weekly Report</h3>
+<div class="mansoor-report-dates">
+  <div class="field">
+    <label>Date From</label>
+    <input type="date" id="mansoorReportFrom">
+  </div>
+  <div class="field">
+    <label>Date To</label>
+    <input type="date" id="mansoorReportTo">
+  </div>
+</div>
+<div class="mansoor-report-actions">
+  <button type="button" onclick="generateMansoorWeeklyReport()">📊 Generate Report</button>
+  <button type="button" onclick="shareMansoorWeeklyWhatsApp()">📲 WhatsApp</button>
+</div>
+<div id="mansoorWeeklySummary"></div>
 <div id="mansoorWeeklySummary"></div>
 <button class="primary" type="button" onclick="shareMansoorWeeklyWhatsApp()">📲 WhatsApp</button>
 </div>
 </section>
 
-<script id="v562-mansoor-weekly">
+<script id="v563-mansoor-weekly">
 (function(){
 function md(){try{return JSON.parse(localStorage.getItem("saleProfitBookMansoorV1")||"[]")}catch(e){return []}}
 function money(n){return "₹"+Number(n||0).toLocaleString("en-IN")}
 function localKey(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-function fmt(d){return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+String(d.getFullYear()).slice(2)}
-function weeklyRange(){
-  var end=new Date(); end.setHours(0,0,0,0);
-  var start=new Date(end); start.setDate(end.getDate()-6);
-  return {start:start,end:end,from:localKey(start),to:localKey(end)};
+function fmtKey(k){var p=String(k).split("-");return p.length===3?p[2]+"."+p[1]+"."+p[0].slice(2):k}
+function setDefaultDates(){
+  var to=document.getElementById("mansoorReportTo"),from=document.getElementById("mansoorReportFrom");
+  if(!to||!from)return;
+  var end=new Date();end.setHours(0,0,0,0);
+  var start=new Date(end);start.setDate(end.getDate()-6);
+  if(!to.value)to.value=localKey(end);
+  if(!from.value)from.value=localKey(start);
 }
-function weekly(){
-  var a=md(),q=weeklyRange(),r=a.filter(function(x){return String(x.date)>=q.from&&String(x.date)<=q.to});
-  var taken=r.filter(function(x){return x.type==="taken"}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+window.generateMansoorWeeklyReport=function(){
+  var from=document.getElementById("mansoorReportFrom")?.value;
+  var to=document.getElementById("mansoorReportTo")?.value;
+  if(!from||!to){alert("Date From மற்றும் Date To தேர்வு செய்யவும்.");return}
+  if(from>to){alert("Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.");return}
+  var a=md(),r=a.filter(function(x){return String(x.date)>=from&&String(x.date)<=to});
+  var taken=r.filter(function(x){return x.type==="taken"||x.type==="received"}).reduce(function(s,x){return s+Number(x.amount||0)},0);
   var given=r.filter(function(x){return x.type==="given"}).reduce(function(s,x){return s+Number(x.amount||0)},0);
   var e=document.getElementById("mansoorWeeklySummary");
-  if(e)e.innerHTML="<div class=mansoor-weekly-box><div style='grid-column:1/-1'><b>📅 "+fmt(q.start)+" – "+fmt(q.end)+"</b></div><div>பணம் வாங்கியது<br><b>"+money(taken)+"</b></div><div>பணம் தந்தது<br><b>"+money(given)+"</b></div><div>இந்த வார Balance<br><b>"+money(taken-given)+"</b></div></div>";
+  if(e)e.innerHTML="<div class=mansoor-weekly-box><div style='grid-column:1/-1'><b>📅 Date From: "+fmtKey(from)+" &nbsp; Date To: "+fmtKey(to)+"</b></div><div>பணம் வாங்கியது<br><b>"+money(taken)+"</b></div><div>பணம் தந்தது<br><b>"+money(given)+"</b></div><div>Balance<br><b>"+money(taken-given)+"</b></div></div>";
 }
 window.shareMansoorWeeklyWhatsApp=function(){
-  var a=md(),q=weeklyRange(),r=a.filter(function(x){return String(x.date)>=q.from&&String(x.date)<=q.to}).sort(function(x,y){return String(x.date).localeCompare(String(y.date))});
-  var taken=r.filter(function(x){return x.type==="taken"}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+  var from=document.getElementById("mansoorReportFrom")?.value;
+  var to=document.getElementById("mansoorReportTo")?.value;
+  if(!from||!to){setDefaultDates();from=document.getElementById("mansoorReportFrom").value;to=document.getElementById("mansoorReportTo").value}
+  if(from>to){alert("Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.");return}
+  var a=md(),r=a.filter(function(x){return String(x.date)>=from&&String(x.date)<=to}).sort(function(x,y){return String(x.date).localeCompare(String(y.date))});
+  var taken=r.filter(function(x){return x.type==="taken"||x.type==="received"}).reduce(function(s,x){return s+Number(x.amount||0)},0);
   var given=r.filter(function(x){return x.type==="given"}).reduce(function(s,x){return s+Number(x.amount||0)},0);
-  var m=["🤝 Mansoor – Weekly Report","📅 "+fmt(q.start)+" – "+fmt(q.end),"","பணம் வாங்கியது: "+money(taken),"பணம் தந்தது: "+money(given),"Balance: "+money(taken-given),"","Date-wise:"];
-  r.forEach(function(x){m.push(x.date+" – "+(x.type==="taken"?"பணம் வாங்கியது":"பணம் தந்தது")+": "+money(x.amount)+(x.note?" – "+x.note:""))});
+  var m=["🤝 Mansoor – Weekly Report","📅 Date From: "+fmtKey(from),"📅 Date To: "+fmtKey(to),"","பணம் வாங்கியது: "+money(taken),"பணம் தந்தது: "+money(given),"Balance: "+money(taken-given),"","Date-wise:"];
+  r.forEach(function(x){m.push(x.date+" – "+(x.type==="given"?"பணம் தந்தது":"பணம் வாங்கியது")+": "+money(x.amount)+(x.note?" – "+x.note:""))});
   window.open("https://wa.me/?text="+encodeURIComponent(m.join("\n")),"_blank");
 }
-document.addEventListener("DOMContentLoaded",weekly);
+document.addEventListener("DOMContentLoaded",function(){setDefaultDates();generateMansoorWeeklyReport()});
 })();
 </script>
 <style id="v561-mansoor-weekly-style">.mansoor-weekly-box{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0 12px}.mansoor-weekly-box>div{background:#eef7f5;border-radius:12px;padding:10px;text-align:center;font-size:12px}.mansoor-weekly-box b{color:#174f3d}@media(max-width:600px){.mansoor-weekly-box{grid-template-columns:1fr 1fr}.mansoor-weekly-box>div:last-child{grid-column:1/-1}}</style>
