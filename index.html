@@ -1070,7 +1070,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.79</div>
+<div class="version">Version 5.80</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2795,7 +2795,20 @@ window.printReport=function(){
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
   w.document.write('<style id="v577-party-detail-css">body.v576-party #mansoorPage{display:block!important}body.v576-party #partyMansoorHost #mansoorPage{display:none!important}body.v576-party #partyMansoorHost.active #mansoorPage{display:block!important}.party-detail-host{display:none!important}.party-detail-host.active{display:block!important}#partyPage .party-choice.selected{background:#174f3d!important;color:#fff!important;box-shadow:0 3px 10px rgba(23,79,61,.22)}</style>');
-  w.document.write('</body></html>');
+  w.document.write('
+<style id="v580-party-only-visibility">
+/* V5.80 — Party page and its details must appear ONLY when Party is selected. */
+body.v576-party.page-open-mode #partyPage,
+body.page-open-mode #partyPage {
+  display:none !important;
+}
+/* When Party is selected, keep Party visible. */
+body.v576-party:not(.page-open-mode) #partyPage,
+body.party-open-mode #partyPage {
+  display:block !important;
+}
+</style>
+</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
@@ -3089,6 +3102,7 @@ window.addEventListener("DOMContentLoaded",function(){
 
   window.goHome=function(btn){
     clearPageModes();
+    document.body.classList.remove('v576-party');
     hideAllPages();
     showHome();
     navActive(btn);
@@ -3099,7 +3113,7 @@ window.addEventListener("DOMContentLoaded",function(){
 
   window.goParty=function(btn){
     clearPageModes();
-    document.body.classList.add('party-open-mode');
+    document.body.classList.add('party-open-mode','v576-party');
     hideHome();
     hideAllPages();
     var party=q('partyPage');
@@ -3115,6 +3129,7 @@ window.addEventListener("DOMContentLoaded",function(){
 
   window.openHistoryTab=function(btn){
     clearPageModes();
+    document.body.classList.remove('v576-party');
     document.body.classList.add('history-open-mode','page-open-mode');
     hideHome();
     hideAllPages();
@@ -3137,6 +3152,7 @@ window.addEventListener("DOMContentLoaded",function(){
 
   window.goExpense=function(btn){
     clearPageModes();
+    document.body.classList.remove('v576-party');
     document.body.classList.add('page-open-mode');
     hideHome(); hideAllPages();
     var p=q('expensePage'); if(p)p.classList.add('active');
@@ -3148,6 +3164,7 @@ window.addEventListener("DOMContentLoaded",function(){
 
   window.goReports=function(btn){
     clearPageModes();
+    document.body.classList.remove('v576-party');
     document.body.classList.add('page-open-mode');
     hideHome(); hideAllPages();
     var p=q('reportPage'); if(p)p.classList.add('active');
@@ -3158,6 +3175,7 @@ window.addEventListener("DOMContentLoaded",function(){
 
   window.goBackup=function(btn){
     clearPageModes();
+    document.body.classList.remove('v576-party');
     document.body.classList.add('page-open-mode');
     hideHome(); hideAllPages();
     var p=q('backupPage'); if(p)p.classList.add('active');
@@ -3167,6 +3185,7 @@ window.addEventListener("DOMContentLoaded",function(){
 
   window.goMansoor=function(btn){
     clearPageModes();
+    document.body.classList.remove('v576-party');
     document.body.classList.add('page-open-mode');
     hideHome(); hideAllPages();
     var p=q('mansoorPage'); if(p)p.classList.add('active');
@@ -3248,5 +3267,18 @@ body.v576-party #partyMansoorHost #mansoorPage.active{display:block!important;}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
 })();
 </script>
+
+<style id="v580-party-only-visibility">
+/* V5.80 — Party page and its details must appear ONLY when Party is selected. */
+body.v576-party.page-open-mode #partyPage,
+body.page-open-mode #partyPage {
+  display:none !important;
+}
+/* When Party is selected, keep Party visible. */
+body.v576-party:not(.page-open-mode) #partyPage,
+body.party-open-mode #partyPage {
+  display:block !important;
+}
+</style>
 </body>
 </html>
