@@ -693,7 +693,7 @@ window.goReports=function(btn){
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.77',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.79',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -1048,11 +1048,29 @@ body.party-open-mode #historyPage{
 }
 </style>
 
+<style id="v579-party-visibility-fix">
+/* V5.79 — Party mode must show ONLY Party and its selected detail. */
+body.party-open-mode > main > #expensePage,
+body.party-open-mode > main > #reportPage,
+body.party-open-mode > main > #backupPage,
+body.party-open-mode > main > #historyPage,
+body.party-open-mode > main > #mansoorPage,
+body.party-open-mode > main > #supplierPage {
+  display:none !important;
+}
+body.party-open-mode > main > #partyPage {
+  display:block !important;
+}
+/* Mansoor detail is intentionally moved inside Party when selected. */
+body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
+  display:block !important;
+}
+</style>
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.78</div>
+<div class="version">Version 5.79</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2776,9 +2794,8 @@ window.printReport=function(){
   w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
-  w.document.write('
-<style id="v577-party-detail-css">body.v576-party #mansoorPage{display:block!important}body.v576-party #partyMansoorHost #mansoorPage{display:none!important}body.v576-party #partyMansoorHost.active #mansoorPage{display:block!important}.party-detail-host{display:none!important}.party-detail-host.active{display:block!important}#partyPage .party-choice.selected{background:#174f3d!important;color:#fff!important;box-shadow:0 3px 10px rgba(23,79,61,.22)}</style>
-</body></html>');
+  w.document.write('<style id="v577-party-detail-css">body.v576-party #mansoorPage{display:block!important}body.v576-party #partyMansoorHost #mansoorPage{display:none!important}body.v576-party #partyMansoorHost.active #mansoorPage{display:block!important}.party-detail-host{display:none!important}.party-detail-host.active{display:block!important}#partyPage .party-choice.selected{background:#174f3d!important;color:#fff!important;box-shadow:0 3px 10px rgba(23,79,61,.22)}</style>');
+  w.document.write('</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
