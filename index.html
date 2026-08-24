@@ -693,7 +693,7 @@ window.goReports=function(btn){
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.73',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.74',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -1052,7 +1052,7 @@ body.party-open-mode #historyPage{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.73</div>
+<div class="version">Version 5.75</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2751,13 +2751,13 @@ window.exportReportCSV=function(){
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
 };
 </script>
-<script>
+<script id="share-print-clean">
 /* Share / Print */
 window.shareReport=function(){
   var box=document.getElementById('reportResult');
   if(!box || !box.innerText.trim()){alert('Please Generate Report first.');return;}
-  var from=document.getElementById('reportFrom')?.value||'';
-  var to=document.getElementById('reportTo')?.value||'';
+  var from=(document.getElementById('reportFrom')||{}).value||'';
+  var to=(document.getElementById('reportTo')||{}).value||'';
   var text='Sale Profit Book Report\n'+from+' to '+to+'\n\n'+box.innerText.trim();
   if(navigator.share){
     navigator.share({title:'Sale Profit Book Report',text:text}).catch(function(){});
@@ -2777,49 +2777,104 @@ window.printReport=function(){
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
   w.document.write('
-
-
-
-<script id="v573-tab-isolation">
+<style id="v575-standalone-navigation-fix">
+/* V5.75: strict page isolation */
+body.v575-home #partyPage,
+body.v575-home #historyPage,
+body.v575-home #expensePage,
+body.v575-home #mansoorPage,
+body.v575-home #supplierPage,
+body.v575-home #reportPage,
+body.v575-home #backupPage { display:none !important; }
+body.v575-party #partyPage { display:block !important; }
+body.v575-party #entryCard,
+body.v575-party #dashboardCard,
+body.v575-party #stockCard,
+body.v575-party #homeStockDetails,
+body.v575-party .state-date-row,
+body.v575-party .new-history-row,
+body.v575-party #historyCard,
+body.v575-party #homePage,
+body.v575-party #historyPage,
+body.v575-party #expensePage,
+body.v575-party #mansoorPage,
+body.v575-party #supplierPage,
+body.v575-party #reportPage,
+body.v575-party #backupPage { display:none !important; }
+</style>
+<script id="v575-final-controller">
 (function(){
-  function hideAllPages(){
-    document.querySelectorAll('.page').forEach(function(p){
-      p.classList.remove('active');
-    });
+  function all(sel){return Array.prototype.slice.call(document.querySelectorAll(sel));}
+  function hidePages(){
+    all('.page').forEach(function(p){p.classList.remove('active');});
+    all('.page').forEach(function(p){p.style.display='none';});
+  }
+  function active(btn){
+    all('.nav-bar button').forEach(function(b){b.classList.remove('nav-active','active');b.removeAttribute('aria-current');});
+    if(btn){btn.classList.add('nav-active','active');btn.setAttribute('aria-current','page');}
   }
   function clearModes(){
-    document.body.classList.remove('history-open-mode','party-open-mode','page-open-mode');
+    document.body.classList.remove('party-open-mode','history-open-mode','page-open-mode','v575-home','v575-party');
   }
-
-  var oldHistory=window.openHistoryTab;
-  window.openHistoryTab=function(btn){
+  function home(btn){
     clearModes();
-    document.body.classList.add('history-open-mode');
-    hideAllPages();
-    var p=document.getElementById('historyPage');
-    if(p)p.classList.add('active');
-    document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
-    if(btn)btn.classList.add('nav-active');
+    hidePages();
+    document.body.classList.add('v575-home');
+    ['.state-date-row','.new-history-row','#entryCard','#dashboardCard'].forEach(function(sel){all(sel).forEach(function(e){e.style.display='';e.classList.remove('hidden');});});
+    ['#homeStockDetails','#historyCard'].forEach(function(sel){all(sel).forEach(function(e){e.style.display='none';e.classList.add('hidden');});});
+    var party=document.getElementById('partyPage'); if(party){party.classList.remove('active');party.style.display='none';}
+    active(btn);
+    if(typeof refresh==='function')refresh();
+    if(typeof refreshDashboard==='function')refreshDashboard();
     window.scrollTo(0,0);
-    if(typeof renderHistory==='function')renderHistory();
-  };
-
-  var oldParty=window.goParty;
-  window.goParty=function(btn){
+  }
+  function party(btn){
     clearModes();
-    document.body.classList.add('party-open-mode');
-    hideAllPages();
+    hidePages();
+    document.body.classList.add('v575-party');
     var p=document.getElementById('partyPage');
-    if(p)p.classList.add('active');
-    document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
-    if(btn)btn.classList.add('nav-active');
+    if(p){p.classList.add('active');p.style.display='block';}
+    active(btn);
+    var area=document.getElementById('partyLedgerArea'); if(area) area.innerHTML='';
     window.scrollTo(0,0);
-  };
+  }
+  function route(btn){
+    var t=(btn.textContent||'').trim().replace(/\s+/g,' ');
+    if(t==='Home'){home(btn);return true;}
+    if(t==='Party'){party(btn);return true;}
+    return false;
+  }
+  function bind(){
+    all('.nav-bar button').forEach(function(btn){
+      btn.addEventListener('click',function(e){
+        var t=(btn.textContent||'').trim().replace(/\s+/g,' ');
+        if(t==='Home'||t==='Party'){
+          e.preventDefault();e.stopImmediatePropagation();route(btn);
+        }
+      },true);
+    });
+    var buttons=all('.nav-bar button');
+    var h=buttons.find(function(b){return (b.textContent||'').trim()==='Home';});
+    if(h)home(h);
+    // Remove accidental leaked source-code text if an older cached build inserted it.
+    function cleanText(node){
+      if(node.nodeType===3 && /^\s*['\)]?;?\s*}\s*;?\s*$/.test(node.nodeValue||'')) node.remove();
+      else if(node.nodeType===1 && !['SCRIPT','STYLE'].includes(node.tagName)) Array.from(node.childNodes).forEach(cleanText);
+    }
+    Array.from(document.body.childNodes).forEach(cleanText);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind); else bind();
+  window.addEventListener('pageshow',function(){
+    var btn=all('.nav-bar button').find(function(b){return b.classList.contains('nav-active');});
+    if(btn && (btn.textContent||'').trim()==='Party') party(btn);
+  });
 })();
 </script>
 
 </body></html>');
-  
+  w.document.close();
+  w.focus();
+  setTimeout(function(){w.print();},300);
 };
 </script>
 <script id="v551-backup-script">
@@ -3075,122 +3130,257 @@ window.addEventListener("DOMContentLoaded",function(){
 });
 })();
 </script>
-</body>
-</html>
 
-
-
-<script id="v572-party-standalone-fix">
+<script id="v574-final-navigation-fix">
 (function(){
-  function allPages(){
-    return Array.from(document.querySelectorAll('.page'));
-  }
-  function hidePages(){
-    allPages().forEach(function(p){
-      p.classList.remove('active');
-      p.classList.add('hidden');
+  function q(id){return document.getElementById(id);}
+  function each(sel,fn){document.querySelectorAll(sel).forEach(fn);}
+  function navActive(btn){
+    each('.nav-bar button',function(b){
+      b.classList.remove('nav-active','active');
+      b.removeAttribute('aria-current');
     });
+    if(btn){
+      btn.classList.add('nav-active','active');
+      btn.setAttribute('aria-current','page');
+    }
   }
-  function clearHome(){
-    document.querySelectorAll(
-      '.state-date-row,.new-history-row,#entryCard,#homeStockDetails,#dashboardCard,#historyCard,.install-wrap'
-    ).forEach(function(el){
-      el.classList.add('hidden');
-    });
+  function clearPageModes(){
+    document.body.classList.remove('party-open-mode','history-open-mode','page-open-mode');
+  }
+  function hideAllPages(){
+    each('.page',function(p){p.classList.remove('active');});
+  }
+  function hideHome(){
+    each('.state-date-row,.new-history-row,#entryCard,#homeStockDetails,#dashboardCard,.install-wrap',
+      function(el){el.classList.add('hidden');});
+    var hc=q('historyCard'); if(hc) hc.classList.add('hidden');
   }
   function showHome(){
-    document.querySelectorAll(
-      '.state-date-row,.new-history-row,#entryCard,#dashboardCard'
-    ).forEach(function(el){
-      el.classList.remove('hidden');
-    });
-    var hs=document.getElementById('homeStockDetails');
-    if(hs)hs.classList.add('hidden');
-    var hc=document.getElementById('historyCard');
-    if(hc)hc.classList.add('hidden');
+    each('.state-date-row,.new-history-row,#entryCard,#dashboardCard',
+      function(el){el.classList.remove('hidden');});
+    var hs=q('homeStockDetails'); if(hs) hs.classList.add('hidden');
+    var hc=q('historyCard'); if(hc) hc.classList.add('hidden');
   }
-  function activeNav(btn){
-    document.querySelectorAll('.nav-bar button').forEach(function(b){
-      b.classList.remove('nav-active');
-    });
-    if(btn)btn.classList.add('nav-active');
-  }
-
-  window.goParty=function(btn){
-    document.body.classList.add('party-open-mode');
-    document.body.classList.remove('page-open-mode');
-    clearHome();
-    hidePages();
-
-    var party=document.getElementById('partyPage');
-    if(party){
-      party.classList.remove('hidden');
-      party.classList.add('active');
-    }
-    activeNav(btn);
-
-    var area=document.getElementById('partyLedgerArea');
-    if(area)area.innerHTML='';
-    window.scrollTo(0,0);
-  };
 
   window.goHome=function(btn){
-    document.body.classList.remove('party-open-mode','page-open-mode');
-    hidePages();
+    clearPageModes();
+    hideAllPages();
     showHome();
-    activeNav(btn);
+    navActive(btn);
     if(typeof refresh==='function')refresh();
     if(typeof refreshDashboard==='function')refreshDashboard();
     window.scrollTo(0,0);
   };
 
+  window.goParty=function(btn){
+    clearPageModes();
+    document.body.classList.add('party-open-mode');
+    hideHome();
+    hideAllPages();
+    var party=q('partyPage');
+    if(party){
+      party.classList.remove('hidden');
+      party.classList.add('active');
+    }
+    navActive(btn);
+    var area=q('partyLedgerArea');
+    if(area)area.innerHTML='';
+    window.scrollTo(0,0);
+  };
+
+  window.openHistoryTab=function(btn){
+    clearPageModes();
+    document.body.classList.add('history-open-mode','page-open-mode');
+    hideHome();
+    hideAllPages();
+    var card=q('historyCard'), page=q('historyPage');
+    if(card && page){
+      if(!window.__v574HistoryParent){
+        window.__v574HistoryParent=card.parentNode;
+        window.__v574HistoryNext=card.nextSibling;
+      }
+      page.innerHTML='';
+      card.classList.remove('hidden');
+      card.style.display='';
+      page.appendChild(card);
+    }
+    if(page)page.classList.add('active');
+    navActive(btn);
+    if(typeof renderHistory==='function')renderHistory();
+    window.scrollTo(0,0);
+  };
+
+  window.goExpense=function(btn){
+    clearPageModes();
+    document.body.classList.add('page-open-mode');
+    hideHome(); hideAllPages();
+    var p=q('expensePage'); if(p)p.classList.add('active');
+    navActive(btn);
+    if(typeof renderExpenses==='function')renderExpenses();
+    if(typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal();
+    window.scrollTo(0,0);
+  };
+
+  window.goReports=function(btn){
+    clearPageModes();
+    document.body.classList.add('page-open-mode');
+    hideHome(); hideAllPages();
+    var p=q('reportPage'); if(p)p.classList.add('active');
+    navActive(btn);
+    if(typeof showDateDefaults==='function')showDateDefaults();
+    window.scrollTo(0,0);
+  };
+
+  window.goBackup=function(btn){
+    clearPageModes();
+    document.body.classList.add('page-open-mode');
+    hideHome(); hideAllPages();
+    var p=q('backupPage'); if(p)p.classList.add('active');
+    navActive(btn);
+    window.scrollTo(0,0);
+  };
+
+  window.goMansoor=function(btn){
+    clearPageModes();
+    document.body.classList.add('page-open-mode');
+    hideHome(); hideAllPages();
+    var p=q('mansoorPage'); if(p)p.classList.add('active');
+    navActive(btn);
+    if(typeof showMansoor==='function')showMansoor();
+    window.scrollTo(0,0);
+  };
+
+  // Party button: keep Mydeen left / Mansoor right on one line.
   window.openPartyLedger=function(value){
-    var area=document.getElementById('partyLedgerArea');
+    var area=q('partyLedgerArea');
     if(!area)return;
-    if(value==='mydeen'){
+    if(value==='mansoor'){
+      area.innerHTML='<div class="card"><h3>🤝 Mansoor கொடுக்கல் – வாங்கல்</h3><button class="primary" type="button" onclick="goMansoor()">Open Mansoor Ledger</button></div>';
+    }else if(value==='mydeen'){
       area.innerHTML='<div class="card"><h3>🤝 Mydeen கொடுக்கல் – வாங்கல்</h3><p>Mydeen Ledger</p></div>';
-    }else if(value==='mansoor'){
-      area.innerHTML='<div class="card"><h3>🤝 Mansoor கொடுக்கல் – வாங்கல்</h3><button class="primary" type="button" onclick="goMansoorFromParty()">Open Mansoor Ledger</button></div>';
     }else{
       area.innerHTML='';
     }
   };
 
-  window.goMansoorFromParty=function(){
-    document.body.classList.remove('party-open-mode');
-    document.body.classList.add('page-open-mode');
-    clearHome();
-    hidePages();
-    var m=document.getElementById('mansoorPage');
-    if(m){
-      m.classList.remove('hidden');
-      m.classList.add('active');
-    }
-    window.scrollTo(0,0);
-  };
-
-  // Prevent older navigation wrappers from re-opening Home content over Party.
-  var oldExpense=window.goExpense;
-  window.goExpense=function(btn){
-    document.body.classList.remove('party-open-mode');
-    if(typeof oldExpense==='function')oldExpense(btn);
-  };
-  var oldReports=window.goReports;
-  window.goReports=function(btn){
-    document.body.classList.remove('party-open-mode');
-    if(typeof oldReports==='function')oldReports(btn);
-  };
-  var oldBackup=window.goBackup;
-  window.goBackup=function(btn){
-    document.body.classList.remove('party-open-mode');
-    if(typeof oldBackup==='function')oldBackup(btn);
-  };
-  var oldHistory=window.openHistoryTab;
-  window.openHistoryTab=function(btn){
-    document.body.classList.remove('party-open-mode');
-    if(typeof oldHistory==='function')oldHistory(btn);
-  };
+  // Bind after all earlier scripts have loaded so this controller wins.
+  function bind(){
+    var nav=q('partyPage')?.closest('main');
+    each('.nav-bar button',function(b){
+      var t=(b.textContent||'').trim().replace(/\s+/g,' ');
+      b.onclick=function(e){
+        e.preventDefault(); e.stopPropagation();
+        if(t==='Home')goHome(b);
+        else if(t==='History')openHistoryTab(b);
+        else if(t==='Expense')goExpense(b);
+        else if(t==='Party')goParty(b);
+        else if(t==='Reports')goReports(b);
+        else if(t==='Backup')goBackup(b);
+      };
+    });
+    // Never leave Party visible while Home is selected.
+    var home=document.querySelector('.nav-bar button');
+    if(home && (home.textContent||'').trim()==='Home') goHome(home);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);
+  else bind();
 })();
 </script>
 
+<style id="v575-standalone-navigation-fix">
+/* V5.75: strict page isolation */
+body.v575-home #partyPage,
+body.v575-home #historyPage,
+body.v575-home #expensePage,
+body.v575-home #mansoorPage,
+body.v575-home #supplierPage,
+body.v575-home #reportPage,
+body.v575-home #backupPage { display:none !important; }
+body.v575-party #partyPage { display:block !important; }
+body.v575-party #entryCard,
+body.v575-party #dashboardCard,
+body.v575-party #stockCard,
+body.v575-party #homeStockDetails,
+body.v575-party .state-date-row,
+body.v575-party .new-history-row,
+body.v575-party #historyCard,
+body.v575-party #homePage,
+body.v575-party #historyPage,
+body.v575-party #expensePage,
+body.v575-party #mansoorPage,
+body.v575-party #supplierPage,
+body.v575-party #reportPage,
+body.v575-party #backupPage { display:none !important; }
+</style>
+<script id="v575-final-controller">
+(function(){
+  function all(sel){return Array.prototype.slice.call(document.querySelectorAll(sel));}
+  function hidePages(){
+    all('.page').forEach(function(p){p.classList.remove('active');});
+    all('.page').forEach(function(p){p.style.display='none';});
+  }
+  function active(btn){
+    all('.nav-bar button').forEach(function(b){b.classList.remove('nav-active','active');b.removeAttribute('aria-current');});
+    if(btn){btn.classList.add('nav-active','active');btn.setAttribute('aria-current','page');}
+  }
+  function clearModes(){
+    document.body.classList.remove('party-open-mode','history-open-mode','page-open-mode','v575-home','v575-party');
+  }
+  function home(btn){
+    clearModes();
+    hidePages();
+    document.body.classList.add('v575-home');
+    ['.state-date-row','.new-history-row','#entryCard','#dashboardCard'].forEach(function(sel){all(sel).forEach(function(e){e.style.display='';e.classList.remove('hidden');});});
+    ['#homeStockDetails','#historyCard'].forEach(function(sel){all(sel).forEach(function(e){e.style.display='none';e.classList.add('hidden');});});
+    var party=document.getElementById('partyPage'); if(party){party.classList.remove('active');party.style.display='none';}
+    active(btn);
+    if(typeof refresh==='function')refresh();
+    if(typeof refreshDashboard==='function')refreshDashboard();
+    window.scrollTo(0,0);
+  }
+  function party(btn){
+    clearModes();
+    hidePages();
+    document.body.classList.add('v575-party');
+    var p=document.getElementById('partyPage');
+    if(p){p.classList.add('active');p.style.display='block';}
+    active(btn);
+    var area=document.getElementById('partyLedgerArea'); if(area) area.innerHTML='';
+    window.scrollTo(0,0);
+  }
+  function route(btn){
+    var t=(btn.textContent||'').trim().replace(/\s+/g,' ');
+    if(t==='Home'){home(btn);return true;}
+    if(t==='Party'){party(btn);return true;}
+    return false;
+  }
+  function bind(){
+    all('.nav-bar button').forEach(function(btn){
+      btn.addEventListener('click',function(e){
+        var t=(btn.textContent||'').trim().replace(/\s+/g,' ');
+        if(t==='Home'||t==='Party'){
+          e.preventDefault();e.stopImmediatePropagation();route(btn);
+        }
+      },true);
+    });
+    var buttons=all('.nav-bar button');
+    var h=buttons.find(function(b){return (b.textContent||'').trim()==='Home';});
+    if(h)home(h);
+    // Remove accidental leaked source-code text if an older cached build inserted it.
+    function cleanText(node){
+      if(node.nodeType===3 && /^\s*['\)]?;?\s*}\s*;?\s*$/.test(node.nodeValue||'')) node.remove();
+      else if(node.nodeType===1 && !['SCRIPT','STYLE'].includes(node.tagName)) Array.from(node.childNodes).forEach(cleanText);
+    }
+    Array.from(document.body.childNodes).forEach(cleanText);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind); else bind();
+  window.addEventListener('pageshow',function(){
+    var btn=all('.nav-bar button').find(function(b){return b.classList.contains('nav-active');});
+    if(btn && (btn.textContent||'').trim()==='Party') party(btn);
+  });
+})();
+</script>
 
+</body>
+</html>
