@@ -1070,7 +1070,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.80</div>
+<div class="version">Version 5.81</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3196,6 +3196,15 @@ window.addEventListener("DOMContentLoaded",function(){
 
   // Party button: keep Mydeen left / Mansoor right on one line.
   window.openPartyLedger=function(value){
+    // V5.81: Party selection must immediately render the selected detail below the Party buttons.
+    document.body.classList.remove('v576-home','history-open-mode','page-open-mode');
+    document.body.classList.add('v576-party','party-open-mode');
+    document.querySelectorAll('.page').forEach(function(p){
+      if(p.id!=='partyPage') p.classList.remove('active');
+    });
+    var party=document.getElementById('partyPage');
+    if(party){party.classList.remove('hidden');party.classList.add('active');party.style.display='block';}
+
     var area=document.getElementById('partyLedgerArea');
     if(!area)return;
     var myHost=document.getElementById('partyMydeenHost'), mansHost=document.getElementById('partyMansoorHost');
@@ -3203,18 +3212,30 @@ window.addEventListener("DOMContentLoaded",function(){
       area.innerHTML='<div id="partyMydeenHost" class="party-detail-host"></div><div id="partyMansoorHost" class="party-detail-host"></div>';
       myHost=document.getElementById('partyMydeenHost'); mansHost=document.getElementById('partyMansoorHost');
       var mp=document.getElementById('mansoorPage');
-      if(mp&&mansHost){mp.classList.remove('page','hidden','active');mp.style.display='none';mansHost.appendChild(mp);}
+      if(mp&&mansHost){
+        mp.classList.remove('page','hidden','active');
+        mp.style.display='none';
+        mansHost.appendChild(mp);
+      }
       myHost.innerHTML='<div class="card"><h2>🤝 Mydeen கொடுக்கல் – வாங்கல்</h2><div class="mansoor-balance"><div>தற்போது பெற வேண்டியது</div><strong id="partyMydeenBalance">₹0</strong></div><div class="form-grid"><div class="field"><label>வகை</label><select id="partyMydeenType"><option value="taken">பணம் வாங்கியது</option><option value="given">பணம் தந்தது</option></select></div><div class="field"><label>தேதி</label><input id="partyMydeenDate" type="date"></div><div class="field"><label>தொகை ₹</label><input id="partyMydeenAmount" type="number" min="0" step="1" placeholder="Amount"></div><div class="field"><label>குறிப்பு</label><input id="partyMydeenNote" type="text" placeholder="குறிப்பு (விருப்பம்)"></div></div><div class="expense-action-row"><button class="primary" type="button" onclick="savePartyMydeen()">Save</button><button class="secondary" type="button" onclick="clearPartyMydeen()">Clear</button></div></div><div class="card"><h3>📜 Previous History</h3><div id="partyMydeenHistory"></div></div>';
       var md=document.getElementById('partyMydeenDate');if(md)md.value=typeof localToday==='function'?localToday():new Date().toISOString().slice(0,10);
     }
-    myHost.style.display='none';mansHost.style.display='none';myHost.classList.remove('active');mansHost.classList.remove('active');
+    myHost.style.display='none'; mansHost.style.display='none';
+    myHost.classList.remove('active'); mansHost.classList.remove('active');
     document.querySelectorAll('#partyPage .party-choice').forEach(function(b){b.classList.remove('selected');});
     var target=document.querySelector('#partyPage .party-choice[onclick*="'+value+'"]');if(target)target.classList.add('selected');
+
     if(value==='mansoor'){
-      mansHost.classList.add('active');mansHost.style.display='block';var mp2=document.getElementById('mansoorPage');if(mp2){mp2.style.display='block';mp2.classList.add('active');}
+      mansHost.classList.add('active'); mansHost.style.display='block';
+      var mp2=document.getElementById('mansoorPage');
+      if(mp2){mp2.style.display='block';mp2.classList.add('active');mp2.classList.remove('hidden');}
       var d=document.getElementById('mansoorDate');if(d&&!window.mansoorEditId&&typeof localToday==='function')d.value=localToday();
-      if(typeof renderMansoor==='function')renderMansoor();if(typeof generateMansoorWeeklyReport==='function')generateMansoorWeeklyReport();
-    }else if(value==='mydeen'){myHost.classList.add('active');myHost.style.display='block';renderPartyMydeen();}
+      if(typeof renderMansoor==='function')renderMansoor();
+      if(typeof generateMansoorWeeklyReport==='function')generateMansoorWeeklyReport();
+    }else if(value==='mydeen'){
+      myHost.classList.add('active'); myHost.style.display='block';
+      renderPartyMydeen();
+    }
     window.scrollTo(0,0);
   };
   window.savePartyMydeen=function(){var date=document.getElementById('partyMydeenDate')?.value||new Date().toISOString().slice(0,10),type=document.getElementById('partyMydeenType')?.value||'taken',amount=Number(document.getElementById('partyMydeenAmount')?.value||0),note=(document.getElementById('partyMydeenNote')?.value||'').trim();if(!amount||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return;}var a;try{a=JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){a=[]}a.push({id:Date.now(),type:type,date:date,amount:amount,note:note});localStorage.setItem('saleProfitBookMydeenV1',JSON.stringify(a));clearPartyMydeen();renderPartyMydeen();};
