@@ -2140,6 +2140,12 @@ function renderHistory(){
     grouped[d].expenses.push(x); grouped[d].expense+=Number(x.amount||0);
   });
 
+  // V5.84: When a date range/month is selected, always show TODAY as a summary card
+  // so today's Sale Amount and Expense Amount can be tapped even when both are zero.
+  const todayKey=normalizeEntryDate(today());
+  const showToday=(!from && !to) || (todayKey>=from && todayKey<=to);
+  if(showToday && !grouped[todayKey]) grouped[todayKey]={sales:[],expenses:[],sale:0,expense:0};
+
   const fmtDate=d=>{const [y,m,day]=d.split('-'); return `${day}.${m}.${String(y).slice(-2)}`};
   const dates=Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
   const listEl=$('historyList');
