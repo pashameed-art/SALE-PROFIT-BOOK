@@ -1070,7 +1070,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.84</div>
+<div class="version">Version 5.85</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2147,6 +2147,11 @@ function renderHistory(){
   if(showToday && !grouped[todayKey]) grouped[todayKey]={sales:[],expenses:[],sale:0,expense:0};
 
   const fmtDate=d=>{const [y,m,day]=d.split('-'); return `${day}.${m}.${String(y).slice(-2)}`};
+  const fmtMonth=d=>{
+    const [y,m]=d.split('-');
+    const names=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    return `${names[Number(m)-1]} ${y}`;
+  };
   const dates=Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
   const listEl=$('historyList');
   $('historyCount') && ($('historyCount').textContent = `Dates (${dates.length})`);
@@ -2156,7 +2161,7 @@ function renderHistory(){
     return;
   }
 
-  listEl.innerHTML=dates.map((d,i)=>{
+  function dateCard(d,i){
     const g=grouped[d], key='hd'+d.replace(/-/g,'')+'_'+i;
     const saleRows=g.sales.map(x=>`<div class="report-detail-row history-sale-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editEntry(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteEntry(${x.id})">Delete</button></div></div>`).join('');
     const expenseRows=g.expenses.map(x=>`<div class="report-detail-row history-expense-row"><b>💸 Expense: ${esc(x.name)} — ${money(x.amount)}</b><div class="report-detail-meta">Expense</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editExpense(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteExpense(${x.id})">Delete</button></div></div>`).join('');
@@ -2177,7 +2182,50 @@ function renderHistory(){
         <div class="report-date-total"><span>Total</span><span>Sale ${money(g.sale)} • Expense ${money(g.expense)}</span></div>
       </div>
     </div>`;
-  }).join('');
+  }
+
+  // V5.85: Keep TODAY visible as a standalone summary. Group all older dates
+  // under their month header so History stays compact as records grow.
+  let html='';
+  const todayDates=dates.filter(d=>d===todayKey);
+  const olderDates=dates.filter(d=>d!==todayKey);
+
+  if(todayDates.length){
+    html += '<div class="history-today-section"><div class="history-section-label">📅 Today</div>' + todayDates.map((d,i)=>dateCard(d,i)).join('') + '</div>';
+  }
+
+  const months={};
+  olderDates.forEach(d=>{
+    const month=d.slice(0,7);
+    if(!months[month]) months[month]=[];
+    months[month].push(d);
+  });
+
+  Object.keys(months).sort((a,b)=>b.localeCompare(a)).forEach((month,mi)=>{
+    const monthId='historyMonth_'+month.replace('-','')+'_'+mi;
+    const count=months[month].length;
+    html += `<div class="history-month-section">
+      <button type="button" class="history-month-head" onclick="toggleHistoryMonth('${monthId}',this)">
+        <span>📅 ${fmtMonth(month)}</span><span class="history-month-meta">${count} ${count===1?'date':'dates'} <b>＋</b></span>
+      </button>
+      <div class="history-month-body" id="${monthId}">
+        ${months[month].map((d,i)=>dateCard(d,mi+'_'+i)).join('')}
+      </div>
+    </div>`;
+  });
+
+  listEl.innerHTML=html;
+}
+
+function toggleHistoryMonth(id,btn){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const open=el.classList.toggle('open');
+  if(btn){
+    btn.classList.toggle('open',open);
+    const b=btn.querySelector('b');
+    if(b) b.textContent=open?'−':'＋';
+  }
 }
 
 function setHistoryFilter(type){
@@ -3260,6 +3308,18 @@ window.addEventListener("DOMContentLoaded",function(){
 
 
 
+<style id="v585-history-month-group">
+.history-today-section{margin-bottom:14px}
+.history-section-label{font-size:15px;font-weight:800;color:#17675e;margin:6px 4px 8px}
+.history-month-section{background:#fff;border:1px solid #e1eaea;border-radius:18px;margin:14px 0;overflow:hidden}
+.history-month-head{width:100%;border:0;background:#eef7f6;color:#185f57;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;font:800 18px inherit;cursor:pointer;text-align:left}
+.history-month-head .history-month-meta{font-size:13px;font-weight:700;color:#718080;display:flex;align-items:center;gap:9px}
+.history-month-head .history-month-meta b{font-size:21px;color:var(--primary,#17675e);line-height:1}
+.history-month-head.open{background:#e5f2f0}
+.history-month-body{display:none;padding:0 10px 10px}
+.history-month-body.open{display:block}
+.history-month-body .report-date-card{margin:10px 0}
+</style>
 <style id="v576-standalone-navigation-fix">
 body.v576-home #partyPage,body.v576-home #historyPage,body.v576-home #expensePage,body.v576-home #mansoorPage,body.v576-home #supplierPage,body.v576-home #reportPage,body.v576-home #backupPage{display:none!important}
 body.v576-party #partyPage{display:block!important}
