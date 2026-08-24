@@ -654,6 +654,12 @@ html.modal-open, body.modal-open{
     if(typeof showMansoor==='function')showMansoor();
     else {var p=document.getElementById('mansoorPage');if(p)p.classList.add('active');}
   };
+  window.goSupplier=function(btn){
+    hidePages();
+    if(typeof setActive==='function')setActive(btn);
+    if(typeof showSupplier==='function')showSupplier();
+    else {var p=document.getElementById('supplierPage');if(p)p.classList.add('active');}
+  };
   window.goReports=function(btn){
     hidePages();
     if(typeof setActive==='function')setActive(btn);
@@ -909,11 +915,44 @@ body.page-open-mode #backupPage.active #historyCard {
 }
 </style>
 
+
+<style id="v566-supplier-ledger-style">
+.supplier-entry-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.supplier-entry-grid input,.supplier-entry-grid select,#supplierName{width:100%;box-sizing:border-box}
+.supplier-report-dates{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end}
+.supplier-report-dates label{display:block;margin-bottom:7px;white-space:nowrap}
+.supplier-report-dates input{width:100%;box-sizing:border-box}
+.supplier-report-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.supplier-report-actions button{min-height:42px;border:0;border-radius:12px;font-weight:800}
+.supplier-balance-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0}
+.supplier-balance-grid>div{padding:11px;border-radius:12px;background:#f2f8f7;text-align:center}
+.supplier-balance-grid small{display:block;font-size:11px;color:#55706c}
+.supplier-balance-grid b{display:block;margin-top:3px;font-size:17px;color:#174f3d}
+.supplier-date-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 0;border-bottom:1px solid #e5eceb}
+.supplier-date-row:last-child{border-bottom:0}
+.supplier-date-row .supplier-net{font-weight:800}
+.supplier-detail-box{background:#f7fbfa;border-radius:14px;margin-top:5px;padding:5px 13px;border:1px solid #e2efed}
+.supplier-detail-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid #e1e9e8}
+.supplier-detail-row:last-child{border-bottom:0}
+.supplier-given{color:#b34a4a;font-weight:800}
+.supplier-taken{color:#16805f;font-weight:800}
+.supplier-report-box{margin-top:10px}
+@media(max-width:600px){
+  .supplier-entry-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .supplier-entry-grid .field:nth-child(3),.supplier-entry-grid .field:nth-child(4){grid-column:1/-1}
+  .supplier-report-dates{grid-template-columns:1fr 1fr;gap:10px}
+  .supplier-balance-grid{grid-template-columns:1fr 1fr}
+  .supplier-balance-grid>div:last-child{grid-column:1/-1}
+  .supplier-detail-row{grid-template-columns:1fr auto}
+  .supplier-detail-row .supplier-actions{grid-column:1/-1;justify-content:flex-end}
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.65</div>
+<div class="version">Version 5.66</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -922,6 +961,7 @@ body.page-open-mode #backupPage.active #historyCard {
 <button type="button" onclick="openHistoryTab(this)">History</button>
 <button onclick="goExpense(this)">Expense</button>
 <button onclick="goMansoor(this)">Mansoor</button>
+<button onclick="goSupplier(this)">Supplier</button>
 <button onclick="goReports(this)">Reports</button>
 <button onclick="goBackup(this)">Backup</button>
 </nav>
@@ -1128,7 +1168,6 @@ body.page-open-mode #backupPage.active #historyCard {
   <button type="button" onclick="shareMansoorWeeklyWhatsApp()">📲 WhatsApp</button>
 </div>
 <div id="mansoorWeeklySummary"></div>
-<div id="mansoorWeeklySummary"></div>
 
 </div>
 </section>
@@ -1174,6 +1213,300 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
 })();
 </script>
 <style id="v561-mansoor-weekly-style">.mansoor-weekly-box{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0 12px}.mansoor-weekly-box>div{background:#eef7f5;border-radius:12px;padding:10px;text-align:center;font-size:12px}.mansoor-weekly-box b{color:#174f3d}@media(max-width:600px){.mansoor-weekly-box{grid-template-columns:1fr 1fr}.mansoor-weekly-box>div:last-child{grid-column:1/-1}}</style>
+
+<section class="page hidden" id="supplierPage">
+<div class="card">
+<h2>🤝 Supplier கொடுக்கல் – வாங்கல்</h2>
+
+<div class="field">
+<label>👤 Supplier Name</label>
+<input id="supplierName" list="supplierNameList" autocomplete="off" placeholder="Supplier Name" type="text"/>
+<datalist id="supplierNameList"></datalist>
+</div>
+
+<div class="supplier-entry-grid">
+  <div class="field">
+    <label>📅 Date</label>
+    <input id="supplierDate" type="date"/>
+  </div>
+  <div class="field">
+    <label>🔄 Type</label>
+    <select id="supplierType">
+      <option value="given">பணம் கொடுத்தது</option>
+      <option value="taken">பணம் வாங்கியது</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>💰 Amount ₹</label>
+    <input id="supplierAmount" inputmode="decimal" min="0" placeholder="Amount" step="1" type="number"/>
+  </div>
+  <div class="field">
+    <label>📝 Note</label>
+    <input id="supplierNote" placeholder="குறிப்பு (விருப்பம்)" type="text"/>
+  </div>
+</div>
+
+<div class="expense-action-row">
+  <button class="primary" onclick="saveSupplier()">Save</button>
+  <button class="secondary" onclick="clearSupplier()">Clear</button>
+</div>
+</div>
+
+<div class="card">
+<h3>📜 Previous History</h3>
+<div id="supplierHistory"></div>
+</div>
+
+<div class="card">
+<h3>📊 Supplier Report</h3>
+<div class="supplier-report-dates">
+  <div class="field">
+    <label>Date From</label>
+    <input type="date" id="supplierReportFrom"/>
+  </div>
+  <div class="field">
+    <label>Date To</label>
+    <input type="date" id="supplierReportTo"/>
+  </div>
+</div>
+
+<div class="supplier-report-actions">
+  <button type="button" class="secondary" onclick="generateSupplierReport()">📊 Generate Report</button>
+  <button type="button" class="secondary" onclick="shareSupplierWhatsApp()">📲 WhatsApp</button>
+</div>
+<div id="supplierReportSummary"></div>
+</div>
+</section>
+
+
+<script id="v566-supplier-ledger">
+(function(){
+  const SKEY='saleProfitBookSupplierV1';
+
+  function today(){
+    const d=new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function money(n){return '₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});}
+  function fmtDate(v){
+    const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? m[3]+'.'+m[2]+'.'+m[1].slice(2) : String(v||'');
+  }
+  function getAll(){
+    try{return JSON.parse(localStorage.getItem(SKEY)||'[]')}catch(e){return[]}
+  }
+  function setAll(a){localStorage.setItem(SKEY,JSON.stringify(a))}
+  function escSafe(v){
+    if(typeof esc==='function')return esc(v);
+    return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  let editId=null;
+
+  window.showSupplier=function(){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const p=document.getElementById('supplierPage'); if(p)p.classList.add('active');
+    const d=document.getElementById('supplierDate');
+    if(d && !editId)d.value=today();
+    setDefaultReportDates();
+    renderSupplier();
+    renderSupplierNames();
+  };
+
+  function setDefaultReportDates(){
+    const from=document.getElementById('supplierReportFrom');
+    const to=document.getElementById('supplierReportTo');
+    if(!from||!to)return;
+    const end=new Date();end.setHours(0,0,0,0);
+    const start=new Date(end);start.setDate(end.getDate()-6);
+    if(!from.value)from.value=start.getFullYear()+'-'+String(start.getMonth()+1).padStart(2,'0')+'-'+String(start.getDate()).padStart(2,'0');
+    if(!to.value)to.value=end.getFullYear()+'-'+String(end.getMonth()+1).padStart(2,'0')+'-'+String(end.getDate()).padStart(2,'0');
+  }
+
+  function renderSupplierNames(){
+    const dl=document.getElementById('supplierNameList');
+    if(!dl)return;
+    const names=[...new Set(getAll().map(x=>String(x.supplier||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+    dl.innerHTML=names.map(n=>'<option value="'+escSafe(n)+'"></option>').join('');
+  }
+
+  window.clearSupplier=function(){
+    editId=null;
+    const n=document.getElementById('supplierName'),d=document.getElementById('supplierDate'),
+          t=document.getElementById('supplierType'),a=document.getElementById('supplierAmount'),
+          note=document.getElementById('supplierNote');
+    if(n)n.value='';
+    if(d)d.value=today();
+    if(t)t.value='given';
+    if(a)a.value='';
+    if(note)note.value='';
+    const b=document.querySelector('#supplierPage button[onclick*="saveSupplier"]');
+    if(b)b.textContent='Save';
+  };
+
+  window.saveSupplier=function(){
+    const supplier=document.getElementById('supplierName').value.trim();
+    const date=document.getElementById('supplierDate').value||today();
+    const type=document.getElementById('supplierType').value;
+    const amount=Number(document.getElementById('supplierAmount').value);
+    const note=document.getElementById('supplierNote').value.trim();
+
+    if(!supplier){alert('Supplier Name உள்ளிடவும்.');return}
+    if(!date){alert('Date தேர்வு செய்யவும்.');return}
+    if(!(amount>0)){alert('Amount உள்ளிடவும்.');return}
+
+    const a=getAll();
+    if(editId!==null){
+      const i=a.findIndex(x=>x.id===editId);
+      if(i>=0)a[i]={...a[i],supplier,date,type,amount,note};
+    }else{
+      a.push({id:Date.now(),supplier,date,type,amount,note});
+    }
+    setAll(a);
+    clearSupplier();
+    renderSupplierNames();
+    renderSupplier();
+    generateSupplierReport();
+  };
+
+  window.editSupplier=function(id){
+    const x=getAll().find(v=>v.id===id);if(!x)return;
+    editId=id;
+    document.getElementById('supplierName').value=x.supplier||'';
+    document.getElementById('supplierDate').value=x.date||today();
+    document.getElementById('supplierType').value=x.type||'given';
+    document.getElementById('supplierAmount').value=x.amount||'';
+    document.getElementById('supplierNote').value=x.note||'';
+    const b=document.querySelector('#supplierPage button[onclick*="saveSupplier"]');
+    if(b)b.textContent='Update';
+  };
+
+  window.deleteSupplier=function(id){
+    if(!confirm('இந்த Supplier பதிவை Delete செய்யவா?'))return;
+    setAll(getAll().filter(x=>x.id!==id));
+    renderSupplierNames();
+    renderSupplier();
+    generateSupplierReport();
+  };
+
+  window.toggleSupplierDate=function(id){
+    const el=document.getElementById(id);
+    if(el)el.classList.toggle('mansoor-detail-hidden');
+  };
+
+  window.renderSupplier=function(){
+    const all=getAll().slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))||b.id-a.id);
+    const h=document.getElementById('supplierHistory'); if(!h)return;
+
+    if(!all.length){
+      h.innerHTML='<div class="expense-empty-note">இதுவரை Supplier பதிவு இல்லை.</div>';
+      return;
+    }
+
+    const grouped={};
+    all.forEach(x=>{
+      const d=String(x.date||'');
+      if(!grouped[d])grouped[d]={rows:[],given:0,taken:0};
+      grouped[d].rows.push(x);
+      if(x.type==='given')grouped[d].given+=Number(x.amount||0);
+      else grouped[d].taken+=Number(x.amount||0);
+    });
+
+    const dates=Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
+    h.innerHTML=dates.map((d,i)=>{
+      const g=grouped[d];
+      const net=g.given-g.taken;
+      const sign=net>=0?'+':'-';
+      const id='supplier-detail-'+d.replace(/[^0-9]/g,'')+'-'+i;
+      const detail=g.rows.map(x=>`
+        <div class="supplier-detail-row">
+          <div>
+            <b>${escSafe(x.supplier)}</b>
+            <div class="meta">${x.type==='given'?'பணம் கொடுத்தது':'பணம் வாங்கியது'}${x.note?' • '+escSafe(x.note):''}</div>
+          </div>
+          <strong class="${x.type==='given'?'supplier-given':'supplier-taken'}">${x.type==='given'?'-':'+'}${money(x.amount)}</strong>
+          <div class="supplier-actions">
+            <button class="mansoor-edit" onclick="event.stopPropagation();editSupplier(${x.id})">Edit</button>
+            <button class="danger mansoor-delete" onclick="event.stopPropagation();deleteSupplier(${x.id})">Delete</button>
+          </div>
+        </div>`).join('');
+
+      return `<div class="supplier-date-row" onclick="toggleSupplierDate('${id}')">
+        <span>📅 ${fmtDate(d)}</span>
+        <span class="supplier-net">${sign}${money(Math.abs(net))}</span>
+      </div>
+      <div id="${id}" class="supplier-detail-box mansoor-detail-hidden">${detail}</div>`;
+    }).join('');
+  };
+
+  window.generateSupplierReport=function(){
+    const from=document.getElementById('supplierReportFrom')?.value;
+    const to=document.getElementById('supplierReportTo')?.value;
+    const box=document.getElementById('supplierReportSummary');
+    if(!from||!to){alert('Date From மற்றும் Date To தேர்வு செய்யவும்.');return}
+    if(from>to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return}
+
+    const rows=getAll().filter(x=>String(x.date)>=from&&String(x.date)<=to)
+      .sort((a,b)=>String(a.date).localeCompare(String(b.date))||a.id-b.id);
+
+    const given=rows.filter(x=>x.type==='given').reduce((s,x)=>s+Number(x.amount||0),0);
+    const taken=rows.filter(x=>x.type==='taken').reduce((s,x)=>s+Number(x.amount||0),0);
+    const balance=given-taken;
+
+    if(box){
+      box.innerHTML=`
+        <div class="supplier-report-box">
+          <div class="supplier-balance-grid">
+            <div style="grid-column:1/-1">📅 Date From: <b>${fmtDate(from)}</b> &nbsp; Date To: <b>${fmtDate(to)}</b></div>
+            <div><small>💵 Total கொடுத்தது</small><b>${money(given)}</b></div>
+            <div><small>💵 Total வாங்கியது</small><b>${money(taken)}</b></div>
+            <div><small>🧾 Balance</small><b>${balance>=0?money(balance):'-'+money(Math.abs(balance))}</b></div>
+          </div>
+        </div>`;
+    }
+  };
+
+  window.shareSupplierWhatsApp=function(){
+    const from=document.getElementById('supplierReportFrom')?.value;
+    const to=document.getElementById('supplierReportTo')?.value;
+    if(!from||!to){setDefaultReportDates();return window.shareSupplierWhatsApp();}
+    if(from>to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return}
+
+    const rows=getAll().filter(x=>String(x.date)>=from&&String(x.date)<=to)
+      .sort((a,b)=>String(a.date).localeCompare(String(b.date))||a.id-b.id);
+
+    const given=rows.filter(x=>x.type==='given').reduce((s,x)=>s+Number(x.amount||0),0);
+    const taken=rows.filter(x=>x.type==='taken').reduce((s,x)=>s+Number(x.amount||0),0);
+    const balance=given-taken;
+
+    const msg=[
+      '🤝 Supplier கொடுக்கல் – வாங்கல்',
+      '📅 Date From: '+fmtDate(from),
+      '📅 Date To: '+fmtDate(to),
+      '',
+      '💵 Total கொடுத்தது: '+money(given),
+      '💵 Total வாங்கியது: '+money(taken),
+      '🧾 Balance: '+(balance>=0?money(balance):'-'+money(Math.abs(balance))),
+      '',
+      'Date-wise:'
+    ];
+    rows.forEach(x=>{
+      msg.push(fmtDate(x.date)+' – '+x.supplier+' – '+(x.type==='given'?'பணம் கொடுத்தது':'பணம் வாங்கியது')+': '+money(x.amount)+(x.note?' – '+x.note:''));
+    });
+    window.open('https://wa.me/?text='+encodeURIComponent(msg.join('\n')),'_blank');
+  };
+
+  window.addEventListener('DOMContentLoaded',function(){
+    const d=document.getElementById('supplierDate');
+    if(d)d.value=today();
+    setDefaultReportDates();
+    renderSupplierNames();
+    renderSupplier();
+    generateSupplierReport();
+  });
+})();
+</script>
+
 <section class="page" id="reportPage">
 <div class="card">
 <h2>Reports</h2>
