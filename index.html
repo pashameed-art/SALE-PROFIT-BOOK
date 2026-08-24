@@ -693,7 +693,7 @@ window.goReports=function(btn){
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.55',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.72',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -1012,11 +1012,32 @@ body.party-open-mode #partyPage.active{
 }
 </style>
 
+
+<style id="v572-party-isolation">
+body.party-open-mode .state-date-row,
+body.party-open-mode .new-history-row,
+body.party-open-mode #entryCard,
+body.party-open-mode #homeStockDetails,
+body.party-open-mode #dashboardCard,
+body.party-open-mode #historyCard,
+body.party-open-mode .install-wrap,
+body.party-open-mode #mansoorPage,
+body.party-open-mode #supplierPage,
+body.party-open-mode #expensePage,
+body.party-open-mode #reportPage,
+body.party-open-mode #backupPage{
+  display:none!important;
+}
+body.party-open-mode #partyPage{
+  display:block!important;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.71</div>
+<div class="version">Version 5.72</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2449,7 +2470,7 @@ function updateTodayExpenseTotal(){
     var d=document.getElementById('mansoorDate');
     if(d && !mansoorEditId)d.value=localToday();
     renderMansoor();
-    setTimeout(function(){var target=document.getElementById('entryCard');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});},50);
+    window.scrollTo(0,0);
   };
 
   window.clearMansoor=function(){
@@ -3004,53 +3025,66 @@ window.addEventListener("DOMContentLoaded",function(){
 </html>
 
 
-<script id="v571-party-standalone-fix">
+
+<script id="v572-party-standalone-fix">
 (function(){
+  function allPages(){
+    return Array.from(document.querySelectorAll('.page'));
+  }
   function hidePages(){
-    document.querySelectorAll('.page').forEach(function(p){
+    allPages().forEach(function(p){
       p.classList.remove('active');
+      p.classList.add('hidden');
     });
   }
-  function clearModes(){
-    document.body.classList.remove('party-open-mode');
-    document.body.classList.remove('page-open-mode');
-  }
-  function hideHome(){
+  function clearHome(){
     document.querySelectorAll(
-      '.state-date-row,.new-history-row,#entryCard,#stockCard,#homeStockDetails,#dashboardCard,.install-wrap,#historyCard'
-    ).forEach(function(el){el.classList.add('hidden');});
+      '.state-date-row,.new-history-row,#entryCard,#homeStockDetails,#dashboardCard,#historyCard,.install-wrap'
+    ).forEach(function(el){
+      el.classList.add('hidden');
+    });
   }
   function showHome(){
     document.querySelectorAll(
-      '.state-date-row,.new-history-row,#entryCard,#stockCard,#homeStockDetails,#dashboardCard,.install-wrap'
-    ).forEach(function(el){el.classList.remove('hidden');});
-    var h=document.getElementById('historyCard');
-    if(h)h.classList.add('hidden');
+      '.state-date-row,.new-history-row,#entryCard,#dashboardCard'
+    ).forEach(function(el){
+      el.classList.remove('hidden');
+    });
+    var hs=document.getElementById('homeStockDetails');
+    if(hs)hs.classList.add('hidden');
+    var hc=document.getElementById('historyCard');
+    if(hc)hc.classList.add('hidden');
+  }
+  function activeNav(btn){
+    document.querySelectorAll('.nav-bar button').forEach(function(b){
+      b.classList.remove('nav-active');
+    });
+    if(btn)btn.classList.add('nav-active');
   }
 
   window.goParty=function(btn){
-    clearModes();
-    hidePages();
-    hideHome();
     document.body.classList.add('party-open-mode');
-    if(typeof setActive==='function')setActive(btn);
-    var p=document.getElementById('partyPage');
-    if(p){
-      p.classList.remove('hidden');
-      p.classList.add('active');
+    document.body.classList.remove('page-open-mode');
+    clearHome();
+    hidePages();
+
+    var party=document.getElementById('partyPage');
+    if(party){
+      party.classList.remove('hidden');
+      party.classList.add('active');
     }
+    activeNav(btn);
+
     var area=document.getElementById('partyLedgerArea');
     if(area)area.innerHTML='';
     window.scrollTo(0,0);
   };
 
   window.goHome=function(btn){
-    clearModes();
+    document.body.classList.remove('party-open-mode','page-open-mode');
     hidePages();
     showHome();
-    if(typeof setActive==='function')setActive(btn);
-    var h=document.getElementById('historyCard');
-    if(h)h.classList.add('hidden');
+    activeNav(btn);
     if(typeof refresh==='function')refresh();
     if(typeof refreshDashboard==='function')refreshDashboard();
     window.scrollTo(0,0);
@@ -3069,35 +3103,40 @@ window.addEventListener("DOMContentLoaded",function(){
   };
 
   window.goMansoorFromParty=function(){
-    clearModes();
+    document.body.classList.remove('party-open-mode');
+    document.body.classList.add('page-open-mode');
+    clearHome();
     hidePages();
-    hideHome();
     var m=document.getElementById('mansoorPage');
-    if(m)m.classList.add('active');
+    if(m){
+      m.classList.remove('hidden');
+      m.classList.add('active');
+    }
     window.scrollTo(0,0);
   };
 
-  // Patch other navigation handlers so leaving Party always restores Home correctly.
+  // Prevent older navigation wrappers from re-opening Home content over Party.
   var oldExpense=window.goExpense;
   window.goExpense=function(btn){
-    clearModes();
+    document.body.classList.remove('party-open-mode');
     if(typeof oldExpense==='function')oldExpense(btn);
   };
   var oldReports=window.goReports;
   window.goReports=function(btn){
-    clearModes();
+    document.body.classList.remove('party-open-mode');
     if(typeof oldReports==='function')oldReports(btn);
   };
   var oldBackup=window.goBackup;
   window.goBackup=function(btn){
-    clearModes();
+    document.body.classList.remove('party-open-mode');
     if(typeof oldBackup==='function')oldBackup(btn);
   };
   var oldHistory=window.openHistoryTab;
   window.openHistoryTab=function(btn){
-    clearModes();
+    document.body.classList.remove('party-open-mode');
     if(typeof oldHistory==='function')oldHistory(btn);
   };
 })();
 </script>
+
 
