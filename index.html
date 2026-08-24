@@ -693,7 +693,7 @@ window.goReports=function(btn){
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.72',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.73',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -1033,11 +1033,26 @@ body.party-open-mode #partyPage{
 }
 </style>
 
+
+<style id="v573-history-party-isolation">
+body.history-open-mode #partyPage,
+body.history-open-mode #mansoorPage,
+body.history-open-mode #supplierPage{
+  display:none!important;
+}
+body.history-open-mode #historyPage{
+  display:block!important;
+}
+body.party-open-mode #historyPage{
+  display:none!important;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.72</div>
+<div class="version">Version 5.73</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2763,6 +2778,45 @@ window.printReport=function(){
   w.document.write(box.innerHTML);
   w.document.write('
 
+
+
+<script id="v573-tab-isolation">
+(function(){
+  function hideAllPages(){
+    document.querySelectorAll('.page').forEach(function(p){
+      p.classList.remove('active');
+    });
+  }
+  function clearModes(){
+    document.body.classList.remove('history-open-mode','party-open-mode','page-open-mode');
+  }
+
+  var oldHistory=window.openHistoryTab;
+  window.openHistoryTab=function(btn){
+    clearModes();
+    document.body.classList.add('history-open-mode');
+    hideAllPages();
+    var p=document.getElementById('historyPage');
+    if(p)p.classList.add('active');
+    document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
+    if(btn)btn.classList.add('nav-active');
+    window.scrollTo(0,0);
+    if(typeof renderHistory==='function')renderHistory();
+  };
+
+  var oldParty=window.goParty;
+  window.goParty=function(btn){
+    clearModes();
+    document.body.classList.add('party-open-mode');
+    hideAllPages();
+    var p=document.getElementById('partyPage');
+    if(p)p.classList.add('active');
+    document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
+    if(btn)btn.classList.add('nav-active');
+    window.scrollTo(0,0);
+  };
+})();
+</script>
 
 </body></html>');
   
