@@ -668,7 +668,7 @@ html.modal-open, body.modal-open{
   var area=document.getElementById('partyLedgerArea');
   if(!area)return;
   if(value==='mansoor'){
-    area.innerHTML='<div class="card"><h3>🤝 Mansoor</h3><button class="primary" onclick="showMansoor()">Open Mansoor Ledger</button></div>';
+    goMansoor();
   }else if(value==='mydeen'){
     area.innerHTML='<div class="card"><h3>🤝 Mydeen</h3><p>Mydeen கொடுக்கல் – வாங்கல் Ledger அடுத்த கட்டத்தில் சேர்க்கலாம்.</p></div>';
   }else{
@@ -693,7 +693,7 @@ window.goReports=function(btn){
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.74',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=5.77',{scope:'./'}).catch(function(){});
   }
 });
 </script>
@@ -1052,7 +1052,7 @@ body.party-open-mode #historyPage{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.76</div>
+<div class="version">Version 5.77</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3161,7 +3161,11 @@ window.addEventListener("DOMContentLoaded",function(){
     var area=q('partyLedgerArea');
     if(!area)return;
     if(value==='mansoor'){
-      area.innerHTML='<div class="card"><h3>🤝 Mansoor கொடுக்கல் – வாங்கல்</h3><button class="primary" type="button" onclick="goMansoor()">Open Mansoor Ledger</button></div>';
+      goMansoor();
+      var partyBtn=Array.from(document.querySelectorAll('.nav-bar button')).find(function(b){
+        return (b.textContent||'').trim()==='Party';
+      });
+      if(partyBtn) navActive(partyBtn);
     }else if(value==='mydeen'){
       area.innerHTML='<div class="card"><h3>🤝 Mydeen கொடுக்கல் – வாங்கல்</h3><p>Mydeen Ledger</p></div>';
     }else{
