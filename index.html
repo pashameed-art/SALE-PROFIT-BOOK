@@ -660,7 +660,18 @@ html.modal-open, body.modal-open{
     if(typeof showSupplier==='function')showSupplier();
     else {var p=document.getElementById('supplierPage');if(p)p.classList.add('active');}
   };
-  window.goReports=function(btn){
+  window.openPartyLedger=function(value){
+  var area=document.getElementById('partyLedgerArea');
+  if(!area)return;
+  if(value==='mansoor'){
+    area.innerHTML='<div class="card"><h3>🤝 Mansoor</h3><button class="primary" onclick="showMansoor()">Open Mansoor Ledger</button></div>';
+  }else if(value==='mydeen'){
+    area.innerHTML='<div class="card"><h3>🤝 Mydeen</h3><p>Mydeen கொடுக்கல் – வாங்கல் Ledger அடுத்த கட்டத்தில் சேர்க்கலாம்.</p></div>';
+  }else{
+    area.innerHTML='';
+  }
+};
+window.goReports=function(btn){
     hidePages();
     if(typeof setActive==='function')setActive(btn);
     var p=document.getElementById('reportPage');if(p)p.classList.add('active');
@@ -983,7 +994,7 @@ body.page-open-mode #backupPage.active #historyCard {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.67</div>
+<div class="version">Version 5.69</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1538,20 +1549,16 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
 </script>
 
 
-<section class="page hidden" id="partyPage">
-<div class="card">
-<h2>🤝 Party</h2>
-<div class="field">
-<label>👤 Party</label>
-<select id="partySelect" onchange="selectParty()">
-  <option value="">Select Party</option>
-  <option value="Mansoor">Mansoor</option>
-  <option value="Mydeen">Mydeen</option>
-</select>
-</div>
-</div>
 
-<div id="partyLedgerArea"></div>
+<section class="page hidden" id="partyPage">
+  <div class="card">
+    <h2>👥 Party</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;">
+      <button class="party-choice" onclick="openPartyLedger('mydeen')">🤝 Mydeen</button>
+      <button class="party-choice" onclick="openPartyLedger('mansoor')">🤝 Mansoor</button>
+    </div>
+  </div>
+  <div id="partyLedgerArea"></div>
 </section>
 
 
