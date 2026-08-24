@@ -948,11 +948,42 @@ body.page-open-mode #backupPage.active #historyCard {
 }
 </style>
 
+
+<style id="v567-party-style">
+#partySelect{
+  width:100%;
+  box-sizing:border-box;
+  min-height:58px;
+  border:1px solid #dbe5e3;
+  border-radius:18px;
+  padding:0 20px;
+  font-size:20px;
+  font-weight:800;
+  color:#263238;
+  background:#fff;
+}
+.party-choice-note{
+  margin-top:12px;
+  padding:13px 16px;
+  border-radius:14px;
+  background:#edf7f5;
+  color:#175847;
+  font-weight:800;
+  text-align:center;
+}
+.party-empty{
+  padding:30px 15px;
+  text-align:center;
+  color:#71817f;
+  font-weight:700;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.66</div>
+<div class="version">Version 5.67</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -960,8 +991,7 @@ body.page-open-mode #backupPage.active #historyCard {
 <button class="nav-active" onclick="goHome(this)">Home</button>
 <button type="button" onclick="openHistoryTab(this)">History</button>
 <button onclick="goExpense(this)">Expense</button>
-<button onclick="goMansoor(this)">Mansoor</button>
-<button onclick="goSupplier(this)">Supplier</button>
+<button onclick="goParty(this)">Party</button>
 <button onclick="goReports(this)">Reports</button>
 <button onclick="goBackup(this)">Backup</button>
 </nav>
@@ -1503,6 +1533,164 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
     renderSupplierNames();
     renderSupplier();
     generateSupplierReport();
+  });
+})();
+</script>
+
+
+<section class="page hidden" id="partyPage">
+<div class="card">
+<h2>🤝 Party</h2>
+<div class="field">
+<label>👤 Party</label>
+<select id="partySelect" onchange="selectParty()">
+  <option value="">Select Party</option>
+  <option value="Mansoor">Mansoor</option>
+  <option value="Mydeen">Mydeen</option>
+</select>
+</div>
+</div>
+
+<div id="partyLedgerArea"></div>
+</section>
+
+
+<script id="v567-party-selector">
+(function(){
+  const PKEY='saleProfitBookSelectedPartyV1';
+
+  function getParty(){
+    return localStorage.getItem(PKEY)||'';
+  }
+  function setParty(v){
+    if(v)localStorage.setItem(PKEY,v);
+    else localStorage.removeItem(PKEY);
+  }
+
+  window.goParty=function(btn){
+    if(typeof hidePages==='function')hidePages();
+    if(typeof setActive==='function')setActive(btn);
+    const p=document.getElementById('partyPage');
+    if(p)p.classList.add('active');
+    const sel=document.getElementById('partySelect');
+    if(sel)sel.value=getParty();
+    renderParty();
+  };
+
+  window.selectParty=function(){
+    const sel=document.getElementById('partySelect');
+    setParty(sel ? sel.value : '');
+    renderParty();
+  };
+
+  window.renderParty=function(){
+    const area=document.getElementById('partyLedgerArea');
+    const sel=document.getElementById('partySelect');
+    if(!area)return;
+    const party=sel ? sel.value : getParty();
+
+    if(!party){
+      area.innerHTML='<div class="card party-empty">👤 Select a Party to view details.</div>';
+      return;
+    }
+
+    // Mansoor already has its own complete ledger. Selecting Mansoor takes the user
+    // to that existing ledger without duplicating or altering its data.
+    if(party==='Mansoor'){
+      area.innerHTML='<div class="card"><div class="party-choice-note">🤝 Mansoor selected</div><button class="primary" type="button" onclick="goMansoorFromParty()">Open Mansoor</button></div>';
+      return;
+    }
+
+    // Mydeen gets a clean, separate party ledger ready for entries.
+    area.innerHTML=`
+      <div class="card">
+        <h3>🤝 Mydeen கொடுக்கல் – வாங்கல்</h3>
+        <div class="field">
+          <label>📅 Date</label>
+          <input type="date" id="mydeenDate">
+        </div>
+        <div class="field">
+          <label>🔄 Type</label>
+          <select id="mydeenType">
+            <option value="given">பணம் கொடுத்தது</option>
+            <option value="taken">பணம் வாங்கியது</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>💰 Amount ₹</label>
+          <input type="number" id="mydeenAmount" min="0" step="1" inputmode="decimal" placeholder="Amount">
+        </div>
+        <div class="field">
+          <label>📝 Note</label>
+          <input type="text" id="mydeenNote" placeholder="குறிப்பு (விருப்பம்)">
+        </div>
+        <button class="primary" type="button" onclick="saveMydeen()">Save</button>
+      </div>
+      <div class="card">
+        <h3>📜 Previous History</h3>
+        <div id="mydeenHistory"></div>
+      </div>`;
+    const d=document.getElementById('mydeenDate');
+    if(d && !d.value){
+      const x=new Date();
+      d.value=x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+    }
+    renderMydeen();
+  };
+
+  window.goMansoorFromParty=function(){
+    const btn=document.querySelector('button[onclick*="goMansoor"]');
+    if(btn && typeof goMansoor==='function')goMansoor(btn);
+    else {
+      const p=document.getElementById('partyPage');if(p)p.classList.remove('active');
+      const m=document.getElementById('mansoorPage');if(m)m.classList.add('active');
+    }
+  };
+
+  function mydeenAll(){
+    try{return JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){return[]}
+  }
+  function saveMydeenAll(a){localStorage.setItem('saleProfitBookMydeenV1',JSON.stringify(a))}
+  function money(n){return '₹'+Number(n||0).toLocaleString('en-IN')}
+  function fmt(v){
+    const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m?m[3]+'.'+m[2]+'.'+m[1].slice(2):v;
+  }
+
+  window.saveMydeen=function(){
+    const d=document.getElementById('mydeenDate')?.value;
+    const t=document.getElementById('mydeenType')?.value;
+    const a=Number(document.getElementById('mydeenAmount')?.value||0);
+    const n=(document.getElementById('mydeenNote')?.value||'').trim();
+    if(!d){alert('Date தேர்வு செய்யவும்.');return}
+    if(!(a>0)){alert('Amount உள்ளிடவும்.');return}
+    const rows=mydeenAll();
+    rows.push({id:Date.now(),date:d,type:t,amount:a,note:n});
+    saveMydeenAll(rows);
+    document.getElementById('mydeenAmount').value='';
+    document.getElementById('mydeenNote').value='';
+    renderMydeen();
+  };
+
+  function renderMydeen(){
+    const box=document.getElementById('mydeenHistory');
+    if(!box)return;
+    const rows=mydeenAll().sort((a,b)=>String(b.date).localeCompare(String(a.date))||b.id-a.id);
+    if(!rows.length){
+      box.innerHTML='<div class="party-empty">இதுவரை Mydeen பதிவு இல்லை.</div>';
+      return;
+    }
+    box.innerHTML=rows.map(x=>`
+      <div class="supplier-date-row">
+        <span>📅 ${fmt(x.date)}<br><small>${x.type==='given'?'பணம் கொடுத்தது':'பணம் வாங்கியது'}${x.note?' • '+x.note:''}</small></span>
+        <strong class="${x.type==='given'?'supplier-given':'supplier-taken'}">${x.type==='given'?'-':'+'}${money(x.amount)}</strong>
+      </div>`).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded',function(){
+    const sel=document.getElementById('partySelect');
+    if(sel)sel.value=getParty();
+    renderParty();
   });
 })();
 </script>
