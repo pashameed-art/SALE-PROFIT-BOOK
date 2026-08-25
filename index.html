@@ -1070,7 +1070,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.87</div>
+<div class="version">Version 5.88</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1642,18 +1642,14 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
 
 <section class="page" id="reportPage">
 <div class="card">
-<h2>Reports</h2>
-<div class="report-date-row">
-<div class="field">
-<label>📅 Date From</label>
-<input id="reportFrom" type="date"/>
+<h2>📊 Reports</h2>
+<div class="report-section-grid">
+  <div class="card report-type-card"><h3>💰 Sale Report</h3><div class="report-date-row"><div class="field"><label>Date From</label><input id="saleReportFrom" type="date"></div><div class="field"><label>Date To</label><input id="saleReportTo" type="date"></div></div><button class="primary" onclick="generateSeparateReport('sale')">📊 View Sale Report</button><div id="saleReportResult"></div></div>
+  <div class="card report-type-card"><h3>🧾 Purchase Report</h3><div class="report-date-row"><div class="field"><label>Date From</label><input id="purchaseReportFrom" type="date"></div><div class="field"><label>Date To</label><input id="purchaseReportTo" type="date"></div></div><button class="primary" onclick="generateSeparateReport('purchase')">📊 View Purchase Report</button><div id="purchaseReportResult"></div></div>
+  <div class="card report-type-card"><h3>💸 Expense Report</h3><div class="report-date-row"><div class="field"><label>Date From</label><input id="expenseReportFrom" type="date"></div><div class="field"><label>Date To</label><input id="expenseReportTo" type="date"></div></div><button class="primary" onclick="generateSeparateReport('expense')">📊 View Expense Report</button><div id="expenseReportResult"></div></div>
+  <div class="card report-type-card"><h3>🤝 Mansoor Report</h3><div class="report-date-row"><div class="field"><label>Date From</label><input id="mansoorReportFrom2" type="date"></div><div class="field"><label>Date To</label><input id="mansoorReportTo2" type="date"></div></div><button class="primary" onclick="generateSeparateReport('mansoor')">📊 View Mansoor Report</button><div id="mansoorReportResult2"></div></div>
+  <div class="card report-type-card"><h3>🤝 Mydeen Report</h3><div class="report-date-row"><div class="field"><label>Date From</label><input id="mydeenReportFrom2" type="date"></div><div class="field"><label>Date To</label><input id="mydeenReportTo2" type="date"></div></div><button class="primary" onclick="generateSeparateReport('mydeen')">📊 View Mydeen Report</button><div id="mydeenReportResult2"></div></div>
 </div>
-<div class="field">
-<label>📅 Date To</label>
-<input id="reportTo" type="date"/>
-</div>
-</div>
-<button class="primary" onclick="generateReport()">Generate Report</button>
 </div>
 <div class="card hidden" id="reportResult"></div>
 </section>
@@ -3364,5 +3360,32 @@ body.party-open-mode #partyPage {
   display:block !important;
 }
 </style>
-<script id="v582-party-reset-guard">(function(){function reset(){var my=document.getElementById('partyMydeenHost'),mans=document.getElementById('partyMansoorHost');if(my){my.classList.remove('active');my.style.display='none';}if(mans){mans.classList.remove('active');mans.style.display='none';}document.querySelectorAll('#partyPage .party-choice').forEach(function(x){x.classList.remove('selected');});var mp=document.getElementById('mansoorPage');if(mp){mp.style.display='none';mp.classList.remove('active');}}document.querySelectorAll('.nav-bar button').forEach(function(b){var t=(b.textContent||'').trim();if(t==='Home'||t==='Party')b.addEventListener('click',reset,true);});})();</script></body>
+<script id="v582-party-reset-guard">(function(){function reset(){var my=document.getElementById('partyMydeenHost'),mans=document.getElementById('partyMansoorHost');if(my){my.classList.remove('active');my.style.display='none';}if(mans){mans.classList.remove('active');mans.style.display='none';}document.querySelectorAll('#partyPage .party-choice').forEach(function(x){x.classList.remove('selected');});var mp=document.getElementById('mansoorPage');if(mp){mp.style.display='none';mp.classList.remove('active');}}document.querySelectorAll('.nav-bar button').forEach(function(b){var t=(b.textContent||'').trim();if(t==='Home'||t==='Party')b.addEventListener('click',reset,true);});})();</script>
+<style id="v588-separate-reports">
+.report-section-grid{display:grid;gap:14px}.report-type-card{margin:0}.report-type-card h3{margin-top:0}.report-type-card .primary{width:100%;margin-top:8px}.report-result-mini{margin-top:12px;padding:12px;border-radius:12px;background:rgba(0,0,0,.06)}.report-result-mini b{font-size:18px}.report-mini-row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(128,128,128,.18)}.report-mini-row:last-child{border-bottom:0}
+</style>
+<script id="v588-separate-reports-script">
+(function(){
+ function num(v){return Number(v)||0;}
+ function money(v){return '₹'+num(v).toLocaleString('en-IN',{maximumFractionDigits:2});}
+ function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+ function firstDay(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01';}
+ function dates(f,t){var a=document.getElementById(f),b=document.getElementById(t);if(a&&!a.value)a.value=firstDay();if(b&&!b.value)b.value=today();}
+ function data(key){try{return JSON.parse(localStorage.getItem(key)||'[]')}catch(e){return []}}
+ function esc(v){return String(v==null?'':v).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||c;});}
+ window.generateSeparateReport=function(type){
+   var cfg={sale:['saleReportFrom','saleReportTo','saleReportResult'],purchase:['purchaseReportFrom','purchaseReportTo','purchaseReportResult'],expense:['expenseReportFrom','expenseReportTo','expenseReportResult'],mansoor:['mansoorReportFrom2','mansoorReportTo2','mansoorReportResult2'],mydeen:['mydeenReportFrom2','mydeenReportTo2','mydeenReportResult2']}[type];
+   var f=document.getElementById(cfg[0])?.value||'',t=document.getElementById(cfg[1])?.value||'',box=document.getElementById(cfg[2]);
+   if(!f||!t){alert('Date From மற்றும் Date To தேர்வு செய்யவும்.');return;} if(f>t){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return;}
+   var rows=[],title='',a=[],total=0,extra='';
+   if(type==='sale'||type==='purchase'){a=(typeof entries!=='undefined'&&Array.isArray(entries))?entries:[];a=a.filter(x=>String(x.date||'')>=f&&String(x.date||'')<=t);var field=type==='sale'?'sale':'purchase';total=a.reduce((s,x)=>s+num(x[field]),0);title=type==='sale'?'Sale Amount':'Purchase Amount';rows=a.map(x=>'<div class="report-mini-row"><span>'+esc(x.date)+' • '+esc(x.item||'Item')+'</span><b>'+money(x[field])+'</b></div>').join('');}
+   else if(type==='expense'){a=data('spb_v4_expenses');a=a.filter(x=>String(x.date||'')>=f&&String(x.date||'')<=t);total=a.reduce((s,x)=>s+num(x.amount),0);title='Expense Amount';rows=a.map(x=>'<div class="report-mini-row"><span>'+esc(x.date)+' • '+esc(x.name||'Expense')+'</span><b>'+money(x.amount)+'</b></div>').join('');}
+   else {var key=type==='mansoor'?'saleProfitBookMansoorV1':'saleProfitBookMydeenV1';a=data(key).filter(x=>String(x.date||'')>=f&&String(x.date||'')<=t);var taken=a.filter(x=>x.type==='taken'||x.type==='received').reduce((s,x)=>s+num(x.amount),0),given=a.filter(x=>x.type==='given').reduce((s,x)=>s+num(x.amount),0);title=type==='mansoor'?'Mansoor':'Mydeen';total=taken-given;extra='<div class="report-mini-row"><span>💵 பணம் வாங்கியது</span><b>'+money(taken)+'</b></div><div class="report-mini-row"><span>💵 பணம் தந்தது</span><b>'+money(given)+'</b></div><div class="report-mini-row"><span>🧾 Balance</span><b>'+money(total)+'</b></div>';rows=a.map(x=>'<div class="report-mini-row"><span>'+esc(x.date)+' • '+(x.type==='given'?'பணம் தந்தது':'பணம் வாங்கியது')+(x.note?' • '+esc(x.note):'')+'</span><b>'+money(x.amount)+'</b></div>').join('');}
+   box.innerHTML='<div class="report-result-mini"><div><b>📅 '+f+' → '+t+'</b></div>'+extra+'<div class="report-mini-row"><span>'+esc(title)+'</span><b>'+money(total)+'</b></div>'+((rows||'<div class="meta">No records found.</div>'))+'</div>';
+ };
+ window.showDateDefaults=function(){['saleReportFrom','saleReportTo','purchaseReportFrom','purchaseReportTo','expenseReportFrom','expenseReportTo','mansoorReportFrom2','mansoorReportTo2','mydeenReportFrom2','mydeenReportTo2'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.value)e.value=id.toLowerCase().indexOf('to')>=0?today():firstDay();});};
+ document.addEventListener('DOMContentLoaded',function(){showDateDefaults();});
+})();
+</script>
+</body>
 </html>
