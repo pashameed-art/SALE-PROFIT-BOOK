@@ -1070,7 +1070,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.88</div>
+<div class="version">Version 5.89</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1643,15 +1643,23 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
 <section class="page" id="reportPage">
 <div class="card">
 <h2>📊 Reports</h2>
-<div class="report-section-grid">
-  <div class="card report-type-card"><h3>💰 Sale Report</h3><div class="report-date-row"><div class="field"><label>Date From</label><input id="saleReportFrom" type="date"></div><div class="field"><label>Date To</label><input id="saleReportTo" type="date"></div></div><button class="primary" onclick="generateSeparateReport('sale')">📊 View Sale Report</button><div id="saleReportResult"></div></div>
-  <div class="card report-type-card"><h3>🧾 Purchase Report</h3><div class="report-date-row"><div class="field"><label>Date From</label><input id="purchaseReportFrom" type="date"></div><div class="field"><label>Date To</label><input id="purchaseReportTo" type="date"></div></div><button class="primary" onclick="generateSeparateReport('purchase')">📊 View Purchase Report</button><div id="purchaseReportResult"></div></div>
-  <div class="card report-type-card"><h3>💸 Expense Report</h3><div class="report-date-row"><div class="field"><label>Date From</label><input id="expenseReportFrom" type="date"></div><div class="field"><label>Date To</label><input id="expenseReportTo" type="date"></div></div><button class="primary" onclick="generateSeparateReport('expense')">📊 View Expense Report</button><div id="expenseReportResult"></div></div>
-  <div class="card report-type-card"><h3>🤝 Mansoor Report</h3><div class="report-date-row"><div class="field"><label>Date From</label><input id="mansoorReportFrom2" type="date"></div><div class="field"><label>Date To</label><input id="mansoorReportTo2" type="date"></div></div><button class="primary" onclick="generateSeparateReport('mansoor')">📊 View Mansoor Report</button><div id="mansoorReportResult2"></div></div>
-  <div class="card report-type-card"><h3>🤝 Mydeen Report</h3><div class="report-date-row"><div class="field"><label>Date From</label><input id="mydeenReportFrom2" type="date"></div><div class="field"><label>Date To</label><input id="mydeenReportTo2" type="date"></div></div><button class="primary" onclick="generateSeparateReport('mydeen')">📊 View Mydeen Report</button><div id="mydeenReportResult2"></div></div>
+<div class="field">
+  <label>Report Type</label>
+  <select id="reportTypeSelect" onchange="clearSelectedReport()">
+    <option value="sale">💰 Sale</option>
+    <option value="purchase">🧾 Purchase</option>
+    <option value="expense">💸 Expense</option>
+    <option value="mansoor">🤝 Mansoor</option>
+    <option value="mydeen">🤝 Mydeen</option>
+  </select>
 </div>
+<div class="report-date-row" style="margin-top:12px">
+  <div class="field"><label>Date From</label><input id="selectedReportFrom" type="date"></div>
+  <div class="field"><label>Date To</label><input id="selectedReportTo" type="date"></div>
 </div>
-<div class="card hidden" id="reportResult"></div>
+<button class="primary" style="width:100%;margin-top:10px" onclick="generateSelectedReport()">📊 View Report</button>
+<div id="selectedReportResult"></div>
+</div>
 </section>
 </main>
 <div class="modal" id="itemModal">
@@ -2844,7 +2852,32 @@ window.printReport=function(){
   w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
-  w.document.write('</body></html>');
+  w.document.write('
+<script id="v589-selected-report">
+(function(){
+  function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  function firstDay(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01';}
+  window.clearSelectedReport=function(){var b=document.getElementById('selectedReportResult');if(b)b.innerHTML='';};
+  window.generateSelectedReport=function(){
+    var type=document.getElementById('reportTypeSelect')?.value||'sale';
+    var from=document.getElementById('selectedReportFrom')?.value||'';
+    var to=document.getElementById('selectedReportTo')?.value||'';
+    if(!from||!to){alert('Date From மற்றும் Date To தேர்வு செய்யவும்.');return;}
+    if(from>to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return;}
+    var map={sale:['saleReportFrom','saleReportTo','saleReportResult'],purchase:['purchaseReportFrom','purchaseReportTo','purchaseReportResult'],expense:['expenseReportFrom','expenseReportTo','expenseReportResult'],mansoor:['mansoorReportFrom2','mansoorReportTo2','mansoorReportResult2'],mydeen:['mydeenReportFrom2','mydeenReportTo2','mydeenReportResult2']};
+    var old=map[type];
+    if(old){var f=document.getElementById(old[0]),t=document.getElementById(old[1]);if(f)f.value=from;if(t)t.value=to;}
+    var original=document.getElementById(old?old[2]:'');
+    if(original){generateSeparateReport(type);var b=document.getElementById('selectedReportResult');if(b)b.innerHTML=original.innerHTML;original.innerHTML='';}
+    else{alert('Report option not available.');}
+  };
+  document.addEventListener('DOMContentLoaded',function(){
+    var f=document.getElementById('selectedReportFrom'),t=document.getElementById('selectedReportTo');
+    if(f&&!f.value)f.value=firstDay();if(t&&!t.value)t.value=today();
+  });
+})();
+</script>
+</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
@@ -3385,6 +3418,31 @@ body.party-open-mode #partyPage {
  };
  window.showDateDefaults=function(){['saleReportFrom','saleReportTo','purchaseReportFrom','purchaseReportTo','expenseReportFrom','expenseReportTo','mansoorReportFrom2','mansoorReportTo2','mydeenReportFrom2','mydeenReportTo2'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.value)e.value=id.toLowerCase().indexOf('to')>=0?today():firstDay();});};
  document.addEventListener('DOMContentLoaded',function(){showDateDefaults();});
+})();
+</script>
+
+<script id="v589-selected-report">
+(function(){
+  function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  function firstDay(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01';}
+  window.clearSelectedReport=function(){var b=document.getElementById('selectedReportResult');if(b)b.innerHTML='';};
+  window.generateSelectedReport=function(){
+    var type=document.getElementById('reportTypeSelect')?.value||'sale';
+    var from=document.getElementById('selectedReportFrom')?.value||'';
+    var to=document.getElementById('selectedReportTo')?.value||'';
+    if(!from||!to){alert('Date From மற்றும் Date To தேர்வு செய்யவும்.');return;}
+    if(from>to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return;}
+    var map={sale:['saleReportFrom','saleReportTo','saleReportResult'],purchase:['purchaseReportFrom','purchaseReportTo','purchaseReportResult'],expense:['expenseReportFrom','expenseReportTo','expenseReportResult'],mansoor:['mansoorReportFrom2','mansoorReportTo2','mansoorReportResult2'],mydeen:['mydeenReportFrom2','mydeenReportTo2','mydeenReportResult2']};
+    var old=map[type];
+    if(old){var f=document.getElementById(old[0]),t=document.getElementById(old[1]);if(f)f.value=from;if(t)t.value=to;}
+    var original=document.getElementById(old?old[2]:'');
+    if(original){generateSeparateReport(type);var b=document.getElementById('selectedReportResult');if(b)b.innerHTML=original.innerHTML;original.innerHTML='';}
+    else{alert('Report option not available.');}
+  };
+  document.addEventListener('DOMContentLoaded',function(){
+    var f=document.getElementById('selectedReportFrom'),t=document.getElementById('selectedReportTo');
+    if(f&&!f.value)f.value=firstDay();if(t&&!t.value)t.value=today();
+  });
 })();
 </script>
 </body>
