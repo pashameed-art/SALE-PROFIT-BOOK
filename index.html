@@ -1070,7 +1070,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.92</div>
+<div class="version">Version 5.93</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1697,6 +1697,16 @@ const ITEMS_KEY='spb_v4_items';
 const ENTRIES_KEY='spb_v4_entries';
 const EXPENSES_KEY='spb_v4_expenses';
 const STOCK_KEY='spb_v4_stock';
+
+// V5.93 — Preserve data from older Sale Profit Book builds.
+(function migrateLegacyStorage(){
+  function readArray(key){try{const v=JSON.parse(localStorage.getItem(key)||'null');return Array.isArray(v)?v:null;}catch(e){return null;}}
+  function migrate(target,keys){const current=readArray(target);if(current&&current.length)return;for(const key of keys){const old=readArray(key);if(old&&old.length){localStorage.setItem(target,JSON.stringify(old));return;}}}
+  migrate(ITEMS_KEY,['spb_items','spb_items_v3','items']);
+  migrate(ENTRIES_KEY,['spb_entries','spb_entries_v3','entries']);
+  migrate(EXPENSES_KEY,['spb_expenses','spb_expenses_v3','expenses']);
+  migrate(STOCK_KEY,['spb_stock','spb_stock_v3','stockMovements']);
+})();
 let expenses=JSON.parse(localStorage.getItem(EXPENSES_KEY)||'[]');
 let editingExpenseId=null;
 let items=JSON.parse(localStorage.getItem(ITEMS_KEY)||'[]');
@@ -2852,7 +2862,8 @@ window.printReport=function(){
   w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
-  w.document.write('</body></html>');
+  w.document.write('
+</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
@@ -3393,6 +3404,38 @@ body.party-open-mode #partyPage {
  };
  window.showDateDefaults=function(){['saleReportFrom','saleReportTo','purchaseReportFrom','purchaseReportTo','expenseReportFrom','expenseReportTo','mansoorReportFrom2','mansoorReportTo2','mydeenReportFrom2','mydeenReportTo2'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.value)e.value=id.toLowerCase().indexOf('to')>=0?today():firstDay();});};
  document.addEventListener('DOMContentLoaded',function(){showDateDefaults();});
+})();
+</script>
+<script id="v593-selected-report">
+(function(){
+  function num(v){return Number(v)||0;}
+  function money(v){return '₹'+num(v).toLocaleString('en-IN',{maximumFractionDigits:2});}
+  function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  function firstDay(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01';}
+  function data(key){try{var a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function fmt(d){var p=String(d||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d;}
+  function setDefaults(){var f=document.getElementById('selectedReportFrom'),t=document.getElementById('selectedReportTo');if(f&&!f.value)f.value=firstDay();if(t&&!t.value)t.value=today();}
+  window.clearSelectedReport=function(){var b=document.getElementById('selectedReportResult');if(b)b.innerHTML='';};
+  window.generateSelectedReport=function(){
+    var type=document.getElementById('reportTypeSelect')?.value||'sale',from=document.getElementById('selectedReportFrom')?.value||'',to=document.getElementById('selectedReportTo')?.value||'',box=document.getElementById('selectedReportResult');
+    if(!box)return;if(!from||!to){alert('Date From மற்றும் Date To தேர்வு செய்யவும்.');return;}if(from>to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return;}
+    var rows=[],title='',total=0,extra='';
+    if(type==='sale'||type==='purchase'){
+      var a=Array.isArray(entries)?entries:[];a=a.filter(function(x){var d=normalizeEntryDate(x.date);return d>=from&&d<=to;});var field=type==='sale'?'sale':'purchase';total=a.reduce(function(s,x){return s+num(x[field]);},0);title=type==='sale'?'Sale Amount':'Purchase Amount';
+      rows=a.map(function(x){return '<div class="report-mini-row"><span>📅 '+fmt(normalizeEntryDate(x.date))+' • '+esc(x.item||'Item')+'<small style="display:block;color:#708080">Meter '+num(x.meter).toFixed(2)+' • Profit '+money(x.profit)+' • '+esc(x.paidBy||'GPay')+'</small></span><b>'+money(x[field])+'</b></div>';}).join('');
+    }else if(type==='expense'){
+      var e=data('spb_v4_expenses');e=e.filter(function(x){return String(x.date||'')>=from&&String(x.date||'')<=to;});total=e.reduce(function(s,x){return s+num(x.amount);},0);title='Expense Amount';
+      rows=e.map(function(x){return '<div class="report-mini-row"><span>📅 '+fmt(x.date)+' • '+esc(x.name||'Expense')+'</span><b>'+money(x.amount)+'</b></div>';}).join('');
+    }else{
+      var key=type==='mansoor'?'saleProfitBookMansoorV1':'saleProfitBookMydeenV1',p=data(key).filter(function(x){return String(x.date||'')>=from&&String(x.date||'')<=to;});
+      var taken=p.filter(function(x){return x.type==='taken'||x.type==='received';}).reduce(function(s,x){return s+num(x.amount);},0),given=p.filter(function(x){return x.type==='given';}).reduce(function(s,x){return s+num(x.amount);},0);total=taken-given;title=type==='mansoor'?'Mansoor Balance':'Mydeen Balance';
+      extra='<div class="report-mini-row"><span>💵 பணம் வாங்கியது</span><b>'+money(taken)+'</b></div><div class="report-mini-row"><span>💵 பணம் தந்தது</span><b>'+money(given)+'</b></div>';
+      rows=p.map(function(x){return '<div class="report-mini-row"><span>📅 '+fmt(x.date)+' • '+(x.type==='given'?'பணம் தந்தது':'பணம் வாங்கியது')+(x.note?' • '+esc(x.note):'')+'</span><b>'+money(x.amount)+'</b></div>';}).join('');
+    }
+    box.innerHTML='<div class="report-result-mini"><h3 style="margin-top:0">📊 '+esc(title)+'</h3><div class="meta">Date From: '+fmt(from)+' &nbsp; Date To: '+fmt(to)+'</div>'+extra+'<div class="report-mini-row" style="font-size:18px"><span><b>Total / Balance</b></span><b>'+money(total)+'</b></div>'+(rows||'<div class="meta" style="padding:14px 0">No records found for this date range.</div>')+'</div>';
+  };
+  document.addEventListener('DOMContentLoaded',setDefaults);
 })();
 </script>
 </body>
