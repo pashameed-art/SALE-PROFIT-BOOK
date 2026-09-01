@@ -1070,7 +1070,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.93</div>
+<div class="version">Version 5.84</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1642,24 +1642,20 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
 
 <section class="page" id="reportPage">
 <div class="card">
-<h2>📊 Reports</h2>
+<h2>Reports</h2>
+<div class="report-date-row">
 <div class="field">
-  <label>Report Type</label>
-  <select id="reportTypeSelect" onchange="clearSelectedReport()">
-    <option value="sale">💰 Sale</option>
-    <option value="purchase">🧾 Purchase</option>
-    <option value="expense">💸 Expense</option>
-    <option value="mansoor">🤝 Mansoor</option>
-    <option value="mydeen">🤝 Mydeen</option>
-  </select>
+<label>📅 Date From</label>
+<input id="reportFrom" type="date"/>
 </div>
-<div class="report-date-row" style="margin-top:12px">
-  <div class="field"><label>Date From</label><input id="selectedReportFrom" type="date"></div>
-  <div class="field"><label>Date To</label><input id="selectedReportTo" type="date"></div>
+<div class="field">
+<label>📅 Date To</label>
+<input id="reportTo" type="date"/>
 </div>
-<button class="primary" style="width:100%;margin-top:10px" onclick="generateSelectedReport()">📊 View Report</button>
-<div id="selectedReportResult"></div>
 </div>
+<button class="primary" onclick="generateReport()">Generate Report</button>
+</div>
+<div class="card hidden" id="reportResult"></div>
 </section>
 </main>
 <div class="modal" id="itemModal">
@@ -1697,16 +1693,6 @@ const ITEMS_KEY='spb_v4_items';
 const ENTRIES_KEY='spb_v4_entries';
 const EXPENSES_KEY='spb_v4_expenses';
 const STOCK_KEY='spb_v4_stock';
-
-// V5.93 — Preserve data from older Sale Profit Book builds.
-(function migrateLegacyStorage(){
-  function readArray(key){try{const v=JSON.parse(localStorage.getItem(key)||'null');return Array.isArray(v)?v:null;}catch(e){return null;}}
-  function migrate(target,keys){const current=readArray(target);if(current&&current.length)return;for(const key of keys){const old=readArray(key);if(old&&old.length){localStorage.setItem(target,JSON.stringify(old));return;}}}
-  migrate(ITEMS_KEY,['spb_items','spb_items_v3','items']);
-  migrate(ENTRIES_KEY,['spb_entries','spb_entries_v3','entries']);
-  migrate(EXPENSES_KEY,['spb_expenses','spb_expenses_v3','expenses']);
-  migrate(STOCK_KEY,['spb_stock','spb_stock_v3','stockMovements']);
-})();
 let expenses=JSON.parse(localStorage.getItem(EXPENSES_KEY)||'[]');
 let editingExpenseId=null;
 let items=JSON.parse(localStorage.getItem(ITEMS_KEY)||'[]');
@@ -2048,7 +2034,7 @@ function saveEntry(){
   if(!(rate>0)){alert('Please add a Purchase / Meter rate for this item.');return}
   const wasEditing=!!editingId;
   if(editingId){
-    const idx=entries.findIndex(x=>x.id===editingId);
+    const idx=entries.findIndex(x=>String(x.id)===String(editingId));
     if(idx>=0) entries[idx]={...entries[idx],date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,meter,rate,sale,paidBy:$('paidBy').value,purchase,profit:sale-purchase};
   }else{
     entries.unshift({id:Date.now(),date:$('date').value||today(),place:$('place').value.trim()||'Kerala',item,meter,rate,sale,paidBy:$('paidBy').value,purchase,profit:sale-purchase,time:localTime()});
@@ -2161,11 +2147,6 @@ function renderHistory(){
   if(showToday && !grouped[todayKey]) grouped[todayKey]={sales:[],expenses:[],sale:0,expense:0};
 
   const fmtDate=d=>{const [y,m,day]=d.split('-'); return `${day}.${m}.${String(y).slice(-2)}`};
-  const fmtMonth=d=>{
-    const [y,m]=d.split('-');
-    const names=['January','February','March','April','May','June','July','August','September','October','November','December'];
-    return `${names[Number(m)-1]} ${y}`;
-  };
   const dates=Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
   const listEl=$('historyList');
   $('historyCount') && ($('historyCount').textContent = `Dates (${dates.length})`);
@@ -2175,9 +2156,9 @@ function renderHistory(){
     return;
   }
 
-  function dateCard(d,i){
+  listEl.innerHTML=dates.map((d,i)=>{
     const g=grouped[d], key='hd'+d.replace(/-/g,'')+'_'+i;
-    const saleRows=g.sales.map(x=>`<div class="report-detail-row history-sale-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editEntry(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteEntry(${x.id})">Delete</button></div></div>`).join('');
+    const saleRows=g.sales.map(x=>`<div class="report-detail-row history-sale-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div><div class="history-actions"><button type="button" class="edit-btn" onclick="event.stopPropagation();editEntry('${String(x.id)}')">Edit</button><button type="button" class="danger" onclick="event.stopPropagation();deleteEntry('${String(x.id)}')">Delete</button></div></div>`).join('');
     const expenseRows=g.expenses.map(x=>`<div class="report-detail-row history-expense-row"><b>💸 Expense: ${esc(x.name)} — ${money(x.amount)}</b><div class="report-detail-meta">Expense</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editExpense(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteExpense(${x.id})">Delete</button></div></div>`).join('');
     const details=(saleRows+expenseRows)||'<div class="empty">No details found</div>';
     return `<div class="report-date-card" id="card${key}">
@@ -2196,50 +2177,7 @@ function renderHistory(){
         <div class="report-date-total"><span>Total</span><span>Sale ${money(g.sale)} • Expense ${money(g.expense)}</span></div>
       </div>
     </div>`;
-  }
-
-  // V5.86: Keep TODAY visible as a standalone summary. Group all older dates
-  // under their month header so History stays compact as records grow.
-  let html='';
-  const todayDates=dates.filter(d=>d===todayKey);
-  const olderDates=dates.filter(d=>d!==todayKey);
-
-  if(todayDates.length){
-    html += '<div class="history-today-section"><div class="history-section-label">📅 Today</div>' + todayDates.map((d,i)=>dateCard(d,i)).join('') + '</div>';
-  }
-
-  const months={};
-  olderDates.forEach(d=>{
-    const month=d.slice(0,7);
-    if(!months[month]) months[month]=[];
-    months[month].push(d);
-  });
-
-  Object.keys(months).sort((a,b)=>b.localeCompare(a)).forEach((month,mi)=>{
-    const monthId='historyMonth_'+month.replace('-','')+'_'+mi;
-    const count=months[month].length;
-    html += `<div class="history-month-section">
-      <button type="button" class="history-month-head" onclick="toggleHistoryMonth('${monthId}',this)">
-        <span>📅 ${fmtMonth(month)}</span><span class="history-month-meta">${count} ${count===1?'date':'dates'} <b>＋</b></span>
-      </button>
-      <div class="history-month-body" id="${monthId}">
-        ${months[month].map((d,i)=>dateCard(d,mi+'_'+i)).join('')}
-      </div>
-    </div>`;
-  });
-
-  listEl.innerHTML=html;
-}
-
-function toggleHistoryMonth(id,btn){
-  const el=document.getElementById(id);
-  if(!el) return;
-  const open=el.classList.toggle('open');
-  if(btn){
-    btn.classList.toggle('open',open);
-    const b=btn.querySelector('b');
-    if(b) b.textContent=open?'−':'＋';
-  }
+  }).join('');
 }
 
 function setHistoryFilter(type){
@@ -2254,15 +2192,28 @@ function clearHistoryFilter(){
   $('historySearch').value='';$('historyFrom').value='';$('historyTo').value='';renderHistory();
 }
 function editEntry(id){
-  const x=entries.find(e=>e.id===id);if(!x)return;
-  editingId=id;$('entryCard').classList.remove('hidden');$('historyCard').classList.add('hidden');
-  $('place').value=x.place||'Kerala';$('date').value=x.date||today();
-  $('item').value=x.item;$('meter').value=x.meter;$('sale').value=x.sale;$('paidBy').value=x.paidBy||'GPay';
-  calculate();$('saveBtn').textContent='Update Entry';setTimeout(function(){var target=document.getElementById('entryCard');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});},50);
+  // Robust ID matching: localStorage/backup data may contain numeric or string IDs.
+  const x=entries.find(e=>String(e.id)===String(id));
+  if(!x){ console.warn('Edit entry not found:', id); return; }
+  editingId=x.id;
+  $('entryCard').classList.remove('hidden');
+  $('historyCard').classList.add('hidden');
+  $('place').value=x.place||'Kerala';
+  $('date').value=x.date||today();
+  $('item').value=x.item||'';
+  $('meter').value=x.meter??'';
+  $('sale').value=x.sale??'';
+  $('paidBy').value=x.paidBy||'GPay';
+  calculate();
+  $('saveBtn').textContent='Update Entry';
+  setTimeout(function(){
+    var target=document.getElementById('entryCard');
+    if(target)target.scrollIntoView({behavior:'smooth',block:'start'});
+  },50);
 }
 function deleteEntry(id){
   if(!confirm('Delete this entry?'))return;
-  entries=entries.filter(x=>x.id!==id);localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));renderHistory();renderStock();refreshDashboard();
+  entries=entries.filter(x=>String(x.id)!==String(id));localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));renderHistory();renderStock();refreshDashboard();
 }
 function openItemModal(){
   editingItemName=null;
@@ -2862,8 +2813,7 @@ window.printReport=function(){
   w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
-  w.document.write('
-</body></html>');
+  w.document.write('</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
@@ -3272,7 +3222,7 @@ window.addEventListener("DOMContentLoaded",function(){
         mp.style.display='none';
         mansHost.appendChild(mp);
       }
-      myHost.innerHTML='<div class="card"><h2>🤝 Mydeen கொடுக்கல் – வாங்கல்</h2><div class="mansoor-balance"><div>தற்போது பெற வேண்டியது</div><strong id="partyMydeenBalance">₹0</strong></div><div class="form-grid"><div class="field"><label>வகை</label><select id="partyMydeenType"><option value="taken">பணம் வாங்கியது</option><option value="given">பணம் தந்தது</option></select></div><div class="field"><label>தேதி</label><input id="partyMydeenDate" type="date"></div><div class="field"><label>தொகை ₹</label><input id="partyMydeenAmount" type="number" min="0" step="1" placeholder="Amount"></div><div class="field"><label>குறிப்பு</label><input id="partyMydeenNote" type="text" placeholder="குறிப்பு (விருப்பம்)"></div></div><div class="expense-action-row"><button class="primary" type="button" onclick="savePartyMydeen()">Save</button><button class="secondary" type="button" onclick="clearPartyMydeen()">Clear</button></div></div><div class="card"><h3>📜 Previous History</h3><div id="partyMydeenHistory"></div></div><div class="card"><h3>📅 Monthly Report</h3><div class="mansoor-report-dates"><div class="field"><label>Date From</label><input type="date" id="mydeenReportFrom"></div><div class="field"><label>Date To</label><input type="date" id="mydeenReportTo"></div></div><div class="mansoor-report-actions"><button type="button" onclick="generateMydeenMonthlyReport()">📊 Generate Report</button><button type="button" onclick="shareMydeenMonthlyWhatsApp()">📲 WhatsApp</button></div><div id="mydeenMonthlySummary"></div></div>';
+      myHost.innerHTML='<div class="card"><h2>🤝 Mydeen கொடுக்கல் – வாங்கல்</h2><div class="mansoor-balance"><div>தற்போது பெற வேண்டியது</div><strong id="partyMydeenBalance">₹0</strong></div><div class="form-grid"><div class="field"><label>வகை</label><select id="partyMydeenType"><option value="taken">பணம் வாங்கியது</option><option value="given">பணம் தந்தது</option></select></div><div class="field"><label>தேதி</label><input id="partyMydeenDate" type="date"></div><div class="field"><label>தொகை ₹</label><input id="partyMydeenAmount" type="number" min="0" step="1" placeholder="Amount"></div><div class="field"><label>குறிப்பு</label><input id="partyMydeenNote" type="text" placeholder="குறிப்பு (விருப்பம்)"></div></div><div class="expense-action-row"><button class="primary" type="button" onclick="savePartyMydeen()">Save</button><button class="secondary" type="button" onclick="clearPartyMydeen()">Clear</button></div></div><div class="card"><h3>📜 Previous History</h3><div id="partyMydeenHistory"></div></div>';
       var md=document.getElementById('partyMydeenDate');if(md)md.value=typeof localToday==='function'?localToday():new Date().toISOString().slice(0,10);
     }
     myHost.style.display='none'; mansHost.style.display='none';
@@ -3293,19 +3243,9 @@ window.addEventListener("DOMContentLoaded",function(){
     }
     window.scrollTo(0,0);
   };
-  window.mydeenEditId=null;
-  window.savePartyMydeen=function(){var date=document.getElementById('partyMydeenDate')?.value||new Date().toISOString().slice(0,10),type=document.getElementById('partyMydeenType')?.value||'taken',amount=Number(document.getElementById('partyMydeenAmount')?.value||0),note=(document.getElementById('partyMydeenNote')?.value||'').trim();if(!amount||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return;}var a;try{a=JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){a=[]}if(window.mydeenEditId){var ix=a.findIndex(function(x){return x.id===window.mydeenEditId});if(ix>=0)a[ix]={id:window.mydeenEditId,type:type,date:date,amount:amount,note:note};window.mydeenEditId=null;}else a.push({id:Date.now(),type:type,date:date,amount:amount,note:note});localStorage.setItem('saleProfitBookMydeenV1',JSON.stringify(a));clearPartyMydeen();renderPartyMydeen();generateMydeenMonthlyReport();};
-  window.clearPartyMydeen=function(){window.mydeenEditId=null;var d=document.getElementById('partyMydeenDate');if(d)d.value=typeof localToday==='function'?localToday():new Date().toISOString().slice(0,10);var t=document.getElementById('partyMydeenType');if(t)t.value='taken';var a=document.getElementById('partyMydeenAmount');if(a)a.value='';var n=document.getElementById('partyMydeenNote');if(n)n.value='';var b=document.querySelector('#partyMydeenHost button[onclick="savePartyMydeen()"]');if(b)b.textContent='Save';};
-  window.editPartyMydeen=function(id){var a;try{a=JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){a=[]}var x=a.find(function(v){return v.id===id});if(!x)return;window.mydeenEditId=id;var t=document.getElementById('partyMydeenType'),d=document.getElementById('partyMydeenDate'),am=document.getElementById('partyMydeenAmount'),n=document.getElementById('partyMydeenNote');if(t)t.value=x.type||'taken';if(d)d.value=x.date||'';if(am)am.value=x.amount||'';if(n)n.value=x.note||'';var b=document.querySelector('#partyMydeenHost button[onclick="savePartyMydeen()"]');if(b)b.textContent='Update';window.scrollTo({top:0,behavior:'smooth'});};
-  window.deletePartyMydeen=function(id){if(!confirm('இந்த பதிவை நீக்க வேண்டுமா?'))return;var a;try{a=JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){a=[]}localStorage.setItem('saleProfitBookMydeenV1',JSON.stringify(a.filter(function(x){return x.id!==id})));renderPartyMydeen();generateMydeenMonthlyReport();};
-  window.renderPartyMydeen=function(){var h=document.getElementById('partyMydeenHistory'),b=document.getElementById('partyMydeenBalance');if(!h||!b)return;var a;try{a=JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){a=[]}var taken=a.filter(function(x){return x.type==='taken'||x.type==='received'}).reduce(function(s,x){return s+Number(x.amount||0)},0),given=a.filter(function(x){return x.type==='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0);b.textContent='₹'+(taken-given).toLocaleString('en-IN');if(!a.length){h.innerHTML='<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';return;}a=a.slice().sort(function(x,y){return String(y.date).localeCompare(String(x.date))||y.id-x.id});h.innerHTML=a.map(function(x){return '<div class="mansoor-row"><div><b>'+(x.type==='taken'||x.type==='received'?'பணம் வாங்கியது':'பணம் தந்தது')+'</b><div class="meta">'+x.date+(x.note?' • '+esc(x.note):' • குறிப்பு இல்லை')+'</div></div><strong class="'+(x.type==='taken'||x.type==='received'?'mansoor-received':'mansoor-given')+'">'+(x.type==='taken'||x.type==='received'?'+':'-')+'₹'+Number(x.amount||0).toLocaleString('en-IN')+'</strong><div class="mansoor-actions"><button class="mansoor-edit" onclick="event.stopPropagation();editPartyMydeen('+x.id+')">Edit</button><button class="danger mansoor-delete" onclick="event.stopPropagation();deletePartyMydeen('+x.id+')">Delete</button></div></div>';}).join('');};
-  function mydeenData(){try{return JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){return []}}
-  function mydeenMoney(n){return '₹'+Number(n||0).toLocaleString('en-IN')}
-  function mydeenFmt(k){var p=String(k).split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0].slice(2):k}
-  function mydeenDefaultDates(){var to=document.getElementById('mydeenReportTo'),from=document.getElementById('mydeenReportFrom');if(!to||!from)return;var end=new Date();end.setHours(0,0,0,0);var start=new Date(end.getFullYear(),end.getMonth(),1);if(!to.value)to.value=localKey(end);if(!from.value)from.value=localKey(start);}
-  window.generateMydeenMonthlyReport=function(){var from=document.getElementById('mydeenReportFrom')?.value,to=document.getElementById('mydeenReportTo')?.value;if(!from||!to){mydeenDefaultDates();from=document.getElementById('mydeenReportFrom')?.value;to=document.getElementById('mydeenReportTo')?.value}if(!from||!to)return;if(from>to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return}var r=mydeenData().filter(function(x){return String(x.date)>=from&&String(x.date)<=to}),taken=r.filter(function(x){return x.type==='taken'||x.type==='received'}).reduce(function(s,x){return s+Number(x.amount||0)},0),given=r.filter(function(x){return x.type==='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0),e=document.getElementById('mydeenMonthlySummary');if(e)e.innerHTML='<div class="mansoor-weekly-box"><div style="grid-column:1/-1"><b>📅 Date From: '+mydeenFmt(from)+' &nbsp; Date To: '+mydeenFmt(to)+'</b></div><div>பணம் வாங்கியது<br><b>'+mydeenMoney(taken)+'</b></div><div>பணம் தந்தது<br><b>'+mydeenMoney(given)+'</b></div><div>Balance<br><b>'+mydeenMoney(taken-given)+'</b></div></div>';};
-  window.shareMydeenMonthlyWhatsApp=function(){var from=document.getElementById('mydeenReportFrom')?.value,to=document.getElementById('mydeenReportTo')?.value;if(!from||!to){mydeenDefaultDates();from=document.getElementById('mydeenReportFrom').value;to=document.getElementById('mydeenReportTo').value}if(from>to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return}var r=mydeenData().filter(function(x){return String(x.date)>=from&&String(x.date)<=to}).sort(function(x,y){return String(x.date).localeCompare(String(y.date))}),taken=r.filter(function(x){return x.type==='taken'||x.type==='received'}).reduce(function(s,x){return s+Number(x.amount||0)},0),given=r.filter(function(x){return x.type==='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0),m=['🤝 Mydeen – Monthly Report','📅 Date From: '+mydeenFmt(from),'📅 Date To: '+mydeenFmt(to),'','பணம் வாங்கியது: '+mydeenMoney(taken),'பணம் தந்தது: '+mydeenMoney(given),'Balance: '+mydeenMoney(taken-given),'','Date-wise:'];r.forEach(function(x){m.push(x.date+' – '+(x.type==='given'?'பணம் தந்தது':'பணம் வாங்கியது')+': '+mydeenMoney(x.amount)+(x.note?' – '+x.note:''))});window.open('https://wa.me/?text='+encodeURIComponent(m.join('\n')),'_blank');};
-  document.addEventListener('DOMContentLoaded',function(){mydeenDefaultDates();generateMydeenMonthlyReport()});
+  window.savePartyMydeen=function(){var date=document.getElementById('partyMydeenDate')?.value||new Date().toISOString().slice(0,10),type=document.getElementById('partyMydeenType')?.value||'taken',amount=Number(document.getElementById('partyMydeenAmount')?.value||0),note=(document.getElementById('partyMydeenNote')?.value||'').trim();if(!amount||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return;}var a;try{a=JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){a=[]}a.push({id:Date.now(),type:type,date:date,amount:amount,note:note});localStorage.setItem('saleProfitBookMydeenV1',JSON.stringify(a));clearPartyMydeen();renderPartyMydeen();};
+  window.clearPartyMydeen=function(){var d=document.getElementById('partyMydeenDate');if(d)d.value=typeof localToday==='function'?localToday():new Date().toISOString().slice(0,10);var a=document.getElementById('partyMydeenAmount');if(a)a.value='';var n=document.getElementById('partyMydeenNote');if(n)n.value='';};
+  window.renderPartyMydeen=function(){var h=document.getElementById('partyMydeenHistory'),b=document.getElementById('partyMydeenBalance');if(!h||!b)return;var a;try{a=JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){a=[]}var taken=a.filter(function(x){return x.type==='taken'}).reduce(function(s,x){return s+Number(x.amount||0)},0),given=a.filter(function(x){return x.type==='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0);b.textContent='₹'+(taken-given).toLocaleString('en-IN');if(!a.length){h.innerHTML='<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';return;}a.sort(function(x,y){return String(y.date).localeCompare(String(x.date))||y.id-x.id});h.innerHTML=a.map(function(x){return '<div class="mansoor-row"><div><b>'+(x.type==='taken'?'பணம் வாங்கியது':'பணம் தந்தது')+'</b><div class="meta">'+x.date+(x.note?' • '+x.note:'')+'</div></div><strong class="'+(x.type==='taken'?'mansoor-received':'mansoor-given')+'">'+(x.type==='taken'?'+':'-')+'₹'+Number(x.amount||0).toLocaleString('en-IN')+'</strong></div>';}).join('');};
 
   // Bind after all earlier scripts have loaded so this controller wins.
   function bind(){
@@ -3333,18 +3273,6 @@ window.addEventListener("DOMContentLoaded",function(){
 
 
 
-<style id="v585-history-month-group">
-.history-today-section{margin-bottom:14px}
-.history-section-label{font-size:15px;font-weight:800;color:#17675e;margin:6px 4px 8px}
-.history-month-section{background:#fff;border:1px solid #e1eaea;border-radius:18px;margin:14px 0;overflow:hidden}
-.history-month-head{width:100%;border:0;background:#eef7f6;color:#185f57;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;font:800 18px inherit;cursor:pointer;text-align:left}
-.history-month-head .history-month-meta{font-size:13px;font-weight:700;color:#718080;display:flex;align-items:center;gap:9px}
-.history-month-head .history-month-meta b{font-size:21px;color:var(--primary,#17675e);line-height:1}
-.history-month-head.open{background:#e5f2f0}
-.history-month-body{display:none;padding:0 10px 10px}
-.history-month-body.open{display:block}
-.history-month-body .report-date-card{margin:10px 0}
-</style>
 <style id="v576-standalone-navigation-fix">
 body.v576-home #partyPage,body.v576-home #historyPage,body.v576-home #expensePage,body.v576-home #mansoorPage,body.v576-home #supplierPage,body.v576-home #reportPage,body.v576-home #backupPage{display:none!important}
 body.v576-party #partyPage{display:block!important}
@@ -3379,64 +3307,5 @@ body.party-open-mode #partyPage {
   display:block !important;
 }
 </style>
-<script id="v582-party-reset-guard">(function(){function reset(){var my=document.getElementById('partyMydeenHost'),mans=document.getElementById('partyMansoorHost');if(my){my.classList.remove('active');my.style.display='none';}if(mans){mans.classList.remove('active');mans.style.display='none';}document.querySelectorAll('#partyPage .party-choice').forEach(function(x){x.classList.remove('selected');});var mp=document.getElementById('mansoorPage');if(mp){mp.style.display='none';mp.classList.remove('active');}}document.querySelectorAll('.nav-bar button').forEach(function(b){var t=(b.textContent||'').trim();if(t==='Home'||t==='Party')b.addEventListener('click',reset,true);});})();</script>
-<style id="v588-separate-reports">
-.report-section-grid{display:grid;gap:14px}.report-type-card{margin:0}.report-type-card h3{margin-top:0}.report-type-card .primary{width:100%;margin-top:8px}.report-result-mini{margin-top:12px;padding:12px;border-radius:12px;background:rgba(0,0,0,.06)}.report-result-mini b{font-size:18px}.report-mini-row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(128,128,128,.18)}.report-mini-row:last-child{border-bottom:0}
-</style>
-<script id="v588-separate-reports-script">
-(function(){
- function num(v){return Number(v)||0;}
- function money(v){return '₹'+num(v).toLocaleString('en-IN',{maximumFractionDigits:2});}
- function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
- function firstDay(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01';}
- function dates(f,t){var a=document.getElementById(f),b=document.getElementById(t);if(a&&!a.value)a.value=firstDay();if(b&&!b.value)b.value=today();}
- function data(key){try{return JSON.parse(localStorage.getItem(key)||'[]')}catch(e){return []}}
- function esc(v){return String(v==null?'':v).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||c;});}
- window.generateSeparateReport=function(type){
-   var cfg={sale:['saleReportFrom','saleReportTo','saleReportResult'],purchase:['purchaseReportFrom','purchaseReportTo','purchaseReportResult'],expense:['expenseReportFrom','expenseReportTo','expenseReportResult'],mansoor:['mansoorReportFrom2','mansoorReportTo2','mansoorReportResult2'],mydeen:['mydeenReportFrom2','mydeenReportTo2','mydeenReportResult2']}[type];
-   var f=document.getElementById(cfg[0])?.value||'',t=document.getElementById(cfg[1])?.value||'',box=document.getElementById(cfg[2]);
-   if(!f||!t){alert('Date From மற்றும் Date To தேர்வு செய்யவும்.');return;} if(f>t){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return;}
-   var rows=[],title='',a=[],total=0,extra='';
-   if(type==='sale'||type==='purchase'){a=(typeof entries!=='undefined'&&Array.isArray(entries))?entries:[];a=a.filter(x=>String(x.date||'')>=f&&String(x.date||'')<=t);var field=type==='sale'?'sale':'purchase';total=a.reduce((s,x)=>s+num(x[field]),0);title=type==='sale'?'Sale Amount':'Purchase Amount';rows=a.map(x=>'<div class="report-mini-row"><span>'+esc(x.date)+' • '+esc(x.item||'Item')+'</span><b>'+money(x[field])+'</b></div>').join('');}
-   else if(type==='expense'){a=data('spb_v4_expenses');a=a.filter(x=>String(x.date||'')>=f&&String(x.date||'')<=t);total=a.reduce((s,x)=>s+num(x.amount),0);title='Expense Amount';rows=a.map(x=>'<div class="report-mini-row"><span>'+esc(x.date)+' • '+esc(x.name||'Expense')+'</span><b>'+money(x.amount)+'</b></div>').join('');}
-   else {var key=type==='mansoor'?'saleProfitBookMansoorV1':'saleProfitBookMydeenV1';a=data(key).filter(x=>String(x.date||'')>=f&&String(x.date||'')<=t);var taken=a.filter(x=>x.type==='taken'||x.type==='received').reduce((s,x)=>s+num(x.amount),0),given=a.filter(x=>x.type==='given').reduce((s,x)=>s+num(x.amount),0);title=type==='mansoor'?'Mansoor':'Mydeen';total=taken-given;extra='<div class="report-mini-row"><span>💵 பணம் வாங்கியது</span><b>'+money(taken)+'</b></div><div class="report-mini-row"><span>💵 பணம் தந்தது</span><b>'+money(given)+'</b></div><div class="report-mini-row"><span>🧾 Balance</span><b>'+money(total)+'</b></div>';rows=a.map(x=>'<div class="report-mini-row"><span>'+esc(x.date)+' • '+(x.type==='given'?'பணம் தந்தது':'பணம் வாங்கியது')+(x.note?' • '+esc(x.note):'')+'</span><b>'+money(x.amount)+'</b></div>').join('');}
-   box.innerHTML='<div class="report-result-mini"><div><b>📅 '+f+' → '+t+'</b></div>'+extra+'<div class="report-mini-row"><span>'+esc(title)+'</span><b>'+money(total)+'</b></div>'+((rows||'<div class="meta">No records found.</div>'))+'</div>';
- };
- window.showDateDefaults=function(){['saleReportFrom','saleReportTo','purchaseReportFrom','purchaseReportTo','expenseReportFrom','expenseReportTo','mansoorReportFrom2','mansoorReportTo2','mydeenReportFrom2','mydeenReportTo2'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.value)e.value=id.toLowerCase().indexOf('to')>=0?today():firstDay();});};
- document.addEventListener('DOMContentLoaded',function(){showDateDefaults();});
-})();
-</script>
-<script id="v593-selected-report">
-(function(){
-  function num(v){return Number(v)||0;}
-  function money(v){return '₹'+num(v).toLocaleString('en-IN',{maximumFractionDigits:2});}
-  function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-  function firstDay(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01';}
-  function data(key){try{var a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function fmt(d){var p=String(d||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d;}
-  function setDefaults(){var f=document.getElementById('selectedReportFrom'),t=document.getElementById('selectedReportTo');if(f&&!f.value)f.value=firstDay();if(t&&!t.value)t.value=today();}
-  window.clearSelectedReport=function(){var b=document.getElementById('selectedReportResult');if(b)b.innerHTML='';};
-  window.generateSelectedReport=function(){
-    var type=document.getElementById('reportTypeSelect')?.value||'sale',from=document.getElementById('selectedReportFrom')?.value||'',to=document.getElementById('selectedReportTo')?.value||'',box=document.getElementById('selectedReportResult');
-    if(!box)return;if(!from||!to){alert('Date From மற்றும் Date To தேர்வு செய்யவும்.');return;}if(from>to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return;}
-    var rows=[],title='',total=0,extra='';
-    if(type==='sale'||type==='purchase'){
-      var a=Array.isArray(entries)?entries:[];a=a.filter(function(x){var d=normalizeEntryDate(x.date);return d>=from&&d<=to;});var field=type==='sale'?'sale':'purchase';total=a.reduce(function(s,x){return s+num(x[field]);},0);title=type==='sale'?'Sale Amount':'Purchase Amount';
-      rows=a.map(function(x){return '<div class="report-mini-row"><span>📅 '+fmt(normalizeEntryDate(x.date))+' • '+esc(x.item||'Item')+'<small style="display:block;color:#708080">Meter '+num(x.meter).toFixed(2)+' • Profit '+money(x.profit)+' • '+esc(x.paidBy||'GPay')+'</small></span><b>'+money(x[field])+'</b></div>';}).join('');
-    }else if(type==='expense'){
-      var e=data('spb_v4_expenses');e=e.filter(function(x){return String(x.date||'')>=from&&String(x.date||'')<=to;});total=e.reduce(function(s,x){return s+num(x.amount);},0);title='Expense Amount';
-      rows=e.map(function(x){return '<div class="report-mini-row"><span>📅 '+fmt(x.date)+' • '+esc(x.name||'Expense')+'</span><b>'+money(x.amount)+'</b></div>';}).join('');
-    }else{
-      var key=type==='mansoor'?'saleProfitBookMansoorV1':'saleProfitBookMydeenV1',p=data(key).filter(function(x){return String(x.date||'')>=from&&String(x.date||'')<=to;});
-      var taken=p.filter(function(x){return x.type==='taken'||x.type==='received';}).reduce(function(s,x){return s+num(x.amount);},0),given=p.filter(function(x){return x.type==='given';}).reduce(function(s,x){return s+num(x.amount);},0);total=taken-given;title=type==='mansoor'?'Mansoor Balance':'Mydeen Balance';
-      extra='<div class="report-mini-row"><span>💵 பணம் வாங்கியது</span><b>'+money(taken)+'</b></div><div class="report-mini-row"><span>💵 பணம் தந்தது</span><b>'+money(given)+'</b></div>';
-      rows=p.map(function(x){return '<div class="report-mini-row"><span>📅 '+fmt(x.date)+' • '+(x.type==='given'?'பணம் தந்தது':'பணம் வாங்கியது')+(x.note?' • '+esc(x.note):'')+'</span><b>'+money(x.amount)+'</b></div>';}).join('');
-    }
-    box.innerHTML='<div class="report-result-mini"><h3 style="margin-top:0">📊 '+esc(title)+'</h3><div class="meta">Date From: '+fmt(from)+' &nbsp; Date To: '+fmt(to)+'</div>'+extra+'<div class="report-mini-row" style="font-size:18px"><span><b>Total / Balance</b></span><b>'+money(total)+'</b></div>'+(rows||'<div class="meta" style="padding:14px 0">No records found for this date range.</div>')+'</div>';
-  };
-  document.addEventListener('DOMContentLoaded',setDefaults);
-})();
-</script>
-</body>
+<script id="v582-party-reset-guard">(function(){function reset(){var my=document.getElementById('partyMydeenHost'),mans=document.getElementById('partyMansoorHost');if(my){my.classList.remove('active');my.style.display='none';}if(mans){mans.classList.remove('active');mans.style.display='none';}document.querySelectorAll('#partyPage .party-choice').forEach(function(x){x.classList.remove('selected');});var mp=document.getElementById('mansoorPage');if(mp){mp.style.display='none';mp.classList.remove('active');}}document.querySelectorAll('.nav-bar button').forEach(function(b){var t=(b.textContent||'').trim();if(t==='Home'||t==='Party')b.addEventListener('click',reset,true);});})();</script></body>
 </html>
