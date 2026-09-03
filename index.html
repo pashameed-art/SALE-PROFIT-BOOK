@@ -2178,9 +2178,12 @@ function init(){
 }
 function populateItems(){
   const old=$('item').value;
+  const sortedItems=[...(Array.isArray(items)?items:[])].sort((a,b)=>
+    String(a.name||'').localeCompare(String(b.name||''),undefined,{numeric:true,sensitivity:'base'})
+  );
   $('item').innerHTML='<option value="">Select Item</option>'+
-    items.map(x=>`<option value="${esc(x.name)}">${esc(x.name)} — ${money(x.rate)}/m</option>`).join('');
-  if(items.some(x=>x.name===old)) $('item').value=old;
+    sortedItems.map(x=>`<option value="${esc(x.name)}">${esc(x.name)} — ${money(x.rate)}/m</option>`).join('');
+  if(sortedItems.some(x=>x.name===old)) $('item').value=old;
 }
 function getRate(){
   const x=items.find(i=>i.name===$('item').value);
