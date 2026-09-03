@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V5.50</title>
+<title>Sale Profit Book • V6.00</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1070,7 +1070,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 5.93</div>
+<div class="version">Version 6.00</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2905,10 +2905,10 @@ window.printReport=function(){
           storage=data.storage;
         }else if(data && Array.isArray(data.items) && Array.isArray(data.entries)){
           storage={};
-          storage['spb_items']=JSON.stringify(data.items);
-          storage['spb_entries']=JSON.stringify(data.entries);
-          storage['spb_expenses']=JSON.stringify(Array.isArray(data.expenses)?data.expenses:[]);
-          storage['spb_stock']=JSON.stringify(Array.isArray(data.stockMovements)?data.stockMovements:[]);
+          storage['spb_v4_items']=JSON.stringify(data.items);
+          storage['spb_v4_entries']=JSON.stringify(data.entries);
+          storage['spb_v4_expenses']=JSON.stringify(Array.isArray(data.expenses)?data.expenses:[]);
+          storage['spb_v4_stock']=JSON.stringify(Array.isArray(data.stockMovements)?data.stockMovements:[]);
         }else throw new Error('Invalid backup format');
         const keys=Object.keys(storage);
         if(!keys.length)throw new Error('Backup is empty');
@@ -3461,5 +3461,75 @@ body.party-open-mode #partyPage {
   setTimeout(dates,100);
 })();
 </script>
+
+<script id="v600-stability-fixes">
+(function(){
+'use strict';
+const V6_BUILD='6.00';
+const ITEMS_KEY='spb_v4_items', ENTRIES_KEY='spb_v4_entries',
+EXPENSES_KEY='spb_v4_expenses', STOCK_KEY='spb_v4_stock';
+function safeArray(key){try{const v=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(v)?v:[];}catch(e){return[];}}
+function isoToday(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function dateOnly(v){const s=String(v||'').trim();if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;const m=s.match(/^(\d{2})[./-](\d{2})[./-](\d{4})$/);return m?m[3]+'-'+m[2]+'-'+m[1]:s.slice(0,10);}
+function money6(n){return '₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});}
+try{localStorage.setItem('__spb_build__',V6_BUILD);}catch(e){}
+window.updateTodayNetProfit=function(){
+ const out=document.getElementById('todayNetProfitValue');if(!out)return;
+ const t=isoToday(),sales=safeArray(ENTRIES_KEY).filter(x=>dateOnly(x.date)===t),exps=safeArray(EXPENSES_KEY).filter(x=>dateOnly(x.date)===t);
+ const profit=sales.reduce((a,x)=>a+Number(x.profit||0),0),expense=exps.reduce((a,x)=>a+Number(x.amount||0),0);
+ out.textContent=money6(profit-expense);
+};
+function refreshDatesSafely(){
+ try{
+  const t=isoToday(),home=document.getElementById('date'),exp=document.getElementById('expenseDate');
+  if(home&&!window.editingId)home.value=t;
+  if(exp&&!window.editingExpenseId)exp.value=t;
+  window.updateTodayNetProfit();
+  if(typeof refreshDashboard==='function')refreshDashboard();
+  if(typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal();
+ }catch(e){}
+}
+window.fullBackupV600=function(){
+ try{
+  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k!==null)storage[k]=localStorage.getItem(k);}
+  const data={app:'SALE-PROFIT-BOOK',version:V6_BUILD,createdAt:new Date().toISOString(),storage};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='SALE-PROFIT-BOOK-BACKUP-'+isoToday()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  const st=document.getElementById('backupStatusV551');if(st){st.textContent='✅ V6 backup created successfully.';st.style.color='#126d66';}
+ }catch(e){const st=document.getElementById('backupStatusV551');if(st){st.textContent='❌ Backup failed: '+(e.message||'Unknown error');st.style.color='#9b3333';}}
+};
+window.restoreV600=function(file){
+ if(!file)return;
+ const reader=new FileReader();
+ reader.onload=function(){
+  try{
+   const data=JSON.parse(reader.result);let storage=null;
+   if(data&&data.app==='SALE-PROFIT-BOOK'&&data.storage&&typeof data.storage==='object'&&!Array.isArray(data.storage))storage=data.storage;
+   else if(data&&Array.isArray(data.items)&&Array.isArray(data.entries))storage={
+    [ITEMS_KEY]:JSON.stringify(data.items),[ENTRIES_KEY]:JSON.stringify(data.entries),
+    [EXPENSES_KEY]:JSON.stringify(Array.isArray(data.expenses)?data.expenses:[]),
+    [STOCK_KEY]:JSON.stringify(Array.isArray(data.stockMovements)?data.stockMovements:[])
+   };
+   else throw new Error('Invalid backup format');
+   const keys=Object.keys(storage);if(!keys.length)throw new Error('Backup is empty');
+   if(!confirm('Restore this backup? Your current app data will be replaced.'))return;
+   localStorage.clear();keys.forEach(k=>localStorage.setItem(k,String(storage[k]??'')));location.reload();
+  }catch(e){const st=document.getElementById('backupStatusV551');if(st){st.textContent='❌ Restore failed: invalid or damaged backup file.';st.style.color='#9b3333';}}
+ };
+ reader.onerror=function(){const st=document.getElementById('backupStatusV551');if(st){st.textContent='❌ Could not read the backup file.';st.style.color='#9b3333';}};
+ reader.readAsText(file);
+};
+window.addEventListener('DOMContentLoaded',function(){
+ const b=document.querySelector('#backupPage .full-backup'),r=document.getElementById('restoreFileV551');
+ if(b)b.onclick=window.fullBackupV600;
+ if(r)r.onchange=function(){window.restoreV600(this.files[0]);};
+ refreshDatesSafely();setTimeout(refreshDatesSafely,250);
+});
+window.addEventListener('pageshow',refreshDatesSafely);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)refreshDatesSafely();});
+setInterval(refreshDatesSafely,60000);
+})();
+</script>
+
 </body>
 </html>
