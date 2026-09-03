@@ -1222,6 +1222,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <h2 style="margin-top:0">Backup</h2>
 <div class="backup-actions-v455">
 <button class="full-backup" onclick="fullBackupV551()" type="button">📦 Backup</button>
+<button class="danger" id="removeSaleExpenseBtnV610" onclick="openRemoveSaleExpenseV610()" type="button">🗑️ Remove Sale &amp; Expense Data</button>
 <label class="backup-restore-label-v455 full-restore">♻️ Restore
         <input id="restoreFileV551" accept=".json,application/json" hidden="" onchange="restoreV551(this.files[0])" type="file"/>
 </label>
@@ -1229,6 +1230,19 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <div id="backupStatusV551" class="meta" style="margin-top:12px">Backup saves all app data to a JSON file. Restore replaces the current app data only after the file is validated.</div>
 <div class="meta" style="margin-top:12px">📦 <strong>Full Backup / Restore</strong> works completely offline — no Google login or OAuth is required.</div>
 <button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
+
+<div id="removeSaleExpenseModalV610" class="v610-modal" aria-hidden="true">
+  <div class="v610-modal-card" role="dialog" aria-modal="true" aria-labelledby="v610RemoveTitle">
+    <div class="v610-warning">!</div>
+    <h2 id="v610RemoveTitle">Remove Sale &amp; Expense Data?</h2>
+    <p>This will permanently delete all <b>Sale Amount</b> records and <b>Expense Amount</b> records.</p>
+    <p><b>Items, Purchase/Meter rates, Stock, Party data and app settings will remain unchanged.</b></p>
+    <div class="v610-modal-actions">
+      <button class="secondary" type="button" onclick="closeRemoveSaleExpenseV610()">Cancel</button>
+      <button class="v610-danger-confirm" type="button" onclick="removeSaleExpenseV610()">Remove Data</button>
+    </div>
+  </div>
+</div>
 </div>
 </div>
 <section class="page hidden" id="mansoorPage">
@@ -3593,5 +3607,35 @@ window.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
+
+<style id="v610-remove-sale-expense-style">
+.v610-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:99999;align-items:center;justify-content:center;padding:20px}
+.v610-modal.show{display:flex}.v610-modal-card{width:min(520px,94vw);background:#fff;border-radius:24px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.28);text-align:left}.v610-modal-card h2{margin:8px 0 14px;color:#172026}.v610-modal-card p{font-size:16px;line-height:1.5;color:#39434a;margin:8px 0}.v610-warning{width:48px;height:48px;border-radius:50%;background:#ffe1e1;color:#d92323;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900}.v610-modal-actions{display:flex;gap:12px;margin-top:20px}.v610-modal-actions button{flex:1}.v610-danger-confirm{border:0;border-radius:14px;background:#df2d2d;color:#fff;font-weight:800;padding:13px 16px;font-size:16px}.danger{background:#fff0f0!important;color:#c62828!important;border:1px solid #f0b4b4!important}
+</style>
+<script id="v610-remove-sale-expense-layer">
+(function(){'use strict';
+const EK='spb_v4_entries', XK='spb_v4_expenses';
+window.openRemoveSaleExpenseV610=function(){const m=document.getElementById('removeSaleExpenseModalV610');if(m){m.classList.add('show');m.setAttribute('aria-hidden','false')}};
+window.closeRemoveSaleExpenseV610=function(){const m=document.getElementById('removeSaleExpenseModalV610');if(m){m.classList.remove('show');m.setAttribute('aria-hidden','true')}};
+window.removeSaleExpenseV610=function(){
+  if(!confirm('Confirm: Delete all Sale Amount records and Expense Amount records? Other settings and data will remain unchanged.'))return;
+  try{
+    localStorage.setItem(EK,'[]'); localStorage.setItem(XK,'[]');
+    if(typeof entries!=='undefined') entries=[];
+    if(typeof expenses!=='undefined') expenses=[];
+    if(typeof editingId!=='undefined') editingId=null;
+    if(typeof editingExpenseId!=='undefined') editingExpenseId=null;
+    if(typeof renderHistory==='function') renderHistory();
+    if(typeof renderExpenses==='function') renderExpenses();
+    if(typeof refreshDashboard==='function') refreshDashboard();
+    if(typeof updateTodayNetProfit==='function') updateTodayNetProfit();
+    if(typeof renderReports==='function') renderReports();
+    closeRemoveSaleExpenseV610();
+    alert('Sale Amount and Expense Amount data removed. Other settings and data remain unchanged.');
+  }catch(e){alert('Could not remove the data. Please try again.');console.error(e)}
+};
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeRemoveSaleExpenseV610()});
+})();
+</script>
 </body>
 </html>
