@@ -1186,11 +1186,25 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 }
 </style>
 
+
+<style id="v613-remove-style">
+#v613RemovePanel{margin:18px 12px;padding:18px;background:#fff;border-radius:20px;box-shadow:0 5px 20px rgba(0,0,0,.07);font-family:inherit}
+.v613-remove-title{font-size:21px;font-weight:900;color:#174f48;margin-bottom:12px}
+.v613-remove-info{padding:12px 14px;background:#fff8e8;border:1px solid #f2d68c;border-radius:12px;line-height:1.45;color:#374151}
+.v613-label{margin-top:16px;font-size:17px;font-weight:900;color:#155e55}.v613-label span{font-size:13px;font-weight:700;color:#6b7280}
+.v613-date-row{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:end;margin-top:8px}
+.v613-date-row label{font-size:14px;font-weight:800;color:#374151}.v613-date-row input{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:13px;border:1px solid #d7dfdd;border-radius:12px;background:#fff;font:inherit}
+.v613-to{font-weight:900;color:#6b7280;padding-bottom:14px}.v613-hint{margin-top:10px;padding:10px 12px;background:#edf5ff;color:#1765ad;border-radius:10px;font-size:13px;font-weight:700}
+.v613-warning{margin-top:12px;padding:12px;background:#fff0f0;border:1px solid #ffb8b8;border-radius:10px;color:#a51f1f}
+.v613-remove-btn{width:100%;margin-top:12px;border:0;border-radius:13px;padding:14px;background:#d92323;color:#fff;font-size:16px;font-weight:900}
+@media(max-width:520px){#v613RemovePanel{margin:14px 0;padding:16px;border-radius:18px}.v613-date-row{grid-template-columns:1fr}.v613-to{display:none}}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.12</div>
+<div class="version">Version 6.13</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3760,5 +3774,53 @@ window.removeSaleExpenseV610=function(){
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeRemoveSaleExpenseV610()});
 })();
 </script>
+
+<div id="v613RemovePanel" class="v613-remove-panel">
+  <div class="v613-remove-title">🗑️ Remove Sale &amp; Expense Data</div>
+  <div class="v613-remove-info">This will permanently delete <b>Sale Amount</b> and <b>Expense Amount</b> data only. Other data such as Items, Purchase, Stock, Party and Settings will remain unchanged.</div>
+  <div class="v613-label">Select Date Range <span>(Optional)</span></div>
+  <div class="v613-date-row">
+    <label>From Date<input id="v613FromDate" type="date"></label>
+    <span class="v613-to">to</span>
+    <label>To Date<input id="v613ToDate" type="date"></label>
+  </div>
+  <div class="v613-hint">Leave both dates empty to remove all Sale &amp; Expense data.</div>
+  <div class="v613-warning">⚠️ <b>Warning:</b> This action cannot be undone. Please make a backup first.</div>
+  <button type="button" id="v613RemoveBtn" class="v613-remove-btn">🗑️ Remove Sale &amp; Expense Data</button>
+</div>
+
+<script id="v613-remove-script">
+(function(){
+'use strict';
+function normDate(x){
+  if(!x)return '';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(String(x)))return String(x);
+  var m=String(x).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if(m)return m[3]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0');
+  var d=new Date(x); return isNaN(d.getTime())?'':d.toISOString().slice(0,10);
+}
+function getArr(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+function rd(r){return normDate(r.date||r.saleDate||r.expenseDate||r.createdAt||r.timestamp||'')}
+function inRange(r,f,t){var d=rd(r);return !!d&&(!f||d>=f)&&(!t||d<=t)}
+function removeSelected(){
+  var f=document.getElementById('v613FromDate').value, t=document.getElementById('v613ToDate').value;
+  if(f&&t&&f>t){alert('From Date must be before or equal to To Date.');return}
+  var scope=(f||t)?((f||'start')+' to '+(t||'end')):'ALL dates';
+  if(!confirm('Remove Sale Amount and Expense Amount data for '+scope+'?\n\nItems, Purchase, Stock, Party and Settings will remain unchanged.'))return;
+  if(!confirm('Final confirmation: this deletion cannot be undone. Continue?'))return;
+  var sales=getArr('spb_v4_entries'), exps=getArr('spb_v4_expenses');
+  var ns=(f||t)?sales.filter(function(r){return !inRange(r,f,t)}):[];
+  var ne=(f||t)?exps.filter(function(r){return !inRange(r,f,t)}):[];
+  localStorage.setItem('spb_v4_entries',JSON.stringify(ns));
+  localStorage.setItem('spb_v4_expenses',JSON.stringify(ne));
+  alert('Sale & Expense data removed successfully.');
+  location.reload();
+}
+document.addEventListener('DOMContentLoaded',function(){
+  var b=document.getElementById('v613RemoveBtn'); if(b)b.addEventListener('click',removeSelected);
+});
+})();
+</script>
+
 </body>
 </html>
