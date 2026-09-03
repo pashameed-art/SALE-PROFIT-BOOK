@@ -2167,7 +2167,7 @@ function renderHistory(){
 
   function dateCard(d,i){
     const g=grouped[d], key='hd'+d.replace(/-/g,'')+'_'+i;
-    const saleRows=g.sales.map(x=>`<div class="report-detail-row history-sale-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editEntry(${x.id})">Edit Sale Amount</button><button class="danger" onclick="event.stopPropagation();deleteEntry(${x.id})">Delete</button></div></div>`).join('');
+    const saleRows=g.sales.map(x=>`<div class="report-detail-row history-sale-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editEntry(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteEntry(${x.id})">Delete</button></div></div>`).join('');
     const expenseRows=g.expenses.map(x=>`<div class="report-detail-row history-expense-row"><b>💸 Expense: ${esc(x.name)} — ${money(x.amount)}</b><div class="report-detail-meta">Expense</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editExpense(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteExpense(${x.id})">Delete</button></div></div>`).join('');
     const details=(saleRows+expenseRows)||'<div class="empty">No details found</div>';
     return `<div class="report-date-card" id="card${key}">
@@ -2245,10 +2245,21 @@ function clearHistoryFilter(){
 }
 function editEntry(id){
   const x=entries.find(e=>e.id===id);if(!x)return;
-  editingId=id;$('entryCard').classList.remove('hidden');$('historyCard').classList.add('hidden');
+  editingId=id;
+  /* Always return to the Sale Entry/Home area before editing. */
+  if(typeof goHome==='function'){
+    const homeBtn=[...document.querySelectorAll('.nav-bar button')].find(b=>(b.textContent||'').trim()==='Home');
+    goHome(homeBtn);
+  }else{
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  }
+  const entry=document.getElementById('entryCard'), history=document.getElementById('historyCard');
+  if(entry)entry.classList.remove('hidden');
+  if(history)history.classList.add('hidden');
   $('place').value=x.place||'Kerala';$('date').value=x.date||today();
   $('item').value=x.item;$('meter').value=x.meter;$('sale').value=x.sale;$('paidBy').value=x.paidBy||'GPay';
-  calculate();$('saveBtn').textContent='Update Entry';setTimeout(function(){var target=document.getElementById('entryCard');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});},50);
+  calculate();$('saveBtn').textContent='Update Entry';
+  setTimeout(function(){var target=document.getElementById('entryCard');if(target)target.scrollIntoView({behavior:'smooth',block:'start'});},100);
 }
 function deleteEntry(id){
   if(!confirm('Delete this entry?'))return;
@@ -3393,6 +3404,61 @@ body.party-open-mode #partyPage {
  };
  window.showDateDefaults=function(){['saleReportFrom','saleReportTo','purchaseReportFrom','purchaseReportTo','expenseReportFrom','expenseReportTo','mansoorReportFrom2','mansoorReportTo2','mydeenReportFrom2','mydeenReportTo2'].forEach(function(id){var e=document.getElementById(id);if(e&&!e.value)e.value=id.toLowerCase().indexOf('to')>=0?today():firstDay();});};
  document.addEventListener('DOMContentLoaded',function(){showDateDefaults();});
+})();
+</script>
+<script id="v593-reports-fix">
+(function(){
+  function n(v){return Number(v)||0;}
+  function money(v){return '₹'+n(v).toLocaleString('en-IN',{maximumFractionDigits:2});}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function norm(v){
+    if(!v)return '';
+    var s=String(v).slice(0,10);
+    if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){var a=s.split('/');return a[2]+'-'+a[1]+'-'+a[0];}
+    return s;
+  }
+  function read(key){try{return JSON.parse(localStorage.getItem(key)||'[]');}catch(e){return []}}
+  function dates(){
+    var f=document.getElementById('selectedReportFrom'),t=document.getElementById('selectedReportTo');
+    var d=new Date(), today=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    var first=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01';
+    if(f&&!f.value)f.value=first;if(t&&!t.value)t.value=today;
+  }
+  window.clearSelectedReport=function(){var b=document.getElementById('selectedReportResult');if(b)b.innerHTML='';};
+  window.generateSelectedReport=function(){
+    var type=document.getElementById('reportTypeSelect')?.value||'sale';
+    var from=norm(document.getElementById('selectedReportFrom')?.value||'');
+    var to=norm(document.getElementById('selectedReportTo')?.value||'');
+    var box=document.getElementById('selectedReportResult');
+    if(!box){alert('Report area not found.');return;}
+    if(!from||!to){alert('Date From மற்றும் Date To தேர்வு செய்யவும்.');return;}
+    if(from>to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return;}
+    var rows=[], total=0, title='';
+    if(type==='sale'||type==='purchase'){
+      var a=(typeof entries!=='undefined'&&Array.isArray(entries)?entries:read('saleProfitBookEntriesV1'));
+      var field=type==='sale'?'sale':'purchase'; title=type==='sale'?'Sale':'Purchase';
+      a=a.filter(function(x){var d=norm(x.date);return d>=from&&d<=to;});
+      total=a.reduce(function(s,x){return s+n(x[field]);},0);
+      rows=a.map(function(x){return '<div class="report-mini-row"><span>'+esc(x.date)+' • '+esc(x.item||'Item')+'</span><b>'+money(x[field])+'</b></div>';}).join('');
+    }else if(type==='expense'){
+      var e=(typeof expenses!=='undefined'&&Array.isArray(expenses)?expenses:read('spb_v4_expenses'));
+      title='Expense';e=e.filter(function(x){var d=norm(x.date);return d>=from&&d<=to;});
+      total=e.reduce(function(s,x){return s+n(x.amount);},0);
+      rows=e.map(function(x){return '<div class="report-mini-row"><span>'+esc(x.date)+' • '+esc(x.name||'Expense')+'</span><b>'+money(x.amount)+'</b></div>';}).join('');
+    }else{
+      var key=type==='mansoor'?'saleProfitBookMansoorV1':'saleProfitBookMydeenV1';
+      var p=read(key).filter(function(x){var d=norm(x.date);return d>=from&&d<=to;});
+      var taken=p.filter(function(x){return x.type==='taken'||x.type==='received';}).reduce(function(s,x){return s+n(x.amount);},0);
+      var given=p.filter(function(x){return x.type==='given';}).reduce(function(s,x){return s+n(x.amount);},0);
+      total=taken-given; title=type==='mansoor'?'Mansoor':'Mydeen';
+      rows=p.map(function(x){var plus=x.type!=='given';return '<div class="report-mini-row"><span>'+esc(x.date)+' • '+(plus?'பணம் வாங்கியது':'பணம் தந்தது')+(x.note?' • '+esc(x.note):'')+'</span><b>'+(plus?'+':'-')+money(x.amount)+'</b></div>';}).join('');
+      rows='<div class="report-mini-row"><span>💵 பணம் வாங்கியது</span><b>'+money(taken)+'</b></div><div class="report-mini-row"><span>💵 பணம் தந்தது</span><b>'+money(given)+'</b></div>'+rows;
+    }
+    box.innerHTML='<div class="report-result-mini"><h3 style="margin:0 0 8px">📊 '+esc(title)+' Report</h3><div class="meta">'+esc(from)+' → '+esc(to)+'</div><div class="report-mini-row"><span><b>Total '+esc(title)+'</b></span><b>'+money(total)+'</b></div>'+(rows||'<div class="meta" style="padding:10px 0">No records found.</div>')+'</div>';
+    box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  };
+  document.addEventListener('DOMContentLoaded',dates);
+  setTimeout(dates,100);
 })();
 </script>
 </body>
