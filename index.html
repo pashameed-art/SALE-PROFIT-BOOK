@@ -2167,7 +2167,7 @@ function renderHistory(){
 
   function dateCard(d,i){
     const g=grouped[d], key='hd'+d.replace(/-/g,'')+'_'+i;
-    const saleRows=g.sales.map(x=>`<div class="report-detail-row history-sale-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editEntry(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteEntry(${x.id})">Delete</button></div></div>`).join('');
+    const saleRows=g.sales.map(x=>`<div class="report-detail-row history-sale-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editEntry(${x.id})">Edit Sale Amount</button><button class="danger" onclick="event.stopPropagation();deleteEntry(${x.id})">Delete</button></div></div>`).join('');
     const expenseRows=g.expenses.map(x=>`<div class="report-detail-row history-expense-row"><b>💸 Expense: ${esc(x.name)} — ${money(x.amount)}</b><div class="report-detail-meta">Expense</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editExpense(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteExpense(${x.id})">Delete</button></div></div>`).join('');
     const details=(saleRows+expenseRows)||'<div class="empty">No details found</div>';
     return `<div class="report-date-card" id="card${key}">
@@ -2857,62 +2857,6 @@ window.printReport=function(){
   w.focus();
   setTimeout(function(){w.print();},300);
 };
-</script>
-<style id="v593-selected-report-fix">
-#selectedReportResult{margin-top:14px}
-#selectedReportResult .report-result-mini{background:#eef7f6;border:1px solid #dbe9e7}
-#selectedReportResult .report-result-mini h3{margin:0 0 10px}
-</style>
-<script id="v593-selected-report-fix-script">
-(function(){
-  function n(v){var x=Number(v);return isFinite(x)?x:0;}
-  function money(v){return '₹'+n(v).toLocaleString('en-IN',{maximumFractionDigits:2});}
-  function esc(v){return String(v==null?'':v).replace(/[&<>\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]||c;});}
-  function dateKey(v){
-    if(!v)return '';
-    var s=String(v).trim();
-    var m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); if(m)return m[3]+'-'+m[2]+'-'+m[1];
-    return s.slice(0,10);
-  }
-  function read(key){try{var x=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(x)?x:[];}catch(e){return [];}}
-  function getEntries(){return (typeof entries!=='undefined' && Array.isArray(entries))?entries:read('saleProfitBookEntries');}
-  function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-  function firstDay(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-01';}
-  function renderRows(rows){
-    if(!rows.length)return '<div class="meta" style="padding:10px 0">No records found for this date range.</div>';
-    return rows.map(function(r){return '<div class="report-mini-row"><span>'+r.label+'</span><b>'+money(r.amount)+'</b></div>';}).join('');
-  }
-  window.generateSelectedReport=function(){
-    try{
-      var type=(document.getElementById('reportTypeSelect')||{}).value||'sale';
-      var from=(document.getElementById('selectedReportFrom')||{}).value||'';
-      var to=(document.getElementById('selectedReportTo')||{}).value||'';
-      var box=document.getElementById('selectedReportResult');
-      if(!box){alert('Report result area not found.');return;}
-      if(!from||!to){alert('Date From மற்றும் Date To தேர்வு செய்யவும்.');return;}
-      if(from>to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return;}
-      var rows=[], total=0, title='';
-      if(type==='sale'||type==='purchase'){
-        var field=type==='sale'?'sale':'purchase'; title=type==='sale'?'Sale Report':'Purchase Report';
-        getEntries().filter(function(x){var d=dateKey(x.date);return d>=from&&d<=to;}).forEach(function(x){var a=n(x[field]);total+=a;rows.push({label:esc(dateKey(x.date))+' • '+esc(x.item||'Item'),amount:a});});
-      } else if(type==='expense'){
-        title='Expense Report'; read('spb_v4_expenses').filter(function(x){var d=dateKey(x.date);return d>=from&&d<=to;}).forEach(function(x){var a=n(x.amount);total+=a;rows.push({label:esc(dateKey(x.date))+' • '+esc(x.name||'Expense'),amount:a});});
-      } else {
-        var party=type==='mansoor'?'Mansoor':'Mydeen'; title=party+' Report';
-        var key=type==='mansoor'?'saleProfitBookMansoorV1':'saleProfitBookMydeenV1';
-        var taken=0,given=0;
-        read(key).filter(function(x){var d=dateKey(x.date);return d>=from&&d<=to;}).forEach(function(x){var a=n(x.amount);var isGiven=x.type==='given'||x.type==='paid'||x.type==='payment';if(isGiven)given+=a;else taken+=a;rows.push({label:esc(dateKey(x.date))+' • '+(isGiven?'பணம் தந்தது':'பணம் வாங்கியது')+(x.note?' • '+esc(x.note):''),amount:a});});
-        total=taken-given;
-        box.innerHTML='<div class="report-result-mini"><h3>🤝 '+party+' Report</h3><div class="report-mini-row"><span>📅 Date Range</span><b>'+esc(from)+' → '+esc(to)+'</b></div><div class="report-mini-row"><span>💵 பணம் வாங்கியது</span><b>'+money(taken)+'</b></div><div class="report-mini-row"><span>💵 பணம் தந்தது</span><b>'+money(given)+'</b></div><div class="report-mini-row"><span>🧾 Balance</span><b>'+money(total)+'</b></div><div style="margin-top:8px">'+renderRows(rows)+'</div></div>';
-        box.classList.remove('hidden'); box.scrollIntoView({behavior:'smooth',block:'nearest'}); return;
-      }
-      box.innerHTML='<div class="report-result-mini"><h3>📊 '+title+'</h3><div class="report-mini-row"><span>📅 Date Range</span><b>'+esc(from)+' → '+esc(to)+'</b></div><div class="report-mini-row"><span>'+esc(type==='sale'?'💰 Total Sale':type==='purchase'?'🧾 Total Purchase':'💸 Total Expense')+'</span><b>'+money(total)+'</b></div><div style="margin-top:8px">'+renderRows(rows)+'</div></div>';
-      box.classList.remove('hidden'); box.scrollIntoView({behavior:'smooth',block:'nearest'});
-    }catch(e){console.error('Selected report error',e);alert('Report உருவாக்க முடியவில்லை.');}
-  };
-  function init(){var f=document.getElementById('selectedReportFrom'),t=document.getElementById('selectedReportTo');if(f&&!f.value)f.value=firstDay();if(t&&!t.value)t.value=today();}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-})();
 </script>
 <script id="v551-backup-script">
 (function(){
