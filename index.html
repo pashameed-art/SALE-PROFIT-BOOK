@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.10</title>
+<title>Sale Profit Book • V6.20</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1205,23 +1205,11 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 #v613RemovePanel .v613-final-info{margin-top:12px}
 </style>
 
-
-<style id="v619-item-hide-style">
-.v619-hidden-item{opacity:.62}
-.v619-hidden-badge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:8px;background:#eef0f0;color:#6b7280;font-size:11px;font-weight:800}
-.v619-hide-btn{white-space:nowrap}
-@media(max-width:520px){
-  #itemModal .item-row{align-items:center}
-  #itemModal .item-row > div:last-child{flex-wrap:wrap;justify-content:flex-end}
-  #itemModal .v619-hide-btn{min-width:70px}
-}
-</style>
-
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.16</div>
+<div class="version">Version 6.20</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2190,9 +2178,9 @@ function init(){
 }
 function populateItems(){
   const old=$('item').value;
-  const sortedItems=[...(Array.isArray(items)?items:[])]
-    .filter(x=>!x.hidden)
-    .sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),undefined,{numeric:true,sensitivity:'base'}));
+  const sortedItems=[...(Array.isArray(items)?items:[])].sort((a,b)=>
+    String(a.name||'').localeCompare(String(b.name||''),undefined,{numeric:true,sensitivity:'base'})
+  );
   $('item').innerHTML='<option value="">Select Item</option>'+
     sortedItems.map(x=>`<option value="${esc(x.name)}">${esc(x.name)} — ${money(x.rate)}/m</option>`).join('');
   if(sortedItems.some(x=>x.name===old)) $('item').value=old;
@@ -2590,27 +2578,7 @@ function editItem(name){
 function renderItems(){
   const list=$('itemList');
   if(!items.length){list.innerHTML='<div class="empty">No items added</div>';return}
-  const sorted=[...items].sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),undefined,{numeric:true,sensitivity:'base'}));
-  list.innerHTML=sorted.map(x=>{
-    const hidden=!!x.hidden;
-    return `<div class="item-row ${hidden?'v619-hidden-item':''}">
-      <div><b>${esc(x.name)}</b><div class="meta">${money(x.rate)} / meter ${hidden?'<span class="v619-hidden-badge">Hidden</span>':''}</div></div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button class="secondary" onclick="editItem(${JSON.stringify(x.name)})">Edit</button>
-        <button class="${hidden?'primary':'secondary'} v619-hide-btn" onclick="toggleItemHidden(${JSON.stringify(x.name)})">${hidden?'👁️ Show':'🙈 Hide'}</button>
-        <button class="danger" onclick="deleteItem(${JSON.stringify(x.name)})">Delete</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-function toggleItemHidden(name){
-  const x=items.find(i=>i.name===name);
-  if(!x)return;
-  x.hidden=!x.hidden;
-  localStorage.setItem(ITEMS_KEY,JSON.stringify(items));
-  populateItems();
-  renderItems();
-  calculate();
+  list.innerHTML=items.map(x=>`<div class="item-row"><div><b>${esc(x.name)}</b><div class="meta">${money(x.rate)} / meter</div></div><div style="display:flex;gap:8px;align-items:center"><button class="secondary" onclick="editItem(${JSON.stringify(x.name)})">Edit</button><button class="danger" onclick="deleteItem(${JSON.stringify(x.name)})">Delete</button></div></div>`).join('');
 }
 function deleteItem(name){
   if(!confirm('Delete this item?'))return;
