@@ -3531,5 +3531,67 @@ setInterval(refreshDatesSafely,60000);
 })();
 </script>
 
+
+<script id="v610-maintenance-layer">
+(function(){
+'use strict';
+const BUILD='6.10';
+const KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','spb_v4_stock',
+            'saleProfitBookMansoorV1','saleProfitBookMydeenV1'];
+
+function parseArray(key){
+  try{
+    const v=JSON.parse(localStorage.getItem(key)||'[]');
+    return Array.isArray(v)?v:[];
+  }catch(e){return[];}
+}
+function cleanArray(a){
+  return a.filter(function(x){return x&&typeof x==='object';});
+}
+
+/* Non-destructive data hygiene: remove only malformed non-object array entries.
+   Valid business records are preserved byte-for-byte. */
+window.runV610DataCheck=function(){
+  let changed=0,summary=[];
+  KEYS.forEach(function(k){
+    const raw=localStorage.getItem(k);
+    if(raw===null)return;
+    let a;
+    try{a=JSON.parse(raw);}catch(e){summary.push(k+': invalid JSON');return;}
+    if(!Array.isArray(a)){summary.push(k+': not an array');return;}
+    const c=cleanArray(a);
+    if(c.length!==a.length){
+      localStorage.setItem(k,JSON.stringify(c));
+      changed+=a.length-c.length;
+    }
+    summary.push(k+': '+c.length+' records');
+  });
+  try{localStorage.setItem('__spb_build__',BUILD);}catch(e){}
+  return {removedMalformed:changed,summary:summary};
+};
+
+/* Prevent accidental duplicate submission when a Save button is double-tapped. */
+document.addEventListener('click',function(e){
+  const b=e.target&&e.target.closest&&e.target.closest('button');
+  if(!b)return;
+  const text=(b.textContent||'').trim().toLowerCase();
+  if(!/^(save|update|add|submit|சேமி)/.test(text))return;
+  if(b.dataset.v610Busy==='1'){e.preventDefault();e.stopImmediatePropagation();return;}
+  b.dataset.v610Busy='1';
+  setTimeout(function(){b.dataset.v610Busy='0';},700);
+},true);
+
+/* Make the build visible to the app and browser diagnostics. */
+window.SPB_V610={build:BUILD,check:window.runV610DataCheck};
+window.addEventListener('DOMContentLoaded',function(){
+  try{
+    const r=window.runV610DataCheck();
+    const bad=r.summary.filter(x=>x.indexOf('invalid JSON')>=0);
+    if(bad.length)console.warn('SALE-PROFIT-BOOK V6.1:',bad);
+  }catch(e){}
+});
+})();
+</script>
+
 </body>
 </html>
