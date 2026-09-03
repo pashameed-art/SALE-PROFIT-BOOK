@@ -1200,11 +1200,16 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 @media(max-width:520px){#v613RemovePanel{margin:14px 0;padding:16px;border-radius:18px}.v613-date-row{grid-template-columns:1fr}.v613-to{display:none}}
 </style>
 
+
+<style id="v615-final-info-style">
+#v613RemovePanel .v613-final-info{margin-top:12px}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.14</div>
+<div class="version">Version 6.16</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1354,7 +1359,6 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <h2 style="margin-top:0">Backup</h2>
 <div class="backup-actions-v455">
 <button class="full-backup" onclick="fullBackupV551()" type="button">📦 Backup</button>
-<button class="danger" id="removeSaleExpenseBtnV610" onclick="openRemoveSaleExpenseV610()" type="button">🗑️ Remove Sale &amp; Expense Data</button>
 <label class="backup-restore-label-v455 full-restore">♻️ Restore
         <input id="restoreFileV551" accept=".json,application/json" hidden="" onchange="restoreV551(this.files[0])" type="file"/>
 </label>
@@ -1362,20 +1366,6 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <div id="backupStatusV551" class="meta" style="margin-top:12px">Backup saves all app data to a JSON file. Restore replaces the current app data only after the file is validated.</div>
 <div class="meta" style="margin-top:12px">📦 <strong>Full Backup / Restore</strong> works completely offline — no Google login or OAuth is required.</div>
 <button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
-<div id="v613RemovePanel" class="v613-remove-panel">
-  <div class="v613-remove-title">🗑️ Remove Sale &amp; Expense Data</div>
-  <div class="v613-remove-info">This will permanently delete <b>Sale Amount</b> and <b>Expense Amount</b> data only. Other data such as Items, Purchase, Stock, Party and Settings will remain unchanged.</div>
-  <div class="v613-label">Select Date Range <span>(Optional)</span></div>
-  <div class="v613-date-row">
-    <label>From Date<input id="v613FromDate" type="date"></label>
-    <span class="v613-to">to</span>
-    <label>To Date<input id="v613ToDate" type="date"></label>
-  </div>
-  <div class="v613-hint">Leave both dates empty to remove all Sale &amp; Expense data.</div>
-  <div class="v613-warning">⚠️ <b>Warning:</b> This action cannot be undone. Please make a backup first.</div>
-  <button type="button" id="v613RemoveBtn" class="v613-remove-btn">🗑️ Remove Sale &amp; Expense Data</button>
-</div>
-
 <div id="removeSaleExpenseModalV610" class="v610-modal" aria-hidden="true">
   <div class="v610-modal-card" role="dialog" aria-modal="true" aria-labelledby="v610RemoveTitle">
     <div class="v610-warning">!</div>
@@ -1388,6 +1378,19 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
     </div>
   </div>
 </div>
+</div>
+<div id="v613RemovePanel" class="v613-remove-panel">
+  <div class="v613-remove-title">🗑️ Remove Sale &amp; Expense Data</div>
+  <div class="v613-label">Select Date Range <span>(Optional)</span></div>
+  <div class="v613-date-row">
+    <label>From Date<input id="v613FromDate" type="date"></label>
+    <span class="v613-to">to</span>
+    <label>To Date<input id="v613ToDate" type="date"></label>
+  </div>
+  <div class="v613-hint">Leave both dates empty to remove all Sale &amp; Expense data.</div>
+  <div class="v613-warning">⚠️ <b>Warning:</b> This action cannot be undone. Please make a backup first.</div>
+  <button type="button" id="v613RemoveBtn" class="v613-remove-btn">🗑️ Remove Sale &amp; Expense Data</button>
+<div class="v613-remove-info v613-final-info">This will permanently delete <b>Sale Amount</b> and <b>Expense Amount</b> data only. Other data such as Items, Purchase, Stock, Party and Settings will remain unchanged.</div>
 </div>
 </div>
 <section class="page hidden" id="mansoorPage">
