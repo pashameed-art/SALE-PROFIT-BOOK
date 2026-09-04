@@ -1375,7 +1375,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 </label>
 </div>
 <div id="backupStatusV551" class="meta" style="margin-top:12px">One-tap Google Drive backup: saves all app data securely to your Google Drive.</div>
-<div class="meta" style="margin-top:12px">📦 <strong>Full Backup / Restore</strong> works completely offline — no Google login or OAuth is required.</div>
+<div class="meta" style="margin-top:12px">☁️ <strong>GDrive Backup</strong> requires Google sign-in the first time. Restore can still use a downloaded backup file.</div>
 <button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
 <div id="removeSaleExpenseModalV610" class="v610-modal" aria-hidden="true">
   <div class="v610-modal-card" role="dialog" aria-modal="true" aria-labelledby="v610RemoveTitle">
@@ -3782,7 +3782,7 @@ window.updateSmartBackupInfo=function(){
 };
 window.addEventListener('DOMContentLoaded',function(){
  const b=document.querySelector('#backupPage .full-backup'),r=document.getElementById('restoreFileV551');
- if(b)b.onclick=window.fullBackupV600;
+ if(b)b.onclick=window.gdriveBackup;
  if(r)r.onchange=function(){window.restoreV600(this.files[0]);};
  if(typeof updateSmartBackupInfo==='function')updateSmartBackupInfo();
  refreshDatesSafely();setTimeout(refreshDatesSafely,250);
