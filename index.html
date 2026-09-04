@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.20</title>
+<title>Sale Profit Book • V6.21</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.20</div>
+<div class="version">Version 6.21</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1369,12 +1369,13 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <div class="page" id="backupPage">
 <div class="backup-box">
 <div class="backup-actions-v455">
-<button class="full-backup" onclick="fullBackupV551()" type="button">📦 Backup</button>
+<button class="full-backup" id="smartBackupBtn" onclick="fullBackupV600()" type="button">📦 Smart Backup</button>
 <label class="backup-restore-label-v455 full-restore">♻️ Restore
-        <input id="restoreFileV551" accept=".json,application/json" hidden="" onchange="restoreV551(this.files[0])" type="file"/>
+        <input id="restoreFileV551" accept=".json,application/json" hidden="" onchange="restoreV600(this.files[0])" type="file"/>
 </label>
 </div>
-<div id="backupStatusV551" class="meta" style="margin-top:12px">Backup saves all app data to a JSON file. Restore replaces the current app data only after the file is validated.</div>
+<div id="backupStatusV551" class="meta" style="margin-top:12px">Smart Backup protects all app data and creates a uniquely named JSON backup with date, time and data summary.</div>
+<div id="smartBackupInfo" class="meta" style="margin-top:8px"></div>
 <div class="meta" style="margin-top:12px">📦 <strong>Full Backup / Restore</strong> works completely offline — no Google login or OAuth is required.</div>
 <button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
 <div id="removeSaleExpenseModalV610" class="v610-modal" aria-hidden="true">
@@ -3687,7 +3688,7 @@ body.party-open-mode #partyPage {
 <script id="v600-stability-fixes">
 (function(){
 'use strict';
-const V6_BUILD='6.00';
+const V6_BUILD='6.21';
 const ITEMS_KEY='spb_v4_items', ENTRIES_KEY='spb_v4_entries',
 EXPENSES_KEY='spb_v4_expenses', STOCK_KEY='spb_v4_stock';
 function safeArray(key){try{const v=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(v)?v:[];}catch(e){return[];}}
@@ -3713,12 +3714,27 @@ function refreshDatesSafely(){
 }
 window.fullBackupV600=function(){
  try{
-  const storage={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k!==null)storage[k]=localStorage.getItem(k);}
-  const data={app:'SALE-PROFIT-BOOK',version:V6_BUILD,createdAt:new Date().toISOString(),storage};
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download='SALE-PROFIT-BOOK-BACKUP-'+isoToday()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
-  const st=document.getElementById('backupStatusV551');if(st){st.textContent='✅ V6 backup created successfully.';st.style.color='#126d66';}
- }catch(e){const st=document.getElementById('backupStatusV551');if(st){st.textContent='❌ Backup failed: '+(e.message||'Unknown error');st.style.color='#9b3333';}}
+  const storage={};
+  for(let i=0;i<localStorage.length;i++){
+   const k=localStorage.key(i);
+   if(k!==null) storage[k]=localStorage.getItem(k);
+  }
+  const entries=safeArray(ENTRIES_KEY), expenses=safeArray(EXPENSES_KEY), items=safeArray(ITEMS_KEY), stock=safeArray(STOCK_KEY);
+  const now=new Date(), stamp=now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0')+String(now.getSeconds()).padStart(2,'0');
+  const summary={items:items.length,entries:entries.length,expenses:expenses.length,stockRecords:stock.length,storageKeys:Object.keys(storage).length};
+  const data={app:'SALE-PROFIT-BOOK',version:'6.21',createdAt:now.toISOString(),summary:summary,storage:storage};
+  const json=JSON.stringify(data,null,2);
+  const blob=new Blob([json],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='SALE-PROFIT-BOOK-SMART-BACKUP-'+stamp+'.json';
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  try{localStorage.setItem('spb_last_backup_at',now.toISOString());localStorage.setItem('spb_last_backup_summary',JSON.stringify(summary));}catch(e){}
+  const st=document.getElementById('backupStatusV551');
+  if(st){st.textContent='✅ Smart Backup created successfully. Keep the JSON file safe.';st.style.color='#126d66';}
+  if(typeof updateSmartBackupInfo==='function')updateSmartBackupInfo();
+ }catch(e){
+  const st=document.getElementById('backupStatusV551');
+  if(st){st.textContent='❌ Backup failed: '+(e.message||'Unknown error');st.style.color='#9b3333';}
+ }
 };
 window.restoreV600=function(file){
  if(!file)return;
@@ -3734,17 +3750,42 @@ window.restoreV600=function(file){
    };
    else throw new Error('Invalid backup format');
    const keys=Object.keys(storage);if(!keys.length)throw new Error('Backup is empty');
-   if(!confirm('Restore this backup? Your current app data will be replaced.'))return;
-   localStorage.clear();keys.forEach(k=>localStorage.setItem(k,String(storage[k]??'')));location.reload();
-  }catch(e){const st=document.getElementById('backupStatusV551');if(st){st.textContent='❌ Restore failed: invalid or damaged backup file.';st.style.color='#9b3333';}}
+   const summary=data.summary;
+   if(summary && (typeof summary.items!=='number'||typeof summary.entries!=='number'||typeof summary.expenses!=='number'))throw new Error('Invalid summary');
+   let message='Restore this backup? Your current app data will be replaced.';
+   if(data.createdAt)message+='\\n\\nBackup date: '+new Date(data.createdAt).toLocaleString();
+   if(summary)message+='\\nItems: '+summary.items+' | Entries: '+summary.entries+' | Expenses: '+summary.expenses;
+   if(!confirm(message))return;
+   localStorage.clear();
+   keys.forEach(k=>localStorage.setItem(k,String(storage[k]??'')));
+   alert('✅ Backup restored successfully.\\n\\nThe app will now reload.');
+   location.reload();
+  }catch(e){
+   const st=document.getElementById('backupStatusV551');
+   if(st){st.textContent='❌ Restore failed: invalid or damaged backup file.';st.style.color='#9b3333';}
+  }
  };
- reader.onerror=function(){const st=document.getElementById('backupStatusV551');if(st){st.textContent='❌ Could not read the backup file.';st.style.color='#9b3333';}};
+ reader.onerror=function(){
+  const st=document.getElementById('backupStatusV551');
+  if(st){st.textContent='❌ Could not read the backup file.';st.style.color='#9b3333';}
+ };
  reader.readAsText(file);
+};
+window.updateSmartBackupInfo=function(){
+ const el=document.getElementById('smartBackupInfo');if(!el)return;
+ try{
+  const at=localStorage.getItem('spb_last_backup_at'), raw=localStorage.getItem('spb_last_backup_summary');
+  if(!at){el.textContent='Last backup: Not recorded on this device.';return;}
+  const s=JSON.parse(raw||'{}');
+  el.textContent='Last backup: '+new Date(at).toLocaleString()+
+   ' • Items '+(s.items??0)+' • Entries '+(s.entries??0)+' • Expenses '+(s.expenses??0);
+ }catch(e){el.textContent='Last backup information unavailable.';}
 };
 window.addEventListener('DOMContentLoaded',function(){
  const b=document.querySelector('#backupPage .full-backup'),r=document.getElementById('restoreFileV551');
  if(b)b.onclick=window.fullBackupV600;
  if(r)r.onchange=function(){window.restoreV600(this.files[0]);};
+ if(typeof updateSmartBackupInfo==='function')updateSmartBackupInfo();
  refreshDatesSafely();setTimeout(refreshDatesSafely,250);
 });
 window.addEventListener('pageshow',refreshDatesSafely);
@@ -3757,7 +3798,7 @@ setInterval(refreshDatesSafely,60000);
 <script id="v610-maintenance-layer">
 (function(){
 'use strict';
-const BUILD='6.10';
+const BUILD='6.21';
 const KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','spb_v4_stock',
             'saleProfitBookMansoorV1','saleProfitBookMydeenV1'];
 
