@@ -1212,6 +1212,11 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 .v620-hide-btn{white-space:nowrap}
 </style>
 
+<style id="v620-hide-fix">
+#itemList .v620-hide-btn{cursor:pointer;pointer-events:auto;touch-action:manipulation}
+#itemList .v620-hidden-item{opacity:.58}
+#itemList .v620-hidden-badge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:8px;background:#eef0f0;color:#6b7280;font-size:11px;font-weight:800}
+</style>
 </head>
 <body>
 <header>
@@ -2592,22 +2597,42 @@ function renderItems(){
       <div><b>${esc(x.name)}</b><div class="meta">${money(x.rate)} / meter ${hidden?'<span class="v620-hidden-badge">Hidden</span>':''}</div></div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button class="secondary" onclick="editItem(${JSON.stringify(x.name)})">Edit</button>
-        <button class="secondary v620-hide-btn" onclick="toggleItemHidden(${JSON.stringify(x.name)})">${hidden?'👁️ Show':'🙈 Hide'}</button>
+        <button type="button" class="secondary v620-hide-btn" data-hide-item="${esc(x.name)}">${hidden?'👁️ Show':'🙈 Hide'}</button>
         <button class="danger" onclick="deleteItem(${JSON.stringify(x.name)})">Delete</button>
       </div>
     </div>`;
   }).join('');
 }
 function toggleItemHidden(name){
-  const x=items.find(i=>i.name===name);
-  if(!x)return;
-  x.hidden=!x.hidden;
+  name=String(name||'');
+  const x=items.find(i=>String(i.name)===name);
+  if(!x){alert('Item not found.');return false;}
+  x.hidden=!Boolean(x.hidden);
   localStorage.setItem(ITEMS_KEY,JSON.stringify(items));
   populateItems();
   renderItems();
   renderStock();
   calculate();
+  return true;
 }
+window.toggleItemHidden=toggleItemHidden;
+
+(function bindItemHideButtons(){
+  function bind(){
+    const list=document.getElementById('itemList');
+    if(!list || list.dataset.hideBound==='1') return;
+    list.dataset.hideBound='1';
+    list.addEventListener('click',function(e){
+      const btn=e.target.closest('.v620-hide-btn');
+      if(!btn)return;
+      e.preventDefault();
+      e.stopPropagation();
+      toggleItemHidden(btn.getAttribute('data-hide-item')||'');
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind);
+  else bind();
+})();
 function deleteItem(name){
   if(!confirm('Delete this item?'))return;
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();renderStock();calculate();
