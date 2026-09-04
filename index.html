@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.21</title>
+<title>Sale Profit Book • V6.22</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.21</div>
+<div class="version">Version 6.22</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1369,13 +1369,12 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <div class="page" id="backupPage">
 <div class="backup-box">
 <div class="backup-actions-v455">
-<button class="full-backup" id="smartBackupBtn" onclick="fullBackupV600()" type="button">📦 Smart Backup</button>
+<button class="full-backup" id="gdriveBackupBtn" onclick="gdriveBackup()" type="button">☁️ GDrive Backup</button>
 <label class="backup-restore-label-v455 full-restore">♻️ Restore
         <input id="restoreFileV551" accept=".json,application/json" hidden="" onchange="restoreV600(this.files[0])" type="file"/>
 </label>
 </div>
-<div id="backupStatusV551" class="meta" style="margin-top:12px">Smart Backup protects all app data and creates a uniquely named JSON backup with date, time and data summary.</div>
-<div id="smartBackupInfo" class="meta" style="margin-top:8px"></div>
+<div id="backupStatusV551" class="meta" style="margin-top:12px">One-tap Google Drive backup: saves all app data securely to your Google Drive.</div>
 <div class="meta" style="margin-top:12px">📦 <strong>Full Backup / Restore</strong> works completely offline — no Google login or OAuth is required.</div>
 <button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
 <div id="removeSaleExpenseModalV610" class="v610-modal" aria-hidden="true">
@@ -3922,5 +3921,145 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
+
+<script id="v622-gdrive-backup">
+(function(){
+  const GDRIVE_CLIENT_ID = "123737120474-8sqc1sb4p0i9j7s9nq56j4gkd784lm1n.apps.googleusercontent.com";
+  const GDRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+  let gdriveTokenClient = null;
+  let gdriveAccessToken = null;
+
+  function gdriveStatus(msg, ok){
+    const st=document.getElementById('backupStatusV551');
+    if(st){
+      st.textContent=msg;
+      st.style.color=ok ? '#126d66' : '#9b3333';
+    }
+  }
+
+  function gdriveCollectData(){
+    const storage={};
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k!==null) storage[k]=localStorage.getItem(k);
+    }
+    const now=new Date();
+    return {
+      app:"SALE-PROFIT-BOOK",
+      version:"6.22",
+      createdAt:now.toISOString(),
+      storage:storage
+    };
+  }
+
+  function gdriveLoadGIS(){
+    return new Promise((resolve,reject)=>{
+      if(window.google && google.accounts && google.accounts.oauth2){resolve();return;}
+      const existing=document.getElementById('google-gis-script');
+      if(existing){
+        existing.addEventListener('load',()=>resolve(),{once:true});
+        existing.addEventListener('error',()=>reject(new Error('Google sign-in library failed to load')),{once:true});
+        return;
+      }
+      const s=document.createElement('script');
+      s.id='google-gis-script';
+      s.src='https://accounts.google.com/gsi/client';
+      s.async=true;s.defer=true;
+      s.onload=()=>resolve();
+      s.onerror=()=>reject(new Error('Google sign-in library failed to load'));
+      document.head.appendChild(s);
+    });
+  }
+
+  async function gdriveGetToken(){
+    await gdriveLoadGIS();
+    return new Promise((resolve,reject)=>{
+      try{
+        if(!gdriveTokenClient){
+          gdriveTokenClient=google.accounts.oauth2.initTokenClient({
+            client_id:GDRIVE_CLIENT_ID,
+            scope:GDRIVE_SCOPE,
+            callback:(resp)=>{
+              if(resp && resp.access_token){gdriveAccessToken=resp.access_token;resolve(resp.access_token);}
+              else reject(new Error('Google authorization was not completed'));
+            }
+          });
+        } else {
+          gdriveTokenClient.callback=(resp)=>{
+            if(resp && resp.access_token){gdriveAccessToken=resp.access_token;resolve(resp.access_token);}
+            else reject(new Error('Google authorization was not completed'));
+          };
+        }
+        gdriveTokenClient.requestAccessToken({prompt:""});
+      }catch(e){reject(e);}
+    });
+  }
+
+  async function gdriveFindBackup(token){
+    const q="name = 'SALE-PROFIT-BOOK-GDRIVE-BACKUP.json' and trashed = false";
+    const url="https://www.googleapis.com/drive/v3/files?q="+encodeURIComponent(q)+"&spaces=drive&fields=files(id,name)";
+    const r=await fetch(url,{headers:{Authorization:"Bearer "+token}});
+    if(!r.ok) throw new Error("Could not search Google Drive");
+    const d=await r.json();
+    return d.files && d.files.length ? d.files[0] : null;
+  }
+
+  async function gdriveUpload(token){
+    const data=gdriveCollectData();
+    const json=JSON.stringify(data,null,2);
+    const blob=new Blob([json],{type:"application/json"});
+    const existing=await gdriveFindBackup(token);
+    const metadata={name:"SALE-PROFIT-BOOK-GDRIVE-BACKUP.json",mimeType:"application/json"};
+    let url,method,body;
+
+    if(existing){
+      url="https://www.googleapis.com/upload/drive/v3/files/"+encodeURIComponent(existing.id)+"?uploadType=multipart";
+      method="PATCH";
+    }else{
+      url="https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart";
+      method="POST";
+    }
+
+    const form=new FormData();
+    form.append("metadata",new Blob([JSON.stringify(metadata)],{type:"application/json"}));
+    form.append("file",blob);
+
+    const r=await fetch(url,{
+      method:method,
+      headers:{Authorization:"Bearer "+token},
+      body:form
+    });
+    if(!r.ok){
+      let detail="";
+      try{detail=await r.text();}catch(e){}
+      throw new Error("Google Drive upload failed");
+    }
+    return data;
+  }
+
+  window.gdriveBackup=async function(){
+    const btn=document.getElementById('gdriveBackupBtn');
+    if(btn){btn.disabled=true;btn.textContent="☁️ Backing up...";}
+    try{
+      gdriveStatus("Connecting to Google Drive…",true);
+      const token=await gdriveGetToken();
+      gdriveStatus("Uploading backup to Google Drive…",true);
+      const data=await gdriveUpload(token);
+      const n=Object.keys(data.storage||{}).length;
+      gdriveStatus("✅ GDrive Backup completed successfully. "+n+" data sections saved.",true);
+      try{
+        localStorage.setItem("spb_last_gdrive_backup_at",data.createdAt);
+      }catch(e){}
+      alert("✅ GDrive Backup completed successfully.\n\nYour SALE-PROFIT-BOOK data is saved in Google Drive.");
+    }catch(e){
+      console.error(e);
+      gdriveStatus("❌ GDrive Backup failed. Please check Google sign-in / Drive permission.",false);
+      alert("GDrive Backup failed.\n\nPlease make sure you are signed in to Google and allow Drive access.");
+    }finally{
+      if(btn){btn.disabled=false;btn.textContent="☁️ GDrive Backup";}
+    }
+  };
+})();
+</script>
 </body>
 </html>
