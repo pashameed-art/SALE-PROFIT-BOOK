@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.32</div>
+<div class="version">Version 6.33</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4332,7 +4332,7 @@ document.addEventListener('DOMContentLoaded',function(){
 <script id="v632-sterling-stockout">
 (function(){
   try{
-    const DONE='spb_v632_sterling21_sold';
+    const DONE='spb_v633_sterling21_sold';
     if(localStorage.getItem(DONE)==='1') return;
     const sk='spb_v4_stock';
     let movements=JSON.parse(localStorage.getItem(sk)||'[]');
@@ -4342,7 +4342,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const itemName=actual && actual.name ? actual.name : 'Sterling';
     movements.push({
       id:Date.now(),
-      date:(typeof today==='function'?today():'2026-09-06'),
+      date:'2026-09-05',
       item:itemName,
       meter:21,
       type:'Stock Out',
