@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.25</div>
+<div class="version">Version 6.26</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4215,6 +4215,86 @@ document.addEventListener('DOMContentLoaded',function(){
       }
     } catch(e) {}
   });
+})();
+</script>
+
+<script id="v626-mydeen-fix">
+(function(){
+  'use strict';
+  function readMydeen(){
+    try{
+      var a=JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]');
+      return Array.isArray(a)?a:[];
+    }catch(e){ return []; }
+  }
+  function num(v){
+    var n=Number(v);
+    return isFinite(n)?n:0;
+  }
+  function calc(a){
+    var taken=0,given=0;
+    (Array.isArray(a)?a:[]).forEach(function(x){
+      var type=String(x&&x.type||'').toLowerCase().trim();
+      if(type==='taken'||type==='received'||type==='buy'||type==='bought') taken+=num(x.amount);
+      else if(type==='given'||type==='paid'||type==='pay') given+=num(x.amount);
+    });
+    return {taken:taken,given:given,balance:taken-given};
+  }
+  function money(v){return '₹'+num(v).toLocaleString('en-IN',{maximumFractionDigits:2});}
+  window.refreshMydeenBalance626=function(){
+    var b=document.getElementById('partyMydeenBalance');
+    if(!b)return;
+    var c=calc(readMydeen());
+    b.textContent=money(c.balance);
+  };
+  window.restoreMydeenFromBackup626=function(file){
+    if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(){
+      try{
+        var root=JSON.parse(reader.result);
+        var storage=root&&root.storage;
+        var raw=storage&&storage.saleProfitBookMydeenV1;
+        if(!raw){alert('இந்த Backup-ல் Mydeen data இல்லை.');return;}
+        var arr=typeof raw==='string'?JSON.parse(raw):raw;
+        if(!Array.isArray(arr)){alert('Mydeen data சரியான வடிவில் இல்லை.');return;}
+        if(readMydeen().length && !confirm('தற்போதைய Mydeen data உள்ளது. Backup data-ஆல் replace செய்யவா?')) return;
+        localStorage.setItem('saleProfitBookMydeenV1',JSON.stringify(arr));
+        if(typeof renderPartyMydeen==='function') renderPartyMydeen();
+        if(typeof generateMydeenMonthlyReport==='function') generateMydeenMonthlyReport();
+        refreshMydeenBalance626();
+        alert('Mydeen data restore completed successfully.');
+      }catch(e){alert('Backup file படிக்க முடியவில்லை.');}
+    };
+    reader.readAsText(file);
+  };
+  function addRestoreUI(){
+    var host=document.getElementById('partyMydeenHost');
+    if(!host || document.getElementById('mydeenRestoreBtn626')) return;
+    var box=document.createElement('div');
+    box.className='card';
+    box.style.marginTop='12px';
+    box.innerHTML='<button id="mydeenRestoreBtn626" type="button" class="secondary" style="width:100%">♻️ Restore Mydeen from Backup</button><input id="mydeenRestoreFile626" type="file" accept="application/json,.json" style="display:none"><div class="meta" style="margin-top:8px">Backup JSON file-ஐ தேர்வு செய்து Mydeen கணக்கை மட்டும் restore செய்யலாம்.</div>';
+    host.insertBefore(box,host.firstChild);
+    var btn=document.getElementById('mydeenRestoreBtn626'),inp=document.getElementById('mydeenRestoreFile626');
+    btn.addEventListener('click',function(){inp.click();});
+    inp.addEventListener('change',function(){restoreMydeenFromBackup626(this.files&&this.files[0]);this.value='';});
+  }
+  // Ensure the balance always uses the Mydeen ledger key and never Bike data.
+  document.addEventListener('DOMContentLoaded',function(){
+    addRestoreUI();
+    setTimeout(function(){addRestoreUI();refreshMydeenBalance626();},150);
+  });
+  var oldOpen=window.openPartyLedger;
+  if(typeof oldOpen==='function'){
+    window.openPartyLedger=function(value){
+      var r=oldOpen.apply(this,arguments);
+      if(value==='mydeen'){
+        setTimeout(function(){addRestoreUI();refreshMydeenBalance626();},50);
+      }
+      return r;
+    };
+  }
 })();
 </script>
 </body>
