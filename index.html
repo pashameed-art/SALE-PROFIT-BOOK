@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.33</div>
+<div class="version">Version 6.34</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4351,6 +4351,26 @@ document.addEventListener('DOMContentLoaded',function(){
     localStorage.setItem(sk,JSON.stringify(movements));
     localStorage.setItem(DONE,'1');
     if(typeof stockMovements!=='undefined') stockMovements=movements;
+    if(typeof renderStock==='function') renderStock();
+  }catch(e){}
+})();
+</script>
+
+<script id="v634-sterling-duplicate-fix">
+(function(){
+  try{
+    const KEY='spb_v4_stock';
+    let a=JSON.parse(localStorage.getItem(KEY)||'[]');
+    if(!Array.isArray(a)) return;
+    const cleaned=a.filter(x=>{
+      const item=String(x.item||'').trim().toLowerCase();
+      const date=String(x.date||'').slice(0,10);
+      const type=String(x.type||'').toLowerCase();
+      const meter=Number(x.meter||0);
+      return !(item==='sterling' && date==='2026-09-06' && type==='stock out' && meter===21);
+    });
+    localStorage.setItem(KEY,JSON.stringify(cleaned));
+    if(typeof stockMovements!=='undefined') stockMovements=cleaned;
     if(typeof renderStock==='function') renderStock();
   }catch(e){}
 })();
