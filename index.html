@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.30</div>
+<div class="version">Version 6.31</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4307,6 +4307,14 @@ document.addEventListener('DOMContentLoaded',function(){
     localStorage.removeItem('saleProfitBookMansoorV1');
     localStorage.removeItem('saleProfitBookMydeenV1');
     localStorage.removeItem('saleProfitBookSelectedPartyV1');
+  } catch(e) {}
+})();
+</script>
+
+<script id="v631-mydeen-remove">
+(function(){
+  try {
+    localStorage.removeItem('saleProfitBookMydeenV1');
   } catch(e) {}
 })();
 </script>
