@@ -2771,7 +2771,7 @@ function updateTodayExpenseTotal(){
 <script>
 (function(){
   const MKEY='saleProfitBookMansoorV1';
-  const INITIAL_BALANCE=43334;
+  const INITIAL_BALANCE=49497;
   function localToday(){
     const d=new Date();
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -2888,7 +2888,7 @@ function updateTodayExpenseTotal(){
     const oldDates=Object.keys(oldMap).sort((a,b)=>b.localeCompare(a));
     if(oldDates.length || INITIAL_BALANCE>0){
       html += '<div class="expense-section-title old-expense-title">📜 Previous History</div>';
-      html += '<div class="expense-old-row mansoor-old-toggle mansoor-opening-balance"><span>📅 19.08.26</span><strong>₹'+INITIAL_BALANCE.toLocaleString('en-IN')+'</strong></div>';
+      html += '<div class="expense-old-row mansoor-old-toggle mansoor-opening-balance"><span>📅 05.09.26</span><strong>₹'+INITIAL_BALANCE.toLocaleString('en-IN')+'</strong></div>';
       html += oldDates.map(d=>{
         const net=oldMap[d].taken-oldMap[d].given;
         const sign=net>=0?'+':'-';
