@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.23</title>
+<title>Sale Profit Book • V6.24</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.23</div>
+<div class="version">Version 6.24</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3721,7 +3721,7 @@ window.fullBackupV600=function(){
   const entries=safeArray(ENTRIES_KEY), expenses=safeArray(EXPENSES_KEY), items=safeArray(ITEMS_KEY), stock=safeArray(STOCK_KEY);
   const now=new Date(), stamp=now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0')+String(now.getSeconds()).padStart(2,'0');
   const summary={items:items.length,entries:entries.length,expenses:expenses.length,stockRecords:stock.length,storageKeys:Object.keys(storage).length};
-  const data={app:'SALE-PROFIT-BOOK',version:'6.21',createdAt:now.toISOString(),summary:summary,storage:storage};
+  const data={app:'SALE-PROFIT-BOOK',version:'6.24',createdAt:now.toISOString(),summary:summary,storage:storage};
   const json=JSON.stringify(data,null,2);
   const blob=new Blob([json],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=url;a.download='SALE-PROFIT-BOOK-SMART-BACKUP-'+stamp+'.json';
@@ -3924,6 +3924,68 @@ document.addEventListener('DOMContentLoaded',function(){
 
 
 
+
+<script id="v624-item-recovery">
+(function(){
+  function parseArray(v){
+    try{
+      var x=JSON.parse(v);
+      return Array.isArray(x)?x:null;
+    }catch(e){return null;}
+  }
+
+  function looksLikeItems(arr){
+    if(!Array.isArray(arr)||!arr.length) return false;
+    var good=0;
+    for(var i=0;i<Math.min(arr.length,20);i++){
+      var x=arr[i];
+      if(x && typeof x==='object' && String(x.name||'').trim() && (x.rate!==undefined || x.purchase!==undefined || x.purchaseRate!==undefined)) good++;
+    }
+    return good>=Math.max(1,Math.min(3,arr.length));
+  }
+
+  window.recoverSaleProfitBookItems=function(){
+    try{
+      var current=parseArray(localStorage.getItem(ITEMS_KEY));
+      if(current && current.length){
+        items=current;
+        return current.length;
+      }
+
+      var best=null,bestKey='';
+      for(var i=0;i<localStorage.length;i++){
+        var key=localStorage.key(i);
+        if(!key || key===ITEMS_KEY) continue;
+        var arr=parseArray(localStorage.getItem(key));
+        if(!looksLikeItems(arr)) continue;
+
+        // Prefer known legacy item-like keys, then the largest matching array.
+        var score=arr.length;
+        if(/item|stock|product/i.test(key)) score+=10000;
+        if(!best || score>best.score) best={arr:arr,score:score,key:key};
+      }
+
+      if(best){
+        items=best.arr;
+        localStorage.setItem(ITEMS_KEY,JSON.stringify(items));
+        return items.length;
+      }
+    }catch(e){}
+    return 0;
+  };
+
+  // Run immediately, before the app is used, so Select Item sees recovered data.
+  window.recoverSaleProfitBookItems();
+
+  document.addEventListener('DOMContentLoaded',function(){
+    try{
+      window.recoverSaleProfitBookItems();
+      if(typeof populateItems==='function') populateItems();
+      if(typeof renderItems==='function') renderItems();
+    }catch(e){}
+  });
+})();
+</script>
 <script id="v623-data-preserve">
 (function(){
   // Preserve all existing app data. Never clear localStorage during startup.
