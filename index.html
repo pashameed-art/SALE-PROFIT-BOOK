@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.31</div>
+<div class="version">Version 6.32</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2484,23 +2484,33 @@ function renderStock(){
     return;
   }
 
-  const name=selected;
   const additions=(Array.isArray(stockMovements)?stockMovements:[])
-    .filter(x=>x.item===name)
+    .filter(x=>x.item===selected && String(x.type||'Stock In')!=='Stock Out')
     .map(x=>({date:normalizeEntryDate(x.date),added:Number(x.meter||0),id:Number(x.id||0)}));
-  const sales=(Array.isArray(entries)?entries:[])
-    .filter(x=>x.item===name)
+
+  const stockOuts=(Array.isArray(stockMovements)?stockMovements:[])
+    .filter(x=>x.item===selected && String(x.type||'')==='Stock Out')
     .map(x=>({date:normalizeEntryDate(x.date),sold:Number(x.meter||0),id:Number(x.id||0)}));
 
-  const dates=[...new Set([...additions.map(x=>x.date),...sales.map(x=>x.date)].filter(Boolean))].sort();
+  const sales=(Array.isArray(entries)?entries:[])
+    .filter(x=>x.item===selected)
+    .map(x=>({date:normalizeEntryDate(x.date),sold:Number(x.meter||0),id:Number(x.id||0)}));
+
+  const dates=[...new Set([
+    ...additions.map(x=>x.date),
+    ...stockOuts.map(x=>x.date),
+    ...sales.map(x=>x.date)
+  ].filter(Boolean))].sort();
+
   let balance=0;
   const rows=dates.map(date=>{
     const added=additions.filter(x=>x.date===date).reduce((a,x)=>a+x.added,0);
-    const sold=sales.filter(x=>x.date===date).reduce((a,x)=>a+x.sold,0);
+    const sold=stockOuts.filter(x=>x.date===date).reduce((a,x)=>a+x.sold,0)
+      +sales.filter(x=>x.date===date).reduce((a,x)=>a+x.sold,0);
     balance+=added-sold;
     return `<tr>
       <td>${fmtStockDate(date)}</td>
-      <td>${esc(name)}</td>
+      <td>${esc(selected)}</td>
       <td class="stock-added">${added.toFixed(2)} m</td>
       <td class="stock-sold">${sold.toFixed(2)} m</td>
       <td class="stock-balance-cell">${balance.toFixed(2)} m</td>
@@ -2508,11 +2518,11 @@ function renderStock(){
   }).join('');
 
   const totalAdded=additions.reduce((a,x)=>a+x.added,0);
-  const totalSold=sales.reduce((a,x)=>a+x.sold,0);
+  const totalSold=stockOuts.reduce((a,x)=>a+x.sold,0)+sales.reduce((a,x)=>a+x.sold,0);
   const finalBalance=totalAdded-totalSold;
   el.innerHTML=`
     <div class="stock-item">
-      <div class="stock-head"><b>${esc(name)}</b><span class="stock-balance">${finalBalance.toFixed(2)} m</span></div>
+      <div class="stock-head"><b>${esc(selected)}</b><span class="stock-balance">${finalBalance.toFixed(2)} m</span></div>
       <div class="stock-table-wrap">
         <table class="stock-table">
           <thead><tr><th>Date</th><th>Item</th><th>Added Meter</th><th>Sold Meter</th><th>Balance Meter</th></tr></thead>
@@ -4316,6 +4326,33 @@ document.addEventListener('DOMContentLoaded',function(){
   try {
     localStorage.removeItem('saleProfitBookMydeenV1');
   } catch(e) {}
+})();
+</script>
+
+<script id="v632-sterling-stockout">
+(function(){
+  try{
+    const DONE='spb_v632_sterling21_sold';
+    if(localStorage.getItem(DONE)==='1') return;
+    const sk='spb_v4_stock';
+    let movements=JSON.parse(localStorage.getItem(sk)||'[]');
+    if(!Array.isArray(movements)) movements=[];
+    const arr=JSON.parse(localStorage.getItem('spb_v4_items')||'[]');
+    const actual=(Array.isArray(arr)?arr:[]).find(x=>String(x.name||'').trim().toLowerCase()==='sterling');
+    const itemName=actual && actual.name ? actual.name : 'Sterling';
+    movements.push({
+      id:Date.now(),
+      date:(typeof today==='function'?today():'2026-09-06'),
+      item:itemName,
+      meter:21,
+      type:'Stock Out',
+      note:'Sold Meter'
+    });
+    localStorage.setItem(sk,JSON.stringify(movements));
+    localStorage.setItem(DONE,'1');
+    if(typeof stockMovements!=='undefined') stockMovements=movements;
+    if(typeof renderStock==='function') renderStock();
+  }catch(e){}
 })();
 </script>
 </body>
