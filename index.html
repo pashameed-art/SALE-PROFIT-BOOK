@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.24</div>
+<div class="version">Version 6.25</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4163,6 +4163,58 @@ document.addEventListener('DOMContentLoaded',function(){
       if(btn){btn.disabled=false;btn.textContent="☁️ GDrive Backup";}
     }
   };
+})();
+</script>
+
+<!-- V6.25: Restore SALE-PROFIT-BOOK items from verified uploaded backup.
+     Do not import MASS BIKE item names. Only repairs the item list when the current list
+     is empty or clearly contains the known MASS BIKE sample items. -->
+<script>
+(function restoreVerifiedSaleProfitItems() {
+  const verifiedItems = [
+ {"name":"AJAY GWALIAR","rate":165,"hidden":false},
+ {"name":"BSL DIPLAMAT SUPER","rate":230},
+ {"name":"BSL EXCUTIVE CHOICE","rate":225},
+ {"name":"BSL OFFICER CHARM","rate":225},
+ {"name":"IPS SHATAK FAB","rate":165},
+ {"name":"RAYMOND BONANZA","rate":390},
+ {"name":"RAYMOND PREMIUM TROVIN","rate":365},
+ {"name":"RAYMOND SUPER TROVINE","rate":450},
+ {"name":"RAYMOND TRIDENT","rate":352},
+ {"name":"RAYMOND TRO STRETCH","rate":425},
+ {"name":"RAYMOND TROVINE","rate":335},
+ {"name":"TNP AJAY","rate":185},
+ {"name":"TNP BOND","rate":200}
+];
+  try {
+    const raw = localStorage.getItem('spb_v4_items');
+    let current = [];
+    try { current = JSON.parse(raw || '[]'); } catch(e) { current = []; }
+    if (!Array.isArray(current)) current = [];
+    const names = current.map(x => String(x && x.name || '').trim().toLowerCase());
+    const bikeNames = new Set(['access 125','activa 6g','pulsar 150','jupiter classic','hero pleasure','activa','jupiter (blue)','dio']);
+    const hasKnownBikeItem = names.some(n => bikeNames.has(n));
+    const hasVerifiedSaleItem = names.some(n => verifiedItems.some(v => v.name.toLowerCase() === n));
+    if (current.length === 0 || (hasKnownBikeItem && !hasVerifiedSaleItem)) {
+      localStorage.setItem('spb_v4_items', JSON.stringify(verifiedItems));
+      if (typeof items !== 'undefined') {
+        items = verifiedItems.slice();
+      }
+      console.log('V6.25: SALE-PROFIT-BOOK items restored:', verifiedItems.length);
+    }
+  } catch(e) {
+    console.warn('V6.25 item restore skipped', e);
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    try {
+      const current = JSON.parse(localStorage.getItem('spb_v4_items') || '[]');
+      if (Array.isArray(current) && current.length) {
+        if (typeof items !== 'undefined') items = current;
+        if (typeof populateItems === 'function') populateItems();
+        if (typeof renderItems === 'function') renderItems();
+      }
+    } catch(e) {}
+  });
 })();
 </script>
 </body>
