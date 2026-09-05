@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.22</title>
+<title>Sale Profit Book • V6.23</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.22</div>
+<div class="version">Version 6.23</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3730,6 +3730,7 @@ window.fullBackupV600=function(){
   const st=document.getElementById('backupStatusV551');
   if(st){st.textContent='✅ Smart Backup created successfully. Keep the JSON file safe.';st.style.color='#126d66';}
   if(typeof updateSmartBackupInfo==='function')updateSmartBackupInfo();
+ try{if(window.preserveSaleProfitBookData)window.preserveSaleProfitBookData();if(typeof populateItems==='function')populateItems();}catch(e){}
  }catch(e){
   const st=document.getElementById('backupStatusV551');
   if(st){st.textContent='❌ Backup failed: '+(e.message||'Unknown error');st.style.color='#9b3333';}
@@ -3922,6 +3923,47 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 
 
+
+<script id="v623-data-preserve">
+(function(){
+  // Preserve all existing app data. Never clear localStorage during startup.
+  // Normalize common item-key variants into the current ITEMS_KEY only when
+  // the current key is genuinely empty and a legacy key contains data.
+  window.preserveSaleProfitBookData=function(){
+    try{
+      var current=localStorage.getItem(ITEMS_KEY);
+      if(current && current!=='[]' && current!=='null') return;
+
+      var candidates=[
+        'spb_v4_items',
+        'saleProfitBookItemsV1',
+        'saleProfitBookItems',
+        'items',
+        'ITEMS'
+      ];
+      for(var i=0;i<candidates.length;i++){
+        var v=localStorage.getItem(candidates[i]);
+        if(!v || v==='[]' || v==='null') continue;
+        try{
+          var parsed=JSON.parse(v);
+          if(Array.isArray(parsed) && parsed.length){
+            localStorage.setItem(ITEMS_KEY, JSON.stringify(parsed));
+            return;
+          }
+        }catch(e){}
+      }
+    }catch(e){}
+  };
+
+  document.addEventListener('DOMContentLoaded',function(){
+    try{
+      window.preserveSaleProfitBookData();
+      if(typeof populateItems==='function') populateItems();
+      if(typeof renderItems==='function') renderItems();
+    }catch(e){}
+  });
+})();
+</script>
 <script id="v622-gdrive-backup">
 (function(){
   const GDRIVE_CLIENT_ID = "123737120474-8sqc1sb4p0i9j7s9nq56j4gkd784lm1n.apps.googleusercontent.com";
