@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.34</div>
+<div class="version">Version 6.35</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4372,6 +4372,40 @@ document.addEventListener('DOMContentLoaded',function(){
     localStorage.setItem(KEY,JSON.stringify(cleaned));
     if(typeof stockMovements!=='undefined') stockMovements=cleaned;
     if(typeof renderStock==='function') renderStock();
+  }catch(e){}
+})();
+</script>
+
+<script id="v635-stock-protection">
+(function(){
+  try{
+    const KEY='spb_v4_stock';
+    let a=JSON.parse(localStorage.getItem(KEY)||'[]');
+    if(!Array.isArray(a)) return;
+
+    const seen=new Set();
+    const cleaned=[];
+    for(const x of a){
+      const item=String(x.item||'').trim().toLowerCase();
+      const date=String(x.date||'').slice(0,10);
+      const type=String(x.type||'').trim().toLowerCase();
+      const meter=Number(x.meter||0);
+
+      // Prevent accidental duplicate Stock Out records for the same
+      // item + date + meter. Keep the first record only.
+      if(type==='stock out'){
+        const sig=item+'|'+date+'|'+meter;
+        if(seen.has(sig)) continue;
+        seen.add(sig);
+      }
+      cleaned.push(x);
+    }
+
+    if(cleaned.length!==a.length){
+      localStorage.setItem(KEY,JSON.stringify(cleaned));
+      if(typeof stockMovements!=='undefined') stockMovements=cleaned;
+      if(typeof renderStock==='function') renderStock();
+    }
   }catch(e){}
 })();
 </script>
