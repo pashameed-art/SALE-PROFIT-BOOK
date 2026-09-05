@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.26</div>
+<div class="version">Version 6.27</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4295,6 +4295,19 @@ document.addEventListener('DOMContentLoaded',function(){
       return r;
     };
   }
+})();
+</script>
+
+<!-- V6.27: Remove Mansoor ledger data only. Mydeen and all other data remain untouched. -->
+<script>(function(){try{localStorage.removeItem('saleProfitBookMansoorV1');}catch(e){}})();</script>
+
+<script id="v629-party-remove">
+(function(){
+  try {
+    localStorage.removeItem('saleProfitBookMansoorV1');
+    localStorage.removeItem('saleProfitBookMydeenV1');
+    localStorage.removeItem('saleProfitBookSelectedPartyV1');
+  } catch(e) {}
 })();
 </script>
 </body>
