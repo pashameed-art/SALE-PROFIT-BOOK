@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.49</div>
+<div class="version">Version 6.50</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1834,12 +1834,12 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
 <div id="selectedReportResult"></div>
 </div>
 
-<!-- V6.49 Sales Report -->
+<!-- V6.50 Sales Report -->
 <section id="salesReportV646" style="margin-top:16px"><div class="card"><h3>📊 Sales Report</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><label>From<br><input id="v646From" type="date" style="width:100%"></label><label>To<br><input id="v646To" type="date" style="width:100%"></label></div><div style="display:flex;gap:8px;margin-top:10px"><button id="v646All" type="button">All Dates</button><button id="v646Run" type="button">View Report</button><button id="v649Export" type="button">⬇️ Export CSV</button></div><div id="v646Summary" style="margin-top:12px"></div><div style="overflow:auto;margin-top:10px"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:6px">Item</th><th style="text-align:right;padding:6px">Meter</th><th style="text-align:right;padding:6px">Sale</th><th style="text-align:right;padding:6px">Purchase</th><th style="text-align:right;padding:6px">Profit</th></tr></thead><tbody id="v646Body"></tbody></table></div></div></section>
 <script>(function(){const K='spb_v4_entries',N=n=>Number(n||0),M=n=>'₹'+N(n).toLocaleString('en-IN',{maximumFractionDigits:2});function R(){let a=[];try{a=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){}if(!Array.isArray(a))a=[];let f=document.getElementById('v646From').value,t=document.getElementById('v646To').value;a=a.filter(x=>x&&(x.sale!=null||x.purchase!=null));if(f)a=a.filter(x=>String(x.date||'')>=f);if(t)a=a.filter(x=>String(x.date||'')<=t);let g={},m=0,s=0,p=0,pr=0;a.forEach(x=>{let i=String(x.item||'Unknown'),mm=N(x.meter),ss=N(x.sale),pp=N(x.purchase),rr=x.profit!==undefined&&x.profit!==''?N(x.profit):ss-pp;m+=mm;s+=ss;p+=pp;pr+=rr;(g[i]||(g[i]={meter:0,sale:0,purchase:0,profit:0}));g[i].meter+=mm;g[i].sale+=ss;g[i].purchase+=pp;g[i].profit+=rr});document.getElementById('v646Summary').innerHTML='<b>Sale:</b> '+M(s)+' &nbsp; <b>Purchase:</b> '+M(p)+' &nbsp; <b>Profit:</b> '+M(pr)+' &nbsp; <b>Meter:</b> '+m;let b=document.getElementById('v646Body');b.innerHTML=Object.entries(g).sort((a,b)=>a[0].localeCompare(b[0])).map(([i,v])=>'<tr><td style="padding:6px;border-top:1px solid #ddd">'+i+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+v.meter+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+M(v.sale)+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+M(v.purchase)+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+M(v.profit)+'</td></tr>').join('')||'<tr><td colspan="5" style="padding:10px;text-align:center">No sales data</td></tr>'}document.getElementById('v649Export').onclick=function(){let a=[];try{a=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){}if(!Array.isArray(a))a=[];const f=document.getElementById('v646From').value,t=document.getElementById('v646To').value;a=a.filter(x=>x&&(x.sale!=null||x.purchase!=null));if(f)a=a.filter(x=>String(x.date||'')>=f);if(t)a=a.filter(x=>String(x.date||'')<=t);const esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const lines=[['Date','Item','Meter','Sale','Purchase','Profit','Payment']];a.sort((x,y)=>String(x.date||'').localeCompare(String(y.date||''))).forEach(x=>{const sale=N(x.sale),pur=N(x.purchase),pr=x.profit!==undefined&&x.profit!==''?N(x.profit):sale-pur;lines.push([x.date||'',x.item||'',N(x.meter),sale,pur,pr,x.paidBy||''])});const csv=lines.map(r=>r.map(esc).join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),aEl=document.createElement('a');aEl.href=url;aEl.download='Sales-Report-'+(f||'All')+'-'+(t||'Dates')+'.csv';document.body.appendChild(aEl);aEl.click();aEl.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 document.getElementById('v646Run').onclick=R;document.getElementById('v646All').onclick=function(){v646From.value='';v646To.value='';R()};R()})();</script>
 
-<!-- V6.49 Sales Dashboard -->
+<!-- V6.50 Sales Dashboard -->
 <section id="salesDashboardV647" style="margin-top:16px">
   <div class="card">
     <h3>📈 Sales Dashboard</h3>
@@ -1883,6 +1883,81 @@ document.getElementById('v646Run').onclick=R;document.getElementById('v646All').
   render();
 })();
 </script>
+
+<!-- V6.50 Daily Sales Summary: Reports page only -->
+<section id="dailySalesV650" style="margin-top:16px">
+  <div class="card">
+    <h3>📅 Daily Sales Summary</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+      <button id="v650Today" type="button">Today</button>
+      <button id="v650All" type="button">All Dates</button>
+      <button id="v650Export" type="button">⬇️ Export CSV</button>
+    </div>
+    <div id="v650Summary" style="margin-top:12px"></div>
+    <div style="overflow:auto;margin-top:10px">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr>
+          <th style="text-align:left;padding:7px">Date</th>
+          <th style="text-align:right;padding:7px">Meter</th>
+          <th style="text-align:right;padding:7px">Sale</th>
+          <th style="text-align:right;padding:7px">Purchase</th>
+          <th style="text-align:right;padding:7px">Profit</th>
+        </tr></thead>
+        <tbody id="v650Body"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  const KEY='spb_v4_entries';
+  const N=n=>Number(n||0);
+  const M=n=>'₹'+N(n).toLocaleString('en-IN',{maximumFractionDigits:2});
+  const today=new Date().toISOString().slice(0,10);
+  function get(){try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+  function rows(){
+    const map={}; let meter=0,sale=0,purchase=0,profit=0;
+    get().filter(x=>x&&(x.sale!=null||x.purchase!=null)).forEach(x=>{
+      const d=String(x.date||'').trim()||'No Date', m=N(x.meter), s=N(x.sale), p=N(x.purchase);
+      const pr=x.profit!==undefined&&x.profit!==''?N(x.profit):s-p;
+      if(!map[d])map[d]={meter:0,sale:0,purchase:0,profit:0};
+      map[d].meter+=m;map[d].sale+=s;map[d].purchase+=p;map[d].profit+=pr;
+    });
+    Object.values(map).forEach(v=>{meter+=v.meter;sale+=v.sale;purchase+=v.purchase;profit+=v.profit});
+    return {map,meter,sale,purchase,profit};
+  }
+  function render(){
+    const r=rows();
+    const list=Object.entries(r.map).sort((a,b)=>b[0].localeCompare(a[0]));
+    document.getElementById('v650Summary').innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
+      '<div><b>Sale</b><br>'+M(r.sale)+'</div><div><b>Purchase</b><br>'+M(r.purchase)+'</div>'+
+      '<div><b>Profit</b><br>'+M(r.profit)+'</div><div><b>Meter</b><br>'+r.meter+'</div></div>';
+    document.getElementById('v650Body').innerHTML=list.map(([d,v])=>'<tr>'+
+      '<td style="padding:7px;border-top:1px solid #ddd">'+d+'</td>'+
+      '<td style="padding:7px;text-align:right;border-top:1px solid #ddd">'+v.meter+'</td>'+
+      '<td style="padding:7px;text-align:right;border-top:1px solid #ddd">'+M(v.sale)+'</td>'+
+      '<td style="padding:7px;text-align:right;border-top:1px solid #ddd">'+M(v.purchase)+'</td>'+
+      '<td style="padding:7px;text-align:right;border-top:1px solid #ddd">'+M(v.profit)+'</td></tr>').join('')||
+      '<tr><td colspan="5" style="padding:10px;text-align:center">No sales data</td></tr>';
+  }
+  document.getElementById('v650Today').onclick=function(){
+    const all=get().filter(x=>String(x.date||'')===today&&(x.sale!=null||x.purchase!=null));
+    let m=0,s=0,p=0,pr=0; all.forEach(x=>{const ss=N(x.sale),pp=N(x.purchase);m+=N(x.meter);s+=ss;p+=pp;pr+=x.profit!==undefined&&x.profit!==''?N(x.profit):ss-pp});
+    document.getElementById('v650Summary').innerHTML='<b>Today — '+today+'</b><div style="margin-top:8px">Meter: <b>'+m+'</b> &nbsp; Sale: <b>'+M(s)+'</b> &nbsp; Purchase: <b>'+M(p)+'</b> &nbsp; Profit: <b>'+M(pr)+'</b></div>';
+    document.getElementById('v650Body').innerHTML=all.length?'<tr><td style="padding:7px">'+today+'</td><td style="padding:7px;text-align:right">'+m+'</td><td style="padding:7px;text-align:right">'+M(s)+'</td><td style="padding:7px;text-align:right">'+M(p)+'</td><td style="padding:7px;text-align:right">'+M(pr)+'</td></tr>':'<tr><td colspan="5" style="padding:10px;text-align:center">Today no sales data</td></tr>';
+  };
+  document.getElementById('v650All').onclick=render;
+  document.getElementById('v650Export').onclick=function(){
+    const r=rows(), list=Object.entries(r.map).sort((a,b)=>a[0].localeCompare(b[0]));
+    const esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+    const csv=[['Date','Meter','Sale','Purchase','Profit'],...list.map(([d,v])=>[d,v.meter,v.sale,v.purchase,v.profit])].map(x=>x.map(esc).join(',')).join('\n');
+    const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); const a=document.createElement('a');
+    a.href=url;a.download='Daily-Sales-Summary.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  };
+  render();
+})();
+</script>
+
 </section>
 </main>
 <div class="modal" id="itemModal">
