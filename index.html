@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.35</div>
+<div class="version">Version 6.36</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4407,6 +4407,45 @@ document.addEventListener('DOMContentLoaded',function(){
       if(typeof renderStock==='function') renderStock();
     }
   }catch(e){}
+})();
+</script>
+
+<script id="v636-stock-summary">
+(function(){
+  function updateStockSummary(){
+    try{
+      const select=document.getElementById('stockItemSelect');
+      const el=document.getElementById('stockSummary');
+      if(!select || !el) return;
+      const item=select.value;
+      if(!item) return;
+
+      let moves=JSON.parse(localStorage.getItem('spb_v4_stock')||'[]');
+      if(!Array.isArray(moves)) moves=[];
+
+      const added=moves
+        .filter(x=>String(x.item||'')===item && String(x.type||'Stock In').toLowerCase()!=='stock out')
+        .reduce((s,x)=>s+Number(x.meter||0),0);
+
+      const sold=moves
+        .filter(x=>String(x.item||'')===item && String(x.type||'').toLowerCase()==='stock out')
+        .reduce((s,x)=>s+Number(x.meter||0),0);
+
+      const balance=added-sold;
+      const head=el.querySelector('.stock-head');
+      if(head){
+        const b=head.querySelector('.stock-balance');
+        if(b) b.textContent=balance.toFixed(2)+' m';
+      }
+    }catch(e){}
+  }
+
+  document.addEventListener('change',function(e){
+    if(e.target && e.target.id==='stockItemSelect') setTimeout(updateStockSummary,50);
+  });
+  document.addEventListener('DOMContentLoaded',function(){
+    setTimeout(updateStockSummary,300);
+  });
 })();
 </script>
 </body>
