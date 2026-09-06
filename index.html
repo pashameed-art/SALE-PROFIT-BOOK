@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.45</div>
+<div class="version">Version 6.46</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4853,5 +4853,9 @@ document.addEventListener('DOMContentLoaded',function(){
   document.addEventListener('DOMContentLoaded',()=>setTimeout(install,1100));
 })();
 </script>
+
+<!-- V6.46 Sales Report -->
+<section id="salesReportV646" style="margin-top:16px"><div class="card"><h3>📊 Sales Report</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><label>From<br><input id="v646From" type="date" style="width:100%"></label><label>To<br><input id="v646To" type="date" style="width:100%"></label></div><div style="display:flex;gap:8px;margin-top:10px"><button id="v646All" type="button">All Dates</button><button id="v646Run" type="button">View Report</button></div><div id="v646Summary" style="margin-top:12px"></div><div style="overflow:auto;margin-top:10px"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:6px">Item</th><th style="text-align:right;padding:6px">Meter</th><th style="text-align:right;padding:6px">Sale</th><th style="text-align:right;padding:6px">Purchase</th><th style="text-align:right;padding:6px">Profit</th></tr></thead><tbody id="v646Body"></tbody></table></div></div></section>
+<script>(function(){const K='spb_v4_entries',N=n=>Number(n||0),M=n=>'₹'+N(n).toLocaleString('en-IN',{maximumFractionDigits:2});function R(){let a=[];try{a=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){}if(!Array.isArray(a))a=[];let f=document.getElementById('v646From').value,t=document.getElementById('v646To').value;a=a.filter(x=>x&&(x.sale!=null||x.purchase!=null));if(f)a=a.filter(x=>String(x.date||'')>=f);if(t)a=a.filter(x=>String(x.date||'')<=t);let g={},m=0,s=0,p=0,pr=0;a.forEach(x=>{let i=String(x.item||'Unknown'),mm=N(x.meter),ss=N(x.sale),pp=N(x.purchase),rr=x.profit!==undefined&&x.profit!==''?N(x.profit):ss-pp;m+=mm;s+=ss;p+=pp;pr+=rr;(g[i]||(g[i]={meter:0,sale:0,purchase:0,profit:0}));g[i].meter+=mm;g[i].sale+=ss;g[i].purchase+=pp;g[i].profit+=rr});document.getElementById('v646Summary').innerHTML='<b>Sale:</b> '+M(sale)+' &nbsp; <b>Purchase:</b> '+M(purchase)+' &nbsp; <b>Profit:</b> '+M(pr)+' &nbsp; <b>Meter:</b> '+m;let b=document.getElementById('v646Body');b.innerHTML=Object.entries(g).sort((a,b)=>a[0].localeCompare(b[0])).map(([i,v])=>'<tr><td style="padding:6px;border-top:1px solid #ddd">'+i+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+v.meter+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+M(v.sale)+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+M(v.purchase)+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+M(v.profit)+'</td></tr>').join('')||'<tr><td colspan="5" style="padding:10px;text-align:center">No sales data</td></tr>'}document.getElementById('v646Run').onclick=R;document.getElementById('v646All').onclick=function(){v646From.value='';v646To.value='';R()};R()})();</script>
 </body>
 </html>
