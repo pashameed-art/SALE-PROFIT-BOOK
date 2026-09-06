@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.40</div>
+<div class="version">Version 6.41</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4519,72 +4519,76 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
-<script id="v640-stock-edit-correction">
+
+
+<script id="v641-stock-edit-visible">
 (function(){
-  function installStockEdit(){
-    const el=document.getElementById('stockSummary');
-    if(!el || document.getElementById('v640StockEditor')) return;
+  function install(){
+    const select=document.getElementById('stockItemSelect');
+    if(!select || document.getElementById('v641StockEditor')) return;
+
+    const host=select.closest('section') || select.parentElement;
+    if(!host) return;
 
     const box=document.createElement('div');
-    box.id='v640StockEditor';
-    box.style.cssText='margin-top:12px;padding:12px;border:1px solid #ddd;border-radius:12px;';
+    box.id='v641StockEditor';
+    box.style.cssText='margin:14px 0;padding:14px;border:2px solid #888;border-radius:12px;background:var(--card,#fff);';
     box.innerHTML=`
-      <div style="font-weight:700;margin-bottom:8px">✏️ Stock Edit / Correction</div>
-      <select id="v640StockEditSelect" style="width:100%;padding:10px;border-radius:9px;border:1px solid #ccc">
+      <div style="font-size:17px;font-weight:700;margin-bottom:10px">✏️ Stock Edit / Correction</div>
+      <div style="font-size:13px;margin-bottom:8px">Existing Stock In / Stock Out பதிவுகளை edit அல்லது delete செய்யலாம்.</div>
+      <select id="v641Entry" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #bbb;border-radius:9px">
         <option value="">Select Stock Entry</option>
       </select>
-      <div id="v640EditFields" style="display:none;margin-top:8px">
-        <input id="v640Date" type="date" style="width:100%;padding:9px;margin:4px 0;border:1px solid #ccc;border-radius:9px">
-        <input id="v640Meter" type="number" min="0" step="0.01" placeholder="Meter" style="width:100%;padding:9px;margin:4px 0;border:1px solid #ccc;border-radius:9px">
-        <div style="display:flex;gap:8px;margin-top:6px">
-          <button id="v640Save" type="button" style="flex:1">💾 Save</button>
-          <button id="v640Delete" type="button" style="flex:1">🗑️ Delete</button>
+      <div id="v641Fields" style="display:none;margin-top:9px">
+        <label style="display:block;font-size:12px;margin-bottom:3px">Date</label>
+        <input id="v641Date" type="date" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid #bbb;border-radius:9px">
+        <label style="display:block;font-size:12px;margin:7px 0 3px">Meter</label>
+        <input id="v641Meter" type="number" min="0" step="0.01" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid #bbb;border-radius:9px">
+        <div style="display:flex;gap:8px;margin-top:9px">
+          <button id="v641Save" type="button" style="flex:1;padding:10px">💾 Save</button>
+          <button id="v641Delete" type="button" style="flex:1;padding:10px">🗑️ Delete</button>
         </div>
       </div>`;
-    el.appendChild(box);
+    host.appendChild(box);
 
-    const select=box.querySelector('#v640StockEditSelect');
-    const fields=box.querySelector('#v640EditFields');
-    const date=box.querySelector('#v640Date');
-    const meter=box.querySelector('#v640Meter');
+    const entry=box.querySelector('#v641Entry');
+    const fields=box.querySelector('#v641Fields');
+    const date=box.querySelector('#v641Date');
+    const meter=box.querySelector('#v641Meter');
 
+    function getData(){
+      try{
+        const a=JSON.parse(localStorage.getItem('spb_v4_stock')||'[]');
+        return Array.isArray(a)?a:[];
+      }catch(e){return []}
+    }
     function load(){
-      let a=[];
-      try{a=JSON.parse(localStorage.getItem('spb_v4_stock')||'[]')}catch(e){}
-      if(!Array.isArray(a))a=[];
-      select.innerHTML='<option value="">Select Stock Entry</option>'+a.map((x,i)=>
+      const a=getData();
+      entry.innerHTML='<option value="">Select Stock Entry</option>'+a.map((x,i)=>
         `<option value="${i}">${String(x.date||'').slice(0,10)} — ${String(x.item||'')} — ${Number(x.meter||0).toFixed(2)} m — ${String(x.type||'Stock In')}</option>`
       ).join('');
+      fields.style.display='none';
     }
-    select.addEventListener('change',function(){
-      let a=[];
-      try{a=JSON.parse(localStorage.getItem('spb_v4_stock')||'[]')}catch(e){}
-      const i=Number(this.value);
-      if(!Number.isInteger(i)||!a[i]){fields.style.display='none';return;}
+    entry.addEventListener('change',function(){
+      const a=getData(), i=Number(this.value);
+      if(!Number.isInteger(i)||!a[i]){fields.style.display='none';return}
       date.value=String(a[i].date||'').slice(0,10);
       meter.value=Number(a[i].meter||0);
       fields.style.display='block';
     });
-    box.querySelector('#v640Save').addEventListener('click',function(){
-      let a=[];
-      try{a=JSON.parse(localStorage.getItem('spb_v4_stock')||'[]')}catch(e){}
-      const i=Number(select.value);
+    box.querySelector('#v641Save').addEventListener('click',function(){
+      const a=getData(), i=Number(entry.value), m=Number(meter.value);
       if(!Number.isInteger(i)||!a[i]) return;
-      const m=Number(meter.value);
-      if(!date.value || !Number.isFinite(m) || m<0){alert('Date and Meter சரியாக உள்ளிடவும்.');return;}
+      if(!date.value || !Number.isFinite(m) || m<0){alert('Date மற்றும் Meter சரியாக உள்ளிடவும்.');return}
       a[i].date=date.value;
       a[i].meter=m;
       localStorage.setItem('spb_v4_stock',JSON.stringify(a));
       if(typeof stockMovements!=='undefined') stockMovements=a;
       if(typeof renderStock==='function') renderStock();
       load();
-      select.value='';
-      fields.style.display='none';
     });
-    box.querySelector('#v640Delete').addEventListener('click',function(){
-      let a=[];
-      try{a=JSON.parse(localStorage.getItem('spb_v4_stock')||'[]')}catch(e){}
-      const i=Number(select.value);
+    box.querySelector('#v641Delete').addEventListener('click',function(){
+      const a=getData(), i=Number(entry.value);
       if(!Number.isInteger(i)||!a[i]) return;
       if(!confirm('இந்த Stock entry-ஐ delete செய்யவா?')) return;
       a.splice(i,1);
@@ -4592,11 +4596,10 @@ document.addEventListener('DOMContentLoaded',function(){
       if(typeof stockMovements!=='undefined') stockMovements=a;
       if(typeof renderStock==='function') renderStock();
       load();
-      fields.style.display='none';
     });
     load();
   }
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(installStockEdit,500));
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(install,700));
 })();
 </script>
 </body>
