@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.42</div>
+<div class="version">Version 6.43</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4643,6 +4643,78 @@ document.addEventListener('DOMContentLoaded',function(){
     refresh();
   }
   document.addEventListener('DOMContentLoaded',()=>setTimeout(install,800));
+})();
+</script>
+
+<script id="v643-stock-filter">
+(function(){
+  function install(){
+    if(document.getElementById('v643StockFilter')) return;
+    const select=document.getElementById('stockItemSelect');
+    if(!select) return;
+    const host=select.closest('section') || select.parentElement;
+    if(!host) return;
+
+    const box=document.createElement('div');
+    box.id='v643StockFilter';
+    box.style.cssText='margin:12px 0;padding:12px;border:1px solid #ddd;border-radius:12px;';
+    box.innerHTML=`
+      <div style="font-weight:700;margin-bottom:8px">🔎 Stock Transaction Filter</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><label style="font-size:12px">From Date</label><input id="v643From" type="date" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid #bbb;border-radius:9px"></div>
+        <div><label style="font-size:12px">To Date</label><input id="v643To" type="date" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid #bbb;border-radius:9px"></div>
+      </div>
+      <select id="v643Type" style="width:100%;box-sizing:border-box;margin-top:8px;padding:9px;border:1px solid #bbb;border-radius:9px">
+        <option value="all">All Transactions</option>
+        <option value="in">Stock In Only</option>
+        <option value="out">Sold Only</option>
+      </select>
+      <button id="v643Apply" type="button" style="width:100%;margin-top:8px;padding:10px">Apply Filter</button>
+      <button id="v643Clear" type="button" style="width:100%;margin-top:6px;padding:9px">Clear Filter</button>
+      <div id="v643Result" style="margin-top:10px"></div>`;
+    host.appendChild(box);
+
+    function render(){
+      try{
+        const item=select.value;
+        let a=JSON.parse(localStorage.getItem('spb_v4_stock')||'[]');
+        if(!Array.isArray(a)) a=[];
+        const from=box.querySelector('#v643From').value;
+        const to=box.querySelector('#v643To').value;
+        const type=box.querySelector('#v643Type').value;
+
+        let rows=a.filter(x=>!item || String(x.item||'')===item);
+        rows=rows.filter(x=>{
+          const d=String(x.date||'').slice(0,10);
+          if(from && d<from) return false;
+          if(to && d>to) return false;
+          const out=String(x.type||'').toLowerCase()==='stock out';
+          if(type==='in' && out) return false;
+          if(type==='out' && !out) return false;
+          return true;
+        }).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+
+        const added=rows.filter(x=>String(x.type||'Stock In').toLowerCase()!=='stock out').reduce((s,x)=>s+Number(x.meter||0),0);
+        const sold=rows.filter(x=>String(x.type||'').toLowerCase()==='stock out').reduce((s,x)=>s+Number(x.meter||0),0);
+        box.querySelector('#v643Result').innerHTML=
+          `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center">
+            <div><small>Entries</small><br><b>${rows.length}</b></div>
+            <div><small>Added</small><br><b>${added.toFixed(2)} m</b></div>
+            <div><small>Sold</small><br><b>${sold.toFixed(2)} m</b></div>
+          </div>`;
+      }catch(e){}
+    }
+    box.querySelector('#v643Apply').addEventListener('click',render);
+    box.querySelector('#v643Clear').addEventListener('click',()=>{
+      box.querySelector('#v643From').value='';
+      box.querySelector('#v643To').value='';
+      box.querySelector('#v643Type').value='all';
+      render();
+    });
+    select.addEventListener('change',()=>setTimeout(render,50));
+    render();
+  }
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(install,900));
 })();
 </script>
 </body>
