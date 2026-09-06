@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.39</div>
+<div class="version">Version 6.40</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4516,6 +4516,87 @@ document.addEventListener('DOMContentLoaded',function(){
     setInterval(refresh,1000);
   }
   document.addEventListener('DOMContentLoaded',()=>setTimeout(addDashboard,400));
+})();
+</script>
+
+<script id="v640-stock-edit-correction">
+(function(){
+  function installStockEdit(){
+    const el=document.getElementById('stockSummary');
+    if(!el || document.getElementById('v640StockEditor')) return;
+
+    const box=document.createElement('div');
+    box.id='v640StockEditor';
+    box.style.cssText='margin-top:12px;padding:12px;border:1px solid #ddd;border-radius:12px;';
+    box.innerHTML=`
+      <div style="font-weight:700;margin-bottom:8px">✏️ Stock Edit / Correction</div>
+      <select id="v640StockEditSelect" style="width:100%;padding:10px;border-radius:9px;border:1px solid #ccc">
+        <option value="">Select Stock Entry</option>
+      </select>
+      <div id="v640EditFields" style="display:none;margin-top:8px">
+        <input id="v640Date" type="date" style="width:100%;padding:9px;margin:4px 0;border:1px solid #ccc;border-radius:9px">
+        <input id="v640Meter" type="number" min="0" step="0.01" placeholder="Meter" style="width:100%;padding:9px;margin:4px 0;border:1px solid #ccc;border-radius:9px">
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button id="v640Save" type="button" style="flex:1">💾 Save</button>
+          <button id="v640Delete" type="button" style="flex:1">🗑️ Delete</button>
+        </div>
+      </div>`;
+    el.appendChild(box);
+
+    const select=box.querySelector('#v640StockEditSelect');
+    const fields=box.querySelector('#v640EditFields');
+    const date=box.querySelector('#v640Date');
+    const meter=box.querySelector('#v640Meter');
+
+    function load(){
+      let a=[];
+      try{a=JSON.parse(localStorage.getItem('spb_v4_stock')||'[]')}catch(e){}
+      if(!Array.isArray(a))a=[];
+      select.innerHTML='<option value="">Select Stock Entry</option>'+a.map((x,i)=>
+        `<option value="${i}">${String(x.date||'').slice(0,10)} — ${String(x.item||'')} — ${Number(x.meter||0).toFixed(2)} m — ${String(x.type||'Stock In')}</option>`
+      ).join('');
+    }
+    select.addEventListener('change',function(){
+      let a=[];
+      try{a=JSON.parse(localStorage.getItem('spb_v4_stock')||'[]')}catch(e){}
+      const i=Number(this.value);
+      if(!Number.isInteger(i)||!a[i]){fields.style.display='none';return;}
+      date.value=String(a[i].date||'').slice(0,10);
+      meter.value=Number(a[i].meter||0);
+      fields.style.display='block';
+    });
+    box.querySelector('#v640Save').addEventListener('click',function(){
+      let a=[];
+      try{a=JSON.parse(localStorage.getItem('spb_v4_stock')||'[]')}catch(e){}
+      const i=Number(select.value);
+      if(!Number.isInteger(i)||!a[i]) return;
+      const m=Number(meter.value);
+      if(!date.value || !Number.isFinite(m) || m<0){alert('Date and Meter சரியாக உள்ளிடவும்.');return;}
+      a[i].date=date.value;
+      a[i].meter=m;
+      localStorage.setItem('spb_v4_stock',JSON.stringify(a));
+      if(typeof stockMovements!=='undefined') stockMovements=a;
+      if(typeof renderStock==='function') renderStock();
+      load();
+      select.value='';
+      fields.style.display='none';
+    });
+    box.querySelector('#v640Delete').addEventListener('click',function(){
+      let a=[];
+      try{a=JSON.parse(localStorage.getItem('spb_v4_stock')||'[]')}catch(e){}
+      const i=Number(select.value);
+      if(!Number.isInteger(i)||!a[i]) return;
+      if(!confirm('இந்த Stock entry-ஐ delete செய்யவா?')) return;
+      a.splice(i,1);
+      localStorage.setItem('spb_v4_stock',JSON.stringify(a));
+      if(typeof stockMovements!=='undefined') stockMovements=a;
+      if(typeof renderStock==='function') renderStock();
+      load();
+      fields.style.display='none';
+    });
+    load();
+  }
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(installStockEdit,500));
 })();
 </script>
 </body>
