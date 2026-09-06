@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.66</div>
+<div class="version">Version 6.67</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1805,6 +1805,13 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
     <div class="party-row">
       <button class="party-choice" onclick="openPartyLedger('mydeen')">🤝 Mydeen</button>
       <button class="party-choice" onclick="openPartyLedger('mansoor')">🤝 Mansoor</button>
+    </div>
+  </div>
+  <div class="card" id="partySummaryV667">
+    <h3>📊 Party Summary</h3>
+    <div class="party-summary-grid">
+      <div class="party-summary-box"><span>🤝 Mydeen</span><strong id="partySummaryMydeen">₹0</strong></div>
+      <div class="party-summary-box"><span>🤝 Mansoor</span><strong id="partySummaryMansoor">₹49,497</strong></div>
     </div>
   </div>
   <div id="partyLedgerArea"></div>
@@ -5055,9 +5062,46 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 
 
-<script id="v666-final-version-marker">
+
+<style id="v667-party-summary-style">
+.party-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.party-summary-box{background:#eef7f5;border:1px solid #dcebe8;border-radius:16px;padding:16px 12px;text-align:center}
+.party-summary-box span{display:block;color:#356c65;font-size:14px;font-weight:800}
+.party-summary-box strong{display:block;margin-top:8px;color:#145f55;font-size:23px;font-weight:900}
+@media(max-width:520px){.party-summary-grid{gap:9px}.party-summary-box{padding:14px 8px}.party-summary-box strong{font-size:20px}}
+</style>
+<script id="v667-party-summary">
 (function(){
-  try { localStorage.setItem('__spb_app_version__','6.66'); } catch(e) {}
+  'use strict';
+  function arr(key){try{var a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+  function money(n){return '₹'+Number(n||0).toLocaleString('en-IN')}
+  function balance(key,initial){
+    var a=arr(key),taken=0,given=0;
+    a.forEach(function(x){if(x.type==='taken'||x.type==='received')taken+=Number(x.amount||0);else if(x.type==='given')given+=Number(x.amount||0)});
+    return Number(initial||0)+taken-given;
+  }
+  window.updatePartySummaryV667=function(){
+    var m=document.getElementById('partySummaryMydeen'),s=document.getElementById('partySummaryMansoor');
+    if(m)m.textContent=money(balance('saleProfitBookMydeenV1',0));
+    if(s)s.textContent=money(balance('saleProfitBookMansoorV1',49497));
+  };
+  document.addEventListener('DOMContentLoaded',function(){window.updatePartySummaryV667();});
+  var oldOpen=window.openPartyLedger;
+  if(typeof oldOpen==='function'){window.openPartyLedger=function(v){var r=oldOpen.apply(this,arguments);setTimeout(window.updatePartySummaryV667,50);return r;};}
+  var oldSaveM=window.saveMansoor;
+  if(typeof oldSaveM==='function'){window.saveMansoor=function(){var r=oldSaveM.apply(this,arguments);setTimeout(window.updatePartySummaryV667,50);return r;};}
+  var oldDelM=window.deleteMansoor;
+  if(typeof oldDelM==='function'){window.deleteMansoor=function(){var r=oldDelM.apply(this,arguments);setTimeout(window.updatePartySummaryV667,50);return r;};}
+  var oldSaveD=window.savePartyMydeen;
+  if(typeof oldSaveD==='function'){window.savePartyMydeen=function(){var r=oldSaveD.apply(this,arguments);setTimeout(window.updatePartySummaryV667,50);return r;};}
+  var oldDelD=window.deletePartyMydeen;
+  if(typeof oldDelD==='function'){window.deletePartyMydeen=function(){var r=oldDelD.apply(this,arguments);setTimeout(window.updatePartySummaryV667,50);return r;};}
+})();
+</script>
+
+<script id="v667-final-version-marker">
+(function(){
+  try { localStorage.setItem('__spb_app_version__','6.67'); } catch(e) {}
 })();
 </script>
 </body>
