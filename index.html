@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.38</div>
+<div class="version">Version 6.39</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4474,6 +4474,48 @@ document.addEventListener('DOMContentLoaded',function(){
     });
   }
   document.addEventListener('DOMContentLoaded',()=>setTimeout(addSearch,300));
+})();
+</script>
+
+<script id="v639-stock-dashboard">
+(function(){
+  function addDashboard(){
+    const select=document.getElementById('stockItemSelect');
+    if(!select || document.getElementById('v639StockDashboard')) return;
+
+    const box=document.createElement('div');
+    box.id='v639StockDashboard';
+    box.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0;';
+    box.innerHTML=
+      '<div style="padding:10px;border:1px solid #ddd;border-radius:10px;text-align:center"><small>Total Items</small><div id="v639Items" style="font-size:20px;font-weight:700">0</div></div>'+
+      '<div style="padding:10px;border:1px solid #ddd;border-radius:10px;text-align:center"><small>Stock Items</small><div id="v639StockItems" style="font-size:20px;font-weight:700">0</div></div>'+
+      '<div style="padding:10px;border:1px solid #ddd;border-radius:10px;text-align:center"><small>Added Meter</small><div id="v639Added" style="font-size:20px;font-weight:700">0 m</div></div>'+
+      '<div style="padding:10px;border:1px solid #ddd;border-radius:10px;text-align:center"><small>Sold Meter</small><div id="v639Sold" style="font-size:20px;font-weight:700">0 m</div></div>';
+
+    select.parentNode.insertBefore(box,select);
+
+    function refresh(){
+      try{
+        const items=JSON.parse(localStorage.getItem('spb_v4_items')||'[]');
+        const moves=JSON.parse(localStorage.getItem('spb_v4_stock')||'[]');
+        const arr=Array.isArray(items)?items:[];
+        const m=Array.isArray(moves)?moves:[];
+        const valid=arr.filter(x=>x && x.name && !x.hidden);
+        const names=new Set(m.map(x=>String(x.item||'')).filter(Boolean));
+        const added=m.filter(x=>String(x.type||'Stock In').toLowerCase()!=='stock out')
+          .reduce((s,x)=>s+Number(x.meter||0),0);
+        const sold=m.filter(x=>String(x.type||'').toLowerCase()==='stock out')
+          .reduce((s,x)=>s+Number(x.meter||0),0);
+        document.getElementById('v639Items').textContent=valid.length;
+        document.getElementById('v639StockItems').textContent=names.size;
+        document.getElementById('v639Added').textContent=added.toFixed(2)+' m';
+        document.getElementById('v639Sold').textContent=sold.toFixed(2)+' m';
+      }catch(e){}
+    }
+    refresh();
+    setInterval(refresh,1000);
+  }
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(addDashboard,400));
 })();
 </script>
 </body>
