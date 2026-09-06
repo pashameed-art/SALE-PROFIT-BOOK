@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.36</div>
+<div class="version">Version 6.37</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4447,6 +4447,9 @@ document.addEventListener('DOMContentLoaded',function(){
     setTimeout(updateStockSummary,300);
   });
 })();
+</script>
+<script id="v637-stock-history">
+(function(){function r(){try{var e=document.getElementById("stockSummary"),q=document.getElementById("stockItemSelect");if(!e||!q||!q.value)return;var a=JSON.parse(localStorage.getItem("spb_v4_stock")||"[]");if(!Array.isArray(a))a=[];a=a.filter(function(x){return String(x.item||"")===q.value}).sort(function(x,y){return String(x.date||"").localeCompare(String(y.date||""))||Number(x.id||0)-Number(y.id||0)});var b=0,h=a.map(function(x){var m=Number(x.meter||0),o=String(x.type||"").toLowerCase()==="stock out";b+=o?-m:m;return "<tr><td>"+String(x.date||"").slice(0,10)+"</td><td>"+(o?"Sold":"Added")+"</td><td>"+m.toFixed(2)+" m</td><td>"+b.toFixed(2)+" m</td></tr>"}).join("");var z=document.getElementById("v637History")||document.createElement("div");z.id="v637History";z.style.cssText="margin-top:12px;padding:10px;border:1px solid #ddd;border-radius:10px;background:var(--card,#fff)";z.innerHTML="<b>📋 Stock History — "+q.value+"</b><div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px"><thead><tr><th>Date</th><th>Type</th><th>Meter</th><th>Balance</th></tr></thead><tbody>"+(h||"<tr><td colspan=4>No history</td></tr>")+"</tbody></table></div>";if(!z.parentNode)e.appendChild(z)}catch(x){}}document.addEventListener("change",function(e){if(e.target&&e.target.id==="stockItemSelect")setTimeout(r,80)});document.addEventListener("DOMContentLoaded",function(){setTimeout(r,400)})})();
 </script>
 </body>
 </html>
