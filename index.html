@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.43</div>
+<div class="version">Version 6.44</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4715,6 +4715,72 @@ document.addEventListener('DOMContentLoaded',function(){
     render();
   }
   document.addEventListener('DOMContentLoaded',()=>setTimeout(install,900));
+})();
+</script>
+
+<script id="v644-stock-report">
+(function(){
+  function install(){
+    if(document.getElementById('v644StockReport')) return;
+    const select=document.getElementById('stockItemSelect');
+    if(!select) return;
+    const host=select.closest('section') || select.parentElement;
+    if(!host) return;
+
+    const box=document.createElement('div');
+    box.id='v644StockReport';
+    box.style.cssText='margin:14px 0;padding:14px;border:1px solid #ddd;border-radius:12px;';
+    box.innerHTML=`
+      <div style="font-weight:700;font-size:17px;margin-bottom:9px">📊 Stock Report</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px">
+        <input id="v644From" type="date" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid #bbb;border-radius:9px">
+        <input id="v644To" type="date" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid #bbb;border-radius:9px">
+      </div>
+      <input id="v644Search" type="search" placeholder="🔎 Search Item..." style="width:100%;box-sizing:border-box;padding:9px;border:1px solid #bbb;border-radius:9px;margin-bottom:8px">
+      <div id="v644Table" style="overflow:auto"></div>`;
+    host.appendChild(box);
+
+    const from=box.querySelector('#v644From');
+    const to=box.querySelector('#v644To');
+    const search=box.querySelector('#v644Search');
+    const table=box.querySelector('#v644Table');
+
+    function render(){
+      try{
+        let items=JSON.parse(localStorage.getItem('spb_v4_items')||'[]');
+        let moves=JSON.parse(localStorage.getItem('spb_v4_stock')||'[]');
+        if(!Array.isArray(items)) items=[];
+        if(!Array.isArray(moves)) moves=[];
+
+        const names=new Set(items.filter(x=>x && x.name && !x.hidden).map(x=>String(x.name)));
+        moves.forEach(x=>{if(x && x.item) names.add(String(x.item));});
+
+        const q=search.value.trim().toLowerCase();
+        const rows=[...names].filter(n=>!q || n.toLowerCase().includes(q)).sort((a,b)=>a.localeCompare(b));
+
+        const html=rows.map(name=>{
+          const tx=moves.filter(x=>{
+            if(String(x.item||'')!==name) return false;
+            const d=String(x.date||'').slice(0,10);
+            if(from.value && d<from.value) return false;
+            if(to.value && d>to.value) return false;
+            return true;
+          });
+          const added=tx.filter(x=>String(x.type||'Stock In').toLowerCase()!=='stock out').reduce((s,x)=>s+Number(x.meter||0),0);
+          const sold=tx.filter(x=>String(x.type||'').toLowerCase()==='stock out').reduce((s,x)=>s+Number(x.meter||0),0);
+          return `<tr><td style="padding:7px">${name}</td><td style="padding:7px;text-align:right">${added.toFixed(2)} m</td><td style="padding:7px;text-align:right">${sold.toFixed(2)} m</td><td style="padding:7px;text-align:right;font-weight:700">${(added-sold).toFixed(2)} m</td></tr>`;
+        }).join('');
+
+        table.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr><th style="text-align:left;padding:7px">Item</th><th style="text-align:right;padding:7px">Added</th><th style="text-align:right;padding:7px">Sold</th><th style="text-align:right;padding:7px">Balance</th></tr></thead>
+          <tbody>${html||'<tr><td colspan="4" style="padding:10px;text-align:center">No stock data</td></tr>'}</tbody>
+        </table>`;
+      }catch(e){}
+    }
+    [from,to,search].forEach(x=>x.addEventListener('input',render));
+    render();
+  }
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(install,1000));
 })();
 </script>
 </body>
