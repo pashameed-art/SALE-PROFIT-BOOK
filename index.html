@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.41</div>
+<div class="version">Version 6.42</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4600,6 +4600,49 @@ document.addEventListener('DOMContentLoaded',function(){
     load();
   }
   document.addEventListener('DOMContentLoaded',()=>setTimeout(install,700));
+})();
+</script>
+
+<script id="v642-stock-item-summary">
+(function(){
+  function install(){
+    if(document.getElementById('v642StockItemSummary')) return;
+    const select=document.getElementById('stockItemSelect');
+    if(!select) return;
+    const host=select.closest('section') || select.parentElement;
+    if(!host) return;
+
+    const box=document.createElement('div');
+    box.id='v642StockItemSummary';
+    box.style.cssText='margin:12px 0;padding:12px;border:1px solid #ddd;border-radius:12px;';
+    box.innerHTML=`
+      <div style="font-weight:700;margin-bottom:8px">📊 Stock Item Summary</div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;text-align:center">
+        <div style="padding:8px;border:1px solid #ddd;border-radius:9px"><small>Added</small><div id="v642Added" style="font-weight:700">0 m</div></div>
+        <div style="padding:8px;border:1px solid #ddd;border-radius:9px"><small>Sold</small><div id="v642Sold" style="font-weight:700">0 m</div></div>
+        <div style="padding:8px;border:1px solid #ddd;border-radius:9px"><small>Balance</small><div id="v642Balance" style="font-weight:700">0 m</div></div>
+      </div>`;
+    host.appendChild(box);
+
+    function refresh(){
+      try{
+        const item=select.value;
+        let a=JSON.parse(localStorage.getItem('spb_v4_stock')||'[]');
+        if(!Array.isArray(a)) a=[];
+        const rows=a.filter(x=>String(x.item||'')===item);
+        const added=rows.filter(x=>String(x.type||'Stock In').toLowerCase()!=='stock out')
+          .reduce((s,x)=>s+Number(x.meter||0),0);
+        const sold=rows.filter(x=>String(x.type||'').toLowerCase()==='stock out')
+          .reduce((s,x)=>s+Number(x.meter||0),0);
+        document.getElementById('v642Added').textContent=added.toFixed(2)+' m';
+        document.getElementById('v642Sold').textContent=sold.toFixed(2)+' m';
+        document.getElementById('v642Balance').textContent=(added-sold).toFixed(2)+' m';
+      }catch(e){}
+    }
+    select.addEventListener('change',()=>setTimeout(refresh,50));
+    refresh();
+  }
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(install,800));
 })();
 </script>
 </body>
