@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.24</title>
+<title>Sale Profit Book • V6.66</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -4503,26 +4503,11 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
-<!-- V6.27: Remove Mansoor ledger data only. Mydeen and all other data remain untouched. -->
-<script>(function(){try{localStorage.removeItem('saleProfitBookMansoorV1');}catch(e){}})();</script>
 
-<script id="v629-party-remove">
-(function(){
-  try {
-    localStorage.removeItem('saleProfitBookMansoorV1');
-    localStorage.removeItem('saleProfitBookMydeenV1');
-    localStorage.removeItem('saleProfitBookSelectedPartyV1');
-  } catch(e) {}
-})();
-</script>
 
-<script id="v631-mydeen-remove">
-(function(){
-  try {
-    localStorage.removeItem('saleProfitBookMydeenV1');
-  } catch(e) {}
-})();
-</script>
+
+
+
 
 <script id="v632-sterling-stockout">
 (function(){
@@ -5061,5 +5046,13 @@ document.addEventListener('DOMContentLoaded',function(){
  if(a)a.onclick=function(){var f=document.getElementById('selectedReportFrom'),to=document.getElementById('selectedReportTo');if(f)f.value='';if(to)to.value='';if(typeof clearSelectedReport==='function')clearSelectedReport();};
 })();
 </script>
+
+<script id="v666-party-data-protection">
+(function(){
+  // V6.66: Party data protection. Never clear Mydeen/Mansoor ledgers on startup.
+  window.SPB_PARTY_DATA_KEYS=['saleProfitBookMydeenV1','saleProfitBookMansoorV1'];
+})();
+</script>
+
 </body>
 </html>
