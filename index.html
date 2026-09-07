@@ -1288,35 +1288,28 @@ body.spb-backup-mode #backupPage{display:block!important}
   new MutationObserver(sync).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class']});
 })();
 </script>
-
-<style id="v689-mansoor-direct">
-#partyLedgerArea #mansoorPage{display:block!important;margin-top:12px}
-#partyLedgerArea #mansoorPage .card{margin-top:12px}
-</style>
-
-
 <style id="v691-mydeen-restore-style">
 #v691MydeenRestoreBox{margin-top:12px}
 #v691MydeenRestoreBtn{width:100%;margin-top:8px}
 </style>
-<style id="v698-clean-party-isolation">
-#partyPage{display:none}
-#partyMydeenHost,#partyMansoorHost{display:none}
-#partyMydeenHost.active,#partyMansoorHost.active{display:block}
-</style>
 
-<style id="v699-party-top-level-only">
-/* Party page must never appear underneath Home/History/Expense/Reports/Backup. */
-#partyPage { display:none !important; }
-/* It is shown only by the Party navigation handler. */
-body[data-spb-page="party"] #partyPage { display:block !important; }
-
-/* Party header: Mydeen left, Mansoor right. */
-#partyPage .party-header-actions,
-#partyPage .party-actions {
-  display:grid !important;
-  grid-template-columns:1fr 1fr !important;
-  gap:20px !important;
+<style id="v700-party-final-css">
+#partyPage{display:none!important}
+body.spb-party-mode #partyPage{display:block!important}
+body.spb-party-mode > main > #mansoorPage{display:none!important}
+#partyLedgerArea{display:block!important}
+#partyLedgerArea .party-detail-card{margin-top:16px}
+#partyPage .party-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:20px!important}
+#partyPage .party-choice{width:100%!important}
+.v700-party-detail-title{font-size:28px;font-weight:900;margin-bottom:18px}
+.v700-party-balance{background:#edf7f5;border-radius:18px;padding:18px;text-align:center;margin-bottom:16px}
+.v700-party-balance strong{display:block;font-size:32px;margin-top:6px}
+.v700-party-history{margin-top:16px}
+.v700-party-history-row{display:flex;justify-content:space-between;gap:10px;padding:12px 10px;border-top:1px solid #e5eeee;font-weight:800}
+.v700-party-empty{padding:20px;text-align:center;color:#71817f;font-weight:700}
+@media(max-width:600px){
+ #partyPage .party-row{gap:10px!important}
+ .v700-party-detail-title{font-size:24px}
 }
 </style>
 
@@ -1324,7 +1317,7 @@ body[data-spb-page="party"] #partyPage { display:block !important; }
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.99</div>
+<div class="version">Version 7.00</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3506,79 +3499,177 @@ window.exportReportCSV=function(){
   else bind();
 })();
 </script>
-<script id="v698-clean-party-controller">
+
+<script id="v700-party-final-controller">
 (function(){
-function q(id){return document.getElementById(id)}
-function only(which){
- var my=q("partyMydeenHost"),ma=q("partyMansoorHost");
- if(my){my.classList.remove("active");my.style.display="none"}
- if(ma){ma.classList.remove("active");ma.style.display="none"}
- var x=which==="mydeen"?my:ma;
- if(x){x.classList.add("active");x.style.display="block"}
-}
-function party(){var p=q("partyPage");if(p){p.style.display="block";p.classList.add("active")}}
-function mydeen(){party();only("mydeen");if(typeof window.renderMydeen==="function")window.renderMydeen();window.scrollTo({top:0,behavior:"smooth"})}
-function mansoor(){party();only("mansoor");if(typeof window.showMansoor==="function")window.showMansoor();else if(typeof window.renderMansoor==="function")window.renderMansoor();window.scrollTo({top:0,behavior:"smooth"})}
-function bind(){
- document.querySelectorAll("#partyPage button").forEach(function(b){
-  var t=(b.textContent||"").toLowerCase();
-  if(t.indexOf("mydeen")>=0)b.addEventListener("click",function(e){e.preventDefault();mydeen()},true);
-  if(t.indexOf("mansoor")>=0)b.addEventListener("click",function(e){e.preventDefault();mansoor()},true);
- });
-}
-document.addEventListener("DOMContentLoaded",bind);
-})();
-</script>
+  'use strict';
 
-<script id="v699-party-top-level-controller">
-(function(){
-  function partyEl(){ return document.getElementById('partyPage'); }
+  var MYKEY='saleProfitBookMydeenV1';
+  var MKEY='saleProfitBookMansoorV1';
+  var MANSOOR_OPENING=49497;
 
-  function closeParty(){
-    var p=partyEl();
-    if(p){
-      p.style.setProperty('display','none','important');
-      p.classList.remove('active');
-    }
-    if(document.body) document.body.setAttribute('data-spb-page','');
+  function q(id){return document.getElementById(id);}
+  function money(n){return '₹'+Number(n||0).toLocaleString('en-IN');}
+  function today(){
+    var d=new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   }
-
-  function openParty(){
-    var p=partyEl();
-    if(!p) return;
-    document.body.setAttribute('data-spb-page','party');
-    p.classList.add('active');
-    p.style.setProperty('display','block','important');
-
-    /* Never show both party details at once. */
-    var my=document.getElementById('partyMydeenHost');
-    var ma=document.getElementById('partyMansoorHost');
-    if(my) my.style.display='none';
-    if(ma) ma.style.display='none';
+  function fmt(d){
+    var s=String(d||''); var m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m?m[3]+'.'+m[2]+'.'+m[1].slice(2):s;
   }
-
-  /* Expose one authoritative Party opener for the existing navigation. */
-  window.SPB_OPEN_PARTY = openParty;
-  window.SPB_CLOSE_PARTY = closeParty;
-
-  document.addEventListener('DOMContentLoaded', function(){
-    /* If an older script rendered Party on startup, remove it immediately. */
-    closeParty();
-
-    /* Capture clicks on the top navigation. */
-    document.querySelectorAll('button,a').forEach(function(el){
-      var t=(el.textContent||'').trim().toLowerCase();
-      if(t==='party'){
-        el.addEventListener('click',function(){
-          setTimeout(openParty,0);
-        },true);
-      } else if(['home','history','expense','reports','backup'].indexOf(t)>=0){
-        el.addEventListener('click',function(){
-          setTimeout(closeParty,0);
-        },true);
-      }
+  function read(key){
+    try{var a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[];}catch(e){return[];}
+  }
+  function esc(v){
+    return String(v==null?'':v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
     });
+  }
+
+  function hideAll(){
+    document.querySelectorAll('.page').forEach(function(p){
+      p.classList.remove('active');
+      p.style.removeProperty('display');
+    });
+    document.body.classList.remove('spb-home-mode','spb-history-mode','spb-expense-mode','spb-party-mode','spb-report-mode','spb-backup-mode');
+    var old=q('mansoorPage');
+    if(old && old.parentElement!==q('partyLedgerArea')) old.style.setProperty('display','none','important');
+  }
+
+  function activeNav(btn){
+    document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
+    if(btn)btn.classList.add('nav-active');
+  }
+
+  function partyPage(btn){
+    hideAll();
+    activeNav(btn);
+    document.body.classList.add('spb-party-mode');
+    var p=q('partyPage'); if(p){p.classList.add('active');p.style.setProperty('display','block','important');}
+    var area=q('partyLedgerArea'); if(area) area.innerHTML='';
+    renderSummary();
+    window.scrollTo(0,0);
+  }
+
+  function renderSummary(){
+    var my=read(MYKEY);
+    var ma=read(MKEY);
+    var mb=MANSOOR_OPENING+
+      ma.filter(function(x){return x.type==='taken'||x.type==='received';}).reduce(function(s,x){return s+Number(x.amount||0)},0)-
+      ma.filter(function(x){return x.type==='given';}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+    var myb=my.reduce(function(s,x){
+      if(x.type==='taken'||x.type==='received') return s+Number(x.amount||0);
+      if(x.type==='given') return s-Number(x.amount||0);
+      return s;
+    },0);
+    var a=q('partySummaryMydeen'),b=q('partySummaryMansoor');
+    if(a)a.textContent=money(myb);
+    if(b)b.textContent=money(mb);
+  }
+
+  function detailShell(title,balance){
+    var area=q('partyLedgerArea'); if(!area)return null;
+    area.innerHTML='';
+    var card=document.createElement('div');
+    card.className='card party-detail-card';
+    card.innerHTML='<div class="v700-party-detail-title">🤝 '+title+' கொடுக்கல் வாங்கல்</div>'+
+      '<div class="v700-party-balance"><div>தற்போது பெற வேண்டியது</div><strong id="v700PartyBalance">'+money(balance)+'</strong></div>';
+    area.appendChild(card);
+    return card;
+  }
+
+  function renderHistory(container, records, opening){
+    var h=document.createElement('div');
+    h.className='card party-detail-card v700-party-history';
+    var rows=records.slice().sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''));});
+    var html='<h3>📜 Previous History</h3>';
+    if(opening!==null) html+='<div class="v700-party-history-row"><span>📅 Opening</span><span>'+money(opening)+'</span></div>';
+    if(!rows.length) html+='<div class="v700-party-empty">இன்று பதிவு இல்லை.</div>';
+    rows.forEach(function(x){
+      var plus=(x.type==='taken'||x.type==='received');
+      html+='<div class="v700-party-history-row"><span>📅 '+fmt(x.date)+'</span><span>'+ (plus?'+':'-') + money(x.amount)+'</span></div>';
+    });
+    h.innerHTML=html; container.appendChild(h);
+  }
+
+  function openMansoor(){
+    partyPage(document.querySelector('.nav-bar button[onclick*="goParty"]'));
+    var records=read(MKEY);
+    var bal=MANSOOR_OPENING+
+      records.filter(function(x){return x.type==='taken'||x.type==='received';}).reduce(function(s,x){return s+Number(x.amount||0)},0)-
+      records.filter(function(x){return x.type==='given';}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+
+    var card=detailShell('Mansoor',bal);
+    if(!card)return;
+
+    /* Reuse the existing fully functional Mansoor form, but place it under
+       the Party header instead of leaving it as a separate top-level page. */
+    var page=q('mansoorPage');
+    var area=q('partyLedgerArea');
+    if(page && area){
+      area.appendChild(page);
+      page.classList.add('active');
+      page.style.setProperty('display','block','important');
+      if(typeof window.renderMansoor==='function')window.renderMansoor();
+    }
+  }
+
+  function saveMydeen(){
+    var type=q('v700MyType').value;
+    var date=q('v700MyDate').value||today();
+    var amount=Number(q('v700MyAmount').value);
+    var note=(q('v700MyNote').value||'').trim();
+    if(!date||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return;}
+    var a=read(MYKEY);
+    a.push({id:Date.now(),type:type,date:date,amount:amount,note:note});
+    localStorage.setItem(MYKEY,JSON.stringify(a));
+    openMydeen();
+  }
+
+  function openMydeen(){
+    partyPage(document.querySelector('.nav-bar button[onclick*="goParty"]'));
+    var records=read(MYKEY);
+    var bal=records.reduce(function(s,x){
+      if(x.type==='taken'||x.type==='received')return s+Number(x.amount||0);
+      if(x.type==='given')return s-Number(x.amount||0);
+      return s;
+    },0);
+    var card=detailShell('Mydeen',bal);
+    if(!card)return;
+    var form=document.createElement('div');
+    form.className='card party-detail-card';
+    form.innerHTML='<div class="field"><label>வகை</label><select id="v700MyType"><option value="taken">பணம் வாங்கியது</option><option value="given">பணம் தந்தது</option></select></div>'+
+      '<div class="field"><label>தேதி</label><input id="v700MyDate" type="date" value="'+today()+'"></div>'+
+      '<div class="field"><label>தொகை ₹</label><input id="v700MyAmount" type="number" inputmode="decimal" min="0" placeholder="Amount"></div>'+
+      '<div class="field"><label>குறிப்பு</label><input id="v700MyNote" type="text" placeholder="குறிப்பு (விருப்பம்)"></div>'+
+      '<div class="expense-action-row"><button class="primary" type="button" id="v700MySave">Save</button><button class="secondary" type="button" id="v700MyClear">Clear</button></div>';
+    q('partyLedgerArea').appendChild(form);
+    q('v700MySave').onclick=saveMydeen;
+    q('v700MyClear').onclick=function(){q('v700MyAmount').value='';q('v700MyNote').value='';};
+    renderHistory(q('partyLedgerArea'),records,null);
+  }
+
+  /* Final top navigation. */
+  window.goParty=partyPage;
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var partyBtn=document.querySelector('.nav-bar button[onclick*="goParty"]');
+    if(partyBtn)partyBtn.addEventListener('click',function(){setTimeout(function(){partyPage(partyBtn);},0);},true);
+
+    document.querySelectorAll('#partyPage .party-choice').forEach(function(b){
+      var t=(b.textContent||'').toLowerCase();
+      b.addEventListener('click',function(e){
+        e.preventDefault();e.stopImmediatePropagation();
+        if(t.indexOf('mydeen')>=0)openMydeen(); else if(t.indexOf('mansoor')>=0)openMansoor();
+      },true);
+    });
+
+    renderSummary();
   });
+
+  window.SPB_OPEN_MYDEEN_FINAL=openMydeen;
+  window.SPB_OPEN_MANSOOR_FINAL=openMansoor;
 })();
 </script>
 
