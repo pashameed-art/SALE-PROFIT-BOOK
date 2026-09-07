@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.74</title>
+<title>Sale Profit Book • V6.75</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.74</div>
+<div class="version">Version 6.75</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3301,34 +3301,23 @@ window.printReport=function(){
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
   w.document.write('
-<script id="v674-quick-filter">
-(function(){
-  'use strict';
-  function monthRange(){
-    var d=new Date();
-    var y=d.getFullYear(), m=d.getMonth();
-    var first=y+'-'+String(m+1).padStart(2,'0')+'-01';
-    var lastDay=new Date(y,m+1,0).getDate();
-    var last=y+'-'+String(m+1).padStart(2,'0')+'-'+String(lastDay).padStart(2,'0');
-    return [first,last];
-  }
-  function setMainMonth(){
-    var r=monthRange(), f=document.getElementById('selectedReportFrom'), t=document.getElementById('selectedReportTo');
-    if(f)f.value=r[0]; if(t)t.value=r[1];
-    if(typeof generateSelectedReport==='function') generateSelectedReport();
-  }
-  function setExpenseMonth(){
-    var r=monthRange(), f=document.getElementById('v662From'), t=document.getElementById('v662To');
-    if(f)f.value=r[0]; if(t)t.value=r[1];
-    var run=document.getElementById('v662Run');
-    if(run)run.click();
-  }
-  document.addEventListener('DOMContentLoaded',function(){
-    var a=document.getElementById('v674ThisMonth'); if(a)a.addEventListener('click',setMainMonth);
-    var b=document.getElementById('v674ExpenseMonth'); if(b)b.addEventListener('click',setExpenseMonth);
-  });
-})();
-</script>
+<style id="v675-report-final-clean">
+/* V6.75 — Keep Reports page simple: one main report + one Expense Summary. */
+#salesReportV646,
+#monthlySalesV651,
+#salesDashboardV647,
+#dailySalesV650,
+#salesProfitV645,
+#salesProfitReport,
+#expenseReportV662 + section,
+#expenseReportV662 ~ section[id*="sales"],
+#reportPage > section[id="monthlySalesV651"],
+#reportPage > section[id="salesDashboardV647"],
+#reportPage > section[id="dailySalesV650"],
+#reportPage > section[id="salesProfitV645"]{
+  display:none !important;
+}
+</style>
 
 </body></html>');
   w.document.close();
@@ -5092,7 +5081,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 <script id="v671-final-version-marker">
 (function(){
-  try { localStorage.setItem('__spb_app_version__','6.74'); } catch(e) {}
+  try { localStorage.setItem('__spb_app_version__','6.75'); } catch(e) {}
 })();
 </script>
 <style id="v671-report-simple">
@@ -5108,7 +5097,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 
 <script id="v673-report-fix">
-(function(){ window.SPB_REPORT_VERSION='6.74'; })();
+(function(){ window.SPB_REPORT_VERSION='6.75'; })();
 </script>
 
 </body>
