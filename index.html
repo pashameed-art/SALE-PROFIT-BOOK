@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.86</title>
+<title>Sale Profit Book • V6.87</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1267,7 +1267,7 @@ body.spb-backup-mode #backupPage{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.86</div>
+<div class="version">Version 6.87</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1880,10 +1880,6 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
 </div>
 <button class="primary" style="width:100%;margin-top:10px" onclick="generateSelectedReport()">📊 View Report</button>
 <button type="button" id="v679Clear" style="width:100%;margin-top:8px">✖️ Clear Report</button>
-<div id="v677ReportActions" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-  <button type="button" id="v677Export">⬇️ Export CSV</button>
-  <button type="button" id="v677Print">🖨️ Print</button>
-</div>
 <div id="selectedReportResult"></div>
 </div>
 
@@ -3274,71 +3270,6 @@ window.exportReportCSV=function(){
   };
 })();
 </script>
-
-<script id="v677-report-export">
-(function(){
-  'use strict';
-  const KEY='spb_v4_entries', EXP='spb_v4_expenses';
-  const n=v=>Number(v||0);
-  const esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
-  const arr=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
-  const norm=v=>{
-    const s=String(v??'').trim();
-    if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
-    const m=s.match(/^(\d{2})[.\/-](\d{2})[.\/-](\d{4})$/);
-    return m?`${m[3]}-${m[2]}-${m[1]}`:s;
-  };
-  function filtered(){
-    const f=document.getElementById('selectedReportFrom')?.value||'';
-    const t=document.getElementById('selectedReportTo')?.value||'';
-    const type=document.getElementById('reportTypeSelect')?.value||'sale';
-    if(type==='expense') return arr(EXP).filter(x=>!f||norm(x.date)>=f).filter(x=>!t||norm(x.date)<=t);
-    let a=arr(KEY).filter(x=>!f||norm(x.date)>=f).filter(x=>!t||norm(x.date)<=t);
-    if(type==='sale') a=a.filter(x=>n(x.sale)>0);
-    else if(type==='purchase') a=a.filter(x=>n(x.purchase)>0);
-    return a;
-  }
-  function exportSelected(){
-    const type=document.getElementById('reportTypeSelect')?.value||'sale', a=filtered();
-    let rows=[];
-    if(type==='expense') rows=[['Date','Expense','Amount'],...a.map(x=>[norm(x.date),x.name,n(x.amount)])];
-    else rows=[['Date','Item','Meter','Sale','Purchase','Profit','Paid By'],...a.map(x=>[norm(x.date),x.item,n(x.meter),n(x.sale),n(x.purchase),n(x.profit!==undefined&&x.profit!==''?x.profit:n(x.sale)-n(x.purchase)),x.paidBy||'GPay'])];
-    const csv='\ufeff'+rows.map(r=>r.map(esc).join(',')).join('\n');
-    const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob);
-    const aEl=document.createElement('a');aEl.href=url;
-    aEl.download='Report-'+type+'.csv';
-    document.body.appendChild(aEl);aEl.click();aEl.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
-  }
-  function printSelected(){
-    const box=document.getElementById('selectedReportResult');
-    if(!box||!box.innerText.trim()){alert('Please View Report first.');return;}
-    const w=window.open('','_blank');
-    if(!w){alert('Please allow pop-ups to print the report.');return;}
-    w.document.open();
-    w.document.write('<!doctype html><html><head><title>Sale Profit Book Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:20px;color:#222}button{display:none}@media print{body{padding:0}}</style></head><body><h2>Sale Profit Book Report</h2>');
-    w.document.write(box.innerHTML);
-    w.document.write('
-<script id="v686-home-initial">
-(function(){
-  'use strict';
-  function bootHome(){
-    document.body.classList.add('spb-home-mode');
-    document.body.classList.remove('spb-history-mode','spb-expense-mode','spb-party-mode','spb-report-mode','spb-backup-mode');
-    document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
-    var home=document.querySelector('.nav-bar button[onclick*="goHome"]');
-    if(home)home.classList.add('nav-active');
-    var e=document.getElementById('entryCard'),d=document.getElementById('dashboardCard'),s=document.getElementById('homeStockDetails');
-    if(e)e.classList.remove('hidden');
-    if(d)d.classList.remove('hidden');
-    if(s)s.classList.add('hidden');
-    if(typeof refresh==='function')refresh();
-    if(typeof refreshDashboard==='function')refreshDashboard();
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootHome);
-  else bootHome();
-})();
-</script>
-
 </body></html>');
     w.document.close();
     w.focus();
