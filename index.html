@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.06</div>
+<div class="version">Version 7.07</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -5282,6 +5282,27 @@ body.party-open-mode .nav-bar button.party-nav-active{background:#117d73!importa
   var obs=new MutationObserver(function(){ if(partyMode()) enforcePartyNav(); });
   function start(){obs.observe(document.body,{attributes:true,attributeFilter:['class'],subtree:true,childList:true});if(partyMode())enforcePartyNav();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+})();
+</script>
+
+
+<!-- V7.07 FINAL NAVIGATION RECOVERY -->
+<style id="v707-nav-recovery">.nav-bar button.nav-active{background:#117d73!important;color:#fff!important;}</style>
+<script id="v707-nav-recovery-controller">
+(function(){
+ function el(id){return document.getElementById(id)}
+ function all(s){return Array.prototype.slice.call(document.querySelectorAll(s))}
+ function txt(b){return (b.textContent||'').trim().replace(/\s+/g,' ')}
+ function active(btn){all('.nav-bar button').forEach(function(b){b.classList.remove('nav-active','active');b.removeAttribute('aria-current')});if(btn){btn.classList.add('nav-active','active');btn.setAttribute('aria-current','page')}}
+ function clearModes(){document.body.classList.remove('party-open-mode','history-open-mode','page-open-mode','v576-party','v705-party-open','v703-party-open','v702-party-open','v576-home')}
+ function hidePages(){all('.page').forEach(function(p){p.classList.remove('active');p.classList.add('hidden');p.style.display='none'})}
+ function commonHide(){all('.state-date-row,.new-history-row,#entryCard,#dashboardCard,#historyCard').forEach(function(e){e.classList.add('hidden')})}
+ function home(b){clearModes();hidePages();all('.state-date-row,.new-history-row,#entryCard,#dashboardCard').forEach(function(e){e.classList.remove('hidden');e.style.display='' });all('#historyCard,#partyPage,#homeStockDetails').forEach(function(e){e.classList.add('hidden');e.style.display='none'});active(b);if(typeof refresh==='function')refresh();if(typeof refreshDashboard==='function')refreshDashboard();scrollTo(0,0)}
+ function history(b){clearModes();document.body.classList.add('history-open-mode','page-open-mode');hidePages();var p=el('historyPage'),c=el('historyCard');if(p&&c){c.classList.remove('hidden');c.style.display='';p.innerHTML='';p.appendChild(c);p.classList.remove('hidden');p.classList.add('active');p.style.display=''}commonHide();active(b);if(typeof renderHistory==='function')renderHistory();scrollTo(0,0)}
+ function simple(id,b,fn){clearModes();document.body.classList.add('page-open-mode');hidePages();var p=el(id);if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block'}commonHide();active(b);if(fn)fn();scrollTo(0,0)}
+ function party(b){clearModes();document.body.classList.add('party-open-mode','v576-party');hidePages();var p=el('partyPage');if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block'}commonHide();all('#partyPage .party-detail-host').forEach(function(h){h.classList.remove('active');h.style.display='none'});var a=el('partyLedgerArea');if(a)a.innerHTML='';active(b);scrollTo(0,0)}
+ function bind(){var nav=document.querySelector('.nav-bar');if(!nav)return;all('.nav-bar button').forEach(function(b){var c=b.cloneNode(true);c.removeAttribute('onclick');c.onclick=null;b.parentNode.replaceChild(c,b)});all('.nav-bar button').forEach(function(b){var t=txt(b);if(t==='Home')b.onclick=function(e){e.preventDefault();home(b)};else if(t==='History')b.onclick=function(e){e.preventDefault();history(b)};else if(t==='Expense')b.onclick=function(e){e.preventDefault();simple('expensePage',b,function(){if(typeof renderExpenses==='function')renderExpenses();if(typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal()})};else if(t==='Party')b.onclick=function(e){e.preventDefault();party(b)};else if(t==='Reports')b.onclick=function(e){e.preventDefault();simple('reportPage',b,function(){if(typeof showDateDefaults==='function')showDateDefaults()})};else if(t==='Backup')b.onclick=function(e){e.preventDefault();simple('backupPage',b)} })}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
 })();
 </script>
 
