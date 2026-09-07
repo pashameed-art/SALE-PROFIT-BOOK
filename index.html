@@ -5402,5 +5402,69 @@ body.party-open-mode .nav-bar button.party-nav-active{background:#117d73!importa
 })();
 </script>
 
+
+<!-- PARTY NAVIGATION ACTIVE — FINAL OVERRIDE -->
+<style id="party-navigation-active-final">
+.nav-bar button.party-force-active{
+  background:#174f3d!important;
+  color:#fff!important;
+  border-color:#174f3d!important;
+  box-shadow:0 3px 10px rgba(23,79,61,.22)!important;
+}
+</style>
+<script id="party-navigation-active-final-script">
+(function(){
+  function buttons(){return Array.prototype.slice.call(document.querySelectorAll('.nav-bar button'));}
+  function text(b){return (b.textContent||'').trim().replace(/\s+/g,' ').toLowerCase();}
+  function setActive(btn){
+    buttons().forEach(function(b){
+      b.classList.remove('nav-active','active','party-force-active');
+      b.removeAttribute('aria-current');
+    });
+    if(btn){
+      btn.classList.add('nav-active','active','party-force-active');
+      btn.setAttribute('aria-current','page');
+    }
+  }
+  function party(btn){
+    setActive(btn);
+    document.body.classList.add('party-open-mode','v576-party','spb-party-mode');
+    document.body.classList.remove('page-open-mode','spb-home-mode','spb-history-mode','spb-expense-mode','spb-report-mode','spb-backup-mode');
+    var p=document.getElementById('partyPage');
+    if(p){
+      p.classList.remove('hidden');
+      p.classList.add('active');
+      p.style.setProperty('display','block','important');
+    }
+    document.querySelectorAll('.page').forEach(function(p2){
+      if(p2.id!=='partyPage') p2.style.setProperty('display','none','important');
+    });
+    window.scrollTo(0,0);
+  }
+  function bind(){
+    buttons().forEach(function(b){
+      b.addEventListener('click',function(e){
+        var t=text(b);
+        if(t==='party'){
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          party(b);
+          setTimeout(function(){setActive(b);},0);
+          setTimeout(function(){setActive(b);},50);
+          setTimeout(function(){setActive(b);},200);
+        }else{
+          b.classList.remove('party-force-active');
+        }
+      },true);
+    });
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',function(){setTimeout(bind,300);});
+  }else{
+    setTimeout(bind,300);
+  }
+})();
+</script>
+
 </body>
 </html>
