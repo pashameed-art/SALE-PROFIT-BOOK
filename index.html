@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.04</div>
+<div class="version">Version 7.05</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -5130,19 +5130,19 @@ body:not(.v702-party-open) #partyPage{display:none!important;}
 </script>
 
 
-<!-- V7.03 FINAL PARTY PAGE ISOLATION -->
-<style id="v704-party-isolation">
-body.v704-party-open .page:not(#partyPage){display:none!important;}
-body.v704-party-open #partyPage{display:block!important;visibility:visible!important;}
-body.v704-party-open #partyPage .party-detail-host{display:none!important;}
-body.v704-party-open #partyPage .party-detail-host.active{display:block!important;visibility:visible!important;}
-body:not(.v704-party-open) #partyPage{display:none!important;}
+<!-- V7.05 FINAL PARTY PAGE ISOLATION -->
+<style id="v705-party-isolation">
+body.v705-party-open .page:not(#partyPage){display:none!important;}
+body.v705-party-open #partyPage{display:block!important;visibility:visible!important;}
+body.v705-party-open #partyPage .party-detail-host{display:none!important;}
+body.v705-party-open #partyPage .party-detail-host.active{display:block!important;visibility:visible!important;}
+body:not(.v705-party-open):not(.v703-party-open):not(.v702-party-open) #partyPage{display:none!important;}
 </style>
-<script id="v704-party-isolation-controller">
+<script id="v705-party-isolation-controller">
 (function(){
   function all(s){return Array.prototype.slice.call(document.querySelectorAll(s));}
   function clearPartyMode(){
-    document.body.classList.remove('v704-party-open','v703-party-open','v702-party-open');
+    document.body.classList.remove('v705-party-open','v703-party-open','v702-party-open');
   }
   function hideOtherPages(){
     all('.page').forEach(function(p){
@@ -5153,7 +5153,7 @@ body:not(.v704-party-open) #partyPage{display:none!important;}
     });
   }
   function openParty(btn){
-    document.body.classList.add('v704-party-open','v703-party-open','v702-party-open','party-open-mode','v576-party');
+    document.body.classList.add('v705-party-open','v703-party-open','v702-party-open','party-open-mode','v576-party');
     var p=document.getElementById('partyPage');
     if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
     hideOtherPages();
@@ -5181,7 +5181,7 @@ body:not(.v704-party-open) #partyPage{display:none!important;}
       e.preventDefault();e.stopImmediatePropagation();
       var txt=(b.textContent||'').toLowerCase();
       var value=txt.indexOf('mansoor')>=0?'mansoor':'mydeen';
-      document.body.classList.add('v704-party-open','v703-party-open','v702-party-open','party-open-mode','v576-party');
+      document.body.classList.add('v705-party-open','v703-party-open','v702-party-open','party-open-mode','v576-party');
       if(typeof window.openPartyLedger==='function')window.openPartyLedger(value);
       var p=document.getElementById('partyPage');
       if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
@@ -5191,6 +5191,46 @@ body:not(.v704-party-open) #partyPage{display:none!important;}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
   window.v704PartyOpen=openParty;
+})();
+</script>
+
+<!-- V7.05 SAFETY PATCH: Party page must remain visible when any legacy Party-open controller fires first. -->
+<style id="v705-party-safety">
+body.v705-party-open .page:not(#partyPage),
+body.v703-party-open .page:not(#partyPage),
+body.v702-party-open .page:not(#partyPage),
+body.party-open-mode .page:not(#partyPage){display:none!important;}
+body.v705-party-open #partyPage,
+body.v703-party-open #partyPage,
+body.v702-party-open #partyPage,
+body.party-open-mode #partyPage{display:block!important;visibility:visible!important;}
+body.v705-party-open .nav-bar button.active:not(:has(+ *)),
+body.v703-party-open .nav-bar button.active:not(:has(+ *)),
+body.v702-party-open .nav-bar button.active:not(:has(+ *)){ }
+</style>
+<script id="v705-party-safety-controller">
+(function(){
+  function partyActive(){
+    return document.body.classList.contains('v705-party-open') || document.body.classList.contains('v703-party-open') || document.body.classList.contains('v702-party-open') || document.body.classList.contains('party-open-mode');
+  }
+  function enforce(){
+    if(!partyActive()) return;
+    document.querySelectorAll('.nav-bar button').forEach(function(b){
+      var t=(b.textContent||'').trim().replace(/\s+/g,' ');
+      if(t==='Party') b.classList.add('nav-active','active');
+      else if(['Home','History','Expense','Reports','Backup'].indexOf(t)>=0) b.classList.remove('nav-active','active');
+    });
+    document.querySelectorAll('.page').forEach(function(p){
+      if(p.id!=='partyPage'){p.classList.remove('active');p.style.display='none';}
+    });
+    var p=document.getElementById('partyPage');
+    if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
+  }
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(enforce,50);});
+  document.addEventListener('click',function(e){
+    var n=e.target.closest && e.target.closest('.nav-bar button');
+    if(n && (n.textContent||'').trim().replace(/\s+/g,' ')==='Party') setTimeout(enforce,0);
+  },true);
 })();
 </script>
 </body>
