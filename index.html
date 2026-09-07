@@ -1304,11 +1304,27 @@ body.spb-backup-mode #backupPage{display:block!important}
 #partyMydeenHost,#partyMansoorHost{display:none}
 #partyMydeenHost.active,#partyMansoorHost.active{display:block}
 </style>
+
+<style id="v699-party-top-level-only">
+/* Party page must never appear underneath Home/History/Expense/Reports/Backup. */
+#partyPage { display:none !important; }
+/* It is shown only by the Party navigation handler. */
+body[data-spb-page="party"] #partyPage { display:block !important; }
+
+/* Party header: Mydeen left, Mansoor right. */
+#partyPage .party-header-actions,
+#partyPage .party-actions {
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:20px !important;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.98</div>
+<div class="version">Version 6.99</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3513,5 +3529,58 @@ function bind(){
 document.addEventListener("DOMContentLoaded",bind);
 })();
 </script>
+
+<script id="v699-party-top-level-controller">
+(function(){
+  function partyEl(){ return document.getElementById('partyPage'); }
+
+  function closeParty(){
+    var p=partyEl();
+    if(p){
+      p.style.setProperty('display','none','important');
+      p.classList.remove('active');
+    }
+    if(document.body) document.body.setAttribute('data-spb-page','');
+  }
+
+  function openParty(){
+    var p=partyEl();
+    if(!p) return;
+    document.body.setAttribute('data-spb-page','party');
+    p.classList.add('active');
+    p.style.setProperty('display','block','important');
+
+    /* Never show both party details at once. */
+    var my=document.getElementById('partyMydeenHost');
+    var ma=document.getElementById('partyMansoorHost');
+    if(my) my.style.display='none';
+    if(ma) ma.style.display='none';
+  }
+
+  /* Expose one authoritative Party opener for the existing navigation. */
+  window.SPB_OPEN_PARTY = openParty;
+  window.SPB_CLOSE_PARTY = closeParty;
+
+  document.addEventListener('DOMContentLoaded', function(){
+    /* If an older script rendered Party on startup, remove it immediately. */
+    closeParty();
+
+    /* Capture clicks on the top navigation. */
+    document.querySelectorAll('button,a').forEach(function(el){
+      var t=(el.textContent||'').trim().toLowerCase();
+      if(t==='party'){
+        el.addEventListener('click',function(){
+          setTimeout(openParty,0);
+        },true);
+      } else if(['home','history','expense','reports','backup'].indexOf(t)>=0){
+        el.addEventListener('click',function(){
+          setTimeout(closeParty,0);
+        },true);
+      }
+    });
+  });
+})();
+</script>
+
 </body>
 </html>
