@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.81</title>
+<title>Sale Profit Book • V6.82</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1217,11 +1217,31 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 #itemList .v620-hidden-item{opacity:.58}
 #itemList .v620-hidden-badge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:8px;background:#eef0f0;color:#6b7280;font-size:11px;font-weight:800}
 </style>
+
+<style id="v682-page-mode-css">
+body:not(.spb-home-mode) > .state-date-row,
+body:not(.spb-home-mode) > .new-history-row,
+body:not(.spb-home-mode) > #entryCard,
+body:not(.spb-home-mode) > #homeStockDetails,
+body:not(.spb-home-mode) > #dashboardCard,
+body:not(.spb-home-mode) > .install-wrap{
+  display:none!important;
+}
+body.spb-home-mode > .page{display:none!important}
+body.spb-home-mode > #historyCard{display:none!important}
+body.spb-history-mode > .page{display:none!important}
+body.spb-history-mode > #historyCard{display:block!important}
+body.spb-expense-mode #expensePage,
+body.spb-party-mode #partyPage,
+body.spb-report-mode #reportPage,
+body.spb-backup-mode #backupPage{display:block!important}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.81</div>
+<div class="version">Version 6.82</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3157,90 +3177,6 @@ window.exportReportCSV=function(){
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
 };
 </script>
-<script id="share-print-clean">
-/* Share / Print */
-window.shareReport=function(){
-  var box=document.getElementById('reportResult');
-  if(!box || !box.innerText.trim()){alert('Please Generate Report first.');return;}
-  var from=(document.getElementById('reportFrom')||{}).value||'';
-  var to=(document.getElementById('reportTo')||{}).value||'';
-  var text='Sale Profit Book Report\n'+from+' to '+to+'\n\n'+box.innerText.trim();
-  if(navigator.share){
-    navigator.share({title:'Sale Profit Book Report',text:text}).catch(function(){});
-  }else if(navigator.clipboard){
-    navigator.clipboard.writeText(text).then(function(){alert('Report copied.');}).catch(function(){alert('Sharing is not supported on this device.');});
-  }else{alert('Sharing is not supported on this device.');}
-};
-window.printReport=function(){
-  var box=document.getElementById('reportResult');
-  if(!box || !box.innerHTML.trim()){alert('Please Generate Report first.');return;}
-  var w=window.open('','_blank');
-  if(!w){alert('Please allow pop-ups to print the report.');return;}
-  w.document.open();
-  w.document.write('<!doctype html><html><head><title>Sale Profit Report</title>');
-  w.document.write('<meta name="viewport" content="width=device-width,initial-scale=1">');
-  w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
-  w.document.write('</head><body><h1>Sale Profit Report</h1>');
-  w.document.write(box.innerHTML);
-  w.document.write('
-<script id="v681-navigation-fix">
-(function(){
-  'use strict';
-  function allHide(){
-    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-    var h=document.getElementById('historyCard');
-    if(h)h.classList.add('hidden');
-  }
-  function active(btn){
-    document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
-    if(btn)btn.classList.add('nav-active');
-  }
-  window.openHistoryTab=function(btn){
-    allHide(); active(btn);
-    var h=document.getElementById('historyCard');
-    if(h){
-      h.classList.remove('hidden');
-      if(typeof renderHistory==='function')renderHistory();
-    }
-    window.scrollTo(0,0);
-  };
-  window.goParty=function(btn){
-    allHide(); active(btn);
-    var p=document.getElementById('partyPage');
-    if(p)p.classList.add('active');
-    if(typeof renderPartySummary==='function')renderPartySummary();
-    window.scrollTo(0,0);
-  };
-  window.goHome=function(btn){
-    allHide(); active(btn);
-    var e=document.getElementById('entryCard'); if(e)e.classList.remove('hidden');
-    var d=document.getElementById('dashboardCard'); if(d)d.classList.remove('hidden');
-    var s=document.getElementById('homeStockDetails'); if(s)s.classList.add('hidden');
-    if(typeof refresh==='function')refresh();
-    if(typeof refreshDashboard==='function')refreshDashboard();
-    window.scrollTo(0,0);
-  };
-  window.goExpense=function(btn){
-    allHide(); active(btn);
-    var p=document.getElementById('expensePage'); if(p)p.classList.add('active');
-    if(typeof renderExpenses==='function')renderExpenses();
-    if(typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal();
-    window.scrollTo(0,0);
-  };
-  window.goReports=function(btn){
-    allHide(); active(btn);
-    var p=document.getElementById('reportPage'); if(p)p.classList.add('active');
-    if(typeof showDateDefaults==='function')showDateDefaults();
-    window.scrollTo(0,0);
-  };
-  window.goBackup=function(btn){
-    allHide(); active(btn);
-    var p=document.getElementById('backupPage'); if(p)p.classList.add('active');
-    window.scrollTo(0,0);
-  };
-})();
-</script>
-
 </body></html>');
   w.document.close();
   w.focus();
@@ -3256,6 +3192,79 @@ window.printReport=function(){
 #reportPage .card{margin-top:0}
 #reportPage #expenseReportV662{margin-top:14px!important}
 </style>
+
+
+<script id="v682-navigation-final">
+(function(){
+  'use strict';
+  function hidePages(){
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+    var h=document.getElementById('historyCard'); if(h)h.classList.add('hidden');
+    document.body.classList.remove('spb-home-mode','spb-history-mode','spb-expense-mode','spb-party-mode','spb-report-mode','spb-backup-mode');
+  }
+  function setActive(btn){
+    document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
+    if(btn)btn.classList.add('nav-active');
+  }
+  window.goHome=function(btn){
+    hidePages();setActive(btn);document.body.classList.add('spb-home-mode');
+    var e=document.getElementById('entryCard'),d=document.getElementById('dashboardCard'),s=document.getElementById('homeStockDetails');
+    if(e)e.classList.remove('hidden');if(d)d.classList.remove('hidden');if(s)s.classList.add('hidden');
+    if(typeof refresh==='function')refresh();if(typeof refreshDashboard==='function')refreshDashboard();
+    window.scrollTo(0,0);
+  };
+  window.openHistoryTab=function(btn){
+    hidePages();setActive(btn);document.body.classList.add('spb-history-mode');
+    var h=document.getElementById('historyCard');if(h){h.classList.remove('hidden');if(typeof renderHistory==='function')renderHistory();}
+    window.scrollTo(0,0);
+  };
+  window.goExpense=function(btn){
+    hidePages();setActive(btn);document.body.classList.add('spb-expense-mode');
+    var p=document.getElementById('expensePage');if(p)p.classList.add('active');
+    if(typeof renderExpenses==='function')renderExpenses();window.scrollTo(0,0);
+  };
+  window.goParty=function(btn){
+    hidePages();setActive(btn);document.body.classList.add('spb-party-mode');
+    var p=document.getElementById('partyPage');if(p)p.classList.add('active');
+    if(typeof renderPartySummary==='function')renderPartySummary();window.scrollTo(0,0);
+  };
+  window.goReports=function(btn){
+    hidePages();setActive(btn);document.body.classList.add('spb-report-mode');
+    var p=document.getElementById('reportPage');if(p)p.classList.add('active');
+    window.scrollTo(0,0);
+  };
+  window.goBackup=function(btn){
+    hidePages();setActive(btn);document.body.classList.add('spb-backup-mode');
+    var p=document.getElementById('backupPage');if(p)p.classList.add('active');
+    window.scrollTo(0,0);
+  };
+})();
+</script>
+
+
+<script id="v682-share-print">
+(function(){
+  window.shareReport=function(){
+    var box=document.getElementById('selectedReportResult');
+    if(!box || !box.innerText.trim()){alert('Please View Report first.');return;}
+    var text='Sale Profit Book Report\n\n'+box.innerText.trim();
+    if(navigator.share){navigator.share({title:'Sale Profit Book Report',text:text}).catch(function(){});}
+    else if(navigator.clipboard){navigator.clipboard.writeText(text).then(function(){alert('Report copied.');}).catch(function(){alert('Sharing is not supported on this device.');});}
+    else alert('Sharing is not supported on this device.');
+  };
+  window.printReport=function(){
+    var box=document.getElementById('selectedReportResult');
+    if(!box || !box.innerHTML.trim()){alert('Please View Report first.');return;}
+    var w=window.open('','_blank');
+    if(!w){alert('Please allow pop-ups to print the report.');return;}
+    w.document.open();
+    w.document.write('<!doctype html><html><head><title>Sale Profit Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:20px;color:#222}@media print{body{padding:0}}</style></head><body><h2>Sale Profit Book Report</h2>');
+    w.document.write(box.innerHTML);
+    w.document.write('<\/body><\/html>');
+    w.document.close();w.focus();setTimeout(function(){w.print();},300);
+  };
+})();
+</script>
 
 <script id="v677-report-export">
 (function(){
