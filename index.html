@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.70</div>
+<div class="version">Version 6.71</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3300,20 +3300,7 @@ window.printReport=function(){
   w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
-  w.document.write('
-<style id="v670-report-clean">
-/* V6.70 — Keep Reports page simple: main report + Expense Summary only. */
-#monthlySalesV651,
-#salesDashboardV647,
-#dailySalesV650,
-#salesProfitV645,
-#salesProfitReport,
-#salesReportV646 { display:none!important; }
-#reportPage > section[id] { display:none!important; }
-#reportPage > #expenseReportV662 { display:block!important; }
-#reportPage .v670-note{margin:10px 0 0;padding:10px 12px;border-radius:12px;background:#f1f7f6;color:#245c56;font-weight:800;font-size:13px;}
-</style>
-</body></html>');
+  w.document.write('</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
@@ -5073,10 +5060,20 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
-<script id="v667-final-version-marker">
+<script id="v671-final-version-marker">
 (function(){
-  try { localStorage.setItem('__spb_app_version__','6.70'); } catch(e) {}
+  try { localStorage.setItem('__spb_app_version__','6.71'); } catch(e) {}
 })();
 </script>
+<style id="v671-report-simple">
+/* V6.71 — One clear Sales Report + one compact Expense Summary. */
+#salesReportV646,
+#monthlySalesV651,
+#salesDashboardV647,
+#dailySalesV650,
+#salesProfitV645,
+#salesProfitReport { display:none!important; }
+</style>
+
 </body>
 </html>
