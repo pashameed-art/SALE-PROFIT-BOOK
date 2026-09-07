@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.73</title>
+<title>Sale Profit Book • V6.74</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.73</div>
+<div class="version">Version 6.74</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1840,6 +1840,7 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
 <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
 <button type="button" id="v660Today">Today</button>
 <button type="button" id="v660AllDates">All Dates</button>
+<button type="button" id="v674ThisMonth">This Month</button>
 </div>
 <button class="primary" style="width:100%;margin-top:10px" onclick="generateSelectedReport()">📊 View Report</button>
 <div id="selectedReportResult"></div>
@@ -1854,6 +1855,7 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
       <button id="v662Today" type="button">Today</button>
       <button id="v662All" type="button">All Dates</button>
+      <button id="v674ExpenseMonth" type="button">This Month</button>
     </div>
     <div id="v669Cards" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"></div>
     <div id="v669Top" style="margin-top:10px"></div>
@@ -3298,7 +3300,37 @@ window.printReport=function(){
   w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
-  w.document.write('</body></html>');
+  w.document.write('
+<script id="v674-quick-filter">
+(function(){
+  'use strict';
+  function monthRange(){
+    var d=new Date();
+    var y=d.getFullYear(), m=d.getMonth();
+    var first=y+'-'+String(m+1).padStart(2,'0')+'-01';
+    var lastDay=new Date(y,m+1,0).getDate();
+    var last=y+'-'+String(m+1).padStart(2,'0')+'-'+String(lastDay).padStart(2,'0');
+    return [first,last];
+  }
+  function setMainMonth(){
+    var r=monthRange(), f=document.getElementById('selectedReportFrom'), t=document.getElementById('selectedReportTo');
+    if(f)f.value=r[0]; if(t)t.value=r[1];
+    if(typeof generateSelectedReport==='function') generateSelectedReport();
+  }
+  function setExpenseMonth(){
+    var r=monthRange(), f=document.getElementById('v662From'), t=document.getElementById('v662To');
+    if(f)f.value=r[0]; if(t)t.value=r[1];
+    var run=document.getElementById('v662Run');
+    if(run)run.click();
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    var a=document.getElementById('v674ThisMonth'); if(a)a.addEventListener('click',setMainMonth);
+    var b=document.getElementById('v674ExpenseMonth'); if(b)b.addEventListener('click',setExpenseMonth);
+  });
+})();
+</script>
+
+</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
@@ -5060,7 +5092,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 <script id="v671-final-version-marker">
 (function(){
-  try { localStorage.setItem('__spb_app_version__','6.71'); } catch(e) {}
+  try { localStorage.setItem('__spb_app_version__','6.74'); } catch(e) {}
 })();
 </script>
 <style id="v671-report-simple">
@@ -5076,7 +5108,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 
 <script id="v673-report-fix">
-(function(){ window.SPB_REPORT_VERSION='6.73'; })();
+(function(){ window.SPB_REPORT_VERSION='6.74'; })();
 </script>
 
 </body>
