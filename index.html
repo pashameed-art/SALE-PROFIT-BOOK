@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.84</title>
+<title>Sale Profit Book • V6.85</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1243,11 +1243,31 @@ body.spb-backup-mode #backupPage{display:block!important}
 #removeSaleExpenseModalV610{display:none!important}
 </style>
 
+
+<style id="v685-page-visibility">
+/* V6.85 — Backup-only controls */
+#v613RemovePanel{display:none!important}
+#backupPage.active #v613RemovePanel{display:block!important}
+</style>
+<script id="v685-page-visibility-script">
+(function(){
+  'use strict';
+  function sync(){
+    var p=document.getElementById('v613RemovePanel');
+    var b=document.getElementById('backupPage');
+    if(!p)return;
+    p.style.display=(b && b.classList.contains('active'))?'block':'none';
+  }
+  document.addEventListener('DOMContentLoaded',sync);
+  new MutationObserver(sync).observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class']});
+})();
+</script>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.84</div>
+<div class="version">Version 6.85</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1393,6 +1413,8 @@ body.spb-backup-mode #backupPage{display:block!important}
 </div>
 </div>
 <div class="page" id="backupPage">
+<div id="v613RemovePanel" class="v613-remove-panel">
+  <div class="v613-remove-title">🗑️ Remove Sale &amp; Expense Data</div>
 <div class="backup-box">
 <div class="backup-actions-v455">
 <button class="full-backup" id="gdriveBackupBtn" onclick="gdriveBackup()" type="button">☁️ GDrive Backup</button>
@@ -1405,8 +1427,7 @@ body.spb-backup-mode #backupPage{display:block!important}
 <button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
 </div>
 </div>
-<div id="v613RemovePanel" class="v613-remove-panel">
-  <div class="v613-remove-title">🗑️ Remove Sale &amp; Expense Data</div>
+
   <div class="v613-label">Select Date Range <span>(Optional)</span></div>
   <div class="v613-date-row">
     <label>From Date<input id="v613FromDate" type="date"></label>
