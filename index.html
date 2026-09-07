@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.83</title>
+<title>Sale Profit Book • V6.84</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1237,11 +1237,17 @@ body.spb-report-mode #reportPage,
 body.spb-backup-mode #backupPage{display:block!important}
 </style>
 
+
+<style id="v684-backup-clean">
+/* V6.84 — Keep only the single date-range removal panel on Backup. */
+#removeSaleExpenseModalV610{display:none!important}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.83</div>
+<div class="version">Version 6.84</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1397,17 +1403,6 @@ body.spb-backup-mode #backupPage{display:block!important}
 <div id="backupStatusV551" class="meta" style="margin-top:12px">One-tap Google Drive backup: saves all app data securely to your Google Drive.</div>
 <div class="meta" style="margin-top:12px">☁️ <strong>GDrive Backup</strong> requires Google sign-in the first time. Restore can still use a downloaded backup file.</div>
 <button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
-<div id="removeSaleExpenseModalV610" class="v610-modal" aria-hidden="true">
-  <div class="v610-modal-card" role="dialog" aria-modal="true" aria-labelledby="v610RemoveTitle">
-    <div class="v610-warning">!</div>
-    <h2 id="v610RemoveTitle">Remove Sale &amp; Expense Data?</h2>
-    <p>This will permanently delete all <b>Sale Amount</b> records and <b>Expense Amount</b> records.</p>
-    <p><b>Items, Purchase/Meter rates, Stock, Party data and app settings will remain unchanged.</b></p>
-    <div class="v610-modal-actions">
-      <button class="secondary" type="button" onclick="closeRemoveSaleExpenseV610()">Cancel</button>
-      <button class="v610-danger-confirm" type="button" onclick="removeSaleExpenseV610()">Remove Data</button>
-    </div>
-  </div>
 </div>
 </div>
 <div id="v613RemovePanel" class="v613-remove-panel">
