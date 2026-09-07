@@ -1300,17 +1300,34 @@ body.spb-backup-mode #backupPage{display:block!important}
 #v691MydeenRestoreBtn{width:100%;margin-top:8px}
 </style>
 
+<style id="v697-final-page-isolation">
+/* Final page isolation: only the selected top-level page may be visible. */
+body.spb-home-mode #partyPage,
+body.spb-history-mode #partyPage,
+body.spb-expense-mode #partyPage,
+body.spb-report-mode #partyPage,
+body.spb-backup-mode #partyPage {
+  display:none !important;
+}
+body.spb-party-mode #partyPage {
+  display:block !important;
+}
 
-<style id="v696-party-page-visibility">
-  #partyPage { display:none; }
-  #partyPage.active { display:block; }
+/* Older navigation modes used by previous versions. */
+body.page-open-mode #partyPage,
+body.history-open-mode #partyPage {
+  display:none !important;
+}
+body.party-open-mode #partyPage {
+  display:block !important;
+}
 </style>
 
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.96</div>
+<div class="version">Version 6.97</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3493,58 +3510,37 @@ window.exportReportCSV=function(){
 })();
 </script>
 
-
-<script id="v696-page-visibility-fix">
+<script id="v697-navigation-guard">
 (function(){
-  var PAGE_IDS = ['homePage','historyPage','expensePage','partyPage','reportPage','backupPage'];
-
-  function showOnly(id){
-    PAGE_IDS.forEach(function(pid){
-      var el=document.getElementById(pid);
-      if(!el) return;
-      if(pid===id){
-        el.style.display='block';
-        el.classList.add('active');
-        el.classList.remove('hidden');
-      }else{
-        el.style.display='none';
-        el.classList.remove('active');
-      }
-    });
+  function hideParty(){
+    var p=document.getElementById('partyPage');
+    if(p){
+      p.classList.remove('active');
+      p.style.display='none';
+    }
   }
-
-  // Keep the Party page out of Reports (and every other page) after any
-  // existing navigation/render code runs.
-  function bind(){
-    document.addEventListener('click', function(e){
-      var b=e.target.closest && e.target.closest('[data-page],[data-nav],[onclick]');
-      if(!b) return;
-
-      var txt=(b.getAttribute('onclick')||'')+' '+(b.getAttribute('data-page')||'')+' '+(b.getAttribute('data-nav')||'');
-      var id=null;
-      if(/\bparty(?:Page)?\b/i.test(txt)) id='partyPage';
-      else if(/\breport(?:Page)?\b/i.test(txt)) id='reportPage';
-      else if(/\bhome(?:Page)?\b/i.test(txt)) id='homePage';
-      else if(/\bhistory(?:Page)?\b/i.test(txt)) id='historyPage';
-      else if(/\bexpense(?:Page)?\b/i.test(txt)) id='expensePage';
-      else if(/\bbackup(?:Page)?\b/i.test(txt)) id='backupPage';
-
-      if(id) setTimeout(function(){ showOnly(id); }, 0);
-    }, false);
+  function guard(){
+    var body=document.body;
+    if(body.classList.contains('spb-report-mode') ||
+       body.classList.contains('spb-home-mode') ||
+       body.classList.contains('spb-history-mode') ||
+       body.classList.contains('spb-expense-mode') ||
+       body.classList.contains('spb-backup-mode') ||
+       body.classList.contains('page-open-mode') && !body.classList.contains('party-open-mode')){
+      hideParty();
+    }
   }
-
-  window.SPB_showOnlyPage = showOnly;
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
-  else bind();
-
-  // Initial state: respect the currently active tab; otherwise Home.
-  setTimeout(function(){
-    var active=document.querySelector('.nav-btn.active,[data-page].active');
-    var t=active ? ((active.getAttribute('onclick')||'')+' '+(active.getAttribute('data-page')||'')) : '';
-    if(/party/i.test(t)) showOnly('partyPage');
-    else if(/report/i.test(t)) showOnly('reportPage');
-    else showOnly('homePage');
-  }, 50);
+  ['goHome','openHistoryTab','goExpense','goReports','goBackup'].forEach(function(name){
+    var old=window[name];
+    if(typeof old==='function'){
+      window[name]=function(){
+        var r=old.apply(this,arguments);
+        setTimeout(guard,0);
+        return r;
+      };
+    }
+  });
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(guard,0);});
 })();
 </script>
 
