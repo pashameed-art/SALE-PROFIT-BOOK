@@ -1217,6 +1217,26 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 #itemList .v620-hidden-item{opacity:.58}
 #itemList .v620-hidden-badge{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:8px;background:#eef0f0;color:#6b7280;font-size:11px;font-weight:800}
 </style>
+
+<style id="party-nav-dark-final">
+/* Party tab must stay dark when Party is selected. */
+.nav-bar button.nav-active,
+.nav-bar button.active,
+.nav-bar button[aria-current="page"]{
+  background:#174f3d!important;
+  color:#fff!important;
+  border-color:#174f3d!important;
+  box-shadow:0 3px 10px rgba(23,79,61,.22)!important;
+}
+body.party-open-mode .nav-bar button:nth-child(4),
+body.v576-party .nav-bar button:nth-child(4),
+body.spb-party-mode .nav-bar button:nth-child(4){
+  background:#174f3d!important;
+  color:#fff!important;
+  border-color:#174f3d!important;
+  box-shadow:0 3px 10px rgba(23,79,61,.22)!important;
+}
+</style>
 </head>
 <body>
 <header>
