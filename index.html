@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.78</title>
+<title>Sale Profit Book • V6.79</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.78</div>
+<div class="version">Version 6.79</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1843,6 +1843,7 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
 <button type="button" id="v674ThisMonth">This Month</button>
 </div>
 <button class="primary" style="width:100%;margin-top:10px" onclick="generateSelectedReport()">📊 View Report</button>
+<button type="button" id="v679Clear" style="width:100%;margin-top:8px">✖️ Clear Report</button>
 <div id="v677ReportActions" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
   <button type="button" id="v677Export">⬇️ Export CSV</button>
   <button type="button" id="v677Print">🖨️ Print</button>
@@ -3244,7 +3245,26 @@ window.printReport=function(){
     w.document.open();
     w.document.write('<!doctype html><html><head><title>Sale Profit Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:20px;color:#222}button{display:none}@media print{body{padding:0}}</style></head><body><h2>Sale Profit Book Report</h2>');
     w.document.write(box.innerHTML);
-    w.document.write('</body></html>');
+    w.document.write('
+<script id="v679-report-clear">
+(function(){
+  'use strict';
+  function clear(){
+    var box=document.getElementById('selectedReportResult');
+    if(box)box.innerHTML='';
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    var b=document.getElementById('v679Clear');
+    if(b)b.addEventListener('click',clear);
+    ['reportTypeSelect','selectedReportFrom','selectedReportTo'].forEach(function(id){
+      var e=document.getElementById(id);
+      if(e)e.addEventListener('change',clear);
+    });
+  });
+})();
+</script>
+
+</body></html>');
     w.document.close();w.focus();setTimeout(()=>w.print(),300);
   }
   document.addEventListener('DOMContentLoaded',function(){
@@ -4937,7 +4957,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 <script id="v671-final-version-marker">
 (function(){
-  try { localStorage.setItem('__spb_app_version__','6.78'); } catch(e) {}
+  try { localStorage.setItem('__spb_app_version__','6.79'); } catch(e) {}
 })();
 </script>
 
@@ -4945,7 +4965,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 
 <script id="v673-report-fix">
-(function(){ window.SPB_REPORT_VERSION='6.78'; })();
+(function(){ window.SPB_REPORT_VERSION='6.79'; })();
 </script>
 
 </body>
