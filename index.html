@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.88</title>
+<title>Sale Profit Book • V6.89</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -667,12 +667,17 @@ html.modal-open, body.modal-open{
   window.openPartyLedger=function(value){
   var area=document.getElementById('partyLedgerArea');
   if(!area)return;
+  area.innerHTML='';
   if(value==='mansoor'){
-    area.innerHTML='<div class="card"><h3>🤝 Mansoor</h3><button class="primary" onclick="showMansoor()">Open Mansoor Ledger</button></div>';
+    var p=document.getElementById('mansoorPage');
+    if(p){
+      p.classList.remove('page','hidden','active');
+      p.style.display='block';
+      area.appendChild(p);
+      if(typeof showMansoor==='function')showMansoor();
+    }
   }else if(value==='mydeen'){
-    area.innerHTML='<div class="card"><h3>🤝 Mydeen</h3><p>Mydeen கொடுக்கல் – வாங்கல் Ledger அடுத்த கட்டத்தில் சேர்க்கலாம்.</p></div>';
-  }else{
-    area.innerHTML='';
+    area.innerHTML='<div class="card"><h3>🤝 Mydeen</h3><p>Mydeen கொடுக்கல் – வாங்கல் details.</p></div>';
   }
 };
 window.goReports=function(btn){
@@ -1263,11 +1268,16 @@ body.spb-backup-mode #backupPage{display:block!important}
 })();
 </script>
 
+<style id="v689-mansoor-direct">
+#partyLedgerArea #mansoorPage{display:block!important;margin-top:12px}
+#partyLedgerArea #mansoorPage .card{margin-top:12px}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.88</div>
+<div class="version">Version 6.89</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
