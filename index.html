@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.08</div>
+<div class="version">Version 7.09</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4494,8 +4494,6 @@ document.addEventListener('DOMContentLoaded',function(){
     var c=calc(readMydeen());
     b.textContent=money(c.balance);
   };
-    reader.readAsText(file);
-  };
   // Ensure the balance always uses the Mydeen ledger key and never Bike data.
   document.addEventListener('DOMContentLoaded',function(){
     setTimeout(function(){addRestoreUI();refreshMydeenBalance626();},150);
@@ -4503,26 +4501,8 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 
-<!-- V6.27: Remove Mansoor ledger data only. Mydeen and all other data remain untouched. -->
-<script>(function(){try{localStorage.removeItem('saleProfitBookMansoorV1');}catch(e){}})();</script>
 
-<script id="v629-party-remove">
-(function(){
-  try {
-    localStorage.removeItem('saleProfitBookMansoorV1');
-    localStorage.removeItem('saleProfitBookMydeenV1');
-    localStorage.removeItem('saleProfitBookSelectedPartyV1');
-  } catch(e) {}
-})();
-</script>
 
-<script id="v631-mydeen-remove">
-(function(){
-  try {
-    localStorage.removeItem('saleProfitBookMydeenV1');
-  } catch(e) {}
-})();
-</script>
 
 <script id="v632-sterling-stockout">
 (function(){
@@ -4644,7 +4624,7 @@ document.addEventListener('DOMContentLoaded',function(){
 })();
 </script>
 <script id="v637-stock-history">
-(function(){function r(){try{var e=document.getElementById("stockSummary"),q=document.getElementById("stockItemSelect");if(!e||!q||!q.value)return;var a=JSON.parse(localStorage.getItem("spb_v4_stock")||"[]");if(!Array.isArray(a))a=[];a=a.filter(function(x){return String(x.item||"")===q.value}).sort(function(x,y){return String(x.date||"").localeCompare(String(y.date||""))||Number(x.id||0)-Number(y.id||0)});var b=0,h=a.map(function(x){var m=Number(x.meter||0),o=String(x.type||"").toLowerCase()==="stock out";b+=o?-m:m;return "<tr><td>"+String(x.date||"").slice(0,10)+"</td><td>"+(o?"Sold":"Added")+"</td><td>"+m.toFixed(2)+" m</td><td>"+b.toFixed(2)+" m</td></tr>"}).join("");var z=document.getElementById("v637History")||document.createElement("div");z.id="v637History";z.style.cssText="margin-top:12px;padding:10px;border:1px solid #ddd;border-radius:10px;background:var(--card,#fff)";z.innerHTML="<b>📋 Stock History — "+q.value+"</b><div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px"><thead><tr><th>Date</th><th>Type</th><th>Meter</th><th>Balance</th></tr></thead><tbody>"+(h||"<tr><td colspan=4>No history</td></tr>")+"</tbody></table></div>";if(!z.parentNode)e.appendChild(z)}catch(x){}}document.addEventListener("change",function(e){if(e.target&&e.target.id==="stockItemSelect")setTimeout(r,80)});document.addEventListener("DOMContentLoaded",function(){setTimeout(r,400)})})();
+(function(){function r(){try{var e=document.getElementById("stockSummary"),q=document.getElementById("stockItemSelect");if(!e||!q||!q.value)return;var a=JSON.parse(localStorage.getItem("spb_v4_stock")||"[]");if(!Array.isArray(a))a=[];a=a.filter(function(x){return String(x.item||"")===q.value}).sort(function(x,y){return String(x.date||"").localeCompare(String(y.date||""))||Number(x.id||0)-Number(y.id||0)});var b=0,h=a.map(function(x){var m=Number(x.meter||0),o=String(x.type||"").toLowerCase()==="stock out";b+=o?-m:m;return "<tr><td>"+String(x.date||"").slice(0,10)+"</td><td>"+(o?"Sold":"Added")+"</td><td>"+m.toFixed(2)+" m</td><td>"+b.toFixed(2)+" m</td></tr>"}).join("");var z=document.getElementById("v637History")||document.createElement("div");z.id="v637History";z.style.cssText="margin-top:12px;padding:10px;border:1px solid #ddd;border-radius:10px;background:var(--card,#fff)";z.innerHTML='<b>📋 Stock History — '+q.value+'</b><div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px"><thead><tr><th>Date</th><th>Type</th><th>Meter</th><th>Balance</th></tr></thead><tbody>'+(h||'<tr><td colspan="4">No history</td></tr>')+'</tbody></table></div>';if(!z.parentNode)e.appendChild(z)}catch(x){}}document.addEventListener("change",function(e){if(e.target&&e.target.id==="stockItemSelect")setTimeout(r,80)});document.addEventListener("DOMContentLoaded",function(){setTimeout(r,400)})})();
 </script>
 
 <script id="v638-stock-search">
@@ -5387,6 +5367,70 @@ body.party-open-mode .nav-bar button.party-nav-active{background:#117d73!importa
     },true);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
+})();
+</script>
+
+
+<script id="v709-real-navigation-fix">
+(function(){
+  'use strict';
+  function all(sel){return Array.prototype.slice.call(document.querySelectorAll(sel));}
+  function active(btn){
+    all('.nav-bar button').forEach(function(b){b.classList.remove('nav-active','active');b.removeAttribute('aria-current');});
+    if(btn){btn.classList.add('nav-active','active');btn.setAttribute('aria-current','page');}
+  }
+  function hidePages(){
+    all('.page').forEach(function(p){p.classList.remove('active');p.style.display='none';});
+  }
+  function hideHome(){
+    ['.state-date-row','.new-history-row','#entryCard','#dashboardCard','#homeStockDetails','#historyCard'].forEach(function(s){all(s).forEach(function(e){e.classList.add('hidden');e.style.display='none';});});
+  }
+  function showHome(){
+    hidePages();
+    ['.state-date-row','.new-history-row','#entryCard','#dashboardCard'].forEach(function(s){all(s).forEach(function(e){e.classList.remove('hidden');e.style.display='';});});
+    ['#homeStockDetails','#historyCard','#partyPage'].forEach(function(s){all(s).forEach(function(e){e.classList.add('hidden');e.style.display='none';});});
+    document.body.classList.remove('page-open-mode','party-open-mode','history-open-mode','v576-party','v702-party-open');
+  }
+  function open(name,btn){
+    hideHome();
+    hidePages();
+    document.body.classList.add('page-open-mode');
+    document.body.classList.remove('party-open-mode','history-open-mode','v576-party','v702-party-open');
+    var map={History:'historyPage',Expense:'expensePage',Reports:'reportPage',Backup:'backupPage'};
+    var id=map[name];
+    if(id){var p=document.getElementById(id); if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}}
+    active(btn);
+    if(name==='History' && typeof renderHistory==='function') renderHistory();
+    if(name==='Expense'){if(typeof renderExpenses==='function')renderExpenses();if(typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal();}
+    if(name==='Reports' && typeof showDateDefaults==='function')showDateDefaults();
+    window.scrollTo(0,0);
+  }
+  function party(btn){
+    hideHome(); hidePages();
+    document.body.classList.remove('page-open-mode','history-open-mode','v702-party-open');
+    document.body.classList.add('party-open-mode','v576-party');
+    var p=document.getElementById('partyPage');
+    if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
+    active(btn); window.scrollTo(0,0);
+  }
+  function bind(){
+    var nav=document.querySelector('.nav-bar'); if(!nav)return;
+    all('.nav-bar button').forEach(function(btn){
+      btn.onclick=null;
+      btn.addEventListener('click',function(e){
+        e.preventDefault();e.stopImmediatePropagation();
+        var t=(btn.textContent||'').trim().replace(/\s+/g,' ');
+        if(t==='Home') showHome(),active(btn),typeof refresh==='function'&&refresh(),typeof refreshDashboard==='function'&&refreshDashboard(),window.scrollTo(0,0);
+        else if(t==='History') open('History',btn);
+        else if(t==='Expense') open('Expense',btn);
+        else if(t==='Party') party(btn);
+        else if(t==='Reports') open('Reports',btn);
+        else if(t==='Backup') open('Backup',btn);
+        return false;
+      },true);
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind); else bind();
 })();
 </script>
 
