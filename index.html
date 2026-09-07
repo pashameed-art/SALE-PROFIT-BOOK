@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.91</title>
+<title>Sale Profit Book • V6.92</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1283,7 +1283,7 @@ body.spb-backup-mode #backupPage{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.91</div>
+<div class="version">Version 6.92</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3381,6 +3381,49 @@ window.exportReportCSV=function(){
   document.addEventListener('DOMContentLoaded',function(){
     mo.observe(document.body,{childList:true,subtree:true});
   });
+})();
+</script>
+
+
+<script id="v692-home-start">
+(function(){
+  'use strict';
+  function startHome(){
+    try{
+      document.body.classList.remove(
+        'spb-history-mode','spb-expense-mode','spb-party-mode',
+        'spb-report-mode','spb-backup-mode'
+      );
+      document.body.classList.add('spb-home-mode');
+
+      document.querySelectorAll('.page').forEach(function(p){
+        p.classList.remove('active');
+      });
+      var h=document.getElementById('historyCard');
+      if(h)h.classList.add('hidden');
+
+      var e=document.getElementById('entryCard');
+      var d=document.getElementById('dashboardCard');
+      var s=document.getElementById('homeStockDetails');
+      if(e)e.classList.remove('hidden');
+      if(d)d.classList.remove('hidden');
+      if(s)s.classList.add('hidden');
+
+      document.querySelectorAll('.nav-bar button').forEach(function(b){
+        b.classList.remove('nav-active');
+      });
+      var home=document.querySelector('.nav-bar button[onclick*="goHome"]');
+      if(home)home.classList.add('nav-active');
+
+      if(typeof refresh==='function')refresh();
+      if(typeof refreshDashboard==='function')refreshDashboard();
+    }catch(err){console.error('V6.92 Home start:',err);}
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',function(){setTimeout(startHome,50);});
+  }else{
+    setTimeout(startHome,50);
+  }
 })();
 </script>
 
