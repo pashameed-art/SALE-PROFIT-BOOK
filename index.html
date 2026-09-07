@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.80</title>
+<title>Sale Profit Book • V6.81</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.80</div>
+<div class="version">Version 6.81</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3182,7 +3182,66 @@ window.printReport=function(){
   w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
-  w.document.write('</body></html>');
+  w.document.write('
+<script id="v681-navigation-fix">
+(function(){
+  'use strict';
+  function allHide(){
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+    var h=document.getElementById('historyCard');
+    if(h)h.classList.add('hidden');
+  }
+  function active(btn){
+    document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
+    if(btn)btn.classList.add('nav-active');
+  }
+  window.openHistoryTab=function(btn){
+    allHide(); active(btn);
+    var h=document.getElementById('historyCard');
+    if(h){
+      h.classList.remove('hidden');
+      if(typeof renderHistory==='function')renderHistory();
+    }
+    window.scrollTo(0,0);
+  };
+  window.goParty=function(btn){
+    allHide(); active(btn);
+    var p=document.getElementById('partyPage');
+    if(p)p.classList.add('active');
+    if(typeof renderPartySummary==='function')renderPartySummary();
+    window.scrollTo(0,0);
+  };
+  window.goHome=function(btn){
+    allHide(); active(btn);
+    var e=document.getElementById('entryCard'); if(e)e.classList.remove('hidden');
+    var d=document.getElementById('dashboardCard'); if(d)d.classList.remove('hidden');
+    var s=document.getElementById('homeStockDetails'); if(s)s.classList.add('hidden');
+    if(typeof refresh==='function')refresh();
+    if(typeof refreshDashboard==='function')refreshDashboard();
+    window.scrollTo(0,0);
+  };
+  window.goExpense=function(btn){
+    allHide(); active(btn);
+    var p=document.getElementById('expensePage'); if(p)p.classList.add('active');
+    if(typeof renderExpenses==='function')renderExpenses();
+    if(typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal();
+    window.scrollTo(0,0);
+  };
+  window.goReports=function(btn){
+    allHide(); active(btn);
+    var p=document.getElementById('reportPage'); if(p)p.classList.add('active');
+    if(typeof showDateDefaults==='function')showDateDefaults();
+    window.scrollTo(0,0);
+  };
+  window.goBackup=function(btn){
+    allHide(); active(btn);
+    var p=document.getElementById('backupPage'); if(p)p.classList.add('active');
+    window.scrollTo(0,0);
+  };
+})();
+</script>
+
+</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
