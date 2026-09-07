@@ -5332,5 +5332,55 @@ body.party-open-mode .nav-bar button.party-nav-active{background:#117d73!importa
 })();
 </script>
 
+
+<script id="navigation-state-lock-final">
+(function(){
+  function txt(b){return (b.textContent||'').trim().replace(/\s+/g,' ').toLowerCase();}
+  function nav(){
+    return Array.prototype.slice.call(document.querySelectorAll('.nav-bar button'));
+  }
+  function activeName(){
+    var b=nav().find(function(x){return x.classList.contains('nav-active') || x.classList.contains('active');});
+    return b ? txt(b) : '';
+  }
+  function lock(){
+    var name=activeName();
+    if(!name)return;
+    var party=document.getElementById('partyPage');
+    if(name!=='party'){
+      document.body.classList.remove('v576-party','party-open-mode','v702-party-open','v703-party-open','v705-party-open','v576-party','spb-party-mode');
+      if(party){party.classList.remove('active');party.classList.add('hidden');party.style.setProperty('display','none','important');}
+      document.querySelectorAll('#partyPage .party-detail-host').forEach(function(h){h.classList.remove('active');h.style.setProperty('display','none','important');});
+      var mp=document.getElementById('mansoorPage');
+      if(mp && mp.parentElement && mp.parentElement.id==='partyMansoorHost'){
+        mp.style.setProperty('display','none','important');
+      }
+    }else{
+      document.body.classList.add('party-open-mode','v576-party','spb-party-mode');
+      if(party){party.classList.remove('hidden');party.classList.add('active');party.style.setProperty('display','block','important');}
+      document.querySelectorAll('.page').forEach(function(p){if(p.id!=='partyPage')p.style.setProperty('display','none','important');});
+    }
+  }
+  function schedule(){setTimeout(lock,0);setTimeout(lock,50);setTimeout(lock,200);}
+  document.addEventListener('click',function(e){
+    var b=e.target.closest && e.target.closest('.nav-bar button');
+    if(b)schedule();
+  },false);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(lock,250);});
+  else setTimeout(lock,250);
+  if(window.MutationObserver){
+    var mo=new MutationObserver(function(){
+      if(activeName()!=='party'){
+        var p=document.getElementById('partyPage');
+        if(p && (p.style.display==='block' || p.classList.contains('active'))) lock();
+      }
+    });
+    mo.observe(document.body,{attributes:true,attributeFilter:['class'],subtree:true});
+    var pp=document.getElementById('partyPage');
+    if(pp)mo.observe(pp,{attributes:true,attributeFilter:['class','style']});
+  }
+})();
+</script>
+
 </body>
 </html>
