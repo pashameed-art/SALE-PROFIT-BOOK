@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.03</div>
+<div class="version">Version 7.04</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3332,75 +3332,7 @@ window.printReport=function(){
   w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
-  w.document.write('
-<!-- V7.02 FINAL PARTY ISOLATION FIX -->
-<style id="v702-party-final-css">
-body.v702-party-open .page:not(#partyPage){display:none!important;}
-body.v702-party-open #partyPage{display:block!important;visibility:visible!important;}
-body.v702-party-open #partyPage .party-detail-host{display:none;}
-body.v702-party-open #partyPage .party-detail-host.active{display:block!important;}
-body.v702-party-open #partyPage #mansoorPage{display:block!important;visibility:visible!important;}
-body:not(.v702-party-open) #partyPage{display:none!important;}
-</style>
-<script id="v702-party-final-controller">
-(function(){
-  var originalParent=null, originalNext=null;
-  function qs(s){return document.querySelector(s)}
-  function all(s){return Array.prototype.slice.call(document.querySelectorAll(s))}
-  function navActive(btn){all('.nav-bar button').forEach(function(b){b.classList.remove('nav-active','active');});if(btn)btn.classList.add('nav-active','active');}
-  function hideAll(){all('.page').forEach(function(p){p.classList.remove('active');p.style.display='none';});}
-  function restoreMansoor(){
-    var mp=qs('#mansoorPage');
-    if(mp && originalParent && mp.parentNode!==originalParent){
-      mp.classList.add('page','hidden');mp.classList.remove('active');mp.style.display='none';
-      if(originalNext && originalNext.parentNode===originalParent) originalParent.insertBefore(mp,originalNext); else originalParent.appendChild(mp);
-    }
-  }
-  function party(btn){
-    document.body.classList.remove('v702-home');
-    document.body.classList.add('v702-party-open');
-    restoreMansoor();
-    hideAll();
-    all('#entryCard,#dashboardCard,#historyCard,#expensePage,#reportPage,#backupPage,#supplierPage').forEach(function(e){e.style.display='none';});
-    var p=qs('#partyPage');
-    if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
-    var area=qs('#partyLedgerArea');if(area)area.innerHTML='';
-    navActive(btn);window.scrollTo(0,0);
-  }
-  function leave(){document.body.classList.remove('v702-party-open');restoreMansoor();}
-  window.v702Party=party;
-  window.v702LeaveParty=leave;
-  // Replace Party navigation with one final handler; other navigation remains app-controlled.
-  all('.nav-bar button').forEach(function(b){
-    var t=(b.textContent||'').trim().replace(/\s+/g,' ');
-    if(t==='Party'){
-      b.addEventListener('click',function(e){e.preventDefault();e.stopImmediatePropagation();party(b);},true);
-    }else if(t==='Home'||t==='History'||t==='Expense'||t==='Reports'||t==='Backup'){
-      b.addEventListener('click',function(){leave();},true);
-    }
-  });
-  // Final Party selector: Mydeen left, Mansoor right, details stay inside Party.
-  document.addEventListener('click',function(e){
-    var b=e.target.closest && e.target.closest('#partyPage .party-choice');
-    if(!b)return;
-    var txt=(b.textContent||'').toLowerCase();
-    var value=txt.indexOf('mansoor')>=0?'mansoor':'mydeen';
-    e.preventDefault();e.stopImmediatePropagation();
-    if(typeof window.openPartyLedger==='function') window.openPartyLedger(value);
-    var p=qs('#partyPage'); if(p){p.style.display='block';p.classList.add('active');}
-    document.body.classList.add('v702-party-open');
-    all('.page').forEach(function(x){if(x.id!=='partyPage')x.style.display='none';});
-  },true);
-  // Capture the original Mansoor location once, then force it into Party when selected.
-  function capture(){
-    var mp=qs('#mansoorPage');
-    if(mp && !originalParent){originalParent=mp.parentNode;originalNext=mp.nextSibling;}
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',capture);else capture();
-})();
-</script>
-
-</body></html>');
+  w.document.write('<\/body><\/html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
@@ -5199,72 +5131,66 @@ body:not(.v702-party-open) #partyPage{display:none!important;}
 
 
 <!-- V7.03 FINAL PARTY PAGE ISOLATION -->
-<style id="v703-party-isolation">
-body.v703-party-open .page:not(#partyPage){display:none!important;}
-body.v703-party-open #partyPage{display:block!important;visibility:visible!important;}
-body.v703-party-open #partyPage .party-detail-host{display:none!important;}
-body.v703-party-open #partyPage .party-detail-host.active{display:block!important;}
-body.v703-party-open #partyPage #mansoorPage{display:block!important;visibility:visible!important;}
-body.v703-party-open #partyPage #mansoorPage .page{display:block!important;visibility:visible!important;}
-body:not(.v703-party-open) #partyPage{display:none!important;}
+<style id="v704-party-isolation">
+body.v704-party-open .page:not(#partyPage){display:none!important;}
+body.v704-party-open #partyPage{display:block!important;visibility:visible!important;}
+body.v704-party-open #partyPage .party-detail-host{display:none!important;}
+body.v704-party-open #partyPage .party-detail-host.active{display:block!important;visibility:visible!important;}
+body:not(.v704-party-open) #partyPage{display:none!important;}
 </style>
-<script id="v703-party-isolation-controller">
+<script id="v704-party-isolation-controller">
 (function(){
   function all(s){return Array.prototype.slice.call(document.querySelectorAll(s));}
-  function hideEveryOtherPage(){
+  function clearPartyMode(){
+    document.body.classList.remove('v704-party-open','v703-party-open','v702-party-open');
+  }
+  function hideOtherPages(){
     all('.page').forEach(function(p){
-      if(p.id!=='partyPage'){
-        p.classList.remove('active');
-        p.style.display='none';
-      }
+      if(p.id!=='partyPage'){p.classList.remove('active');p.style.display='none';}
     });
     all('#entryCard,#dashboardCard,#historyCard,#expensePage,#reportPage,#backupPage,#supplierPage,#homePage,#historyPage').forEach(function(e){
-      if(e && e.id!=='partyPage') e.style.display='none';
+      if(e && e.id!=='partyPage')e.style.display='none';
     });
   }
-  function activateParty(){
-    document.body.classList.add('v703-party-open','v702-party-open','party-open-mode','v576-party');
+  function openParty(btn){
+    document.body.classList.add('v704-party-open','v703-party-open','v702-party-open','party-open-mode','v576-party');
     var p=document.getElementById('partyPage');
     if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
-    hideEveryOtherPage();
-  }
-  function partyButton(btn){
-    activateParty();
+    hideOtherPages();
     all('.nav-bar button').forEach(function(b){b.classList.remove('nav-active','active');});
     if(btn)btn.classList.add('nav-active','active');
     var area=document.getElementById('partyLedgerArea');
-    if(area) area.innerHTML='';
+    if(area)area.innerHTML='';
     all('#partyPage .party-detail-host').forEach(function(h){h.classList.remove('active');h.style.display='none';});
-    window.scrollTo(0,0);
-  }
-  function selectedParty(btn){
-    var txt=(btn.textContent||'').toLowerCase();
-    var value=txt.indexOf('mansoor')>=0?'mansoor':'mydeen';
-    activateParty();
-    /* Call the existing detail renderer only after Party isolation is active. */
-    if(typeof window.openPartyLedger==='function') window.openPartyLedger(value);
-    activateParty();
-    hideEveryOtherPage();
-    var p=document.getElementById('partyPage');
-    if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
     window.scrollTo(0,0);
   }
   function bind(){
     all('.nav-bar button').forEach(function(b){
       var t=(b.textContent||'').trim().replace(/\s+/g,' ');
       if(t==='Party'){
-        b.addEventListener('click',function(e){e.preventDefault();e.stopImmediatePropagation();partyButton(b);},true);
+        b.addEventListener('click',function(e){
+          e.preventDefault();e.stopImmediatePropagation();openParty(b);
+        },true);
+      }else{
+        b.addEventListener('click',function(){clearPartyMode();},true);
       }
     });
     document.addEventListener('click',function(e){
       var b=e.target.closest && e.target.closest('#partyPage .party-choice');
       if(!b)return;
       e.preventDefault();e.stopImmediatePropagation();
-      selectedParty(b);
+      var txt=(b.textContent||'').toLowerCase();
+      var value=txt.indexOf('mansoor')>=0?'mansoor':'mydeen';
+      document.body.classList.add('v704-party-open','v703-party-open','v702-party-open','party-open-mode','v576-party');
+      if(typeof window.openPartyLedger==='function')window.openPartyLedger(value);
+      var p=document.getElementById('partyPage');
+      if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
+      hideOtherPages();
+      window.scrollTo(0,0);
     },true);
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind); else bind();
-  window.v703PartyOpen=activateParty;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
+  window.v704PartyOpen=openParty;
 })();
 </script>
 </body>
