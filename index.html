@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.71</div>
+<div class="version">Version 6.72</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1845,9 +1845,7 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
 <div id="selectedReportResult"></div>
 </div>
 
-<!-- V6.64 Sales Report -->
-<section id="salesReportV646" style="margin-top:16px"><div class="card"><h3>📊 Sales Report</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><label>From<br><input id="v646From" type="date" style="width:100%"></label><label>To<br><input id="v646To" type="date" style="width:100%"></label></div><div style="display:flex;gap:8px;margin-top:10px"><button id="v646All" type="button">All Dates</button><button id="v646Run" type="button">View Report</button><button id="v649Export" type="button">⬇️ Export CSV</button></div><div id="v646Summary" style="margin-top:12px"></div><div style="overflow:auto;margin-top:10px"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:6px">Item</th><th style="text-align:right;padding:6px">Meter</th><th style="text-align:right;padding:6px">Sale</th><th style="text-align:right;padding:6px">Purchase</th><th style="text-align:right;padding:6px">Profit</th></tr></thead><tbody id="v646Body"></tbody></table></div></div>
-</section>
+<!-- V6.72: Removed duplicate standalone Sales Report. The main Reports selector above is the single Sales Report. -->
 
 <!-- V6.69 Simple Expense Report -->
 <section id="expenseReportV662" style="margin-top:16px">
@@ -3300,7 +3298,14 @@ window.printReport=function(){
   w.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;color:#222}h1{margin-bottom:18px}@media print{body{padding:0}}</style>');
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
-  w.document.write('</body></html>');
+  w.document.write('
+<script id="v672-report-cleanup">
+(function(){
+  window.SPB_REPORT_VERSION='6.72';
+})();
+</script>
+
+</body></html>');
   w.document.close();
   w.focus();
   setTimeout(function(){w.print();},300);
@@ -5074,6 +5079,13 @@ document.addEventListener('DOMContentLoaded',function(){
 #salesProfitV645,
 #salesProfitReport { display:none!important; }
 </style>
+
+
+<script id="v672-report-cleanup">
+(function(){
+  window.SPB_REPORT_VERSION='6.72';
+})();
+</script>
 
 </body>
 </html>
