@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.75</title>
+<title>Sale Profit Book • V6.76</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.75</div>
+<div class="version">Version 6.76</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1906,129 +1906,6 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
 </script>
 <script>(function(){const K='spb_v4_entries',N=n=>Number(n||0),M=n=>'₹'+N(n).toLocaleString('en-IN',{maximumFractionDigits:2});function R(){let a=[];try{a=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){}if(!Array.isArray(a))a=[];let f=document.getElementById('v646From').value,t=document.getElementById('v646To').value;a=a.filter(x=>x&&(x.sale!=null||x.purchase!=null));if(f)a=a.filter(x=>String(x.date||'')>=f);if(t)a=a.filter(x=>String(x.date||'')<=t);let g={},m=0,s=0,p=0,pr=0;a.forEach(x=>{let i=String(x.item||'Unknown'),mm=N(x.meter),ss=N(x.sale),pp=N(x.purchase),rr=x.profit!==undefined&&x.profit!==''?N(x.profit):ss-pp;m+=mm;s+=ss;p+=pp;pr+=rr;(g[i]||(g[i]={meter:0,sale:0,purchase:0,profit:0}));g[i].meter+=mm;g[i].sale+=ss;g[i].purchase+=pp;g[i].profit+=rr});document.getElementById('v646Summary').innerHTML='<b>Sale:</b> '+M(s)+' &nbsp; <b>Purchase:</b> '+M(p)+' &nbsp; <b>Profit:</b> '+M(pr)+' &nbsp; <b>Meter:</b> '+m;let b=document.getElementById('v646Body');b.innerHTML=Object.entries(g).sort((a,b)=>a[0].localeCompare(b[0])).map(([i,v])=>'<tr><td style="padding:6px;border-top:1px solid #ddd">'+i+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+v.meter+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+M(v.sale)+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+M(v.purchase)+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+M(v.profit)+'</td></tr>').join('')||'<tr><td colspan="5" style="padding:10px;text-align:center">No sales data</td></tr>'}document.getElementById('v649Export').onclick=function(){let a=[];try{a=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){}if(!Array.isArray(a))a=[];const f=document.getElementById('v646From').value,t=document.getElementById('v646To').value;a=a.filter(x=>x&&(x.sale!=null||x.purchase!=null));if(f)a=a.filter(x=>String(x.date||'')>=f);if(t)a=a.filter(x=>String(x.date||'')<=t);const esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const lines=[['Date','Item','Meter','Sale','Purchase','Profit','Payment']];a.sort((x,y)=>String(x.date||'').localeCompare(String(y.date||''))).forEach(x=>{const sale=N(x.sale),pur=N(x.purchase),pr=x.profit!==undefined&&x.profit!==''?N(x.profit):sale-pur;lines.push([x.date||'',x.item||'',N(x.meter),sale,pur,pr,x.paidBy||''])});const csv=lines.map(r=>r.map(esc).join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),aEl=document.createElement('a');aEl.href=url;aEl.download='Sales-Report-'+(f||'All')+'-'+(t||'Dates')+'.csv';document.body.appendChild(aEl);aEl.click();aEl.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 document.getElementById('v646Run').onclick=R;document.getElementById('v646All').onclick=function(){v646From.value='';v646To.value='';R()};R()})();</script>
-
-<!-- V6.64 Monthly Sales Summary -->
-<section id="monthlySalesV651" style="margin-top:16px"><div class="card"><h3>📅 Monthly Sales Summary</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><label style="flex:1;min-width:150px">Month<br><input id="v651Month" type="month" style="width:100%"></label><button id="v651All" type="button" style="align-self:end">All Months</button><button id="v651Run" type="button" style="align-self:end">View</button></div><div id="v651Cards" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"></div><div style="overflow:auto;margin-top:10px"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:6px">Month</th><th style="text-align:right;padding:6px">Meter</th><th style="text-align:right;padding:6px">Sale</th><th style="text-align:right;padding:6px">Purchase</th><th style="text-align:right;padding:6px">Profit</th></tr></thead><tbody id="v651Body"></tbody></table></div></div></section>
-<script>(function(){const K='spb_v4_entries',N=n=>Number(n||0),M=n=>'₹'+N(n).toLocaleString('en-IN',{maximumFractionDigits:2});function A(){try{let a=JSON.parse(localStorage.getItem(K)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}function R(){const sel=document.getElementById('v651Month').value;let a=A().filter(x=>x&&(x.sale!=null||x.purchase!=null));if(sel)a=a.filter(x=>String(x.date||'').slice(0,7)===sel);const g={};let m=0,s=0,p=0,pr=0;a.forEach(x=>{let d=String(x.date||''),k=d.slice(0,7)||'Unknown',mm=N(x.meter),ss=N(x.sale),pp=N(x.purchase),rr=x.profit!==undefined&&x.profit!==''?N(x.profit):ss-pp;m+=mm;s+=ss;p+=pp;pr+=rr;(g[k]||(g[k]={meter:0,sale:0,purchase:0,profit:0}));g[k].meter+=mm;g[k].sale+=ss;g[k].purchase+=pp;g[k].profit+=rr});document.getElementById('v651Cards').innerHTML=[['💰 Sale',M(s)],['🧾 Purchase',M(p)],['📈 Profit',M(pr)],['📏 Meter',m]].map(x=>'<div style="padding:10px;border:1px solid #ddd;border-radius:10px"><b>'+x[0]+'</b><br><strong>'+x[1]+'</strong></div>').join('');document.getElementById('v651Body').innerHTML=Object.entries(g).sort((a,b)=>b[0].localeCompare(a[0])).map(([k,v])=>'<tr><td style="padding:6px;border-top:1px solid #ddd">'+k+'</td><td style="padding:6px;text-align:right;border-top:1px solid #ddd">'+v.meter+'</td><td style="padding:6px;text-align:right;border-top:1px solid #ddd">'+M(v.sale)+'</td><td style="padding:6px;text-align:right;border-top:1px solid #ddd">'+M(v.purchase)+'</td><td style="padding:6px;text-align:right;border-top:1px solid #ddd">'+M(v.profit)+'</td></tr>').join('')||'<tr><td colspan="5" style="padding:10px;text-align:center">No sales data</td></tr>'}document.getElementById('v651Run').onclick=R;document.getElementById('v651All').onclick=function(){document.getElementById('v651Month').value='';R()};R()})();</script>
-
-<!-- V6.64 Sales Dashboard -->
-<section id="salesDashboardV647" style="margin-top:16px">
-  <div class="card">
-    <h3>📈 Sales Dashboard</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <label>From<br><input id="v647From" type="date" style="width:100%"></label>
-      <label>To<br><input id="v647To" type="date" style="width:100%"></label>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-      <button id="v647Today" type="button">Today</button>
-      <button id="v647All" type="button">All Dates</button>
-      <button id="v647Run" type="button">View</button>
-    </div>
-    <div id="v647Cards" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"></div>
-    <div id="v647Pay" style="margin-top:12px"></div>
-  </div>
-</section>
-<script>
-(function(){
-  const KEY='spb_v4_entries';
-  const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
-  const num=n=>Number(n||0);
-  const today=new Date().toISOString().slice(0,10);
-  function entries(){try{let a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
-  function render(){
-    const f=document.getElementById('v647From').value, t=document.getElementById('v647To').value;
-    let a=entries(); if(f)a=a.filter(x=>String(x.date||'')>=f); if(t)a=a.filter(x=>String(x.date||'')<=t);
-    let sale=0,purchase=0,profit=0,meter=0; const pay={};
-    a.forEach(x=>{const s=num(x.sale),p=num(x.purchase),pr=(x.profit!==undefined&&x.profit!=='')?num(x.profit):s-p;
-      sale+=s;purchase+=p;profit+=pr;meter+=num(x.meter);
-      const k=String(x.paidBy||'Not specified').trim()||'Not specified'; pay[k]=(pay[k]||0)+s;
-    });
-    document.getElementById('v647Cards').innerHTML=[
-      ['💰 Sale',money(sale)],['🧾 Purchase',money(purchase)],['📈 Profit',money(profit)],['📏 Meter',meter],['📝 Entries',a.length],['📊 Margin',sale?' '+((profit/sale)*100).toFixed(1)+'%':'0%']
-    ].map(x=>'<div style="padding:10px;border:1px solid #ddd;border-radius:10px"><b>'+x[0]+'</b><br><strong>'+x[1]+'</strong></div>').join('');
-    const list=Object.entries(pay).sort((a,b)=>b[1]-a[1]);
-    document.getElementById('v647Pay').innerHTML='<b>Payment-wise Sales</b><div style="margin-top:6px">'+(list.length?list.map(x=>'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eee"><span>'+x[0]+'</span><strong>'+money(x[1])+'</strong></div>').join(''):'No data')+'</div>';
-  }
-  document.getElementById('v647Run').onclick=render;
-  document.getElementById('v647All').onclick=function(){document.getElementById('v647From').value='';document.getElementById('v647To').value='';render()};
-  document.getElementById('v647Today').onclick=function(){document.getElementById('v647From').value=today;document.getElementById('v647To').value=today;render()};
-  render();
-})();
-</script>
-
-<!-- V6.64 Daily Sales Summary: Reports page only -->
-<section id="dailySalesV650" style="margin-top:16px">
-  <div class="card">
-    <h3>📅 Daily Sales Summary</h3>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-      <button id="v650Today" type="button">Today</button>
-      <button id="v650All" type="button">All Dates</button>
-      <button id="v650Export" type="button">⬇️ Export CSV</button>
-    </div>
-    <div id="v650Summary" style="margin-top:12px"></div>
-    <div style="overflow:auto;margin-top:10px">
-      <table style="width:100%;border-collapse:collapse;font-size:13px">
-        <thead><tr>
-          <th style="text-align:left;padding:7px">Date</th>
-          <th style="text-align:right;padding:7px">Meter</th>
-          <th style="text-align:right;padding:7px">Sale</th>
-          <th style="text-align:right;padding:7px">Purchase</th>
-          <th style="text-align:right;padding:7px">Profit</th>
-        </tr></thead>
-        <tbody id="v650Body"></tbody>
-      </table>
-    </div>
-  </div>
-</section>
-<script>
-(function(){
-  const KEY='spb_v4_entries';
-  const N=n=>Number(n||0);
-  const M=n=>'₹'+N(n).toLocaleString('en-IN',{maximumFractionDigits:2});
-  const today=new Date().toISOString().slice(0,10);
-  function get(){try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
-  function rows(){
-    const map={}; let meter=0,sale=0,purchase=0,profit=0;
-    get().filter(x=>x&&(x.sale!=null||x.purchase!=null)).forEach(x=>{
-      const d=String(x.date||'').trim()||'No Date', m=N(x.meter), s=N(x.sale), p=N(x.purchase);
-      const pr=x.profit!==undefined&&x.profit!==''?N(x.profit):s-p;
-      if(!map[d])map[d]={meter:0,sale:0,purchase:0,profit:0};
-      map[d].meter+=m;map[d].sale+=s;map[d].purchase+=p;map[d].profit+=pr;
-    });
-    Object.values(map).forEach(v=>{meter+=v.meter;sale+=v.sale;purchase+=v.purchase;profit+=v.profit});
-    return {map,meter,sale,purchase,profit};
-  }
-  function render(){
-    const r=rows();
-    const list=Object.entries(r.map).sort((a,b)=>b[0].localeCompare(a[0]));
-    document.getElementById('v650Summary').innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
-      '<div><b>Sale</b><br>'+M(r.sale)+'</div><div><b>Purchase</b><br>'+M(r.purchase)+'</div>'+
-      '<div><b>Profit</b><br>'+M(r.profit)+'</div><div><b>Meter</b><br>'+r.meter+'</div></div>';
-    document.getElementById('v650Body').innerHTML=list.map(([d,v])=>'<tr>'+
-      '<td style="padding:7px;border-top:1px solid #ddd">'+d+'</td>'+
-      '<td style="padding:7px;text-align:right;border-top:1px solid #ddd">'+v.meter+'</td>'+
-      '<td style="padding:7px;text-align:right;border-top:1px solid #ddd">'+M(v.sale)+'</td>'+
-      '<td style="padding:7px;text-align:right;border-top:1px solid #ddd">'+M(v.purchase)+'</td>'+
-      '<td style="padding:7px;text-align:right;border-top:1px solid #ddd">'+M(v.profit)+'</td></tr>').join('')||
-      '<tr><td colspan="5" style="padding:10px;text-align:center">No sales data</td></tr>';
-  }
-  document.getElementById('v650Today').onclick=function(){
-    const all=get().filter(x=>String(x.date||'')===today&&(x.sale!=null||x.purchase!=null));
-    let m=0,s=0,p=0,pr=0; all.forEach(x=>{const ss=N(x.sale),pp=N(x.purchase);m+=N(x.meter);s+=ss;p+=pp;pr+=x.profit!==undefined&&x.profit!==''?N(x.profit):ss-pp});
-    document.getElementById('v650Summary').innerHTML='<b>Today — '+today+'</b><div style="margin-top:8px">Meter: <b>'+m+'</b> &nbsp; Sale: <b>'+M(s)+'</b> &nbsp; Purchase: <b>'+M(p)+'</b> &nbsp; Profit: <b>'+M(pr)+'</b></div>';
-    document.getElementById('v650Body').innerHTML=all.length?'<tr><td style="padding:7px">'+today+'</td><td style="padding:7px;text-align:right">'+m+'</td><td style="padding:7px;text-align:right">'+M(s)+'</td><td style="padding:7px;text-align:right">'+M(p)+'</td><td style="padding:7px;text-align:right">'+M(pr)+'</td></tr>':'<tr><td colspan="5" style="padding:10px;text-align:center">Today no sales data</td></tr>';
-  };
-  document.getElementById('v650All').onclick=render;
-  document.getElementById('v650Export').onclick=function(){
-    const r=rows(), list=Object.entries(r.map).sort((a,b)=>a[0].localeCompare(b[0]));
-    const esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
-    const csv=[['Date','Meter','Sale','Purchase','Profit'],...list.map(([d,v])=>[d,v.meter,v.sale,v.purchase,v.profit])].map(x=>x.map(esc).join(',')).join('\n');
-    const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); const a=document.createElement('a');
-    a.href=url;a.download='Daily-Sales-Summary.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
-  };
-  render();
-})();
-</script>
 
 
 
@@ -3301,22 +3178,17 @@ window.printReport=function(){
   w.document.write('</head><body><h1>Sale Profit Report</h1>');
   w.document.write(box.innerHTML);
   w.document.write('
-<style id="v675-report-final-clean">
-/* V6.75 — Keep Reports page simple: one main report + one Expense Summary. */
-#salesReportV646,
-#monthlySalesV651,
-#salesDashboardV647,
-#dailySalesV650,
-#salesProfitV645,
-#salesProfitReport,
-#expenseReportV662 + section,
-#expenseReportV662 ~ section[id*="sales"],
-#reportPage > section[id="monthlySalesV651"],
-#reportPage > section[id="salesDashboardV647"],
-#reportPage > section[id="dailySalesV650"],
-#reportPage > section[id="salesProfitV645"]{
-  display:none !important;
+
+
+
+<style id="v676-report-one-page">
+/* V6.76 — Reports page: one main report + one compact Expense Summary. */
+#monthlySalesV651,#salesDashboardV647,#dailySalesV650,#v645SalesProfit,
+#v646SalesReport,#salesReportV646,#salesProfitV645,#salesProfitReport{
+  display:none!important;
 }
+#reportPage .card{margin-top:0}
+#reportPage #expenseReportV662{margin-top:14px!important}
 </style>
 
 </body></html>');
@@ -4950,81 +4822,6 @@ document.addEventListener('DOMContentLoaded',function(){
   document.addEventListener('DOMContentLoaded',()=>setTimeout(install,1000));
 })();
 </script>
-
-<script id="v645-sales-profit">
-(function(){
-  function money645(n){
-    return '₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
-  }
-  function date645(v){return String(v||'').slice(0,10);}
-  function install(){
-    if(document.getElementById('v645SalesProfit')) return;
-    const page=document.getElementById('reportPage');
-    if(!page) return;
-    const box=document.createElement('div');
-    box.id='v645SalesProfit';
-    box.className='history-card';
-    box.style.cssText='margin-top:14px;padding:14px;';
-    box.innerHTML=`
-      <div style="font-weight:700;font-size:17px;margin-bottom:9px">📈 Sales &amp; Profit</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:9px">
-        <div><label style="font-size:12px">From Date</label><input id="v645From" type="date" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid #bbb;border-radius:9px"></div>
-        <div><label style="font-size:12px">To Date</label><input id="v645To" type="date" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid #bbb;border-radius:9px"></div>
-      </div>
-      <button id="v645Apply" type="button" class="primary" style="width:100%;padding:10px">📊 Generate Sales &amp; Profit</button>
-      <div id="v645Result" style="margin-top:12px"></div>`;
-    page.appendChild(box);
-    const from=box.querySelector('#v645From'),to=box.querySelector('#v645To'),result=box.querySelector('#v645Result');
-    function render(){
-      let sales=[];
-      try{sales=Array.isArray(entries)?entries.slice():JSON.parse(localStorage.getItem('spb_v4_entries')||'[]');}catch(e){sales=[];}
-      const f=from.value,t=to.value;
-      if(f) sales=sales.filter(x=>date645(x.date)>=f);
-      if(t) sales=sales.filter(x=>date645(x.date)<=t);
-      const map={};
-      sales.forEach(x=>{
-        const name=String(x.item||'Unknown').trim()||'Unknown';
-        if(!map[name]) map[name]={meter:0,sale:0,purchase:0,profit:0,qty:0};
-        map[name].meter+=Number(x.meter||0);
-        map[name].sale+=Number(x.sale||0);
-        map[name].purchase+=Number(x.purchase||0);
-        map[name].profit+=Number(x.profit||0);
-        map[name].qty++;
-      });
-      const rows=Object.entries(map).sort((a,b)=>b[1].profit-a[1].profit);
-      const totals=rows.reduce((a,[,v])=>{a.meter+=v.meter;a.sale+=v.sale;a.purchase+=v.purchase;a.profit+=v.profit;a.qty+=v.qty;return a;},{meter:0,sale:0,purchase:0,profit:0,qty:0});
-      const html=rows.map(([name,v])=>{
-        const margin=v.sale?((v.profit/v.sale)*100):0;
-        return `<tr><td style="padding:7px;white-space:nowrap">${String(name).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}</td><td style="padding:7px;text-align:right">${v.meter.toFixed(2)}</td><td style="padding:7px;text-align:right">${money645(v.sale)}</td><td style="padding:7px;text-align:right">${money645(v.purchase)}</td><td style="padding:7px;text-align:right;font-weight:700">${money645(v.profit)}</td><td style="padding:7px;text-align:right">${margin.toFixed(1)}%</td></tr>`;
-      }).join('');
-      result.innerHTML=`
-        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;text-align:center;margin-bottom:10px">
-          <div><small>Sale</small><br><b>${money645(totals.sale)}</b></div>
-          <div><small>Purchase</small><br><b>${money645(totals.purchase)}</b></div>
-          <div><small>Profit</small><br><b>${money645(totals.profit)}</b></div>
-          <div><small>Entries</small><br><b>${totals.qty}</b></div>
-        </div>
-        <div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
-          <thead><tr><th style="text-align:left;padding:7px">Item</th><th style="text-align:right;padding:7px">Meter</th><th style="text-align:right;padding:7px">Sale</th><th style="text-align:right;padding:7px">Purchase</th><th style="text-align:right;padding:7px">Profit</th><th style="text-align:right;padding:7px">Margin</th></tr></thead>
-          <tbody>${html||'<tr><td colspan="6" style="padding:12px;text-align:center">No sales data</td></tr>'}</tbody>
-          ${rows.length?`<tfoot><tr style="font-weight:800;border-top:2px solid #999"><td style="padding:7px">TOTAL</td><td style="padding:7px;text-align:right">${totals.meter.toFixed(2)}</td><td style="padding:7px;text-align:right">${money645(totals.sale)}</td><td style="padding:7px;text-align:right">${money645(totals.purchase)}</td><td style="padding:7px;text-align:right">${money645(totals.profit)}</td><td style="padding:7px;text-align:right">${totals.sale?((totals.profit/totals.sale)*100).toFixed(1):'0.0'}%</td></tr></tfoot>`:''}
-        </table></div>`;
-    }
-    box.querySelector('#v645Apply').addEventListener('click',render);
-    document.addEventListener('click',e=>{
-      const b=e.target.closest('button');
-      if(b && b.textContent.includes('Reports')) setTimeout(render,150);
-    });
-    render();
-  }
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(install,1100));
-})();
-</script>
-
-
-
-
-
 <script id="v660-report-date-buttons">
 (function(){
  function today(){ if(typeof localToday==='function') return localToday(); return new Date().toISOString().slice(0,10); }
@@ -5081,23 +4878,15 @@ document.addEventListener('DOMContentLoaded',function(){
 
 <script id="v671-final-version-marker">
 (function(){
-  try { localStorage.setItem('__spb_app_version__','6.75'); } catch(e) {}
+  try { localStorage.setItem('__spb_app_version__','6.76'); } catch(e) {}
 })();
 </script>
-<style id="v671-report-simple">
-/* V6.71 — One clear Sales Report + one compact Expense Summary. */
-#salesReportV646,
-#monthlySalesV651,
-#salesDashboardV647,
-#dailySalesV650,
-#salesProfitV645,
-#salesProfitReport { display:none!important; }
-</style>
+
 
 
 
 <script id="v673-report-fix">
-(function(){ window.SPB_REPORT_VERSION='6.75'; })();
+(function(){ window.SPB_REPORT_VERSION='6.76'; })();
 </script>
 
 </body>
