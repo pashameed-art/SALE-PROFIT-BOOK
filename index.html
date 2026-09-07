@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.07</div>
+<div class="version">Version 7.08</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -5303,6 +5303,90 @@ body.party-open-mode .nav-bar button.party-nav-active{background:#117d73!importa
  function party(b){clearModes();document.body.classList.add('party-open-mode','v576-party');hidePages();var p=el('partyPage');if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block'}commonHide();all('#partyPage .party-detail-host').forEach(function(h){h.classList.remove('active');h.style.display='none'});var a=el('partyLedgerArea');if(a)a.innerHTML='';active(b);scrollTo(0,0)}
  function bind(){var nav=document.querySelector('.nav-bar');if(!nav)return;all('.nav-bar button').forEach(function(b){var c=b.cloneNode(true);c.removeAttribute('onclick');c.onclick=null;b.parentNode.replaceChild(c,b)});all('.nav-bar button').forEach(function(b){var t=txt(b);if(t==='Home')b.onclick=function(e){e.preventDefault();home(b)};else if(t==='History')b.onclick=function(e){e.preventDefault();history(b)};else if(t==='Expense')b.onclick=function(e){e.preventDefault();simple('expensePage',b,function(){if(typeof renderExpenses==='function')renderExpenses();if(typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal()})};else if(t==='Party')b.onclick=function(e){e.preventDefault();party(b)};else if(t==='Reports')b.onclick=function(e){e.preventDefault();simple('reportPage',b,function(){if(typeof showDateDefaults==='function')showDateDefaults()})};else if(t==='Backup')b.onclick=function(e){e.preventDefault();simple('backupPage',b)} })}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
+})();
+</script>
+
+
+<!-- V7.08 FINAL NAVIGATION OVERRIDE: one reliable handler for every top navigation button -->
+<style id="v708-final-nav-style">
+  .nav-bar button.nav-active{background:#117d73!important;color:#fff!important;}
+</style>
+<script id="v708-final-nav-controller">
+(function(){
+  function qs(s){return document.querySelector(s)}
+  function all(s){return Array.prototype.slice.call(document.querySelectorAll(s))}
+  function text(b){return (b.textContent||'').trim().replace(/\s+/g,' ')}
+  function clearModes(){
+    document.body.classList.remove('party-open-mode','history-open-mode','page-open-mode','v576-party','v705-party-open','v703-party-open','v702-party-open','v576-home');
+  }
+  function active(btn){
+    all('.nav-bar button').forEach(function(b){b.classList.remove('nav-active','active','party-nav-active');b.removeAttribute('aria-current');});
+    if(btn){btn.classList.add('nav-active','active');btn.setAttribute('aria-current','page');}
+  }
+  function hidePages(){
+    all('.page').forEach(function(p){p.classList.remove('active');p.classList.add('hidden');p.style.display='none';});
+  }
+  function hideHomeParts(){
+    ['#entryCard','#dashboardCard','#historyCard','#homeStockDetails'].forEach(function(id){var e=qs(id);if(e){e.classList.add('hidden');e.style.display='none';}});
+    all('.state-date-row,.new-history-row,.install-wrap').forEach(function(e){e.classList.add('hidden');e.style.display='none';});
+  }
+  function showHome(btn){
+    clearModes(); hidePages(); hideHomeParts();
+    ['#entryCard','#dashboardCard'].forEach(function(id){var e=qs(id);if(e){e.classList.remove('hidden');e.style.display='';}});
+    all('.state-date-row,.new-history-row,.install-wrap').forEach(function(e){e.classList.remove('hidden');e.style.display='';});
+    active(btn);
+    if(typeof refresh==='function')refresh();
+    if(typeof refreshDashboard==='function')refreshDashboard();
+    window.scrollTo(0,0);
+  }
+  function showHistory(btn){
+    clearModes(); hidePages(); hideHomeParts();
+    var p=qs('#historyPage'), c=qs('#historyCard');
+    if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
+    if(p && c && c.parentNode!==p)p.appendChild(c);
+    if(c){c.classList.remove('hidden');c.style.display='';}
+    active(btn);
+    if(typeof renderHistory==='function')renderHistory();
+    window.scrollTo(0,0);
+  }
+  function showSimple(id,btn,fn){
+    clearModes(); hidePages(); hideHomeParts();
+    var p=qs('#'+id);
+    if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
+    active(btn);
+    if(fn)fn();
+    window.scrollTo(0,0);
+  }
+  function showParty(btn){
+    clearModes(); hidePages(); hideHomeParts();
+    document.body.classList.add('party-open-mode','v576-party');
+    var p=qs('#partyPage');
+    if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
+    var area=qs('#partyLedgerArea');
+    if(area)area.innerHTML='';
+    all('#partyPage .party-detail-host').forEach(function(h){h.classList.remove('active');h.style.display='none';});
+    active(btn);
+    window.scrollTo(0,0);
+  }
+  function route(btn){
+    var t=text(btn);
+    if(t==='Home')showHome(btn);
+    else if(t==='History')showHistory(btn);
+    else if(t==='Expense')showSimple('expensePage',btn,function(){if(typeof renderExpenses==='function')renderExpenses();if(typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal();});
+    else if(t==='Party')showParty(btn);
+    else if(t==='Reports')showSimple('reportPage',btn,function(){if(typeof showDateDefaults==='function')showDateDefaults();});
+    else if(t==='Backup')showSimple('backupPage',btn);
+  }
+  function bind(){
+    document.addEventListener('click',function(e){
+      var b=e.target && e.target.closest ? e.target.closest('.nav-bar button') : null;
+      if(!b)return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      route(b);
+    },true);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
 })();
 </script>
 
