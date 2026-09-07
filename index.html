@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.94</title>
+<title>Sale Profit Book • V6.95</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -672,35 +672,34 @@ html.modal-open, body.modal-open{
     party.style.display='block';
   }
 
-  document.querySelectorAll('#partyPage .party-detail-host').forEach(function(x){
+  var area=document.getElementById('partyLedgerArea');
+  if(area) area.style.display='block';
+
+  // Hide every Party detail first.
+  document.querySelectorAll('#partyPage .party-detail-host, #partyPage #mansoorPage').forEach(function(x){
     x.style.display='none';
-    x.classList.remove('active');
+    x.classList.remove('active','hidden');
   });
 
-  var mansoor=document.getElementById('mansoorPage');
-  if(mansoor){
-    mansoor.style.display='none';
-    mansoor.classList.remove('active','hidden');
-  }
-
   if(value==='mansoor'){
+    var mansoor=document.getElementById('mansoorPage');
     if(mansoor){
       mansoor.style.display='block';
       mansoor.classList.add('active');
       if(typeof showMansoor==='function'){
-        try{ showMansoor(); }catch(e){ console.error(e); }
+        try{ showMansoor(); }catch(e){ console.error('Mansoor render:',e); }
       }
     }
-    window.scrollTo({top:0,behavior:'smooth'});
   }else if(value==='mydeen'){
-    if(typeof v690BuildMydeen==='function') v690BuildMydeen();
-    else if(typeof v690RestoreParty==='function') v690RestoreParty();
-    else {
-      var area=document.getElementById('partyLedgerArea');
-      if(area) area.innerHTML='<div class="card"><h2>🤝 Mydeen</h2><p>Mydeen details</p></div>';
+    // Build/show Mydeen without destroying Mansoor DOM/state.
+    if(typeof window.v690BuildMydeen==='function'){
+      window.v690BuildMydeen();
+    }else{
+      var host=document.getElementById('v690MydeenHost');
+      if(host) host.style.display='block';
     }
-    window.scrollTo({top:0,behavior:'smooth'});
   }
+  window.scrollTo({top:0,behavior:'smooth'});
 };
 window.goReports=function(btn){
     hidePages();
@@ -1305,7 +1304,7 @@ body.spb-backup-mode #backupPage{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.94</div>
+<div class="version">Version 6.95</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3469,19 +3468,19 @@ window.exportReportCSV=function(){
 })();
 </script>
 
-
-<script id="v694-mansoor-click-fix">
+<script id="v695-party-click-fix">
 (function(){
   function bind(){
     document.addEventListener('click',function(e){
       var b=e.target.closest && e.target.closest('[onclick*="openPartyLedger"]');
       if(!b)return;
       var code=b.getAttribute('onclick')||'';
-      if(code.indexOf("'mansoor'")<0 && code.indexOf('"mansoor"')<0)return;
-      e.preventDefault();
-      e.stopPropagation();
-      if(typeof window.openPartyLedger==='function')window.openPartyLedger('mansoor');
-    },true);
+      var v=code.indexOf('mansoor')>=0?'mansoor':(code.indexOf('mydeen')>=0?'mydeen':null);
+      if(!v)return;
+      setTimeout(function(){
+        if(typeof window.openPartyLedger==='function')window.openPartyLedger(v);
+      },0);
+    },false);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);
   else bind();
