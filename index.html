@@ -1221,7 +1221,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.67</div>
+<div class="version">Version 6.69</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1847,102 +1847,63 @@ document.addEventListener("DOMContentLoaded",function(){setDefaultDates();genera
 
 <!-- V6.64 Sales Report -->
 <section id="salesReportV646" style="margin-top:16px"><div class="card"><h3>📊 Sales Report</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><label>From<br><input id="v646From" type="date" style="width:100%"></label><label>To<br><input id="v646To" type="date" style="width:100%"></label></div><div style="display:flex;gap:8px;margin-top:10px"><button id="v646All" type="button">All Dates</button><button id="v646Run" type="button">View Report</button><button id="v649Export" type="button">⬇️ Export CSV</button></div><div id="v646Summary" style="margin-top:12px"></div><div style="overflow:auto;margin-top:10px"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:6px">Item</th><th style="text-align:right;padding:6px">Meter</th><th style="text-align:right;padding:6px">Sale</th><th style="text-align:right;padding:6px">Purchase</th><th style="text-align:right;padding:6px">Profit</th></tr></thead><tbody id="v646Body"></tbody></table></div></div>
-<!-- V6.64 Expense Report -->
+</section>
+
+<!-- V6.69 Simple Expense Report -->
 <section id="expenseReportV662" style="margin-top:16px">
   <div class="card">
-    <h3>💸 Expense Report</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <label>From<br><input id="v662From" type="date" style="width:100%"></label>
-      <label>To<br><input id="v662To" type="date" style="width:100%"></label>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+    <h3>💸 Expense Summary</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
       <button id="v662Today" type="button">Today</button>
       <button id="v662All" type="button">All Dates</button>
-      <button id="v662Run" type="button">View Report</button>
-      <button id="v662Csv" type="button">⬇️ Export CSV</button>
     </div>
-    <div id="v662Summary" style="margin-top:12px"></div>
-    <div style="overflow:auto;margin-top:10px">
-      <table style="width:100%;border-collapse:collapse;font-size:13px">
-        <thead><tr>
-          <th style="text-align:left;padding:6px">Date</th>
-          <th style="text-align:left;padding:6px">Expense</th>
-          <th style="text-align:right;padding:6px">Amount</th>
-        </tr></thead>
-        <tbody id="v662Body"></tbody>
-      </table>
-    </div>
+    <div id="v669Cards" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"></div>
+    <div id="v669Top" style="margin-top:10px"></div>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-weight:800;padding:8px">View Expense Details</summary>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+        <label>From<br><input id="v662From" type="date" style="width:100%"></label>
+        <label>To<br><input id="v662To" type="date" style="width:100%"></label>
+      </div>
+      <button id="v662Run" type="button" style="margin-top:10px">View</button>
+      <button id="v662Csv" type="button" style="margin-top:10px">⬇️ Export CSV</button>
+      <div id="v662Summary" style="margin-top:12px"></div>
+      <div style="overflow:auto;margin-top:10px">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr><th style="text-align:left;padding:6px">Date</th><th style="text-align:left;padding:6px">Expense</th><th style="text-align:right;padding:6px">Amount</th></tr></thead>
+          <tbody id="v662Body"></tbody>
+        </table>
+      </div>
+    </details>
   </div>
 </section>
 <script>
 (function(){
   const KEY='spb_v4_expenses';
   const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
-  function getData(){
-    try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a:[]}
-    catch(e){return []}
-  }
+  const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+  function data(){try{const a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+  function filtered(){const f=document.getElementById('v662From').value,t=document.getElementById('v662To').value;return data().filter(x=>(!f||String(x.date||'')>=f)&&(!t||String(x.date||'')<=t)).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')))}
   function render(){
-    const f=document.getElementById('v662From').value;
-    const t=document.getElementById('v662To').value;
-    let a=getData();
-    if(f)a=a.filter(x=>String(x.date||'')>=f);
-    if(t)a=a.filter(x=>String(x.date||'')<=t);
-    a.sort((x,y)=>String(y.date||'').localeCompare(String(x.date||'')));
-    const total=a.reduce((s,x)=>s+Number(x.amount||0),0);
-    document.getElementById('v662Summary').innerHTML=
-      '<div style="font-size:18px"><b>Total Expense: '+money(total)+'</b></div>'+
-      '<div style="margin-top:4px">Entries: '+a.length+'</div>';
-    document.getElementById('v662Body').innerHTML=a.map(x=>
-      '<tr><td style="padding:6px;border-top:1px solid #ddd">'+String(x.date||'')+
-      '</td><td style="padding:6px;border-top:1px solid #ddd">'+String(x.name||'')+
-      '</td><td style="padding:6px;text-align:right;border-top:1px solid #ddd">'+money(x.amount)+'</td></tr>'
-    ).join('') || '<tr><td colspan="3" style="padding:10px;text-align:center">No expense data</td></tr>';
+    const a=filtered(), total=a.reduce((s,x)=>s+Number(x.amount||0),0), avg=a.length?total/a.length:0;
+    const top=a.slice().sort((x,y)=>Number(y.amount||0)-Number(x.amount||0))[0];
+    document.getElementById('v669Cards').innerHTML=
+      '<div style="padding:12px;border:1px solid #ddd;border-radius:14px;text-align:center"><b>Total Expense</b><br><strong style="font-size:21px">'+money(total)+'</strong></div>'+
+      '<div style="padding:12px;border:1px solid #ddd;border-radius:14px;text-align:center"><b>Entries</b><br><strong style="font-size:21px">'+a.length+'</strong></div>'+
+      '<div style="padding:12px;border:1px solid #ddd;border-radius:14px;text-align:center"><b>Average</b><br><strong style="font-size:21px">'+money(avg)+'</strong></div>'+
+      '<div style="padding:12px;border:1px solid #ddd;border-radius:14px;text-align:center"><b>Highest</b><br><strong style="font-size:21px">'+money(top?top.amount:0)+'</strong></div>';
+    document.getElementById('v669Top').innerHTML=top?'🔝 Highest: <b>'+String(top.name||'Expense')+'</b> — '+money(top.amount):'No expense data';
+    document.getElementById('v662Summary').innerHTML='<b>Total: '+money(total)+'</b> &nbsp; Entries: '+a.length;
+    document.getElementById('v662Body').innerHTML=a.map(x=>'<tr><td style="padding:6px;border-top:1px solid #ddd">'+String(x.date||'')+'</td><td style="padding:6px;border-top:1px solid #ddd">'+String(x.name||'')+'</td><td style="padding:6px;text-align:right;border-top:1px solid #ddd">'+money(x.amount)+'</td></tr>').join('')||'<tr><td colspan="3" style="padding:10px;text-align:center">No expense data</td></tr>';
   }
-  function today(){
-    const d=new Date(), s=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    document.getElementById('v662From').value=s;
-    document.getElementById('v662To').value=s;
-    render();
-  }
-  function csv(){
-    const f=document.getElementById('v662From').value, t=document.getElementById('v662To').value;
-    let a=getData().filter(x=>(!f||String(x.date||'')>=f)&&(!t||String(x.date||'')<=t));
-    let rows=[['Date','Expense','Amount'],...a.map(x=>[x.date||'',x.name||'',x.amount||0])];
-    const esc=v=>'"'+String(v).replace(/"/g,'""')+'"';
-    const blob=new Blob(['\ufeff'+rows.map(r=>r.map(esc).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
-    const url=URL.createObjectURL(blob), ael=document.createElement('a');
-    ael.href=url; ael.download='Expense-Report.csv'; ael.click(); URL.revokeObjectURL(url);
-  }
-  document.getElementById('v662Run').onclick=render;
+  function today(){const t=todayStr();document.getElementById('v662From').value=t;document.getElementById('v662To').value=t;render()}
   document.getElementById('v662Today').onclick=today;
-  document.getElementById('v662All').onclick=function(){
-    document.getElementById('v662From').value='';
-    document.getElementById('v662To').value='';
-    render();
-  };
-  document.getElementById('v662Csv').onclick=csv;
-
-  // Render only when the Reports page is active.
-  const sec=document.getElementById('expenseReportV662');
-  function sync(){
-    let active=sec;
-    while(active && active.parentElement){
-      const p=active.parentElement;
-      if(p.id==='reportsPage' || p.id==='reportPage' || /reports?/i.test(p.id||'')){
-        active.style.display='';
-        return;
-      }
-      active=p;
-    }
-    sec.style.display='none';
-  }
-  sync();
-  render();
+  document.getElementById('v662All').onclick=function(){document.getElementById('v662From').value='';document.getElementById('v662To').value='';render()};
+  document.getElementById('v662Run').onclick=render;
+  document.getElementById('v662Csv').onclick=function(){const a=filtered(),esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[['Date','Expense','Amount'],...a.map(x=>[x.date||'',x.name||'',x.amount||0])];const blob=new Blob(['\ufeff'+rows.map(r=>r.map(esc).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),u=URL.createObjectURL(blob),el=document.createElement('a');el.href=u;el.download='Expense-Report.csv';el.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
+  today();
 })();
 </script>
-
-</section>
 <script>(function(){const K='spb_v4_entries',N=n=>Number(n||0),M=n=>'₹'+N(n).toLocaleString('en-IN',{maximumFractionDigits:2});function R(){let a=[];try{a=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){}if(!Array.isArray(a))a=[];let f=document.getElementById('v646From').value,t=document.getElementById('v646To').value;a=a.filter(x=>x&&(x.sale!=null||x.purchase!=null));if(f)a=a.filter(x=>String(x.date||'')>=f);if(t)a=a.filter(x=>String(x.date||'')<=t);let g={},m=0,s=0,p=0,pr=0;a.forEach(x=>{let i=String(x.item||'Unknown'),mm=N(x.meter),ss=N(x.sale),pp=N(x.purchase),rr=x.profit!==undefined&&x.profit!==''?N(x.profit):ss-pp;m+=mm;s+=ss;p+=pp;pr+=rr;(g[i]||(g[i]={meter:0,sale:0,purchase:0,profit:0}));g[i].meter+=mm;g[i].sale+=ss;g[i].purchase+=pp;g[i].profit+=rr});document.getElementById('v646Summary').innerHTML='<b>Sale:</b> '+M(s)+' &nbsp; <b>Purchase:</b> '+M(p)+' &nbsp; <b>Profit:</b> '+M(pr)+' &nbsp; <b>Meter:</b> '+m;let b=document.getElementById('v646Body');b.innerHTML=Object.entries(g).sort((a,b)=>a[0].localeCompare(b[0])).map(([i,v])=>'<tr><td style="padding:6px;border-top:1px solid #ddd">'+i+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+v.meter+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+M(v.sale)+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+M(v.purchase)+'</td><td style="text-align:right;padding:6px;border-top:1px solid #ddd">'+M(v.profit)+'</td></tr>').join('')||'<tr><td colspan="5" style="padding:10px;text-align:center">No sales data</td></tr>'}document.getElementById('v649Export').onclick=function(){let a=[];try{a=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){}if(!Array.isArray(a))a=[];const f=document.getElementById('v646From').value,t=document.getElementById('v646To').value;a=a.filter(x=>x&&(x.sale!=null||x.purchase!=null));if(f)a=a.filter(x=>String(x.date||'')>=f);if(t)a=a.filter(x=>String(x.date||'')<=t);const esc=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const lines=[['Date','Item','Meter','Sale','Purchase','Profit','Payment']];a.sort((x,y)=>String(x.date||'').localeCompare(String(y.date||''))).forEach(x=>{const sale=N(x.sale),pur=N(x.purchase),pr=x.profit!==undefined&&x.profit!==''?N(x.profit):sale-pur;lines.push([x.date||'',x.item||'',N(x.meter),sale,pur,pr,x.paidBy||''])});const csv=lines.map(r=>r.map(esc).join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),aEl=document.createElement('a');aEl.href=url;aEl.download='Sales-Report-'+(f||'All')+'-'+(t||'Dates')+'.csv';document.body.appendChild(aEl);aEl.click();aEl.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);};
 document.getElementById('v646Run').onclick=R;document.getElementById('v646All').onclick=function(){v646From.value='';v646To.value='';R()};R()})();</script>
 
@@ -5101,7 +5062,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 <script id="v667-final-version-marker">
 (function(){
-  try { localStorage.setItem('__spb_app_version__','6.67'); } catch(e) {}
+  try { localStorage.setItem('__spb_app_version__','6.69'); } catch(e) {}
 })();
 </script>
 </body>
