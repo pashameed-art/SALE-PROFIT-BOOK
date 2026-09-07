@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.92</title>
+<title>Sale Profit Book • V6.93</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1283,7 +1283,7 @@ body.spb-backup-mode #backupPage{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.92</div>
+<div class="version">Version 6.93</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3001,6 +3001,7 @@ function updateTodayExpenseTotal(){
     const given=a.filter(x=>x.type==='given').reduce((s,x)=>s+Number(x.amount||0),0);
     const balance=INITIAL_BALANCE+taken-given;
     const b=document.getElementById('mansoorBalance'); if(b)b.textContent='₹'+balance.toLocaleString('en-IN');
+    const summary=document.getElementById('partySummaryMansoor'); if(summary)summary.textContent='₹'+balance.toLocaleString('en-IN');
 
     const h=document.getElementById('mansoorHistory'); if(!h)return;
     if(!a.length){h.innerHTML='<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';return;}
@@ -3424,6 +3425,25 @@ window.exportReportCSV=function(){
   }else{
     setTimeout(startHome,50);
   }
+})();
+</script>
+
+
+<script id="v693-mansoor-summary-sync">
+(function(){
+  function sync(){
+    try{
+      var a=JSON.parse(localStorage.getItem('saleProfitBookMansoorV1')||'[]');
+      if(!Array.isArray(a))a=[];
+      var balance=49497+
+        a.filter(function(x){return x.type==='taken'}).reduce(function(s,x){return s+Number(x.amount||0)},0)-
+        a.filter(function(x){return x.type==='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+      var el=document.getElementById('partySummaryMansoor');
+      if(el)el.textContent='₹'+balance.toLocaleString('en-IN');
+    }catch(e){}
+  }
+  document.addEventListener('DOMContentLoaded',sync);
+  window.addEventListener('storage',sync);
 })();
 </script>
 
