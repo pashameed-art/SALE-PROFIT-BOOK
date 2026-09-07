@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.89</title>
+<title>Sale Profit Book • V6.90</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1277,7 +1277,7 @@ body.spb-backup-mode #backupPage{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.89</div>
+<div class="version">Version 6.90</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3294,5 +3294,95 @@ window.exportReportCSV=function(){
 <style id="v680-report-clean">
 #v677ReportActions button,#v679Clear{font-weight:800}
 </style>
+
+<script id="v690-mydeen-direct">
+(function(){
+  'use strict';
+  var KEY='saleProfitBookMydeenV1';
+  function data(){try{var a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+  function money(n){return '₹'+Number(n||0).toLocaleString('en-IN')}
+  function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+  function esc2(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function balance(){
+    var a=data(),taken=a.filter(function(x){return x.type==='taken'||x.type==='received'}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+    var given=a.filter(function(x){return x.type==='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+    return {taken:taken,given:given,balance:taken-given};
+  }
+  function updateSummary(){
+    var el=document.getElementById('partySummaryMydeen'), b=balance();
+    if(el)el.textContent=money(b.balance);
+  }
+  function render(){
+    var h=document.getElementById('v690MydeenHistory'), b=document.getElementById('v690MydeenBalance');
+    if(!h||!b)return;
+    var x=balance();b.textContent=money(x.balance);
+    var a=data().slice().sort(function(p,q){return String(q.date).localeCompare(String(p.date))||(Number(q.id)||0)-(Number(p.id)||0)});
+    if(!a.length){h.innerHTML='<div class="expense-empty-note">இதுவரை Mydeen பதிவு இல்லை.</div>';return}
+    h.innerHTML=a.map(function(v){
+      var taken=v.type==='taken'||v.type==='received';
+      return '<div class="mansoor-row"><div><b>'+(taken?'பணம் வாங்கியது':'பணம் தந்தது')+'</b><div class="meta">'+esc2(v.date)+(v.note?' • '+esc2(v.note):'')+'</div></div><strong class="'+(taken?'mansoor-received':'mansoor-given')+'">'+(taken?'+':'-')+money(v.amount)+'</strong><div class="mansoor-actions"><button type="button" onclick="v690Edit('+Number(v.id)+')">Edit</button><button type="button" class="danger" onclick="v690Delete('+Number(v.id)+')">Delete</button></div></div>';
+    }).join('');
+  }
+  function build(){
+    var area=document.getElementById('partyLedgerArea'); if(!area)return;
+    var host=document.getElementById('v690MydeenHost');
+    if(!host){
+      host=document.createElement('div');host.id='v690MydeenHost';host.className='party-detail-host';
+      host.innerHTML='<div class="card"><h2>🤝 Mydeen கொடுக்கல் – வாங்கல்</h2><div class="mansoor-balance"><div>தற்போது பெற வேண்டியது</div><strong id="v690MydeenBalance">₹0</strong></div><div class="form-grid"><div class="field"><label>வகை</label><select id="v690Type"><option value="taken">பணம் வாங்கியது</option><option value="given">பணம் தந்தது</option></select></div><div class="field"><label>தேதி</label><input id="v690Date" type="date"></div><div class="field"><label>தொகை ₹</label><input id="v690Amount" type="number" min="0" step="1" placeholder="Amount"></div><div class="field"><label>குறிப்பு</label><input id="v690Note" type="text" placeholder="குறிப்பு (விருப்பம்)"></div></div><div class="expense-action-row"><button class="primary" type="button" onclick="v690Save()">Save</button><button class="secondary" type="button" onclick="v690Clear()">Clear</button></div></div><div class="card"><h3>📜 Previous History</h3><div id="v690MydeenHistory"></div></div>';
+      area.appendChild(host);
+    }
+    host.style.display='block';host.classList.add('active');
+    var d=document.getElementById('v690Date');if(d&&!d.value)d.value=today();
+    render();updateSummary();
+  }
+  window.openPartyLedger=function(value){
+    var area=document.getElementById('partyLedgerArea');if(!area)return;
+    var p=document.getElementById('partyPage');if(p){p.classList.add('active');p.classList.remove('hidden');p.style.display='block'}
+    document.querySelectorAll('#partyPage .party-detail-host').forEach(function(x){x.style.display='none';x.classList.remove('active')});
+    var oldM=document.getElementById('mansoorPage');
+    if(oldM){oldM.style.display='none';oldM.classList.remove('active')}
+    if(value==='mydeen'){build();window.scrollTo(0,0);return}
+    if(value==='mansoor'){
+      var mp=document.getElementById('mansoorPage');
+      if(mp){mp.style.display='block';mp.classList.add('active');mp.classList.remove('hidden');if(typeof showMansoor==='function')showMansoor()}
+      window.scrollTo(0,0);
+    }
+  };
+  window.v690Save=function(){
+    var amount=Number(document.getElementById('v690Amount')?.value||0);
+    var date=document.getElementById('v690Date')?.value||today();
+    var type=document.getElementById('v690Type')?.value||'taken';
+    var note=(document.getElementById('v690Note')?.value||'').trim();
+    if(!amount||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return}
+    var a=data();var edit=window.v690EditId;
+    if(edit){var i=a.findIndex(function(x){return x.id===edit});if(i>=0)a[i]={id:edit,type:type,date:date,amount:amount,note:note};window.v690EditId=null}
+    else a.push({id:Date.now(),type:type,date:date,amount:amount,note:note});
+    localStorage.setItem(KEY,JSON.stringify(a));v690Clear();render();updateSummary();
+  };
+  window.v690Clear=function(){
+    window.v690EditId=null;
+    var d=document.getElementById('v690Date');if(d)d.value=today();
+    var t=document.getElementById('v690Type');if(t)t.value='taken';
+    var a=document.getElementById('v690Amount');if(a)a.value='';
+    var n=document.getElementById('v690Note');if(n)n.value='';
+  };
+  window.v690Edit=function(id){
+    var x=data().find(function(v){return Number(v.id)===Number(id)});if(!x)return;
+    window.v690EditId=x.id;
+    document.getElementById('v690Type').value=x.type||'taken';
+    document.getElementById('v690Date').value=x.date||today();
+    document.getElementById('v690Amount').value=x.amount||'';
+    document.getElementById('v690Note').value=x.note||'';
+    window.scrollTo(0,0);
+  };
+  window.v690Delete=function(id){
+    if(!confirm('இந்த Mydeen பதிவை நீக்க வேண்டுமா?'))return;
+    localStorage.setItem(KEY,JSON.stringify(data().filter(function(x){return Number(x.id)!==Number(id)})));
+    render();updateSummary();
+  };
+  document.addEventListener('DOMContentLoaded',updateSummary);
+})();
+</script>
+
 </body>
 </html>
