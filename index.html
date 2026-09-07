@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.85</title>
+<title>Sale Profit Book • V6.86</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1267,7 +1267,7 @@ body.spb-backup-mode #backupPage{display:block!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.85</div>
+<div class="version">Version 6.86</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3317,7 +3317,29 @@ window.exportReportCSV=function(){
     w.document.open();
     w.document.write('<!doctype html><html><head><title>Sale Profit Book Report</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;padding:20px;color:#222}button{display:none}@media print{body{padding:0}}</style></head><body><h2>Sale Profit Book Report</h2>');
     w.document.write(box.innerHTML);
-    w.document.write('</body></html>');
+    w.document.write('
+<script id="v686-home-initial">
+(function(){
+  'use strict';
+  function bootHome(){
+    document.body.classList.add('spb-home-mode');
+    document.body.classList.remove('spb-history-mode','spb-expense-mode','spb-party-mode','spb-report-mode','spb-backup-mode');
+    document.querySelectorAll('.nav-bar button').forEach(function(b){b.classList.remove('nav-active');});
+    var home=document.querySelector('.nav-bar button[onclick*="goHome"]');
+    if(home)home.classList.add('nav-active');
+    var e=document.getElementById('entryCard'),d=document.getElementById('dashboardCard'),s=document.getElementById('homeStockDetails');
+    if(e)e.classList.remove('hidden');
+    if(d)d.classList.remove('hidden');
+    if(s)s.classList.add('hidden');
+    if(typeof refresh==='function')refresh();
+    if(typeof refreshDashboard==='function')refreshDashboard();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bootHome);
+  else bootHome();
+})();
+</script>
+
+</body></html>');
     w.document.close();
     w.focus();
     setTimeout(function(){w.print();},300);
