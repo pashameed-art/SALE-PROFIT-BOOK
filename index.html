@@ -1299,35 +1299,16 @@ body.spb-backup-mode #backupPage{display:block!important}
 #v691MydeenRestoreBox{margin-top:12px}
 #v691MydeenRestoreBtn{width:100%;margin-top:8px}
 </style>
-
-<style id="v697-final-page-isolation">
-/* Final page isolation: only the selected top-level page may be visible. */
-body.spb-home-mode #partyPage,
-body.spb-history-mode #partyPage,
-body.spb-expense-mode #partyPage,
-body.spb-report-mode #partyPage,
-body.spb-backup-mode #partyPage {
-  display:none !important;
-}
-body.spb-party-mode #partyPage {
-  display:block !important;
-}
-
-/* Older navigation modes used by previous versions. */
-body.page-open-mode #partyPage,
-body.history-open-mode #partyPage {
-  display:none !important;
-}
-body.party-open-mode #partyPage {
-  display:block !important;
-}
+<style id="v698-clean-party-isolation">
+#partyPage{display:none}
+#partyMydeenHost,#partyMansoorHost{display:none}
+#partyMydeenHost.active,#partyMansoorHost.active{display:block}
 </style>
-
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 6.97</div>
+<div class="version">Version 6.98</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3509,40 +3490,28 @@ window.exportReportCSV=function(){
   else bind();
 })();
 </script>
-
-<script id="v697-navigation-guard">
+<script id="v698-clean-party-controller">
 (function(){
-  function hideParty(){
-    var p=document.getElementById('partyPage');
-    if(p){
-      p.classList.remove('active');
-      p.style.display='none';
-    }
-  }
-  function guard(){
-    var body=document.body;
-    if(body.classList.contains('spb-report-mode') ||
-       body.classList.contains('spb-home-mode') ||
-       body.classList.contains('spb-history-mode') ||
-       body.classList.contains('spb-expense-mode') ||
-       body.classList.contains('spb-backup-mode') ||
-       body.classList.contains('page-open-mode') && !body.classList.contains('party-open-mode')){
-      hideParty();
-    }
-  }
-  ['goHome','openHistoryTab','goExpense','goReports','goBackup'].forEach(function(name){
-    var old=window[name];
-    if(typeof old==='function'){
-      window[name]=function(){
-        var r=old.apply(this,arguments);
-        setTimeout(guard,0);
-        return r;
-      };
-    }
-  });
-  document.addEventListener('DOMContentLoaded',function(){setTimeout(guard,0);});
+function q(id){return document.getElementById(id)}
+function only(which){
+ var my=q("partyMydeenHost"),ma=q("partyMansoorHost");
+ if(my){my.classList.remove("active");my.style.display="none"}
+ if(ma){ma.classList.remove("active");ma.style.display="none"}
+ var x=which==="mydeen"?my:ma;
+ if(x){x.classList.add("active");x.style.display="block"}
+}
+function party(){var p=q("partyPage");if(p){p.style.display="block";p.classList.add("active")}}
+function mydeen(){party();only("mydeen");if(typeof window.renderMydeen==="function")window.renderMydeen();window.scrollTo({top:0,behavior:"smooth"})}
+function mansoor(){party();only("mansoor");if(typeof window.showMansoor==="function")window.showMansoor();else if(typeof window.renderMansoor==="function")window.renderMansoor();window.scrollTo({top:0,behavior:"smooth"})}
+function bind(){
+ document.querySelectorAll("#partyPage button").forEach(function(b){
+  var t=(b.textContent||"").toLowerCase();
+  if(t.indexOf("mydeen")>=0)b.addEventListener("click",function(e){e.preventDefault();mydeen()},true);
+  if(t.indexOf("mansoor")>=0)b.addEventListener("click",function(e){e.preventDefault();mansoor()},true);
+ });
+}
+document.addEventListener("DOMContentLoaded",bind);
 })();
 </script>
-
 </body>
 </html>
