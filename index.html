@@ -5484,5 +5484,90 @@ else setTimeout(wait,200);
 })();
 </script>
 
+
+<style id="report-direct-open-final-css">
+#reportPage .report-pro-nav button{
+  pointer-events:auto!important;
+  position:relative!important;
+  z-index:9999!important;
+}
+#reportPage .report-pro-section[open]>summary{
+  display:block!important;
+}
+</style>
+<script id="report-direct-open-final">
+(function(){
+'use strict';
+var map={
+  'salesReportV646':'Sales Report',
+  'expenseReportV662':'Expense Report',
+  'dailySalesV650':'Daily Sales Summary',
+  'monthlySalesV651':'Monthly Sales Summary',
+  'salesDashboardV647':'Sales Dashboard',
+  'v645SalesProfit':'Sales & Profit'
+};
+
+function openOne(id){
+  var target=document.getElementById(id);
+  if(!target)return false;
+  var section=target.closest('details.report-pro-section');
+  if(section){
+    section.open=true;
+    section.setAttribute('open','');
+    section.style.display='';
+  }
+  // If the target itself is a details section, open it too.
+  if(target.tagName==='DETAILS'){
+    target.open=true;
+    target.setAttribute('open','');
+  }
+  setTimeout(function(){
+    var dest=section||target;
+    try{dest.scrollIntoView({behavior:'smooth',block:'start'});}
+    catch(e){dest.scrollIntoView();}
+  },40);
+  return true;
+}
+
+function install(){
+  var page=document.getElementById('reportPage');
+  if(!page)return;
+  if(page.dataset.directOpenInstalled==='1')return;
+  page.dataset.directOpenInstalled='1';
+
+  page.addEventListener('pointerup',function(e){
+    var b=e.target.closest&&e.target.closest('.report-pro-nav button[data-rp]');
+    if(!b)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    openOne(b.getAttribute('data-rp'));
+  },true);
+
+  page.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('.report-pro-nav button[data-rp]');
+    if(!b)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    openOne(b.getAttribute('data-rp'));
+  },true);
+
+  page.addEventListener('touchend',function(e){
+    var b=e.target.closest&&e.target.closest('.report-pro-nav button[data-rp]');
+    if(!b)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    openOne(b.getAttribute('data-rp'));
+  },true);
+}
+function wait(){
+  install();
+  if(!document.getElementById('reportPage')?.querySelector('.report-pro-nav'))
+    setTimeout(wait,300);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(wait,100);});
+else setTimeout(wait,100);
+})();
+</script>
+
 </body>
 </html>
