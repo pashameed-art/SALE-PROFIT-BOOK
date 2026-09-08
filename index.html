@@ -4875,5 +4875,65 @@ window.openPartyLedger=function(which){
 })();
 </script>
 
+
+<!-- PARTY DETAILS VISIBILITY — FINAL -->
+<script id="party-details-visibility-final">
+(function(){
+  function q(id){return document.getElementById(id);}
+  function setPartyState(on){
+    if(on) document.body.setAttribute('data-spb-page','party');
+    else document.body.removeAttribute('data-spb-page');
+  }
+
+  // Override only the party-detail action. Top navigation remains controlled
+  // by the clean navigation controller.
+  var original = window.openPartyLedger;
+
+  window.openPartyLedger = function(which){
+    setPartyState(true);
+
+    // Keep Party page visible even when legacy visibility guards are present.
+    var p=q('partyPage');
+    if(p){
+      p.classList.remove('hidden');
+      p.classList.add('active');
+      p.style.setProperty('display','block','important');
+      p.setAttribute('aria-hidden','false');
+    }
+
+    // Let the existing detail renderer create/show the requested detail.
+    if(typeof original==='function'){
+      try{ original(which); }catch(e){ console.error('Party detail:',e); }
+    }
+
+    // Re-assert the state after legacy listeners/observers run.
+    setTimeout(function(){
+      setPartyState(true);
+      var pp=q('partyPage');
+      if(pp)pp.style.setProperty('display','block','important');
+
+      if(String(which||'').toLowerCase()==='mydeen'){
+        var my=q('partyMydeenHost');
+        if(my){
+          my.classList.add('active');
+          my.style.setProperty('display','block','important');
+        }
+        var ma=q('mansoorPage');
+        if(ma)ma.style.setProperty('display','none','important');
+      }else if(String(which||'').toLowerCase()==='mansoor'){
+        var ma2=q('mansoorPage');
+        if(ma2){
+          ma2.classList.add('active');
+          ma2.style.setProperty('display','block','important');
+        }
+        var my2=q('partyMydeenHost');
+        if(my2)my2.style.setProperty('display','none','important');
+      }
+    },0);
+    setTimeout(function(){setPartyState(true);},50);
+  };
+})();
+</script>
+
 </body>
 </html>
