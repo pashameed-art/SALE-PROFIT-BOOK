@@ -5343,5 +5343,89 @@ document.addEventListener('DOMContentLoaded',bind);
 })();
 </script>
 
+
+<style id="report-pro-layout">
+#reportPage{padding:8px 0 28px!important}
+#reportPage .report-pro-hero{background:linear-gradient(135deg,#0f766e,#155e52);color:#fff;border-radius:22px;padding:18px;margin:0 0 14px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+#reportPage .report-pro-hero h2{margin:0 0 4px;color:#fff}
+#reportPage .report-pro-hero p{margin:0;opacity:.9;font-size:13px}
+#reportPage .report-pro-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:14px}
+#reportPage .report-pro-stat{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.16);border-radius:15px;padding:11px}
+#reportPage .report-pro-stat small{display:block;opacity:.85}
+#reportPage .report-pro-stat b{font-size:18px;display:block;margin-top:3px}
+#reportPage .report-pro-nav{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+#reportPage .report-pro-nav button{border:0;border-radius:13px;padding:11px 6px;font-weight:800;background:#e9f4f2;color:#11685f}
+#reportPage .report-pro-section{margin:10px 0;border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 4px 16px rgba(0,0,0,.05)}
+#reportPage .report-pro-section>summary{list-style:none;cursor:pointer;padding:15px 16px;font-size:17px;font-weight:900;color:#155f58;background:#f1f8f7}
+#reportPage .report-pro-section>summary::-webkit-details-marker{display:none}
+#reportPage .report-pro-section>summary:after{content:'＋';float:right;font-size:20px}
+#reportPage .report-pro-section[open]>summary:after{content:'−'}
+#reportPage .report-pro-body{padding:0 0 4px}
+#reportPage .report-pro-body>.card,#reportPage .report-pro-body>section,#reportPage .report-pro-body>div{margin-top:0!important}
+#reportPage .report-pro-body .card{border-radius:0!important;box-shadow:none!important}
+#reportPage .report-pro-body table{min-width:520px}
+@media(max-width:520px){#reportPage .report-pro-nav{grid-template-columns:repeat(2,1fr)}}
+</style>
+<script id="report-pro-layout-script">
+(function(){
+'use strict';
+var built=false;
+function q(id){return document.getElementById(id);}
+function money(n){return '₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:0});}
+function read(k){try{var a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
+function stats(){
+  var e=read('spb_v4_entries'),x=read('spb_v4_expenses'),s=0,p=0,r=0,z=0;
+  e.forEach(function(v){s+=Number(v.sale||0);p+=Number(v.purchase||0);r+=v.profit!==undefined&&v.profit!==''?Number(v.profit||0):Number(v.sale||0)-Number(v.purchase||0)});
+  x.forEach(function(v){z+=Number(v.amount||0)});
+  return {s:s,p:p,r:r,z:z};
+}
+function wrap(id,title,open){
+  var el=q(id);if(!el||el.closest('.report-pro-section'))return;
+  var d=document.createElement('details');d.className='report-pro-section';d.open=!!open;
+  var s=document.createElement('summary');s.textContent=title;d.appendChild(s);
+  var b=document.createElement('div');b.className='report-pro-body';b.appendChild(el);d.appendChild(b);
+  el.parentNode.insertBefore(d,el);
+}
+function build(){
+  if(built)return;
+  var page=q('reportPage');if(!page)return;
+  if(!q('v645SalesProfit')){setTimeout(build,500);return;}
+  var old=page.querySelector(':scope > .card');
+  if(old&&!page.querySelector('.report-pro-hero')){
+    var st=stats(),hero=document.createElement('div');
+    hero.className='report-pro-hero';
+    hero.innerHTML='<h2>📊 Reports</h2><p>Business performance at a glance</p><div class="report-pro-summary">'+
+      '<div class="report-pro-stat"><small>💰 Sale</small><b>'+money(st.s)+'</b></div>'+
+      '<div class="report-pro-stat"><small>🧾 Purchase</small><b>'+money(st.p)+'</b></div>'+
+      '<div class="report-pro-stat"><small>📈 Profit</small><b>'+money(st.r)+'</b></div>'+
+      '<div class="report-pro-stat"><small>💸 Expense</small><b>'+money(st.z)+'</b></div></div>';
+    page.insertBefore(hero,old);
+    var nav=document.createElement('div');nav.className='report-pro-nav';
+    nav.innerHTML='<button type="button" data-rp="salesReportV646">💰 Sales</button>'+
+      '<button type="button" data-rp="expenseReportV662">💸 Expense</button>'+
+      '<button type="button" data-rp="dailySalesV650">📅 Daily</button>'+
+      '<button type="button" data-rp="monthlySalesV651">🗓️ Monthly</button>'+
+      '<button type="button" data-rp="salesDashboardV647">📈 Dashboard</button>'+
+      '<button type="button" data-rp="v645SalesProfit">📊 Sales & Profit</button>';
+    page.insertBefore(nav,old);
+    nav.addEventListener('click',function(e){
+      var b=e.target.closest('[data-rp]');if(!b)return;
+      var el=q(b.getAttribute('data-rp'));if(!el)return;
+      var d=el.closest('.report-pro-section');if(d)d.open=true;
+      setTimeout(function(){el.scrollIntoView({behavior:'smooth',block:'start'});},50);
+    });
+  }
+  wrap('salesReportV646','💰 Sales Report',true);
+  wrap('v645SalesProfit','📊 Sales & Profit',false);
+  wrap('expenseReportV662','💸 Expense Report',false);
+  wrap('dailySalesV650','📅 Daily Sales Summary',false);
+  wrap('monthlySalesV651','🗓️ Monthly Sales Summary',false);
+  wrap('salesDashboardV647','📈 Sales Dashboard',false);
+  built=true;
+}
+document.addEventListener('DOMContentLoaded',function(){setTimeout(build,1300);});
+})();
+</script>
+
 </body>
 </html>
