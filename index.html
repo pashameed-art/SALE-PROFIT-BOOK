@@ -5427,5 +5427,62 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(build,1300);}
 })();
 </script>
 
+
+<style id="report-pro-buttons-final-css">
+#reportPage .report-pro-nav{position:relative;z-index:20}
+#reportPage .report-pro-nav button{position:relative;z-index:21;touch-action:manipulation}
+</style>
+<script id="report-pro-buttons-final">
+(function(){
+'use strict';
+function findTarget(id){
+  var el=document.getElementById(id);
+  if(!el)return null;
+  var section=el.closest('.report-pro-section');
+  return {el:el,section:section};
+}
+function openReport(id){
+  var x=findTarget(id);
+  if(!x)return false;
+  if(x.section){
+    x.section.open=true;
+    x.section.setAttribute('open','');
+  }
+  setTimeout(function(){
+    try{x.el.scrollIntoView({behavior:'smooth',block:'start'});}
+    catch(e){x.el.scrollIntoView();}
+  },30);
+  return true;
+}
+function bindReportButtons(){
+  var nav=document.querySelector('#reportPage .report-pro-nav');
+  if(!nav || nav.getAttribute('data-final-bound')==='1')return;
+  nav.setAttribute('data-final-bound','1');
+
+  nav.addEventListener('click',function(e){
+    var b=e.target.closest && e.target.closest('button[data-rp]');
+    if(!b || !nav.contains(b))return;
+    e.preventDefault();
+    e.stopPropagation();
+    openReport(b.getAttribute('data-rp'));
+  },true);
+
+  nav.addEventListener('touchend',function(e){
+    var b=e.target.closest && e.target.closest('button[data-rp]');
+    if(!b || !nav.contains(b))return;
+    e.preventDefault();
+    e.stopPropagation();
+    openReport(b.getAttribute('data-rp'));
+  },{capture:true,passive:false});
+}
+function wait(){
+  bindReportButtons();
+  if(!document.querySelector('#reportPage .report-pro-nav'))setTimeout(wait,300);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(wait,200);});
+else setTimeout(wait,200);
+})();
+</script>
+
 </body>
 </html>
