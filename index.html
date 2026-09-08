@@ -1179,6 +1179,21 @@ body.spb-party-mode .nav-bar button:nth-child(4){
   box-shadow:0 3px 10px rgba(23,79,61,.22)!important;
 }
 </style>
+
+<style id="mydeen-history-final-css">
+#partyMydeenHistory .mydeen-history-final-row{padding:12px 0;border-bottom:1px solid #e5eceb}
+#partyMydeenHistory .mydeen-history-final-row:last-child{border-bottom:0}
+#partyMydeenHistory .mydeen-history-final-main{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+#partyMydeenHistory .mydeen-taken-final{color:#c62828!important}
+#partyMydeenHistory .mydeen-given-final{color:#16834b!important}
+#partyMydeenHistory .mydeen-history-final-main b,
+#partyMydeenHistory .mydeen-history-final-main strong{font-weight:900}
+#partyMydeenHistory .mydeen-history-final-actions{display:flex;gap:8px;margin-top:9px}
+#partyMydeenHistory .mydeen-history-final-actions button{border:0;border-radius:9px;padding:7px 12px;font-weight:800;cursor:pointer}
+#partyMydeenHistory .mydeen-history-final-actions button:first-child{background:#eaf5f3;color:#116d64}
+#partyMydeenHistory .mydeen-history-final-actions button:last-child{background:#fdecec;color:#c62828}
+</style>
+
 </head>
 <body>
 <header>
@@ -4912,12 +4927,20 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
     q('partyMydeenBalance').textContent=money(mydeenBalance());
     var rows=getMydeen().slice().sort(function(a,b){
       return String(b.date||'').localeCompare(String(a.date||''))||Number(b.id||0)-Number(a.id||0);
-    });
-    q('partyMydeenHistory').innerHTML=rows.length?rows.map(function(x){
+    });    q('partyMydeenHistory').innerHTML=rows.length?rows.map(function(x){
       var given=String(x.type||'')==='given';
-      return '<div style="display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #e5eceb">'+
-        '<div><b>'+esc(given?'பணம் தந்தது':'பணம் வாங்கியது')+'</b><div class="meta">'+fmt(x.date)+(x.note?' • '+esc(x.note):'')+'</div></div>'+
-        '<strong>'+ (given?'−':'+') + money(x.amount) +'</strong></div>';
+      var cls=given?'mydeen-given-final':'mydeen-taken-final';
+      return '<div class="mydeen-history-final-row">'+
+        '<div class="mydeen-history-final-main">'+
+          '<div><b class="'+cls+'">'+(given?'பணம் தந்தது':'பணம் வாங்கியது')+'</b>'+
+          '<div class="meta">'+fmt(x.date)+(x.note?' • '+esc(x.note):'')+'</div></div>'+
+          '<strong class="'+cls+'">'+(given?'−':'＋')+money(x.amount)+'</strong>'+
+        '</div>'+
+        '<div class="mydeen-history-final-actions">'+
+          '<button type="button" data-mydeen-edit-final="'+esc(x.id)+'">✏️ Edit</button>'+
+          '<button type="button" data-mydeen-delete-final="'+esc(x.id)+'">🗑️ Delete</button>'+
+        '</div>'+
+      '</div>';
     }).join(''):'<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';
   }
 
@@ -5175,5 +5198,20 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
   });
 })();
 </script>
+
+<script id="mydeen-history-final-refresh">
+(function(){
+  function refresh(){
+    if(typeof window.renderMydeenUI==='function'){
+      try{window.renderMydeenUI();}catch(e){}
+    }
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    setTimeout(refresh,100);
+    setTimeout(refresh,500);
+  });
+})();
+</script>
+
 </body>
 </html>
