@@ -5213,5 +5213,135 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
 })();
 </script>
 
+
+<!-- MANSOOR HISTORY — EDIT / DELETE + RED / GREEN -->
+<style id="mansoor-history-final-css">
+#mansoorPage .mansoor-history-final-row{
+  padding:12px 0;border-bottom:1px solid #e5eceb;
+}
+#mansoorPage .mansoor-history-final-row:last-child{border-bottom:0}
+#mansoorPage .mansoor-history-final-main{
+  display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+}
+#mansoorPage .mansoor-taken-final{color:#c62828!important}
+#mansoorPage .mansoor-given-final{color:#16834b!important}
+#mansoorPage .mansoor-history-final-actions{display:flex;gap:8px;margin-top:9px}
+#mansoorPage .mansoor-history-final-actions button{
+  border:0;border-radius:9px;padding:7px 12px;font-weight:800;cursor:pointer;
+}
+#mansoorPage .mansoor-history-final-actions button:first-child{
+  background:#eaf5f3;color:#116d64;
+}
+#mansoorPage .mansoor-history-final-actions button:last-child{
+  background:#fdecec;color:#c62828;
+}
+</style>
+<script id="mansoor-history-final">
+(function(){
+'use strict';
+var KEY='saleProfitBookMansoorV1', editing=null;
+
+function q(id){return document.getElementById(id);}
+function get(){
+  try{var a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a:[]}
+  catch(e){return []}
+}
+function set(a){localStorage.setItem(KEY,JSON.stringify(a));}
+function money(v){return '₹'+Number(v||0).toLocaleString('en-IN',{maximumFractionDigits:2});}
+function esc(v){
+  return String(v==null?'':v).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function fmt(v){
+  var m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m?m[3]+'.'+m[2]+'.'+m[1].slice(2):String(v||'');
+}
+
+function historyBox(){
+  return q('mansoorHistory')||q('partyMansoorHistory')||q('mansoorLedgerHistory');
+}
+function render(){
+  var box=historyBox();if(!box)return;
+  var rows=get().slice().sort(function(a,b){
+    return String(b.date||'').localeCompare(String(a.date||''))||
+           Number(b.id||0)-Number(a.id||0);
+  });
+  if(!rows.length){
+    box.innerHTML='<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';
+    return;
+  }
+  box.innerHTML=rows.map(function(x){
+    var given=String(x.type||'').toLowerCase()==='given';
+    var cls=given?'mansoor-given-final':'mansoor-taken-final';
+    return '<div class="mansoor-history-final-row">'+
+      '<div class="mansoor-history-final-main">'+
+        '<div><b class="'+cls+'">'+(given?'பணம் தந்தது':'பணம் வாங்கியது')+'</b>'+
+        '<div class="meta">'+fmt(x.date)+(x.note?' • '+esc(x.note):'')+'</div></div>'+
+        '<strong class="'+cls+'">'+(given?'−':'＋')+money(x.amount)+'</strong>'+
+      '</div>'+
+      '<div class="mansoor-history-final-actions">'+
+        '<button type="button" data-mansoor-edit-final="'+esc(x.id)+'">✏️ Edit</button>'+
+        '<button type="button" data-mansoor-delete-final="'+esc(x.id)+'">🗑️ Delete</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function edit(id){
+  var x=get().find(function(r){return String(r.id)===String(id)});if(!x)return;
+  editing=x.id;
+  var t=q('mansoorType'),d=q('mansoorDate'),a=q('mansoorAmount'),n=q('mansoorNote');
+  if(t)t.value=x.type||'taken';
+  if(d)d.value=x.date||'';
+  if(a)a.value=x.amount||'';
+  if(n)n.value=x.note||'';
+  var s=q('mansoorSave');
+  if(s)s.textContent='Update';
+}
+
+function save(){
+  var t=q('mansoorType'),d=q('mansoorDate'),a=q('mansoorAmount'),n=q('mansoorNote');
+  if(!t||!d||!a)return;
+  var type=t.value||'taken',date=d.value||'',amount=Number(a.value||0),note=(n?.value||'').trim();
+  if(!date||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return;}
+  var rows=get();
+  if(editing!==null){
+    var i=rows.findIndex(function(r){return String(r.id)===String(editing)});
+    if(i>=0)rows[i]=Object.assign({},rows[i],{type:type,date:date,amount:amount,note:note});
+  }else rows.push({id:Date.now(),type:type,date:date,amount:amount,note:note});
+  set(rows);editing=null;
+  var s=q('mansoorSave');if(s)s.textContent='Save';
+  if(a)a.value='';if(n)n.value='';
+  render();
+  try{if(typeof window.renderMansoor==='function')window.renderMansoor();}catch(e){}
+  setTimeout(render,100);
+}
+
+function bind(){
+  var s=q('mansoorSave');
+  if(s)s.onclick=save;
+  document.addEventListener('click',function(e){
+    var eb=e.target.closest&&e.target.closest('[data-mansoor-edit-final]');
+    if(eb){e.preventDefault();edit(eb.getAttribute('data-mansoor-edit-final'));return;}
+    var db=e.target.closest&&e.target.closest('[data-mansoor-delete-final]');
+    if(db){
+      e.preventDefault();
+      if(!confirm('இந்த Mansoor பதிவை Delete செய்யவா?'))return;
+      var id=db.getAttribute('data-mansoor-delete-final');
+      set(get().filter(function(r){return String(r.id)!==String(id)}));
+      if(String(editing)===String(id))editing=null;
+      render();
+      try{if(typeof window.renderMansoor==='function')window.renderMansoor();}catch(e){}
+      setTimeout(render,100);
+    }
+  },true);
+  setTimeout(render,200);
+  setTimeout(render,600);
+}
+document.addEventListener('DOMContentLoaded',bind);
+})();
+</script>
+
 </body>
 </html>
