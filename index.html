@@ -4708,7 +4708,11 @@ body.v702-party-open .nav-bar button.active:not(:has(+ *)){ }
 <!-- V7.07 FINAL NAVIGATION RECOVERY -->
 <!-- V7.08 FINAL NAVIGATION OVERRIDE: one reliable handler for every top navigation button -->
 <!-- PARTY NAVIGATION ACTIVE — FINAL OVERRIDE -->
-<style id="v712-navigation-state-final">\n/* Final page-state authority */\nbody:not(.party-open-mode) #partyPage{display:none!important;}\nbody.party-open-mode #partyPage{display:block!important;visibility:visible!important;}\n</style>
+<style id="v712-navigation-state-final">
+/* Final page-state authority */
+body:not(.party-open-mode) #partyPage{display:none!important;}
+body.party-open-mode #partyPage{display:block!important;visibility:visible!important;}
+</style>
 
 
 <!-- CLEAN NAVIGATION — SINGLE AUTHORITY -->
@@ -4964,6 +4968,7 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
       h.my.style.setProperty('display','block','important');
       var d=q('partyMydeenDate');if(d&&!d.value)d.value=today();
       renderMydeen();
+      if(typeof window.renderMydeenUI==='function')window.renderMydeenUI();
     }else if(v==='mansoor'){
       h.mans.classList.add('party-selected','active');
       h.mans.style.setProperty('display','block','important');
@@ -5087,297 +5092,88 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
   });
 })();
 </script>
-
-
-<!-- MYDEEN EDIT / DELETE + COLOR CODING -->
-<style id="mydeen-edit-delete-style">
-.mydeen-history-row{padding:11px 0;border-bottom:1px solid #e5eceb}
-.mydeen-history-main{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.mydeen-history-row .mydeen-type-taken{color:#c62828!important}
-.mydeen-history-row .mydeen-type-given{color:#16834b!important}
-.mydeen-history-row .mydeen-amount{font-weight:900;white-space:nowrap}
-.mydeen-history-row .mydeen-actions{display:flex;gap:7px;margin-top:8px}
-.mydeen-history-row .mydeen-actions button{border:0;border-radius:9px;padding:7px 12px;font-weight:800;cursor:pointer}
-.mydeen-edit-btn{background:#eaf5f3;color:#116d64}
-.mydeen-delete-btn{background:#fdecec;color:#c62828}
+<!-- MYDEEN — SINGLE AUTHORITATIVE EDIT / DELETE / COLOR CONTROLLER -->
+<style id="mydeen-single-authoritative-style">
+#partyMydeenHistory .mydeen-row-final{padding:12px 0;border-bottom:1px solid #e5eceb}
+#partyMydeenHistory .mydeen-row-final:last-child{border-bottom:0}
+#partyMydeenHistory .mydeen-row-final .taken{color:#c62828!important}
+#partyMydeenHistory .mydeen-row-final .given{color:#16834b!important}
+#partyMydeenHistory .mydeen-row-final .amount{font-weight:900;white-space:nowrap}
+#partyMydeenHistory .mydeen-row-final .actions{display:flex;gap:8px;margin-top:9px}
+#partyMydeenHistory .mydeen-row-final .actions button{border:0;border-radius:9px;padding:7px 12px;font-weight:800;cursor:pointer}
+#partyMydeenHistory .mydeen-row-final .edit{background:#eaf5f3;color:#116d64}
+#partyMydeenHistory .mydeen-row-final .delete{background:#fdecec;color:#c62828}
 </style>
-<script id="mydeen-edit-delete">
+<script id="mydeen-single-authoritative-controller">
 (function(){
   'use strict';
-  var KEY='saleProfitBookMydeenV1';
-  var editingId=null;
-
+  var KEY='saleProfitBookMydeenV1', editingId=null;
   function q(id){return document.getElementById(id);}
-  function get(){
-    try{var a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a:[]}
-    catch(e){return []}
-  }
-  function set(a){
-    localStorage.setItem(KEY,JSON.stringify(a));
-  }
+  function get(){try{var a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
+  function set(a){localStorage.setItem(KEY,JSON.stringify(a));}
   function money(v){return '₹'+Number(v||0).toLocaleString('en-IN',{maximumFractionDigits:2});}
-  function esc(v){
-    return String(v==null?'':v).replace(/[&<>"']/g,function(c){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-    });
-  }
-  function fmt(v){
-    var m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    return m?m[3]+'.'+m[2]+'.'+m[1].slice(2):String(v||'');
-  }
-
+  function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  function fmt(v){var m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?m[3]+'.'+m[2]+'.'+m[1].slice(2):String(v||'');}
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function rows(){return get().slice().sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))||Number(b.id||0)-Number(a.id||0);});}
   function render(){
-    var box=q('partyMydeenHistory');
-    if(!box)return;
-    var a=get().slice().sort(function(x,y){
-      return String(y.date||'').localeCompare(String(x.date||'')) ||
-             Number(y.id||0)-Number(x.id||0);
-    });
-    if(!a.length){
-      box.innerHTML='<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';
-      return;
-    }
-    box.innerHTML=a.map(function(x){
-      var given=String(x.type||'')==='given';
-      var cls=given?'mydeen-type-given':'mydeen-type-taken';
-      var label=given?'பணம் தந்தது':'பணம் வாங்கியது';
-      var sign=given?'−':'＋';
-      return '<div class="mydeen-history-row">'+
-        '<div class="mydeen-history-main">'+
-          '<div><b class="'+cls+'">'+label+'</b>'+
-          '<div class="meta">'+fmt(x.date)+(x.note?' • '+esc(x.note):'')+'</div></div>'+
-          '<strong class="mydeen-amount '+cls+'">'+sign+money(x.amount)+'</strong>'+
-        '</div>'+
-        '<div class="mydeen-actions">'+
-          '<button type="button" class="mydeen-edit-btn" data-mydeen-edit="'+esc(x.id)+'">✏️ Edit</button>'+
-          '<button type="button" class="mydeen-delete-btn" data-mydeen-delete="'+esc(x.id)+'">🗑️ Delete</button>'+
-        '</div>'+
-      '</div>';
-    }).join('');
+    var box=q('partyMydeenHistory');if(!box)return;
+    var a=rows();
+    box.innerHTML=a.length?a.map(function(x){
+      var given=String(x.type||'').toLowerCase()==='given', cls=given?'given':'taken';
+      return '<div class="mydeen-row-final">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'+
+        '<div><b class="'+cls+'">'+(given?'பணம் தந்தது':'பணம் வாங்கியது')+'</b>'+
+        '<div class="meta">'+fmt(x.date)+(x.note?' • '+esc(x.note):'')+'</div></div>'+
+        '<strong class="amount '+cls+'">'+(given?'−':'＋')+money(x.amount)+'</strong></div>'+
+        '<div class="actions"><button type="button" class="edit" data-mydeen-edit-final="'+esc(x.id)+'">✏️ Edit</button>'+
+        '<button type="button" class="delete" data-mydeen-delete-final="'+esc(x.id)+'">🗑️ Delete</button></div></div>';
+    }).join(''):'<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';
   }
-
-  function edit(id){
-    var x=get().find(function(r){return String(r.id)===String(id)});
-    if(!x)return;
+  function startEdit(id){
+    var x=get().find(function(r){return String(r.id)===String(id)});if(!x)return;
     editingId=x.id;
-    var t=q('partyMydeenType'),d=q('partyMydeenDate'),
-        a=q('partyMydeenAmount'),n=q('partyMydeenNote'),
-        save=q('partyMydeenSave');
-    if(t)t.value=x.type||'taken';
-    if(d)d.value=x.date||'';
-    if(a)a.value=x.amount||'';
-    if(n)n.value=x.note||'';
-    if(save){save.textContent='Update';save.dataset.mydeenEditing='1';}
-    window.scrollTo({top:Math.max(0,(q('partyMydeenCard')||document.body).offsetTop-20),behavior:'smooth'});
+    if(q('partyMydeenType'))q('partyMydeenType').value=x.type||'taken';
+    if(q('partyMydeenDate'))q('partyMydeenDate').value=x.date||today();
+    if(q('partyMydeenAmount'))q('partyMydeenAmount').value=x.amount||'';
+    if(q('partyMydeenNote'))q('partyMydeenNote').value=x.note||'';
+    var s=q('partyMydeenSave');if(s){s.textContent='Update';s.dataset.mydeenEditing='1';}
   }
-
-  function clearEdit(){
-    editingId=null;
-    var save=q('partyMydeenSave');
-    if(save){save.textContent='Save';delete save.dataset.mydeenEditing;}
+  function resetEdit(){editingId=null;var s=q('partyMydeenSave');if(s){s.textContent='Save';delete s.dataset.mydeenEditing;}}
+  function save(){
+    var date=q('partyMydeenDate')?.value||today(), type=q('partyMydeenType')?.value||'taken', amount=Number(q('partyMydeenAmount')?.value||0), note=(q('partyMydeenNote')?.value||'').trim();
+    if(!date||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return;}
+    var a=get();
+    if(editingId!==null){var i=a.findIndex(function(r){return String(r.id)===String(editingId)});if(i>=0)a[i]=Object.assign({},a[i],{type:type,date:date,amount:amount,note:note});}
+    else a.push({id:Date.now(),type:type,date:date,amount:amount,note:note});
+    set(a);resetEdit();
+    if(q('partyMydeenAmount'))q('partyMydeenAmount').value='';
+    if(q('partyMydeenNote'))q('partyMydeenNote').value='';
+    render();
+    if(typeof window.renderMydeenBalanceOnly==='function')window.renderMydeenBalanceOnly();
   }
-
-  function deleteRow(id){
-    var a=get(),i=a.findIndex(function(r){return String(r.id)===String(id)});
-    if(i<0)return;
+  function del(id){
     if(!confirm('இந்த Mydeen பதிவை Delete செய்யவா?'))return;
-    a.splice(i,1);
-    set(a);
-    if(String(editingId)===String(id))clearEdit();
+    set(get().filter(function(r){return String(r.id)!==String(id)}));
+    if(String(editingId)===String(id))resetEdit();
     render();
-    if(typeof window.renderMydeen==='function')try{window.renderMydeen();}catch(e){}
+    if(typeof window.renderMydeenBalanceOnly==='function')window.renderMydeenBalanceOnly();
   }
-
-  // Replace the save action with one authoritative handler supporting add + edit.
-  function bindSave(){
-    var save=q('partyMydeenSave');
-    if(!save)return;
-    save.onclick=function(){
-      var type=q('partyMydeenType')?.value||'taken';
-      var date=q('partyMydeenDate')?.value||'';
-      var amount=Number(q('partyMydeenAmount')?.value||0);
-      var note=(q('partyMydeenNote')?.value||'').trim();
-      if(!date||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return;}
-      var a=get();
-      if(editingId!==null){
-        var i=a.findIndex(function(r){return String(r.id)===String(editingId)});
-        if(i>=0)a[i]=Object.assign({},a[i],{type:type,date:date,amount:amount,note:note});
-      }else{
-        a.push({id:Date.now(),type:type,date:date,amount:amount,note:note});
-      }
-      set(a);
-      clearEdit();
-      if(typeof window.renderMydeen==='function'){
-        try{window.renderMydeen();}catch(e){}
-      }
-      render();
-      q('partyMydeenAmount').value='';
-      q('partyMydeenNote').value='';
-    };
-  }
-
+  window.renderMydeenUI=render;
   document.addEventListener('click',function(e){
-    var editBtn=e.target.closest&&e.target.closest('[data-mydeen-edit]');
-    if(editBtn){e.preventDefault();edit(editBtn.getAttribute('data-mydeen-edit'));return;}
-    var delBtn=e.target.closest&&e.target.closest('[data-mydeen-delete]');
-    if(delBtn){e.preventDefault();deleteRow(delBtn.getAttribute('data-mydeen-delete'));return;}
-  });
-
-  function watch(){
-    bindSave();
-    render();
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(watch,300);});
-  else setTimeout(watch,300);
-})();
-</script>
-
-
-<!-- MYDEEN HISTORY UI — AUTHORITATIVE VISUAL/EDIT LAYER -->
-<style id="mydeen-history-authoritative-style">
-#partyMydeenHistory .mydeen-fixed-row{
-  padding:11px 0!important;
-  border-bottom:1px solid #e5eceb!important;
-}
-#partyMydeenHistory .mydeen-fixed-row .mydeen-taken{
-  color:#c62828!important;
-}
-#partyMydeenHistory .mydeen-fixed-row .mydeen-given{
-  color:#16834b!important;
-}
-#partyMydeenHistory .mydeen-fixed-row .mydeen-actions{
-  display:flex!important;
-  gap:7px!important;
-  margin-top:8px!important;
-}
-#partyMydeenHistory .mydeen-fixed-row .mydeen-actions button{
-  border:0!important;border-radius:9px!important;padding:7px 12px!important;
-  font-weight:800!important;
-}
-#partyMydeenHistory .mydeen-edit{
-  background:#eaf5f3!important;color:#116d64!important;
-}
-#partyMydeenHistory .mydeen-delete{
-  background:#fdecec!important;color:#c62828!important;
-}
-</style>
-<script id="mydeen-history-authoritative">
-(function(){
-'use strict';
-var KEY='saleProfitBookMydeenV1', editing=null;
-
-function q(id){return document.getElementById(id);}
-function get(){
-  try{var a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a:[]}
-  catch(e){return []}
-}
-function set(a){localStorage.setItem(KEY,JSON.stringify(a));}
-function money(v){return '₹'+Number(v||0).toLocaleString('en-IN',{maximumFractionDigits:2});}
-function fmt(v){
-  var m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  return m?m[3]+'.'+m[2]+'.'+m[1].slice(2):String(v||'');
-}
-function esc(v){
-  return String(v==null?'':v).replace(/[&<>"']/g,function(c){
-    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-  });
-}
-function sorted(){
-  return get().slice().sort(function(a,b){
-    return String(b.date||'').localeCompare(String(a.date||''))||
-           Number(b.id||0)-Number(a.id||0);
-  });
-}
-
-function renderFixed(){
-  var box=q('partyMydeenHistory'); if(!box)return;
-  var rows=sorted();
-  if(!rows.length){
-    box.innerHTML='<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';
-    return;
-  }
-  box.innerHTML=rows.map(function(x){
-    var given=String(x.type||'').toLowerCase()==='given';
-    var cls=given?'mydeen-given':'mydeen-taken';
-    var label=given?'பணம் தந்தது':'பணம் வாங்கியது';
-    return '<div class="mydeen-fixed-row" data-fixed-id="'+esc(x.id)+'">'+
-      '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">'+
-      '<div><b class="'+cls+'">'+label+'</b><div class="meta">'+fmt(x.date)+(x.note?' • '+esc(x.note):'')+'</div></div>'+
-      '<strong class="'+cls+'">'+(given?'−':'＋')+money(x.amount)+'</strong>'+
-      '</div>'+
-      '<div class="mydeen-actions">'+
-      '<button type="button" class="mydeen-edit" data-fixed-edit="'+esc(x.id)+'">✏️ Edit</button>'+
-      '<button type="button" class="mydeen-delete" data-fixed-delete="'+esc(x.id)+'">🗑️ Delete</button>'+
-      '</div></div>';
-  }).join('');
-}
-
-function edit(id){
-  var x=get().find(function(r){return String(r.id)===String(id)}); if(!x)return;
-  editing=x.id;
-  if(q('partyMydeenType'))q('partyMydeenType').value=x.type||'taken';
-  if(q('partyMydeenDate'))q('partyMydeenDate').value=x.date||'';
-  if(q('partyMydeenAmount'))q('partyMydeenAmount').value=x.amount||'';
-  if(q('partyMydeenNote'))q('partyMydeenNote').value=x.note||'';
-  var s=q('partyMydeenSave');
-  if(s){s.textContent='Update';s.dataset.fixedEditing='1';}
-  window.scrollTo({top:Math.max(0,(q('partyMydeenCard')||document.body).offsetTop-20),behavior:'smooth'});
-}
-
-function save(){
-  var date=q('partyMydeenDate')?.value||'';
-  var type=q('partyMydeenType')?.value||'taken';
-  var amount=Number(q('partyMydeenAmount')?.value||0);
-  var note=(q('partyMydeenNote')?.value||'').trim();
-  if(!date||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return;}
-  var a=get();
-  if(editing!==null){
-    var i=a.findIndex(function(r){return String(r.id)===String(editing)});
-    if(i>=0)a[i]=Object.assign({},a[i],{date:date,type:type,amount:amount,note:note});
-  }else{
-    a.push({id:Date.now(),date:date,type:type,amount:amount,note:note});
-  }
-  set(a);editing=null;
-  var s=q('partyMydeenSave');if(s){s.textContent='Save';delete s.dataset.fixedEditing;}
-  if(q('partyMydeenAmount'))q('partyMydeenAmount').value='';
-  if(q('partyMydeenNote'))q('partyMydeenNote').value='';
-  renderFixed();
-}
-
-function bind(){
-  var s=q('partyMydeenSave');
-  if(s)s.onclick=save;
-  document.addEventListener('click',function(e){
-    var eb=e.target.closest&&e.target.closest('[data-fixed-edit]');
-    if(eb){e.preventDefault();edit(eb.getAttribute('data-fixed-edit'));return;}
-    var db=e.target.closest&&e.target.closest('[data-fixed-delete]');
-    if(db){
-      e.preventDefault();
-      if(!confirm('இந்த Mydeen பதிவை Delete செய்யவா?'))return;
-      var id=db.getAttribute('data-fixed-delete'),a=get();
-      a=a.filter(function(r){return String(r.id)!==String(id)});
-      set(a);if(String(editing)===String(id))editing=null;
-      renderFixed();
-    }
+    var saveBtn=e.target.closest&&e.target.closest('#partyMydeenSave');
+    if(saveBtn){e.preventDefault();e.stopImmediatePropagation();save();return;}
+    var a=e.target.closest&&e.target.closest('[data-mydeen-edit-final]');
+    if(a){e.preventDefault();e.stopPropagation();startEdit(a.getAttribute('data-mydeen-edit-final'));return;}
+    var d=e.target.closest&&e.target.closest('[data-mydeen-delete-final]');
+    if(d){e.preventDefault();e.stopPropagation();del(d.getAttribute('data-mydeen-delete-final'));return;}
   },true);
-}
-
-function openFix(){
-  var d=q('partyMydeenDate');
-  if(d&&!d.value){
-    var now=new Date();
-    d.value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
-  }
-  setTimeout(renderFixed,80);
-  setTimeout(renderFixed,300);
-}
-
-document.addEventListener('DOMContentLoaded',function(){
-  bind();
-  openFix();
-});
+  document.addEventListener('DOMContentLoaded',function(){
+    var s=q('partyMydeenSave');if(s)s.onclick=save;
+    var d=q('partyMydeenDate');if(d&&!d.value)d.value=today();
+    setTimeout(render,100);setTimeout(render,400);
+  });
 })();
 </script>
-
 </body>
 </html>
