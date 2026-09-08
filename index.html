@@ -4981,5 +4981,87 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
 })();
 </script>
 
+
+<!-- REPORT PAGE — ORGANIZED LAYOUT -->
+<style id="report-organized-layout">
+#reportPage{padding-bottom:24px}
+#reportPage>.card:first-child{margin-bottom:16px}
+#reportPage .report-organized-group{margin-top:16px}
+#reportPage .report-organized-group>summary{
+  list-style:none;cursor:pointer;padding:16px 18px;
+  font-size:20px;font-weight:800;color:#155f58;
+  background:#eef7f5;border-radius:18px;
+}
+#reportPage .report-organized-group>summary::-webkit-details-marker{display:none}
+#reportPage .report-organized-group>summary:after{
+  content:'＋';float:right;font-size:22px
+}
+#reportPage .report-organized-group[open]>summary:after{content:'−'}
+#reportPage .report-organized-body{padding-top:10px}
+#reportPage .report-organized-body>section{margin-top:10px!important}
+#reportPage .report-organized-body>.card{margin-top:10px}
+#reportPage .report-organized-body>section:first-child{margin-top:0!important}
+#reportPage .report-organized-note{
+  margin:12px 2px 0;color:#657572;font-size:13px
+}
+</style>
+<script id="report-organized-layout-script">
+(function(){
+  function organize(){
+    var page=document.getElementById('reportPage');
+    if(!page || page.getAttribute('data-report-organized')==='1')return;
+
+    var sales=document.getElementById('salesReportV646');
+    var expense=document.getElementById('expenseReportV662');
+    var monthly=document.getElementById('monthlySalesV651');
+    var dashboard=document.getElementById('salesDashboardV647');
+    var daily=document.getElementById('dailySalesV650');
+
+    function group(title,open,ids,note){
+      var d=document.createElement('details');
+      d.className='report-organized-group';
+      d.open=!!open;
+      var s=document.createElement('summary');
+      s.textContent=title;
+      d.appendChild(s);
+      var body=document.createElement('div');
+      body.className='report-organized-body';
+      if(note){
+        var n=document.createElement('div');
+        n.className='report-organized-note';
+        n.textContent=note;
+        body.appendChild(n);
+      }
+      ids.forEach(function(id){
+        var el=document.getElementById(id);
+        if(el)body.appendChild(el);
+      });
+      d.appendChild(body);
+      page.appendChild(d);
+    }
+
+    group('💰 Sales & Profit Reports',false,
+      ['salesReportV646','salesDashboardV647'],
+      'Sales, Purchase, Profit, Meter மற்றும் Payment-wise summary.');
+    group('💸 Expense Report',false,
+      ['expenseReportV662'],
+      'தேதி அடிப்படையில் Expense total மற்றும் entries.');
+    group('📅 Daily Sales Summary',false,
+      ['dailySalesV650'],
+      'நாள் வாரியாக Meter, Sale, Purchase, Profit.');
+    group('🗓️ Monthly Sales Summary',false,
+      ['monthlySalesV651'],
+      'மாத வாரியாக Meter, Sale, Purchase, Profit.');
+
+    page.setAttribute('data-report-organized','1');
+  }
+
+  if(document.readyState==='loading')
+    document.addEventListener('DOMContentLoaded',organize);
+  else
+    organize();
+})();
+</script>
+
 </body>
 </html>
