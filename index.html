@@ -632,64 +632,6 @@ html.modal-open, body.modal-open{
 }
 </style>
 
-<script id="clean-navigation">
-(function(){
-  function hidePages(){
-    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-  }
-  window.goHome=function(btn){
-    hidePages();
-    if(typeof setActive==='function')setActive(btn);
-    var h=document.getElementById('historyCard'); if(h)h.classList.add('hidden');
-    var e=document.getElementById('entryCard'); if(e)e.classList.remove('hidden');
-    if(typeof refresh==='function')refresh();
-    if(typeof refreshDashboard==='function')refreshDashboard();
-  };
-  window.goExpense=function(btn){
-    hidePages();
-    if(typeof setActive==='function')setActive(btn);
-    var p=document.getElementById('expensePage'); if(p)p.classList.add('active');
-    if(typeof renderExpenses==='function')renderExpenses();
-    if(typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal();
-  };
-  window.goMansoor=function(btn){
-    hidePages();
-    if(typeof setActive==='function')setActive(btn);
-    if(typeof showMansoor==='function')showMansoor();
-    else {var p=document.getElementById('mansoorPage');if(p)p.classList.add('active');}
-  };
-  window.goSupplier=function(btn){
-    hidePages();
-    if(typeof setActive==='function')setActive(btn);
-    if(typeof showSupplier==='function')showSupplier();
-    else {var p=document.getElementById('supplierPage');if(p)p.classList.add('active');}
-  };
-  window.openPartyLedger=function(value){
-  var area=document.getElementById('partyLedgerArea');
-  if(!area)return;
-  if(value==='mansoor'){
-    area.innerHTML='<div class="card"><h3>🤝 Mansoor</h3><button class="primary" onclick="showMansoor()">Open Mansoor Ledger</button></div>';
-  }else if(value==='mydeen'){
-    area.innerHTML='<div class="card"><h3>🤝 Mydeen</h3><p>Mydeen கொடுக்கல் – வாங்கல் Ledger அடுத்த கட்டத்தில் சேர்க்கலாம்.</p></div>';
-  }else{
-    area.innerHTML='';
-  }
-};
-window.goReports=function(btn){
-    hidePages();
-    if(typeof setActive==='function')setActive(btn);
-    var p=document.getElementById('reportPage');if(p)p.classList.add('active');
-    if(typeof showDateDefaults==='function')showDateDefaults();
-  };
-  window.goBackup=function(btn){
-    hidePages();
-    if(typeof setActive==='function')setActive(btn);
-    var p=document.getElementById('backupPage');
-    if(p){p.classList.add('active');}
-  };
-})();
-</script>
-
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
@@ -3454,86 +3396,6 @@ function updateTodayNetProfit(){
 }
 
 </script>
-<script id="v539-tab-pages">
-(function(){
-  var pageIds={
-    expense:'expensePage',
-    mansoor:'mansoorPage',
-    reports:'reportPage',
-    backup:'backupPage'
-  };
-
-  function clearActive(){
-    Object.keys(pageIds).forEach(function(k){
-      var el=document.getElementById(pageIds[k]);
-      if(el) el.classList.remove('active');
-    });
-  }
-
-  function setNavActive(btn){
-    document.querySelectorAll('nav button,.nav button,.topnav button').forEach(function(b){
-      b.classList.remove('active');
-    });
-    if(btn) btn.classList.add('active');
-  }
-
-  function openPage(name,btn){
-    document.body.classList.add('page-open-mode');
-    clearActive();
-    var hp=document.getElementById('historyPage');
-    if(hp) hp.classList.remove('active');
-    var hc=document.getElementById('historyCard');
-    if(hc) hc.classList.add('hidden');
-    var el=document.getElementById(pageIds[name]);
-    if(!el) return;
-    el.classList.remove('hidden');
-    el.classList.add('active');
-    setNavActive(btn);
-    window.scrollTo(0,0);
-
-    if(name==='expense'){
-      if(typeof renderExpenses==='function') renderExpenses();
-      if(typeof updateTodayExpenseTotal==='function') updateTodayExpenseTotal();
-    }
-    if(name==='reports' && typeof showDateDefaults==='function') showDateDefaults();
-    if(name==='mansoor' && typeof showMansoor==='function') showMansoor();
-  }
-
-  function openHome(btn){
-    document.body.classList.remove('page-open-mode');
-    clearActive();
-    var hp=document.getElementById('historyPage');
-    if(hp) hp.classList.remove('active');
-    var hc=document.getElementById('historyCard');
-    if(hc) hc.classList.add('hidden');
-    setNavActive(btn);
-    window.scrollTo(0,0);
-    if(typeof refresh==='function') refresh();
-    if(typeof refreshDashboard==='function') refreshDashboard();
-  }
-
-  window.openHomeTab=openHome;
-  window.openExpenseTab=function(btn){openPage('expense',btn);};
-  window.openMansoorTab=function(btn){openPage('mansoor',btn);};
-  window.openReportsTab=function(btn){openPage('reports',btn);};
-  window.openBackupTab=function(btn){openPage('backup',btn);};
-  window.returnHomeTab=function(){openHome(null);};
-
-  function bind(){
-    document.querySelectorAll('nav button').forEach(function(b){
-      var t=(b.textContent||'').trim().replace(/\s+/g,' ');
-      if(t==='Home') b.onclick=function(e){e.preventDefault();e.stopPropagation();openHome(b);};
-      else if(t==='Expense') b.onclick=function(e){e.preventDefault();e.stopPropagation();openPage('expense',b);};
-      else if(t==='Mansoor') b.onclick=function(e){e.preventDefault();e.stopPropagation();openPage('mansoor',b);};
-      else if(t==='Reports') b.onclick=function(e){e.preventDefault();e.stopPropagation();openPage('reports',b);};
-      else if(t==='Backup') b.onclick=function(e){e.preventDefault();e.stopPropagation();openPage('backup',b);};
-    });
-  }
-
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind);
-  else bind();
-})();
-</script>
 <div id="historyPage" class="page separate-history-page"></div>
 <script id="v555-history-tab-script">
 (function(){
@@ -3594,234 +3456,6 @@ function toggleHomeStock(){
   if(open && typeof renderStock==='function')renderStock();
 }
 </script>
-<script id="v559-nav-active-script">
-(function(){
-function markActive(btn){
- var nav=btn&&btn.closest(".nav-bar");if(!nav)return;
- nav.querySelectorAll("button").forEach(function(b){
-  b.classList.remove("nav-active","active");b.removeAttribute("aria-current");
- });
- btn.classList.add("nav-active","active");btn.setAttribute("aria-current","page");
-}
-window.addEventListener("DOMContentLoaded",function(){
- var nav=document.querySelector(".nav-bar");if(!nav)return;
- nav.querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){markActive(b)})});
- var home=nav.querySelector('button[onclick*="goHome"],button[onclick*="showPage"][onclick*="home"]');
- if(home)markActive(home);
-});
-})();
-</script>
-
-<script id="v574-final-navigation-fix">
-(function(){
-  function q(id){return document.getElementById(id);}
-  function each(sel,fn){document.querySelectorAll(sel).forEach(fn);}
-  function navActive(btn){
-    each('.nav-bar button',function(b){
-      b.classList.remove('nav-active','active');
-      b.removeAttribute('aria-current');
-    });
-    if(btn){
-      btn.classList.add('nav-active','active');
-      btn.setAttribute('aria-current','page');
-    }
-  }
-  function clearPageModes(){
-    document.body.classList.remove('party-open-mode','history-open-mode','page-open-mode');
-  }
-  function hideAllPages(){
-    each('.page',function(p){p.classList.remove('active');});
-  }
-  function hideHome(){
-    each('.state-date-row,.new-history-row,#entryCard,#homeStockDetails,#dashboardCard,.install-wrap',
-      function(el){el.classList.add('hidden');});
-    var hc=q('historyCard'); if(hc) hc.classList.add('hidden');
-  }
-  function showHome(){
-    each('.state-date-row,.new-history-row,#entryCard,#dashboardCard',
-      function(el){el.classList.remove('hidden');});
-    var hs=q('homeStockDetails'); if(hs) hs.classList.add('hidden');
-    var hc=q('historyCard'); if(hc) hc.classList.add('hidden');
-  }
-
-  window.goHome=function(btn){
-    clearPageModes();
-    document.body.classList.remove('v576-party');
-    hideAllPages();
-    showHome();
-    navActive(btn);
-    if(typeof refresh==='function')refresh();
-    if(typeof refreshDashboard==='function')refreshDashboard();
-    window.scrollTo(0,0);
-  };
-
-  window.goParty=function(btn){
-    clearPageModes();
-    document.body.classList.add('party-open-mode','v576-party');
-    hideHome();
-    hideAllPages();
-    var party=q('partyPage');
-    if(party){
-      party.classList.remove('hidden');
-      party.classList.add('active');
-    }
-    navActive(btn);
-    var area=q('partyLedgerArea');
-    if(area)area.innerHTML='';
-    window.scrollTo(0,0);
-  };
-
-  window.openHistoryTab=function(btn){
-    clearPageModes();
-    document.body.classList.remove('v576-party');
-    document.body.classList.add('history-open-mode','page-open-mode');
-    hideHome();
-    hideAllPages();
-    var card=q('historyCard'), page=q('historyPage');
-    if(card && page){
-      if(!window.__v574HistoryParent){
-        window.__v574HistoryParent=card.parentNode;
-        window.__v574HistoryNext=card.nextSibling;
-      }
-      page.innerHTML='';
-      card.classList.remove('hidden');
-      card.style.display='';
-      page.appendChild(card);
-    }
-    if(page)page.classList.add('active');
-    navActive(btn);
-    if(typeof renderHistory==='function')renderHistory();
-    window.scrollTo(0,0);
-  };
-
-  window.goExpense=function(btn){
-    clearPageModes();
-    document.body.classList.remove('v576-party');
-    document.body.classList.add('page-open-mode');
-    hideHome(); hideAllPages();
-    var p=q('expensePage'); if(p)p.classList.add('active');
-    navActive(btn);
-    if(typeof renderExpenses==='function')renderExpenses();
-    if(typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal();
-    window.scrollTo(0,0);
-  };
-
-  window.goReports=function(btn){
-    clearPageModes();
-    document.body.classList.remove('v576-party');
-    document.body.classList.add('page-open-mode');
-    hideHome(); hideAllPages();
-    var p=q('reportPage'); if(p)p.classList.add('active');
-    navActive(btn);
-    if(typeof showDateDefaults==='function')showDateDefaults();
-    window.scrollTo(0,0);
-  };
-
-  window.goBackup=function(btn){
-    clearPageModes();
-    document.body.classList.remove('v576-party');
-    document.body.classList.add('page-open-mode');
-    hideHome(); hideAllPages();
-    var p=q('backupPage'); if(p)p.classList.add('active');
-    navActive(btn);
-    window.scrollTo(0,0);
-  };
-
-  window.goMansoor=function(btn){
-    clearPageModes();
-    document.body.classList.remove('v576-party');
-    document.body.classList.add('page-open-mode');
-    hideHome(); hideAllPages();
-    var p=q('mansoorPage'); if(p)p.classList.add('active');
-    navActive(btn);
-    if(typeof showMansoor==='function')showMansoor();
-    window.scrollTo(0,0);
-  };
-
-  // Party button: keep Mydeen left / Mansoor right on one line.
-  window.openPartyLedger=function(value){
-    // V5.81: Party selection must immediately render the selected detail below the Party buttons.
-    document.body.classList.remove('v576-home','history-open-mode','page-open-mode');
-    document.body.classList.add('v576-party','party-open-mode');
-    document.querySelectorAll('.page').forEach(function(p){
-      if(p.id!=='partyPage') p.classList.remove('active');
-    });
-    var party=document.getElementById('partyPage');
-    if(party){party.classList.remove('hidden');party.classList.add('active');party.style.display='block';}
-
-    var area=document.getElementById('partyLedgerArea');
-    if(!area)return;
-    var myHost=document.getElementById('partyMydeenHost'), mansHost=document.getElementById('partyMansoorHost');
-    if(!myHost||!mansHost){
-      area.innerHTML='<div id="partyMydeenHost" class="party-detail-host"></div><div id="partyMansoorHost" class="party-detail-host"></div>';
-      myHost=document.getElementById('partyMydeenHost'); mansHost=document.getElementById('partyMansoorHost');
-      var mp=document.getElementById('mansoorPage');
-      if(mp&&mansHost){
-        mp.classList.remove('page','hidden','active');
-        mp.style.display='none';
-        mansHost.appendChild(mp);
-      }
-      myHost.innerHTML='<div class="card"><h2>🤝 Mydeen கொடுக்கல் – வாங்கல்</h2><div class="mansoor-balance"><div>தற்போது பெற வேண்டியது</div><strong id="partyMydeenBalance">₹0</strong></div><div class="form-grid"><div class="field"><label>வகை</label><select id="partyMydeenType"><option value="taken">பணம் வாங்கியது</option><option value="given">பணம் தந்தது</option></select></div><div class="field"><label>தேதி</label><input id="partyMydeenDate" type="date"></div><div class="field"><label>தொகை ₹</label><input id="partyMydeenAmount" type="number" min="0" step="1" placeholder="Amount"></div><div class="field"><label>குறிப்பு</label><input id="partyMydeenNote" type="text" placeholder="குறிப்பு (விருப்பம்)"></div></div><div class="expense-action-row"><button class="primary" type="button" onclick="savePartyMydeen()">Save</button><button class="secondary" type="button" onclick="clearPartyMydeen()">Clear</button></div></div><div class="card"><h3>📜 Previous History</h3><div id="partyMydeenHistory"></div></div><div class="card"><h3>📅 Monthly Report</h3><div class="mansoor-report-dates"><div class="field"><label>Date From</label><input type="date" id="mydeenReportFrom"></div><div class="field"><label>Date To</label><input type="date" id="mydeenReportTo"></div></div><div class="mansoor-report-actions"><button type="button" onclick="generateMydeenMonthlyReport()">📊 Generate Report</button><button type="button" onclick="shareMydeenMonthlyWhatsApp()">📲 WhatsApp</button></div><div id="mydeenMonthlySummary"></div></div>';
-      var md=document.getElementById('partyMydeenDate');if(md)md.value=typeof localToday==='function'?localToday():new Date().toISOString().slice(0,10);
-    }
-    myHost.style.display='none'; mansHost.style.display='none';
-    myHost.classList.remove('active'); mansHost.classList.remove('active');
-    document.querySelectorAll('#partyPage .party-choice').forEach(function(b){b.classList.remove('selected');});
-    var target=document.querySelector('#partyPage .party-choice[onclick*="'+value+'"]');if(target)target.classList.add('selected');
-
-    if(value==='mansoor'){
-      mansHost.classList.add('active'); mansHost.style.display='block';
-      var mp2=document.getElementById('mansoorPage');
-      if(mp2){mp2.style.display='block';mp2.classList.add('active');mp2.classList.remove('hidden');}
-      var d=document.getElementById('mansoorDate');if(d&&!window.mansoorEditId&&typeof localToday==='function')d.value=localToday();
-      if(typeof renderMansoor==='function')renderMansoor();
-      if(typeof generateMansoorWeeklyReport==='function')generateMansoorWeeklyReport();
-    }else if(value==='mydeen'){
-      myHost.classList.add('active'); myHost.style.display='block';
-      renderPartyMydeen();
-    }
-    window.scrollTo(0,0);
-  };
-  window.mydeenEditId=null;
-  window.savePartyMydeen=function(){var date=document.getElementById('partyMydeenDate')?.value||new Date().toISOString().slice(0,10),type=document.getElementById('partyMydeenType')?.value||'taken',amount=Number(document.getElementById('partyMydeenAmount')?.value||0),note=(document.getElementById('partyMydeenNote')?.value||'').trim();if(!amount||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return;}var a;try{a=JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){a=[]}if(window.mydeenEditId){var ix=a.findIndex(function(x){return x.id===window.mydeenEditId});if(ix>=0)a[ix]={id:window.mydeenEditId,type:type,date:date,amount:amount,note:note};window.mydeenEditId=null;}else a.push({id:Date.now(),type:type,date:date,amount:amount,note:note});localStorage.setItem('saleProfitBookMydeenV1',JSON.stringify(a));clearPartyMydeen();renderPartyMydeen();generateMydeenMonthlyReport();};
-  window.clearPartyMydeen=function(){window.mydeenEditId=null;var d=document.getElementById('partyMydeenDate');if(d)d.value=typeof localToday==='function'?localToday():new Date().toISOString().slice(0,10);var t=document.getElementById('partyMydeenType');if(t)t.value='taken';var a=document.getElementById('partyMydeenAmount');if(a)a.value='';var n=document.getElementById('partyMydeenNote');if(n)n.value='';var b=document.querySelector('#partyMydeenHost button[onclick="savePartyMydeen()"]');if(b)b.textContent='Save';};
-  window.editPartyMydeen=function(id){var a;try{a=JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){a=[]}var x=a.find(function(v){return v.id===id});if(!x)return;window.mydeenEditId=id;var t=document.getElementById('partyMydeenType'),d=document.getElementById('partyMydeenDate'),am=document.getElementById('partyMydeenAmount'),n=document.getElementById('partyMydeenNote');if(t)t.value=x.type||'taken';if(d)d.value=x.date||'';if(am)am.value=x.amount||'';if(n)n.value=x.note||'';var b=document.querySelector('#partyMydeenHost button[onclick="savePartyMydeen()"]');if(b)b.textContent='Update';window.scrollTo({top:0,behavior:'smooth'});};
-  window.deletePartyMydeen=function(id){if(!confirm('இந்த பதிவை நீக்க வேண்டுமா?'))return;var a;try{a=JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){a=[]}localStorage.setItem('saleProfitBookMydeenV1',JSON.stringify(a.filter(function(x){return x.id!==id})));renderPartyMydeen();generateMydeenMonthlyReport();};
-  window.renderPartyMydeen=function(){var h=document.getElementById('partyMydeenHistory'),b=document.getElementById('partyMydeenBalance');if(!h||!b)return;var a;try{a=JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){a=[]}var taken=a.filter(function(x){return x.type==='taken'||x.type==='received'}).reduce(function(s,x){return s+Number(x.amount||0)},0),given=a.filter(function(x){return x.type==='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0);b.textContent='₹'+(taken-given).toLocaleString('en-IN');if(!a.length){h.innerHTML='<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';return;}a=a.slice().sort(function(x,y){return String(y.date).localeCompare(String(x.date))||y.id-x.id});h.innerHTML=a.map(function(x){return '<div class="mansoor-row"><div><b>'+(x.type==='taken'||x.type==='received'?'பணம் வாங்கியது':'பணம் தந்தது')+'</b><div class="meta">'+x.date+(x.note?' • '+esc(x.note):' • குறிப்பு இல்லை')+'</div></div><strong class="'+(x.type==='taken'||x.type==='received'?'mansoor-received':'mansoor-given')+'">'+(x.type==='taken'||x.type==='received'?'+':'-')+'₹'+Number(x.amount||0).toLocaleString('en-IN')+'</strong><div class="mansoor-actions"><button class="mansoor-edit" onclick="event.stopPropagation();editPartyMydeen('+x.id+')">Edit</button><button class="danger mansoor-delete" onclick="event.stopPropagation();deletePartyMydeen('+x.id+')">Delete</button></div></div>';}).join('');};
-  function mydeenData(){try{return JSON.parse(localStorage.getItem('saleProfitBookMydeenV1')||'[]')}catch(e){return []}}
-  function mydeenMoney(n){return '₹'+Number(n||0).toLocaleString('en-IN')}
-  function mydeenFmt(k){var p=String(k).split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0].slice(2):k}
-  function mydeenDefaultDates(){var to=document.getElementById('mydeenReportTo'),from=document.getElementById('mydeenReportFrom');if(!to||!from)return;var end=new Date();end.setHours(0,0,0,0);var start=new Date(end.getFullYear(),end.getMonth(),1);if(!to.value)to.value=localKey(end);if(!from.value)from.value=localKey(start);}
-  window.generateMydeenMonthlyReport=function(){var from=document.getElementById('mydeenReportFrom')?.value,to=document.getElementById('mydeenReportTo')?.value;if(!from||!to){mydeenDefaultDates();from=document.getElementById('mydeenReportFrom')?.value;to=document.getElementById('mydeenReportTo')?.value}if(!from||!to)return;if(from>to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return}var r=mydeenData().filter(function(x){return String(x.date)>=from&&String(x.date)<=to}),taken=r.filter(function(x){return x.type==='taken'||x.type==='received'}).reduce(function(s,x){return s+Number(x.amount||0)},0),given=r.filter(function(x){return x.type==='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0),e=document.getElementById('mydeenMonthlySummary');if(e)e.innerHTML='<div class="mansoor-weekly-box"><div style="grid-column:1/-1"><b>📅 Date From: '+mydeenFmt(from)+' &nbsp; Date To: '+mydeenFmt(to)+'</b></div><div>பணம் வாங்கியது<br><b>'+mydeenMoney(taken)+'</b></div><div>பணம் தந்தது<br><b>'+mydeenMoney(given)+'</b></div><div>Balance<br><b>'+mydeenMoney(taken-given)+'</b></div></div>';};
-  window.shareMydeenMonthlyWhatsApp=function(){var from=document.getElementById('mydeenReportFrom')?.value,to=document.getElementById('mydeenReportTo')?.value;if(!from||!to){mydeenDefaultDates();from=document.getElementById('mydeenReportFrom').value;to=document.getElementById('mydeenReportTo').value}if(from>to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return}var r=mydeenData().filter(function(x){return String(x.date)>=from&&String(x.date)<=to}).sort(function(x,y){return String(x.date).localeCompare(String(y.date))}),taken=r.filter(function(x){return x.type==='taken'||x.type==='received'}).reduce(function(s,x){return s+Number(x.amount||0)},0),given=r.filter(function(x){return x.type==='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0),m=['🤝 Mydeen – Monthly Report','📅 Date From: '+mydeenFmt(from),'📅 Date To: '+mydeenFmt(to),'','பணம் வாங்கியது: '+mydeenMoney(taken),'பணம் தந்தது: '+mydeenMoney(given),'Balance: '+mydeenMoney(taken-given),'','Date-wise:'];r.forEach(function(x){m.push(x.date+' – '+(x.type==='given'?'பணம் தந்தது':'பணம் வாங்கியது')+': '+mydeenMoney(x.amount)+(x.note?' – '+x.note:''))});window.open('https://wa.me/?text='+encodeURIComponent(m.join('\n')),'_blank');};
-  document.addEventListener('DOMContentLoaded',function(){mydeenDefaultDates();generateMydeenMonthlyReport()});
-
-  // Bind after all earlier scripts have loaded so this controller wins.
-  function bind(){
-    var nav=q('partyPage')?.closest('main');
-    each('.nav-bar button',function(b){
-      var t=(b.textContent||'').trim().replace(/\s+/g,' ');
-      b.onclick=function(e){
-        e.preventDefault(); e.stopPropagation();
-        if(t==='Home')goHome(b);
-        else if(t==='History')openHistoryTab(b);
-        else if(t==='Expense')goExpense(b);
-        else if(t==='Party')goParty(b);
-        else if(t==='Reports')goReports(b);
-        else if(t==='Backup')goBackup(b);
-      };
-    });
-    // Never leave Party visible while Home is selected.
-    var home=document.querySelector('.nav-bar button');
-    if(home && (home.textContent||'').trim()==='Home') goHome(home);
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);
-  else bind();
-})();
-</script>
-
-
-
 <style id="v585-history-month-group">
 .history-today-section{margin-bottom:14px}
 .history-section-label{font-size:15px;font-weight:800;color:#17675e;margin:6px 4px 8px}
@@ -3834,28 +3468,6 @@ window.addEventListener("DOMContentLoaded",function(){
 .history-month-body.open{display:block}
 .history-month-body .report-date-card{margin:10px 0}
 </style>
-<style id="v576-standalone-navigation-fix">
-body.v576-home #partyPage,body.v576-home #historyPage,body.v576-home #expensePage,body.v576-home #mansoorPage,body.v576-home #supplierPage,body.v576-home #reportPage,body.v576-home #backupPage{display:none!important}
-body.v576-party #partyPage{display:block!important}
-body.v576-party #entryCard,body.v576-party #dashboardCard,body.v576-party #stockCard,body.v576-party #homeStockDetails,body.v576-party .state-date-row,body.v576-party .new-history-row,body.v576-party #historyCard,body.v576-party #homePage,body.v576-party #historyPage,body.v576-party #expensePage,body.v576-party #supplierPage,body.v576-party #reportPage,body.v576-party #backupPage{display:none!important}
-/* V5.78: Mansoor detail is shown inside Party without leaving/hiding Party. */
-body.v576-party #partyMansoorHost #mansoorPage{display:block!important;visibility:visible!important;}
-body.v576-party #partyMansoorHost #mansoorPage.hidden{display:block!important;}
-body.v576-party #partyMansoorHost #mansoorPage.active{display:block!important;}
-</style>
-<script id="v576-final-controller">
-(function(){
- function all(s){return Array.prototype.slice.call(document.querySelectorAll(s));}
- function hidePages(){all('.page').forEach(function(p){p.classList.remove('active');p.style.display='none';});}
- function active(b){all('.nav-bar button').forEach(function(x){x.classList.remove('nav-active','active');x.removeAttribute('aria-current');});if(b){b.classList.add('nav-active','active');b.setAttribute('aria-current','page');}}
- function home(b){document.body.classList.remove('v576-party','party-open-mode','history-open-mode','page-open-mode');document.body.classList.add('v576-home');resetPartyDetail();hidePages();['.state-date-row','.new-history-row','#entryCard','#dashboardCard'].forEach(function(q){all(q).forEach(function(e){e.style.display='';e.classList.remove('hidden');});});['#homeStockDetails','#historyCard','#partyPage'].forEach(function(q){all(q).forEach(function(e){e.style.display='none';e.classList.add('hidden');});});active(b);if(typeof refresh==='function')refresh();if(typeof refreshDashboard==='function')refreshDashboard();window.scrollTo(0,0);}
- function resetPartyDetail(){var my=document.getElementById('partyMydeenHost'),mans=document.getElementById('partyMansoorHost');if(my){my.classList.remove('active');my.style.display='none';}if(mans){mans.classList.remove('active');mans.style.display='none';}document.querySelectorAll('#partyPage .party-choice').forEach(function(x){x.classList.remove('selected');});var mp=document.getElementById('mansoorPage');if(mp){mp.style.display='none';mp.classList.remove('active');}}
-function party(b){document.body.classList.remove('v576-home','party-open-mode','history-open-mode','page-open-mode');document.body.classList.add('v576-party');hidePages();resetPartyDetail();var p=document.getElementById('partyPage');if(p){p.classList.add('active');p.style.display='block';p.classList.remove('hidden');}active(b);window.scrollTo(0,0);}
- function bind(){all('.nav-bar button').forEach(function(b){b.addEventListener('click',function(e){var t=(b.textContent||'').trim().replace(/\s+/g,' ');if(t==='Home'||t==='Party'){e.preventDefault();e.stopImmediatePropagation();if(t==='Home')home(b);else party(b);}},true);});var h=all('.nav-bar button').find(function(b){return (b.textContent||'').trim()==='Home';});if(h)home(h);}
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
-})();
-</script>
-
 <style id="v580-party-only-visibility">
 /* V5.80 — Party page and its details must appear ONLY when Party is selected. */
 body.v576-party.page-open-mode #partyPage,
@@ -3868,7 +3480,6 @@ body.party-open-mode #partyPage {
   display:block !important;
 }
 </style>
-<script id="v582-party-reset-guard">(function(){function reset(){var my=document.getElementById('partyMydeenHost'),mans=document.getElementById('partyMansoorHost');if(my){my.classList.remove('active');my.style.display='none';}if(mans){mans.classList.remove('active');mans.style.display='none';}document.querySelectorAll('#partyPage .party-choice').forEach(function(x){x.classList.remove('selected');});var mp=document.getElementById('mansoorPage');if(mp){mp.style.display='none';mp.classList.remove('active');}}document.querySelectorAll('.nav-bar button').forEach(function(b){var t=(b.textContent||'').trim();if(t==='Home'||t==='Party')b.addEventListener('click',reset,true);});})();</script>
 <style id="v588-separate-reports">
 .report-section-grid{display:grid;gap:14px}.report-type-card{margin:0}.report-type-card h3{margin-top:0}.report-type-card .primary{width:100%;margin-top:8px}.report-result-mini{margin-top:12px;padding:12px;border-radius:12px;background:rgba(0,0,0,.06)}.report-result-mini b{font-size:18px}.report-mini-row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid rgba(128,128,128,.18)}.report-mini-row:last-child{border-bottom:0}
 </style>
@@ -5071,65 +4682,6 @@ body.v702-party-open #partyPage .party-detail-host.active{display:block!importan
 body.v702-party-open #partyPage #mansoorPage{display:block!important;visibility:visible!important;}
 body:not(.v702-party-open) #partyPage{display:none!important;}
 </style>
-<script id="v702-party-final-controller">
-(function(){
-  var originalParent=null, originalNext=null;
-  function qs(s){return document.querySelector(s)}
-  function all(s){return Array.prototype.slice.call(document.querySelectorAll(s))}
-  function navActive(btn){all('.nav-bar button').forEach(function(b){b.classList.remove('nav-active','active');});if(btn)btn.classList.add('nav-active','active');}
-  function hideAll(){all('.page').forEach(function(p){p.classList.remove('active');p.style.display='none';});}
-  function restoreMansoor(){
-    var mp=qs('#mansoorPage');
-    if(mp && originalParent && mp.parentNode!==originalParent){
-      mp.classList.add('page','hidden');mp.classList.remove('active');mp.style.display='none';
-      if(originalNext && originalNext.parentNode===originalParent) originalParent.insertBefore(mp,originalNext); else originalParent.appendChild(mp);
-    }
-  }
-  function party(btn){
-    document.body.classList.remove('v702-home');
-    document.body.classList.add('v702-party-open');
-    restoreMansoor();
-    hideAll();
-    all('#entryCard,#dashboardCard,#historyCard,#expensePage,#reportPage,#backupPage,#supplierPage').forEach(function(e){e.style.display='none';});
-    var p=qs('#partyPage');
-    if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
-    var area=qs('#partyLedgerArea');if(area)area.innerHTML='';
-    navActive(btn);window.scrollTo(0,0);
-  }
-  function leave(){document.body.classList.remove('v702-party-open');restoreMansoor();}
-  window.v702Party=party;
-  window.v702LeaveParty=leave;
-  // Replace Party navigation with one final handler; other navigation remains app-controlled.
-  all('.nav-bar button').forEach(function(b){
-    var t=(b.textContent||'').trim().replace(/\s+/g,' ');
-    if(t==='Party'){
-      b.addEventListener('click',function(e){e.preventDefault();e.stopImmediatePropagation();party(b);},true);
-    }else if(t==='Home'||t==='History'||t==='Expense'||t==='Reports'||t==='Backup'){
-      b.addEventListener('click',function(){leave();},true);
-    }
-  });
-  // Final Party selector: Mydeen left, Mansoor right, details stay inside Party.
-  document.addEventListener('click',function(e){
-    var b=e.target.closest && e.target.closest('#partyPage .party-choice');
-    if(!b)return;
-    var txt=(b.textContent||'').toLowerCase();
-    var value=txt.indexOf('mansoor')>=0?'mansoor':'mydeen';
-    e.preventDefault();e.stopImmediatePropagation();
-    if(typeof window.openPartyLedger==='function') window.openPartyLedger(value);
-    var p=qs('#partyPage'); if(p){p.style.display='block';p.classList.add('active');}
-    document.body.classList.add('v702-party-open');
-    all('.page').forEach(function(x){if(x.id!=='partyPage')x.style.display='none';});
-  },true);
-  // Capture the original Mansoor location once, then force it into Party when selected.
-  function capture(){
-    var mp=qs('#mansoorPage');
-    if(mp && !originalParent){originalParent=mp.parentNode;originalNext=mp.nextSibling;}
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',capture);else capture();
-})();
-</script>
-
-
 <!-- V7.05 FINAL PARTY PAGE ISOLATION -->
 <style id="v705-party-isolation">
 body.v705-party-open .page:not(#partyPage){display:none!important;}
@@ -5138,62 +4690,6 @@ body.v705-party-open #partyPage .party-detail-host{display:none!important;}
 body.v705-party-open #partyPage .party-detail-host.active{display:block!important;visibility:visible!important;}
 body:not(.v705-party-open):not(.v703-party-open):not(.v702-party-open) #partyPage{display:none!important;}
 </style>
-<script id="v705-party-isolation-controller">
-(function(){
-  function all(s){return Array.prototype.slice.call(document.querySelectorAll(s));}
-  function clearPartyMode(){
-    document.body.classList.remove('v705-party-open','v703-party-open','v702-party-open');
-  }
-  function hideOtherPages(){
-    all('.page').forEach(function(p){
-      if(p.id!=='partyPage'){p.classList.remove('active');p.style.display='none';}
-    });
-    all('#entryCard,#dashboardCard,#historyCard,#expensePage,#reportPage,#backupPage,#supplierPage,#homePage,#historyPage').forEach(function(e){
-      if(e && e.id!=='partyPage')e.style.display='none';
-    });
-  }
-  function openParty(btn){
-    document.body.classList.add('v705-party-open','v703-party-open','v702-party-open','party-open-mode','v576-party');
-    var p=document.getElementById('partyPage');
-    if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
-    hideOtherPages();
-    all('.nav-bar button').forEach(function(b){b.classList.remove('nav-active','active');});
-    if(btn)btn.classList.add('nav-active','active');
-    var area=document.getElementById('partyLedgerArea');
-    if(area)area.innerHTML='';
-    all('#partyPage .party-detail-host').forEach(function(h){h.classList.remove('active');h.style.display='none';});
-    window.scrollTo(0,0);
-  }
-  function bind(){
-    all('.nav-bar button').forEach(function(b){
-      var t=(b.textContent||'').trim().replace(/\s+/g,' ');
-      if(t==='Party'){
-        b.addEventListener('click',function(e){
-          e.preventDefault();e.stopImmediatePropagation();openParty(b);
-        },true);
-      }else{
-        b.addEventListener('click',function(){clearPartyMode();},true);
-      }
-    });
-    document.addEventListener('click',function(e){
-      var b=e.target.closest && e.target.closest('#partyPage .party-choice');
-      if(!b)return;
-      e.preventDefault();e.stopImmediatePropagation();
-      var txt=(b.textContent||'').toLowerCase();
-      var value=txt.indexOf('mansoor')>=0?'mansoor':'mydeen';
-      document.body.classList.add('v705-party-open','v703-party-open','v702-party-open','party-open-mode','v576-party');
-      if(typeof window.openPartyLedger==='function')window.openPartyLedger(value);
-      var p=document.getElementById('partyPage');
-      if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
-      hideOtherPages();
-      window.scrollTo(0,0);
-    },true);
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
-  window.v704PartyOpen=openParty;
-})();
-</script>
-
 <!-- V7.05 SAFETY PATCH: Party page must remain visible when any legacy Party-open controller fires first. -->
 <style id="v705-party-safety">
 body.v705-party-open .page:not(#partyPage),
@@ -5208,336 +4704,118 @@ body.v705-party-open .nav-bar button.active:not(:has(+ *)),
 body.v703-party-open .nav-bar button.active:not(:has(+ *)),
 body.v702-party-open .nav-bar button.active:not(:has(+ *)){ }
 </style>
-<script id="v705-party-safety-controller">
-(function(){
-  function partyActive(){
-    return document.body.classList.contains('v705-party-open') || document.body.classList.contains('v703-party-open') || document.body.classList.contains('v702-party-open') || document.body.classList.contains('party-open-mode');
-  }
-  function enforce(){
-    if(!partyActive()) return;
-    document.querySelectorAll('.nav-bar button').forEach(function(b){
-      var t=(b.textContent||'').trim().replace(/\s+/g,' ');
-      if(t==='Party') b.classList.add('nav-active','active');
-      else if(['Home','History','Expense','Reports','Backup'].indexOf(t)>=0) b.classList.remove('nav-active','active');
-    });
-    document.querySelectorAll('.page').forEach(function(p){
-      if(p.id!=='partyPage'){p.classList.remove('active');p.style.display='none';}
-    });
-    var p=document.getElementById('partyPage');
-    if(p){p.classList.remove('hidden');p.classList.add('active');p.style.display='block';}
-  }
-  document.addEventListener('DOMContentLoaded',function(){setTimeout(enforce,50);});
-  document.addEventListener('click',function(e){
-    var n=e.target.closest && e.target.closest('.nav-bar button');
-    if(n && (n.textContent||'').trim().replace(/\s+/g,' ')==='Party') setTimeout(enforce,0);
-  },true);
-})();
-</script>
-
 <!-- V7.06 FINAL NAVIGATION ACTIVE-STATE FIX -->
-<style id="v706-nav-fix">
-body.v705-party-open .nav-bar button.nav-active,
-body.v705-party-open .nav-bar button.active,
-body.v703-party-open .nav-bar button.nav-active,
-body.v703-party-open .nav-bar button.active,
-body.v702-party-open .nav-bar button.nav-active,
-body.v702-party-open .nav-bar button.active,
-body.party-open-mode .nav-bar button.nav-active,
-body.party-open-mode .nav-bar button.active{background:#e9f3f2!important;color:#08665e!important;}
-body.v705-party-open .nav-bar button.party-nav-active,
-body.v703-party-open .nav-bar button.party-nav-active,
-body.v702-party-open .nav-bar button.party-nav-active,
-body.party-open-mode .nav-bar button.party-nav-active{background:#117d73!important;color:#fff!important;}
-</style>
 <!-- V7.07 FINAL NAVIGATION RECOVERY -->
-<style id="v707-nav-recovery">.nav-bar button.nav-active{background:#117d73!important;color:#fff!important;}</style>
 <!-- V7.08 FINAL NAVIGATION OVERRIDE: one reliable handler for every top navigation button -->
-<style id="v708-final-nav-style">
-  .nav-bar button.nav-active{background:#117d73!important;color:#fff!important;}
-</style>
+<!-- PARTY NAVIGATION ACTIVE — FINAL OVERRIDE -->
+<style id="v712-navigation-state-final">\n/* Final page-state authority */\nbody:not(.party-open-mode) #partyPage{display:none!important;}\nbody.party-open-mode #partyPage{display:block!important;visibility:visible!important;}\n</style>
+\n
 
-<script id="v711-navigation-final-clean">
+<!-- CLEAN NAVIGATION — SINGLE AUTHORITY -->
+<style id="clean-navigation-final-style">
+.nav-bar button.nav-active,
+.nav-bar button.active,
+.nav-bar button.party-nav-active{
+  background:#174f3d!important;
+  color:#fff!important;
+  border-color:#174f3d!important;
+}
+body:not(.party-open-mode) #partyPage{display:none!important;visibility:hidden!important;}
+body.party-open-mode #partyPage{display:block!important;visibility:visible!important;}
+</style>
+<script id="clean-navigation-final">
 (function(){
-  function A(sel){return Array.prototype.slice.call(document.querySelectorAll(sel));}
+  function all(sel){return Array.prototype.slice.call(document.querySelectorAll(sel));}
   function q(id){return document.getElementById(id);}
+  function text(b){return (b.textContent||'').trim().replace(/\s+/g,' ').toLowerCase();}
+  function clearModes(){
+    document.body.classList.remove('v576-home','v576-party','party-open-mode','history-open-mode','page-open-mode',
+      'spb-home-mode','spb-history-mode','spb-expense-mode','spb-party-mode','spb-report-mode','spb-backup-mode',
+      'v702-party-open','v703-party-open','v705-party-open');
+  }
   function active(btn){
-    A('.nav-bar button').forEach(function(b){b.classList.remove('nav-active','active');b.removeAttribute('aria-current');});
+    all('.nav-bar button').forEach(function(b){b.classList.remove('nav-active','active','party-nav-active');b.removeAttribute('aria-current');});
     if(btn){btn.classList.add('nav-active','active');btn.setAttribute('aria-current','page');}
   }
-  function modes(){
-    document.body.classList.remove('v576-home','v576-party','party-open-mode','history-open-mode','page-open-mode','spb-home-mode','spb-history-mode','spb-expense-mode','spb-party-mode','spb-report-mode','spb-backup-mode');
+  function hideAllPages(){
+    all('.page').forEach(function(p){
+      p.classList.remove('active');
+      p.style.setProperty('display','none','important');
+    });
   }
-  function hidePages(){
-    A('.page').forEach(function(p){p.classList.remove('active','hidden');p.style.setProperty('display','none','important');});
+  function hideParty(){
+    var p=q('partyPage');
+    if(p){p.classList.remove('active');p.classList.add('hidden');p.style.setProperty('display','none','important');p.setAttribute('aria-hidden','true');}
+    ['partyMydeenHost','partyMansoorHost'].forEach(function(id){var x=q(id);if(x){x.classList.remove('active');x.style.setProperty('display','none','important');}});
+    var mp=q('mansoorPage');
+    if(mp){mp.classList.remove('active');if(mp.parentElement && mp.parentElement.id==='partyMansoorHost')mp.style.setProperty('display','none','important');}
   }
   function hideHomeParts(){
-    A('.state-date-row,.new-history-row,#entryCard,#dashboardCard,#homeStockDetails,#historyCard,.install-wrap').forEach(function(e){e.classList.add('hidden');e.style.setProperty('display','none','important');});
+    all('.state-date-row,.new-history-row,#entryCard,#dashboardCard,#homeStockDetails,#historyCard,.install-wrap').forEach(function(e){
+      e.classList.add('hidden');e.style.setProperty('display','none','important');
+    });
   }
   function showHomeParts(){
-    A('.state-date-row,.new-history-row,#entryCard,#dashboardCard').forEach(function(e){e.classList.remove('hidden');e.style.removeProperty('display');});
-    var hs=q('homeStockDetails'); if(hs){hs.classList.add('hidden');hs.style.setProperty('display','none','important');}
-    var hc=q('historyCard'); if(hc){hc.classList.add('hidden');hc.style.setProperty('display','none','important');}
+    all('.state-date-row,.new-history-row,#entryCard,#dashboardCard').forEach(function(e){e.classList.remove('hidden');e.style.removeProperty('display');});
+    var hs=q('homeStockDetails');if(hs){hs.classList.add('hidden');hs.style.setProperty('display','none','important');}
+    var hc=q('historyCard');if(hc){hc.classList.add('hidden');hc.style.setProperty('display','none','important');}
   }
   function home(btn){
-    modes();
-    hidePages();
-    showHomeParts();
-    active(btn);
-    if(typeof refresh==='function')refresh();
-    if(typeof refreshDashboard==='function')refreshDashboard();
+    clearModes();hideAllPages();hideParty();showHomeParts();
+    document.body.classList.add('v576-home','spb-home-mode');active(btn);
+    if(typeof refresh==='function')refresh();if(typeof refreshDashboard==='function')refreshDashboard();
     window.scrollTo(0,0);
   }
   function history(btn){
-    modes();
-    document.body.classList.add('history-open-mode','page-open-mode');
-    hideHomeParts(); hidePages();
-    var page=q('historyPage'), card=q('historyCard');
+    clearModes();hideHomeParts();hideAllPages();hideParty();
+    document.body.classList.add('history-open-mode','page-open-mode','spb-history-mode');
+    var page=q('historyPage'),card=q('historyCard');
     if(page && card){
-      if(!window.__v711HistoryParent){window.__v711HistoryParent=card.parentNode;window.__v711HistoryNext=card.nextSibling;}
-      page.innerHTML='';
-      card.classList.remove('hidden');card.style.removeProperty('display');
-      page.appendChild(card);
-      page.classList.add('active');page.classList.remove('hidden');page.style.setProperty('display','block','important');
+      if(!window.__cleanNavHistoryParent){window.__cleanNavHistoryParent=card.parentNode;window.__cleanNavHistoryNext=card.nextSibling;}
+      page.innerHTML='';card.classList.remove('hidden');card.style.removeProperty('display');
+      page.appendChild(card);page.classList.remove('hidden');page.classList.add('active');page.style.setProperty('display','block','important');
     }
-    active(btn);
-    if(typeof renderHistory==='function')renderHistory();
-    window.scrollTo(0,0);
+    active(btn);if(typeof renderHistory==='function')renderHistory();window.scrollTo(0,0);
   }
   function simple(id,btn,mode){
-    modes();
-    document.body.classList.add('page-open-mode'); if(mode)document.body.classList.add(mode);
-    hideHomeParts(); hidePages();
-    var p=q(id); if(p){p.classList.remove('hidden');p.classList.add('active');p.style.setProperty('display','block','important');}
+    clearModes();hideHomeParts();hideAllPages();hideParty();
+    document.body.classList.add('page-open-mode');if(mode)document.body.classList.add(mode);
+    var p=q(id);if(p){p.classList.remove('hidden');p.classList.add('active');p.style.setProperty('display','block','important');}
     active(btn);
-    if(id==='expensePage'){
-      if(typeof renderExpenses==='function')renderExpenses();
-      if(typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal();
-    }
+    if(id==='expensePage'){if(typeof renderExpenses==='function')renderExpenses();if(typeof updateTodayExpenseTotal==='function')updateTodayExpenseTotal();}
     if(id==='reportPage' && typeof showDateDefaults==='function')showDateDefaults();
     if(id==='backupPage' && typeof renderBackup==='function')renderBackup();
     window.scrollTo(0,0);
   }
   function party(btn){
-    modes();
+    clearModes();hideHomeParts();hideAllPages();hideParty();
     document.body.classList.add('party-open-mode','v576-party','spb-party-mode');
-    hideHomeParts(); hidePages();
-    var p=q('partyPage'); if(p){p.classList.remove('hidden');p.classList.add('active');p.style.setProperty('display','block','important');}
-    var area=q('partyLedgerArea'); if(area)area.style.display='block';
-    active(btn); window.scrollTo(0,0);
+    var p=q('partyPage');if(p){p.classList.remove('hidden');p.classList.add('active');p.style.setProperty('display','block','important');p.setAttribute('aria-hidden','false');}
+    var area=q('partyLedgerArea');if(area)area.innerHTML='';
+    active(btn);window.scrollTo(0,0);
   }
-  function install(){
-    var buttons=A('.nav-bar button');
+  function bind(){
+    var buttons=all('.nav-bar button');
     buttons.forEach(function(btn){
-      var t=(btn.textContent||'').trim().replace(/\s+/g,' ').toLowerCase();
-      var fn=function(e){
-        if(e){e.preventDefault();e.stopPropagation();}
+      btn.onclick=null;
+      btn.addEventListener('click',function(e){
+        e.preventDefault();e.stopImmediatePropagation();
+        var t=text(btn);
         if(t==='home')home(btn);
         else if(t==='history')history(btn);
         else if(t==='expense')simple('expensePage',btn,'spb-expense-mode');
         else if(t==='party')party(btn);
         else if(t==='reports')simple('reportPage',btn,'spb-report-mode');
         else if(t==='backup')simple('backupPage',btn,'spb-backup-mode');
-        return false;
-      };
-      btn.onclick=fn;
-      btn.addEventListener('click',function(e){
-        e.preventDefault();e.stopImmediatePropagation();fn(e);
       },true);
     });
-    var homeBtn=buttons.find(function(b){return (b.textContent||'').trim().toLowerCase()==='home';});
+    var homeBtn=buttons.find(function(b){return text(b)==='home';});
     if(homeBtn)home(homeBtn);
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(install,150);});
-  else setTimeout(install,150);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(bind,100);});
+  else setTimeout(bind,100);
 })();
 </script>
 
-
-<script id="navigation-state-lock-final">
-(function(){
-  function txt(b){return (b.textContent||'').trim().replace(/\s+/g,' ').toLowerCase();}
-  function nav(){
-    return Array.prototype.slice.call(document.querySelectorAll('.nav-bar button'));
-  }
-  function activeName(){
-    var b=nav().find(function(x){return x.classList.contains('nav-active') || x.classList.contains('active');});
-    return b ? txt(b) : '';
-  }
-  function lock(){
-    var name=activeName();
-    if(!name)return;
-    var party=document.getElementById('partyPage');
-    if(name!=='party'){
-      document.body.classList.remove('v576-party','party-open-mode','v702-party-open','v703-party-open','v705-party-open','v576-party','spb-party-mode');
-      if(party){party.classList.remove('active');party.classList.add('hidden');party.style.setProperty('display','none','important');}
-      document.querySelectorAll('#partyPage .party-detail-host').forEach(function(h){h.classList.remove('active');h.style.setProperty('display','none','important');});
-      var mp=document.getElementById('mansoorPage');
-      if(mp && mp.parentElement && mp.parentElement.id==='partyMansoorHost'){
-        mp.style.setProperty('display','none','important');
-      }
-    }else{
-      document.body.classList.add('party-open-mode','v576-party','spb-party-mode');
-      if(party){party.classList.remove('hidden');party.classList.add('active');party.style.setProperty('display','block','important');}
-      document.querySelectorAll('.page').forEach(function(p){if(p.id!=='partyPage')p.style.setProperty('display','none','important');});
-    }
-  }
-  function schedule(){setTimeout(lock,0);setTimeout(lock,50);setTimeout(lock,200);}
-  document.addEventListener('click',function(e){
-    var b=e.target.closest && e.target.closest('.nav-bar button');
-    if(b)schedule();
-  },false);
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(lock,250);});
-  else setTimeout(lock,250);
-  if(window.MutationObserver){
-    var mo=new MutationObserver(function(){
-      if(activeName()!=='party'){
-        var p=document.getElementById('partyPage');
-        if(p && (p.style.display==='block' || p.classList.contains('active'))) lock();
-      }
-    });
-    mo.observe(document.body,{attributes:true,attributeFilter:['class'],subtree:true});
-    var pp=document.getElementById('partyPage');
-    if(pp)mo.observe(pp,{attributes:true,attributeFilter:['class','style']});
-  }
-})();
-</script>
-
-
-<!-- PARTY NAVIGATION ACTIVE — FINAL OVERRIDE -->
-<style id="party-navigation-active-final">
-.nav-bar button.party-force-active{
-  background:#174f3d!important;
-  color:#fff!important;
-  border-color:#174f3d!important;
-  box-shadow:0 3px 10px rgba(23,79,61,.22)!important;
-}
-</style>
-<script id="party-navigation-active-final-script">
-(function(){
-  function buttons(){return Array.prototype.slice.call(document.querySelectorAll('.nav-bar button'));}
-  function text(b){return (b.textContent||'').trim().replace(/\s+/g,' ').toLowerCase();}
-  function setActive(btn){
-    buttons().forEach(function(b){
-      b.classList.remove('nav-active','active','party-force-active');
-      b.removeAttribute('aria-current');
-    });
-    if(btn){
-      btn.classList.add('nav-active','active','party-force-active');
-      btn.setAttribute('aria-current','page');
-    }
-  }
-  function party(btn){
-    setActive(btn);
-    document.body.classList.add('party-open-mode','v576-party','spb-party-mode');
-    document.body.classList.remove('page-open-mode','spb-home-mode','spb-history-mode','spb-expense-mode','spb-report-mode','spb-backup-mode');
-    var p=document.getElementById('partyPage');
-    if(p){
-      p.classList.remove('hidden');
-      p.classList.add('active');
-      p.style.setProperty('display','block','important');
-    }
-    document.querySelectorAll('.page').forEach(function(p2){
-      if(p2.id!=='partyPage') p2.style.setProperty('display','none','important');
-    });
-    window.scrollTo(0,0);
-  }
-  function bind(){
-    buttons().forEach(function(b){
-      b.addEventListener('click',function(e){
-        var t=text(b);
-        if(t==='party'){
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          party(b);
-          setTimeout(function(){setActive(b);},0);
-          setTimeout(function(){setActive(b);},50);
-          setTimeout(function(){setActive(b);},200);
-        }else{
-          b.classList.remove('party-force-active');
-        }
-      },true);
-    });
-  }
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',function(){setTimeout(bind,300);});
-  }else{
-    setTimeout(bind,300);
-  }
-})();
-</script>
-
-
-<style id="v712-navigation-state-final">\n/* Final page-state authority */\nbody:not(.party-open-mode) #partyPage{display:none!important;}\nbody.party-open-mode #partyPage{display:block!important;visibility:visible!important;}\n</style>
-<script id="v712-navigation-state-final-script">
-(function(){
-  function qs(s){return Array.prototype.slice.call(document.querySelectorAll(s));}
-  function txt(b){return (b.textContent||'').trim().replace(/\\s+/g,' ').toLowerCase();}
-  function navButtons(){return qs('.nav-bar button');}
-  function hideParty(){
-    var p=document.getElementById('partyPage');
-    if(p){p.classList.remove('active');p.classList.add('hidden');p.style.setProperty('display','none','important');p.setAttribute('aria-hidden','true');}
-    ['partyMydeenHost','partyMansoorHost'].forEach(function(id){var x=document.getElementById(id);if(x){x.classList.remove('active');x.style.setProperty('display','none','important');}});
-    var mp=document.getElementById('mansoorPage');
-    if(mp){mp.classList.remove('active');mp.style.setProperty('display','none','important');}
-  }
-  function showParty(){
-    var p=document.getElementById('partyPage');
-    if(p){p.classList.remove('hidden');p.classList.add('active');p.style.setProperty('display','block','important');p.setAttribute('aria-hidden','false');}
-    qs('.page').forEach(function(x){if(x.id!=='partyPage')x.style.setProperty('display','none','important');});
-  }
-  function clearBodyModes(){
-    document.body.classList.remove('party-open-mode','v576-party','spb-party-mode','page-open-mode','spb-home-mode','spb-history-mode','spb-expense-mode','spb-report-mode','spb-backup-mode','history-open-mode');
-  }
-  function activate(btn){
-    navButtons().forEach(function(b){b.classList.remove('nav-active','active','party-force-active');b.removeAttribute('aria-current');});
-    if(btn){btn.classList.add('nav-active','active');btn.setAttribute('aria-current','page');}
-  }
-  function route(btn){
-    var t=txt(btn);
-    clearBodyModes();
-    if(t==='party'){
-      document.body.classList.add('party-open-mode','v576-party','spb-party-mode');
-      showParty();
-      activate(btn);
-    }else{
-      hideParty();
-      if(t==='home'){
-        activate(btn);
-      }else if(t==='history'){
-        document.body.classList.add('page-open-mode','history-open-mode','spb-history-mode');
-        activate(btn);
-      }else if(t==='expense'){
-        document.body.classList.add('page-open-mode','spb-expense-mode');
-        activate(btn);
-      }else if(t==='reports'){
-        document.body.classList.add('page-open-mode','spb-report-mode');
-        activate(btn);
-      }else if(t==='backup'){
-        document.body.classList.add('page-open-mode','spb-backup-mode');
-        activate(btn);
-      }
-    }
-  }
-  function bind(){
-    navButtons().forEach(function(b){
-      b.addEventListener('click',function(e){
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        route(b);
-        setTimeout(function(){
-          var party=txt(b)==='party';
-          if(party)showParty();else hideParty();
-          activate(b);
-        },0);
-      },true);
-    });
-    // Initial state: Home only.
-    var home=navButtons().find(function(b){return txt(b)==='home';});
-    if(home)route(home);
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(bind,400);});
-  else setTimeout(bind,400);
-})();
-</script>\n
 </body>
 </html>
