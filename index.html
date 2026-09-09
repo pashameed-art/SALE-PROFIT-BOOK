@@ -5589,5 +5589,70 @@ else setTimeout(wait,100);
 })();
 </script>
 
+
+<!-- EXPENSE DATA PROTECTION + LIVE SYNC -->
+<style id="expense-data-protection-final-css">
+#expensePage #expenseList{display:block!important;visibility:visible!important}
+</style>
+<script id="expense-data-protection-final">
+(function(){
+'use strict';
+var KEY='spb_v4_expenses', VAULT='spb_expense_protected_backup_v1';
+
+function readStore(){
+  try{
+    var a=JSON.parse(localStorage.getItem(KEY)||'[]');
+    return Array.isArray(a)?a:[];
+  }catch(e){return [];}
+}
+function protect(){
+  try{
+    var raw=localStorage.getItem(KEY);
+    if(raw!==null){
+      var a=JSON.parse(raw);
+      if(Array.isArray(a) && a.length)
+        localStorage.setItem(VAULT,JSON.stringify({expenses:a,savedAt:new Date().toISOString()}));
+    }
+  }catch(e){}
+}
+function sync(){
+  try{
+    if(typeof expenses!=='undefined'){
+      var fresh=readStore();
+      if(JSON.stringify(expenses)!==JSON.stringify(fresh)){
+        expenses=fresh;
+      }
+    }
+  }catch(e){}
+}
+function refresh(){
+  sync();
+  if(typeof renderExpenses==='function')try{renderExpenses();}catch(e){}
+  if(typeof updateTodayExpenseTotal==='function')try{updateTodayExpenseTotal();}catch(e){}
+  protect();
+}
+window.syncExpenseDataFinal=refresh;
+
+/* Do not let a stale in-memory array overwrite newer localStorage data. */
+var originalSet=Storage.prototype.setItem;
+Storage.prototype.setItem=function(key,value){
+  originalSet.call(this,key,value);
+  if(key===KEY){
+    try{
+      var a=JSON.parse(value);
+      if(Array.isArray(a) && a.length)
+        originalSet.call(this,VAULT,JSON.stringify({expenses:a,savedAt:new Date().toISOString()}));
+    }catch(e){}
+  }
+};
+
+document.addEventListener('DOMContentLoaded',function(){
+  setTimeout(refresh,100);
+  setTimeout(refresh,500);
+});
+window.addEventListener('pageshow',function(){setTimeout(refresh,100);});
+})();
+</script>
+
 </body>
 </html>
