@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V6.24</title>
+<title>Sale Profit Book • V7.11</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -3699,7 +3699,7 @@ window.updateSmartBackupInfo=function(){
 window.addEventListener('DOMContentLoaded',function(){
  const b=document.querySelector('#backupPage .full-backup'),r=document.getElementById('restoreFileV551');
  if(b)b.onclick=window.gdriveBackup;
- if(r)r.onchange=function(){window.restoreV600(this.files[0]);};
+ if(r)r.onchange=function(){if(typeof window.partySafeRestore==='function')window.partySafeRestore(this.files[0]);else window.restoreV600(this.files[0]);};
  if(typeof updateSmartBackupInfo==='function')updateSmartBackupInfo();
  refreshDatesSafely();setTimeout(refreshDatesSafely,250);
 });
