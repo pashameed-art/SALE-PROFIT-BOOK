@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="5.05" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="7.11" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1299,7 +1299,6 @@ body.spb-party-mode .nav-bar button:nth-child(4){
 <div class="dashboard-stat v612-net"><span>Net Profit</span><b id="dashNet">₹0</b></div>
 <div class="dashboard-stat v612-sale"><span>Sale</span><b id="dashSale">₹0</b></div>
 <div class="dashboard-stat v612-purchase"><span>Purchase</span><b id="dashPurchase">₹0</b></div>
-<div class="dashboard-stat v612-profit"><span>Profit</span><b id="dashProfit">₹0</b></div>
 <div class="dashboard-stat v612-expense"><span>Expense</span><b id="dashExpense">₹0</b></div>
 </div>
 <div class="dashboard-updated" id="dashboardUpdated"></div>
@@ -2934,7 +2933,7 @@ init();
 
 // V4.72: build marker / cache refresh helper.
 (function(){
-  const BUILD = '5.05';
+  const BUILD = '7.11';
   try {
     const old = localStorage.getItem('__spb_build__');
     if(old && old !== BUILD && 'serviceWorker' in navigator){
@@ -2948,12 +2947,12 @@ init();
 
 // V4.74 FULL APP UPDATE
 (function(){
-  const BUILD = '5.05';
+  const BUILD = '7.11';
   try { localStorage.setItem('__spb_build__', BUILD); } catch(e) {}
 })();
 
 // V4.75 CLEAN TODAY TOTAL
-try{localStorage.setItem('__spb_build__','4.88')}catch(e){}
+try{localStorage.setItem('__spb_build__','7.11')}catch(e){}
 
 // V4.81 today/expense date refresh
 window.addEventListener('load', function(){try{updateTodayTotalExpense();}catch(e){}});
