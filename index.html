@@ -3378,9 +3378,10 @@ window.printReport=function(){
         }else throw new Error('Invalid backup format');
         const keys=Object.keys(storage);
         if(!keys.length)throw new Error('Backup is empty');
-        if(!confirm('Restore this backup? Your current app data will be replaced.')) return;
-        localStorage.clear();
-        keys.forEach(k=>localStorage.setItem(k,String(storage[k]??'')));
+        if(!confirm('Restore this backup? Items/Stock data will be restored. Party and Expense data will be preserved.')) return;
+        // DATA-SAFE RESTORE: never clear storage and never overwrite protected Party/Expense data.
+        const protectedKeys=new Set(['saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_expenses']);
+        keys.forEach(k=>{ if(protectedKeys.has(k)) return; localStorage.setItem(k,String(storage[k]??'')); });
         setStatus('✅ Restore completed. Reloading app…',true);
         setTimeout(()=>location.reload(),500);
       }catch(e){setStatus('❌ Restore failed: invalid or damaged backup file.',false);}
@@ -3665,12 +3666,13 @@ window.restoreV600=function(file){
    const keys=Object.keys(storage);if(!keys.length)throw new Error('Backup is empty');
    const summary=data.summary;
    if(summary && (typeof summary.items!=='number'||typeof summary.entries!=='number'||typeof summary.expenses!=='number'))throw new Error('Invalid summary');
-   let message='Restore this backup? Your current app data will be replaced.';
+   let message='Restore this backup? Items/Stock data will be restored. Party and Expense data will be preserved.';
    if(data.createdAt)message+='\\n\\nBackup date: '+new Date(data.createdAt).toLocaleString();
    if(summary)message+='\\nItems: '+summary.items+' | Entries: '+summary.entries+' | Expenses: '+summary.expenses;
    if(!confirm(message))return;
-   localStorage.clear();
-   keys.forEach(k=>localStorage.setItem(k,String(storage[k]??'')));
+   // DATA-SAFE RESTORE: never clear storage and never overwrite protected Party/Expense data.
+   const protectedKeys=new Set(['saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_expenses']);
+   keys.forEach(k=>{ if(protectedKeys.has(k)) return; localStorage.setItem(k,String(storage[k]??'')); });
    alert('✅ Backup restored successfully.\\n\\nThe app will now reload.');
    location.reload();
   }catch(e){
@@ -5590,69 +5592,26 @@ else setTimeout(wait,100);
 </script>
 
 
-<!-- EXPENSE DATA PROTECTION + LIVE SYNC -->
-<style id="expense-data-protection-final-css">
-#expensePage #expenseList{display:block!important;visibility:visible!important}
-</style>
-<script id="expense-data-protection-final">
+<script id="data-safe-final-protection">
 (function(){
-'use strict';
-var KEY='spb_v4_expenses', VAULT='spb_expense_protected_backup_v1';
-
-function readStore(){
-  try{
-    var a=JSON.parse(localStorage.getItem(KEY)||'[]');
-    return Array.isArray(a)?a:[];
-  }catch(e){return [];}
-}
-function protect(){
-  try{
-    var raw=localStorage.getItem(KEY);
-    if(raw!==null){
-      var a=JSON.parse(raw);
-      if(Array.isArray(a) && a.length)
-        localStorage.setItem(VAULT,JSON.stringify({expenses:a,savedAt:new Date().toISOString()}));
-    }
-  }catch(e){}
-}
-function sync(){
-  try{
-    if(typeof expenses!=='undefined'){
-      var fresh=readStore();
-      if(JSON.stringify(expenses)!==JSON.stringify(fresh)){
-        expenses=fresh;
-      }
-    }
-  }catch(e){}
-}
-function refresh(){
-  sync();
-  if(typeof renderExpenses==='function')try{renderExpenses();}catch(e){}
-  if(typeof updateTodayExpenseTotal==='function')try{updateTodayExpenseTotal();}catch(e){}
-  protect();
-}
-window.syncExpenseDataFinal=refresh;
-
-/* Do not let a stale in-memory array overwrite newer localStorage data. */
-var originalSet=Storage.prototype.setItem;
-Storage.prototype.setItem=function(key,value){
-  originalSet.call(this,key,value);
-  if(key===KEY){
-    try{
-      var a=JSON.parse(value);
-      if(Array.isArray(a) && a.length)
-        originalSet.call(this,VAULT,JSON.stringify({expenses:a,savedAt:new Date().toISOString()}));
-    }catch(e){}
-  }
-};
-
-document.addEventListener('DOMContentLoaded',function(){
-  setTimeout(refresh,100);
-  setTimeout(refresh,500);
-});
-window.addEventListener('pageshow',function(){setTimeout(refresh,100);});
+  'use strict';
+  var MY='saleProfitBookMydeenV1', MA='saleProfitBookMansoorV1', EX='spb_v4_expenses', VAULT='spb_data_protected_v2';
+  function arr(raw){try{var v=JSON.parse(raw||'[]');return Array.isArray(v)?v:null;}catch(e){return null;}}
+  function snapshot(){try{
+    var old={}; try{old=JSON.parse(localStorage.getItem(VAULT)||'{}')||{};}catch(e){}
+    var m=localStorage.getItem(MY), a=localStorage.getItem(MA), x=localStorage.getItem(EX);
+    var data={mydeen:arr(m)!==null?m:(old.mydeen||null),mansoor:arr(a)!==null?a:(old.mansoor||null),expenses:arr(x)!==null?x:(old.expenses||null),savedAt:new Date().toISOString()};
+    if(data.mydeen!==null||data.mansoor!==null||data.expenses!==null) localStorage.setItem(VAULT,JSON.stringify(data));
+  }catch(e){}}
+  function recover(){try{
+    var v=JSON.parse(localStorage.getItem(VAULT)||'{}')||{};
+    [['mydeen',MY],['mansoor',MA],['expenses',EX]].forEach(function(p){var cur=arr(localStorage.getItem(p[1])); if((cur===null||cur.length===0)&&Array.isArray(arr(v[p[0]]))&&arr(v[p[0]]).length){localStorage.setItem(p[1],v[p[0]]);}});
+  }catch(e){}}
+  snapshot(); recover();
+  var originalSet=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(key,value){originalSet.call(this,key,value);if(key===MY||key===MA||key===EX){setTimeout(snapshot,0);}};
+  window.addEventListener('beforeunload',snapshot); window.addEventListener('pagehide',snapshot);
 })();
 </script>
-
 </body>
 </html>
