@@ -1077,7 +1077,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <style id="v612-dashboard-layout">
 #dashboardCard .v612-dashboard-grid{
   display:grid!important;
-  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
   gap:10px!important;
   margin-top:4px!important;
 }
@@ -1117,7 +1117,10 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 #dashboardCard .v612-expense span,#dashboardCard .v612-expense b{color:#c62828!important}
 @media(max-width:520px){
   #dashboardCard{padding:18px 14px!important}
-  #dashboardCard .v612-dashboard-grid{gap:7px!important}
+  #dashboardCard .v612-dashboard-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:7px!important;
+  }
   #dashboardCard .v612-dashboard-grid .dashboard-stat{
     min-height:92px!important;
     padding:10px 4px!important;
@@ -1298,7 +1301,9 @@ body.spb-party-mode .nav-bar button:nth-child(4){
 <div class="dashboard-grid v612-dashboard-grid">
 <div class="dashboard-stat v612-net"><span>Net Profit</span><b id="dashNet">₹0</b></div>
 <div class="dashboard-stat v612-sale"><span>Sale</span><b id="dashSale">₹0</b></div>
+<div class="dashboard-stat v612-meter"><span>Meter</span><b id="dashMeter">0 m</b></div>
 <div class="dashboard-stat v612-purchase"><span>Purchase</span><b id="dashPurchase">₹0</b></div>
+<div class="dashboard-stat v612-profit"><span>Profit</span><b id="dashProfit">₹0</b></div>
 <div class="dashboard-stat v612-expense"><span>Expense</span><b id="dashExpense">₹0</b></div>
 </div>
 <div class="dashboard-updated" id="dashboardUpdated"></div>
@@ -2397,6 +2402,7 @@ function refreshDashboard(){
   const sales=(Array.isArray(entries)?entries:[]).filter(x=>normalizeEntryDate(x.date)===t);
   const exps=(Array.isArray(expenses)?expenses:[]).filter(x=>expenseDateKey(x.date)===t);
   const sale=sales.reduce((a,x)=>a+Number(x.sale||0),0);
+  const meter=sales.reduce((a,x)=>a+Number(x.meter||0),0);
   const purchase=sales.reduce((a,x)=>a+Number(x.purchase||0),0);
   const profit=sales.reduce((a,x)=>a+Number(x.profit||0),0);
   const expense=exps.reduce((a,x)=>a+Number(x.amount||0),0);
@@ -2404,6 +2410,8 @@ function refreshDashboard(){
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=money(val)};
   set('dashNet',net);
   set('dashSale',sale);
+  const meterEl=document.getElementById('dashMeter');
+  if(meterEl)meterEl.textContent=Number.isInteger(meter)?meter.toLocaleString('en-IN')+' m':meter.toLocaleString('en-IN',{maximumFractionDigits:2})+' m';
   set('dashPurchase',purchase);
   set('dashProfit',profit);
   set('dashExpense',expense);
