@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.23</title>
+<title>Sale Profit Book • V7.24</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="7.23" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="7.24" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1482,7 +1482,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.23</div>
+<div class="version">Version 7.24</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -6408,6 +6408,7 @@ function render(){
   draw(document.getElementById('partyMydeenHistory'),'saleProfitBookMydeenV1',
        'data-mydeen-edit-final','data-mydeen-delete-final');
 }
+window.__SPB_V722_HISTORY_RENDER=render;
 
 function go(){
   setTimeout(render,100);
@@ -6433,6 +6434,74 @@ try{
   });
   mo.observe(document.body,{childList:true,subtree:true});
 }catch(e){}
+})();
+</script>
+
+
+<script id="v724-party-open-refresh-fix">
+(function(){
+'use strict';
+
+function refreshHistory(){
+  var f=window.__SPB_V722_HISTORY_RENDER;
+  if(typeof f==='function'){
+    try{f();}catch(e){}
+  }
+}
+
+function install(){
+  /* V7.24/V7.22 history renderer is saved by the previous controller below. */
+  if(typeof window.openPartyLedger==='function' && !window.openPartyLedger.__v724Wrapped){
+    var originalOpen=window.openPartyLedger;
+    function wrappedOpen(which){
+      var r=originalOpen.apply(this,arguments);
+      setTimeout(refreshHistory,50);
+      setTimeout(refreshHistory,250);
+      setTimeout(refreshHistory,700);
+      return r;
+    }
+    wrappedOpen.__v724Wrapped=true;
+    window.openPartyLedger=wrappedOpen;
+  }
+
+  if(typeof window.renderMansoor==='function' && !window.renderMansoor.__v724Wrapped){
+    var originalM=window.renderMansoor;
+    function wrappedM(){
+      var r=originalM.apply(this,arguments);
+      setTimeout(refreshHistory,20);
+      setTimeout(refreshHistory,150);
+      return r;
+    }
+    wrappedM.__v724Wrapped=true;
+    window.renderMansoor=wrappedM;
+  }
+
+  if(typeof window.renderMydeenUI==='function' && !window.renderMydeenUI.__v724Wrapped){
+    var originalY=window.renderMydeenUI;
+    function wrappedY(){
+      var r=originalY.apply(this,arguments);
+      setTimeout(refreshHistory,20);
+      setTimeout(refreshHistory,150);
+      return r;
+    }
+    wrappedY.__v724Wrapped=true;
+    window.renderMydeenUI=wrappedY;
+  }
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',function(){
+    setTimeout(install,100);
+    setTimeout(install,500);
+  });
+}else{
+  setTimeout(install,100);
+  setTimeout(install,500);
+}
+
+/* Re-install in case the party controller defines its functions later. */
+setTimeout(install,1200);
+setTimeout(install,2000);
 })();
 </script>
 
