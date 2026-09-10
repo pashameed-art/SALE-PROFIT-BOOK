@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.19</title>
+<title>Sale Profit Book • V7.20</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1409,11 +1409,80 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 }
 </style>
 
+
+<style id="v720-history-separated-final">
+.party-history-separated{
+  margin-top:8px;
+}
+.party-history-separated .history-group{
+  border:1px solid #e3ecea;
+  border-radius:16px;
+  overflow:hidden;
+  background:#fff;
+  margin:0 0 12px;
+}
+.party-history-separated .history-group-title{
+  padding:12px 14px;
+  font-size:17px;
+  font-weight:900;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.party-history-separated .received-title{
+  color:#c62828;
+  background:#fff4f4;
+}
+.party-history-separated .given-title{
+  color:#16803c;
+  background:#f1faf4;
+}
+.party-history-separated .history-row{
+  padding:12px 14px;
+  border-top:1px solid #edf1f0;
+}
+.party-history-separated .history-main{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+}
+.party-history-separated .history-main b{
+  font-size:16px;
+}
+.party-history-separated .history-amount{
+  white-space:nowrap;
+  font-size:17px;
+  font-weight:900;
+}
+.party-history-separated .received{color:#c62828!important}
+.party-history-separated .given{color:#16803c!important}
+.party-history-separated .history-actions{
+  display:flex;
+  gap:8px;
+  margin-top:9px;
+}
+.party-history-separated .history-actions button{
+  border:0;
+  border-radius:10px;
+  padding:8px 13px;
+  font-weight:800;
+}
+.party-history-separated .edit-btn{background:#eaf5f3;color:#116d64}
+.party-history-separated .delete-btn{background:#fdecec;color:#c62828}
+@media(max-width:520px){
+  .party-history-separated .history-group-title{font-size:16px}
+  .party-history-separated .history-row{padding:11px 12px}
+  .party-history-separated .history-main b{font-size:15px}
+  .party-history-separated .history-amount{font-size:16px}
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.19</div>
+<div class="version">Version 7.20</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -6127,6 +6196,91 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   if(document.readyState==='loading')
     document.addEventListener('DOMContentLoaded',function(){setTimeout(smart,200);});
   else setTimeout(smart,200);
+})();
+</script>
+
+
+<script id="v720-history-separated-controller">
+(function(){
+  'use strict';
+  function esc(v){
+    return String(v==null?'':v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function money(v){return '₹'+Number(v||0).toLocaleString('en-IN',{maximumFractionDigits:2});}
+  function fmt(v){
+    var m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m?m[3]+'.'+m[2]+'.'+m[1].slice(2):String(v||'');
+  }
+  function read(key){
+    try{
+      var a=JSON.parse(localStorage.getItem(key)||'[]');
+      return Array.isArray(a)?a:[];
+    }catch(e){return [];}
+  }
+  function draw(box,key,editAttr,deleteAttr){
+    if(!box)return;
+    var a=read(key).slice().sort(function(x,y){
+      return String(y.date||'').localeCompare(String(x.date||'')) ||
+             Number(y.id||0)-Number(x.id||0);
+    });
+    var received=a.filter(function(x){return String(x.type||'').toLowerCase()!=='given';});
+    var given=a.filter(function(x){return String(x.type||'').toLowerCase()==='given';});
+
+    function rows(list,isGiven){
+      if(!list.length)return '<div class="meta" style="padding:10px 2px">பதிவு இல்லை.</div>';
+      return list.map(function(x){
+        var cls=isGiven?'given':'received';
+        return '<div class="history-row">'+
+          '<div class="history-main">'+
+            '<div><b class="'+cls+'">'+(isGiven?'பணம் தந்தது':'பணம் வாங்கியது')+'</b>'+
+            '<div class="meta">'+fmt(x.date)+(x.note?' • '+esc(x.note):'')+'</div></div>'+
+            '<strong class="history-amount '+cls+'">'+(isGiven?'−':'＋')+money(x.amount)+'</strong>'+
+          '</div>'+
+          '<div class="history-actions">'+
+            '<button type="button" class="edit-btn" '+editAttr+'="'+esc(x.id)+'">✏️ Edit</button>'+
+            '<button type="button" class="delete-btn" '+deleteAttr+'="'+esc(x.id)+'">🗑️ Delete</button>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }
+
+    box.innerHTML=
+      '<div class="party-history-separated">'+
+        '<div class="history-group">'+
+          '<div class="history-group-title received-title"><span>பணம் வாங்கியது</span><span>'+received.length+'</span></div>'+
+          rows(received,false)+
+        '</div>'+
+        '<div class="history-group">'+
+          '<div class="history-group-title given-title"><span>பணம் தந்தது</span><span>'+given.length+'</span></div>'+
+          rows(given,true)+
+        '</div>'+
+      '</div>';
+  }
+
+  function renderAll(){
+    draw(document.getElementById('mansoorHistory'),'saleProfitBookMansoorV1',
+         'data-mansoor-edit-final','data-mansoor-delete-final');
+    draw(document.getElementById('partyMydeenHistory'),'saleProfitBookMydeenV1',
+         'data-mydeen-edit-final','data-mydeen-delete-final');
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',function(){
+      setTimeout(renderAll,150);
+      setTimeout(renderAll,600);
+    });
+  }else{
+    setTimeout(renderAll,150);
+    setTimeout(renderAll,600);
+  }
+
+  // Re-render when these party storage records change from this page.
+  window.addEventListener('storage',function(e){
+    if(e.key==='saleProfitBookMansoorV1'||e.key==='saleProfitBookMydeenV1')
+      setTimeout(renderAll,50);
+  });
 })();
 </script>
 
