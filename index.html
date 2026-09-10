@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.15</title>
+<title>Sale Profit Book • V7.16</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1257,11 +1257,27 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 }
 </style>
 
+
+<style id="v716-party-report-colors">
+.report-income,
+.report-income *{
+  color:#c62828!important;
+}
+.report-expense,
+.report-expense *{
+  color:#16803c!important;
+}
+.report-income .report-amount,
+.report-expense .report-amount{
+  font-weight:900!important;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.15</div>
+<div class="version">Version 7.16</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -5863,6 +5879,62 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   }else{
     bind();
   }
+})();
+</script>
+
+
+<script id="v716-party-report-color-controller">
+(function(){
+  'use strict';
+
+  function paint(root){
+    if(!root) return;
+    var nodes=root.querySelectorAll ? root.querySelectorAll('*') : [];
+    nodes.forEach(function(row){
+      if(row.dataset && row.dataset.v716Painted) return;
+      var text=(row.textContent||'').replace(/\s+/g,' ').trim();
+      if(!text) return;
+
+      var isIncome = /பணம்\s*வாங்கியது/.test(text);
+      var isExpense = /பணம்\s*தந்தது/.test(text);
+
+      if(isIncome){
+        row.classList.add('report-income');
+        row.dataset.v716Painted='1';
+      }else if(isExpense){
+        row.classList.add('report-expense');
+        row.dataset.v716Painted='1';
+      }
+    });
+  }
+
+  function scan(){
+    [
+      document.getElementById('mansoorReport'),
+      document.getElementById('mydeenReport'),
+      document.getElementById('mansoorReportResult'),
+      document.getElementById('mydeenReportResult')
+    ].forEach(paint);
+
+    // Fallback: find visible report cards/containers by common report classes.
+    document.querySelectorAll('.report,.report-summary,.report-result,.report-date-card')
+      .forEach(paint);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',function(){
+      scan();
+      setTimeout(scan,200);
+      setTimeout(scan,800);
+    });
+  }else{
+    scan();
+    setTimeout(scan,200);
+    setTimeout(scan,800);
+  }
+
+  new MutationObserver(function(){ scan(); })
+    .observe(document.body,{subtree:true,childList:true});
 })();
 </script>
 
