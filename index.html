@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.22</title>
+<title>Sale Profit Book • V7.23</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -6294,21 +6294,22 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .pch-meta{display:flex;align-items:center;gap:8px;margin-left:auto;font-size:12px}
 .pch-count{padding:3px 8px;border-radius:999px;background:rgba(0,0,0,.06);color:#666}
 .pch-total{font-weight:900}
-.pch-body{border-top:1px solid rgba(0,0,0,.08);padding:8px;overflow-x:auto}
-.pch-head,.pch-row{display:grid;grid-template-columns:72px minmax(105px,1fr) 86px 92px 86px;gap:6px;align-items:center;min-width:455px}
-.pch-head{padding:6px 5px;font-size:11px;font-weight:800;color:#777}
-.pch-row{padding:8px 5px;border-top:1px solid rgba(0,0,0,.06);font-size:12px}
-.pch-date,.pch-type,.pch-amt,.pch-bal{white-space:nowrap}
-.pch-amt,.pch-bal{text-align:right;font-weight:800}
-.pch-actions{display:flex;justify-content:flex-end;gap:4px}
-.pch-btn{border:0;border-radius:7px;padding:5px 7px;font-size:11px;font-weight:800;cursor:pointer}
+.pch-body{border-top:1px solid rgba(0,0,0,.08);padding:6px;overflow:hidden}
+.pch-head,.pch-row{display:grid;grid-template-columns:54px minmax(0,1fr) 72px 78px 76px;gap:4px;align-items:center;width:100%;box-sizing:border-box}
+.pch-head{padding:6px 3px;font-size:11px;font-weight:800;color:#777}
+.pch-row{padding:8px 3px;border-top:1px solid rgba(0,0,0,.06);font-size:12px}
+.pch-date{white-space:nowrap}
+.pch-type{min-width:0;white-space:normal;overflow-wrap:anywhere}
+.pch-amt,.pch-bal{white-space:nowrap;text-align:right;font-weight:800}
+.pch-actions{display:flex;justify-content:flex-end;gap:3px;min-width:0}
+.pch-btn{border:0;border-radius:7px;padding:5px 6px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
 .pch-edit{background:#eaf5f3;color:#116d64}
 .pch-delete{background:#fdecec;color:#c62828}
 @media(max-width:520px){
- .pch-head,.pch-row{grid-template-columns:65px minmax(105px,1fr) 78px 84px 78px;min-width:430px;gap:4px}
+ .pch-head,.pch-row{grid-template-columns:50px minmax(72px,1fr) 66px 72px 72px;gap:3px}
  .pch-head{font-size:10px}
  .pch-row{font-size:11px}
- .pch-btn{padding:5px 6px}
+ .pch-btn{padding:5px 5px;font-size:10px}
 }
 </style>
 
