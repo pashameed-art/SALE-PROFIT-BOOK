@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.24</title>
+<title>Sale Profit Book • V7.25</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="7.24" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="7.25" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1478,11 +1478,32 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 }
 </style>
 
+
+<style id="v725-previous-expense-total">
+.previous-expense-total{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:8px 0 12px;
+  padding:14px 16px;
+  border-radius:14px;
+  background:#eaf5f3;
+  color:#174f3d;
+  font-weight:800;
+}
+.previous-expense-total strong{
+  font-size:20px;
+  font-weight:900;
+  white-space:nowrap;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.24</div>
+<div class="version">Version 7.25</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2458,7 +2479,11 @@ function renderExpenses(){
   } else { html += '<div class="expense-empty-note">No expenses for today.</div>'; }
   html += `<div id="todayExpenseTotal" class="today-expense-total"><span>💸 Today Total Expense</span><strong>${money(total)}</strong></div>`;
   if(oldDates.length){
+    const previousTotal=oldDates.reduce((sum,d)=>{
+      return sum + oldMap[d].reduce((s,x)=>s+Number(x.amount||0),0);
+    },0);
     html += `<div class="expense-section-title old-expense-title">📅 Previous Expenses</div>`;
+    html += `<div class="previous-expense-total"><span>Total Expense</span><strong>${money(previousTotal)}</strong></div>`;
     html += oldDates.map(d=>{
       const list=oldMap[d];
       const sum=list.reduce((a,x)=>a+Number(x.amount||0),0);
@@ -6450,7 +6475,7 @@ function refreshHistory(){
 }
 
 function install(){
-  /* V7.24/V7.22 history renderer is saved by the previous controller below. */
+  /* V7.25/V7.22 history renderer is saved by the previous controller below. */
   if(typeof window.openPartyLedger==='function' && !window.openPartyLedger.__v724Wrapped){
     var originalOpen=window.openPartyLedger;
     function wrappedOpen(which){
