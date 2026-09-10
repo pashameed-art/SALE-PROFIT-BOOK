@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.20</title>
+<title>Sale Profit Book • V7.21</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1482,7 +1482,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.20</div>
+<div class="version">Version 7.21</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -6281,6 +6281,110 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
     if(e.key==='saleProfitBookMansoorV1'||e.key==='saleProfitBookMydeenV1')
       setTimeout(renderAll,50);
   });
+})();
+</script>
+
+
+<style id="v721-one-line-party-history">
+.party-one-line-history{width:100%;overflow-x:auto}
+.party-one-line-history .pol-head,
+.party-one-line-history .pol-row{
+ display:grid!important;
+ grid-template-columns:82px minmax(115px,1fr) 100px 105px 72px!important;
+ align-items:center!important;
+ column-gap:6px!important;
+ min-width:470px!important;
+}
+.party-one-line-history .pol-head{
+ padding:9px 8px!important;
+ background:#eef8f6!important;
+ border-radius:10px!important;
+ font-size:12px!important;
+ font-weight:900!important;
+ color:#526463!important;
+}
+.party-one-line-history .pol-row{
+ padding:11px 8px!important;
+ border-bottom:1px solid #e9eeee!important;
+ font-size:13px!important;
+}
+.party-one-line-history .pol-row:last-child{border-bottom:0!important}
+.party-one-line-history .pol-date{font-weight:800!important;white-space:nowrap!important}
+.party-one-line-history .pol-type{font-weight:900!important;white-space:nowrap!important}
+.party-one-line-history .pol-amount,
+.party-one-line-history .pol-balance{
+ text-align:right!important;white-space:nowrap!important;font-weight:900!important
+}
+.party-one-line-history .pol-received{color:#c62828!important}
+.party-one-line-history .pol-given{color:#16803c!important}
+.party-one-line-history .pol-actions{display:flex!important;justify-content:flex-end!important;gap:4px!important}
+.party-one-line-history .pol-actions button{
+ border:0!important;border-radius:8px!important;padding:6px 7px!important;
+ font-size:11px!important;font-weight:800!important
+}
+.party-one-line-history .pol-edit{background:#eaf5f3!important;color:#116d64!important}
+.party-one-line-history .pol-delete{background:#fdecec!important;color:#c62828!important}
+@media(max-width:520px){
+ .party-one-line-history .pol-head,
+ .party-one-line-history .pol-row{
+   grid-template-columns:70px minmax(108px,1fr) 86px 92px 62px!important;
+   min-width:430px!important;
+   column-gap:4px!important;
+ }
+ .party-one-line-history .pol-head{font-size:11px!important;padding:8px 5px!important}
+ .party-one-line-history .pol-row{font-size:12px!important;padding:10px 5px!important}
+ .party-one-line-history .pol-actions button{padding:5px 5px!important}
+}
+</style>
+
+
+<script id="v721-one-line-party-history-controller">
+(function(){
+'use strict';
+var START='2026-08-04';
+function money(v){return '₹'+Number(v||0).toLocaleString('en-IN',{maximumFractionDigits:2});}
+function fmt(v){var m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?m[3]+'.'+m[2]+'.'+m[1].slice(2):String(v||'');}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function read(key){try{var a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[]}catch(e){return[];}}
+function yesterday(){
+ var d=new Date();d.setDate(d.getDate()-1);
+ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function draw(box,key,editAttr,deleteAttr){
+ if(!box)return;
+ var all=read(key).filter(function(x){var d=String(x.date||'');return d>=START&&d<=yesterday();})
+   .sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))||Number(a.id||0)-Number(b.id||0);});
+ var balance=0;
+ var rows=all.map(function(x){
+   var given=String(x.type||'').toLowerCase()==='given';
+   var amount=Number(x.amount||0);
+   balance += given ? -amount : amount;
+   var cls=given?'pol-given':'pol-received';
+   return '<div class="pol-row">'+
+     '<div class="pol-date">'+fmt(x.date)+'</div>'+
+     '<div class="pol-type '+cls+'">'+(given?'பணம் தந்தது':'பணம் வாங்கியது')+'</div>'+
+     '<div class="pol-amount '+cls+'">'+(given?'−':'＋')+money(amount)+'</div>'+
+     '<div class="pol-balance">'+money(balance)+'</div>'+
+     '<div class="pol-actions">'+
+       '<button type="button" class="pol-edit" '+editAttr+'="'+esc(x.id)+'">Edit</button>'+
+       '<button type="button" class="pol-delete" '+deleteAttr+'="'+esc(x.id)+'">Del</button>'+
+     '</div>'+
+   '</div>';
+ }).join('');
+ box.innerHTML='<div class="party-one-line-history">'+
+   '<div class="pol-head"><div>Date</div><div>Type</div><div>Amount</div><div>Balance</div><div>Action</div></div>'+
+   (rows||'<div class="meta" style="padding:14px 5px">04.08.26 முதல் நேற்றுவரை பதிவு இல்லை.</div>')+
+   '</div>';
+}
+function render(){
+ draw(document.getElementById('mansoorHistory'),'saleProfitBookMansoorV1','data-mansoor-edit-final','data-mansoor-delete-final');
+ draw(document.getElementById('partyMydeenHistory'),'saleProfitBookMydeenV1','data-mydeen-edit-final','data-mydeen-delete-final');
+}
+function go(){setTimeout(render,100);setTimeout(render,500);}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',go);else go();
+window.addEventListener('storage',function(e){
+ if(e.key==='saleProfitBookMansoorV1'||e.key==='saleProfitBookMydeenV1')go();
+});
 })();
 </script>
 
