@@ -1077,7 +1077,7 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 <style id="v612-dashboard-layout">
 #dashboardCard .v612-dashboard-grid{
   display:grid!important;
-  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
   gap:10px!important;
   margin-top:4px!important;
 }
@@ -1094,9 +1094,6 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 #dashboardCard .v612-dashboard-grid .v612-net{
   grid-column:1 / -1!important;
   min-height:90px!important;
-}
-#dashboardCard .v612-dashboard-grid .v612-expense{
-  grid-column:1 / -1!important;
 }
 #dashboardCard .v612-dashboard-grid .dashboard-stat span{
   font-size:15px!important;
@@ -1119,20 +1116,18 @@ body.party-open-mode #partyPage #partyMansoorHost #mansoorPage {
 #dashboardCard .v612-profit span,#dashboardCard .v612-profit b{color:#65418a!important}
 #dashboardCard .v612-expense span,#dashboardCard .v612-expense b{color:#c62828!important}
 @media(max-width:520px){
-  #dashboardCard{padding:18px 10px!important}
+  #dashboardCard{padding:18px 14px!important}
   #dashboardCard .v612-dashboard-grid{
-    grid-template-columns:repeat(4,minmax(0,1fr))!important;
-    gap:6px!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:7px!important;
   }
   #dashboardCard .v612-dashboard-grid .dashboard-stat{
     min-height:92px!important;
-    padding:10px 2px!important;
-    min-width:0!important;
+    padding:10px 4px!important;
   }
   #dashboardCard .v612-dashboard-grid .v612-net{min-height:82px!important}
-  #dashboardCard .v612-dashboard-grid .v612-expense{grid-column:1 / -1!important}
-  #dashboardCard .v612-dashboard-grid .dashboard-stat span{font-size:12px!important;white-space:nowrap!important}
-  #dashboardCard .v612-dashboard-grid .dashboard-stat b{font-size:18px!important;white-space:nowrap!important}
+  #dashboardCard .v612-dashboard-grid .dashboard-stat span{font-size:13px!important}
+  #dashboardCard .v612-dashboard-grid .dashboard-stat b{font-size:20px!important}
 }
 </style>
 
@@ -1302,7 +1297,7 @@ body.spb-party-mode .nav-bar button:nth-child(4){
 
 <div class="card" id="dashboardCard">
 
-<div class="dashboard-title">Today Dashboard</div>
+<div class="dashboard-title">📊 Today Dashboard</div>
 <div class="dashboard-grid v612-dashboard-grid">
 <div class="dashboard-stat v612-net"><span>Net Profit</span><b id="dashNet">₹0</b></div>
 <div class="dashboard-stat v612-sale"><span>Sale</span><b id="dashSale">₹0</b></div>
@@ -1448,7 +1443,7 @@ body.spb-party-mode .nav-bar button:nth-child(4){
 <div id="mansoorHistory"></div>
 </div>
 <div class="card">
-<h3>📅 Weekly Report</h3>
+<h3>Report</h3>
 <div class="mansoor-report-dates">
   <div class="field">
     <label>Date From</label>
@@ -1460,10 +1455,10 @@ body.spb-party-mode .nav-bar button:nth-child(4){
   </div>
 </div>
 <div class="mansoor-report-actions">
-  <button type="button" onclick="generateMansoorWeeklyReport()">📊 Generate Report</button>
-  <button type="button" onclick="shareMansoorWeeklyWhatsApp()">📲 WhatsApp</button>
+  <button type="button" onclick="generateMansoorReport()">Generate Report</button>
 </div>
 <div id="mansoorWeeklySummary"></div>
+<div class="party-report-actions"><button type="button" class="secondary" onclick="downloadMansoorPDF()">PDF</button><button type="button" class="secondary" onclick="shareMansoorPDF()">Share PDF</button></div>
 
 </div>
 </section>
@@ -1501,7 +1496,7 @@ window.shareMansoorWeeklyWhatsApp=function(){
   var a=md(),r=a.filter(function(x){return String(x.date)>=from&&String(x.date)<=to}).sort(function(x,y){return String(x.date).localeCompare(String(y.date))});
   var taken=r.filter(function(x){return x.type==="taken"||x.type==="received"}).reduce(function(s,x){return s+Number(x.amount||0)},0);
   var given=r.filter(function(x){return x.type==="given"}).reduce(function(s,x){return s+Number(x.amount||0)},0);
-  var m=["🤝 Mansoor – Weekly Report","📅 Date From: "+fmtKey(from),"📅 Date To: "+fmtKey(to),"","பணம் வாங்கியது: "+money(taken),"பணம் தந்தது: "+money(given),"Balance: "+money(taken-given),"","Date-wise:"];
+  var m=["🤝 Mansoor – Report","📅 Date From: "+fmtKey(from),"📅 Date To: "+fmtKey(to),"","பணம் வாங்கியது: "+money(taken),"பணம் தந்தது: "+money(given),"Balance: "+money(taken-given),"","Date-wise:"];
   r.forEach(function(x){m.push(x.date+" – "+(x.type==="given"?"பணம் தந்தது":"பணம் வாங்கியது")+": "+money(x.amount)+(x.note?" – "+x.note:""))});
   window.open("https://wa.me/?text="+encodeURIComponent(m.join("\n")),"_blank");
 }
@@ -4798,18 +4793,10 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
   }
   function hideParty(){
     var p=q('partyPage');
-    if(p){p.classList.remove('active','party-detail-open');p.classList.add('hidden');p.style.setProperty('display','none','important');p.setAttribute('aria-hidden','true');}
-    ['partyMydeenHost','partyMansoorHost'].forEach(function(id){var x=q(id);if(x){x.classList.remove('active','party-selected');x.style.setProperty('display','none','important');x.setAttribute('aria-hidden','true');}});
+    if(p){p.classList.remove('active');p.classList.add('hidden');p.style.setProperty('display','none','important');p.setAttribute('aria-hidden','true');}
+    ['partyMydeenHost','partyMansoorHost'].forEach(function(id){var x=q(id);if(x){x.classList.remove('active');x.style.setProperty('display','none','important');}});
     var mp=q('mansoorPage');
-    if(mp){mp.classList.remove('active','party-selected');if(mp.parentElement && mp.parentElement.id==='partyMansoorHost')mp.style.setProperty('display','none','important');mp.setAttribute('aria-hidden','true');}
-  }
-  function resetPartyView(){
-    /* Reset only the visible Party detail; never touch stored Party data. */
-    var p=q('partyPage');
-    if(p){p.classList.remove('party-detail-open');p.setAttribute('aria-hidden','true');}
-    ['partyMydeenHost','partyMansoorHost'].forEach(function(id){var x=q(id);if(x){x.classList.remove('active','party-selected');x.style.setProperty('display','none','important');x.setAttribute('aria-hidden','true');}});
-    var mp=q('mansoorPage');
-    if(mp){mp.classList.remove('active','party-selected');mp.style.setProperty('display','none','important');mp.setAttribute('aria-hidden','true');}
+    if(mp){mp.classList.remove('active');if(mp.parentElement && mp.parentElement.id==='partyMansoorHost')mp.style.setProperty('display','none','important');}
   }
   function hideHomeParts(){
     all('.state-date-row,.new-history-row,#entryCard,#dashboardCard,#homeStockDetails,#historyCard,.install-wrap').forEach(function(e){
@@ -4822,7 +4809,6 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
     var hc=q('historyCard');if(hc){hc.classList.add('hidden');hc.style.setProperty('display','none','important');}
   }
   function home(btn){
-    resetPartyView();
     clearModes();hideAllPages();hideParty();showHomeParts();
     document.body.classList.add('v576-home','spb-home-mode');active(btn);
     if(typeof refresh==='function')refresh();if(typeof refreshDashboard==='function')refreshDashboard();
@@ -4850,7 +4836,6 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
     window.scrollTo(0,0);
   }
   function party(btn){
-    resetPartyView();
     clearModes();hideHomeParts();hideAllPages();hideParty();
     document.body.classList.add('party-open-mode','v576-party','spb-party-mode');
     var p=q('partyPage');if(p){p.classList.remove('hidden');p.classList.add('active');p.style.setProperty('display','block','important');p.setAttribute('aria-hidden','false');}
@@ -4964,7 +4949,13 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
         '</div>'+
         '<div class="expense-action-row"><button class="primary" type="button" id="partyMydeenSave">Save</button><button class="secondary" type="button" id="partyMydeenClear">Clear</button></div>'+
         '</div>'+
-        '<div class="card"><h3>📜 Previous History</h3><div id="partyMydeenHistory"></div></div>';
+        '<div class="card"><h3>📜 Previous History</h3><div id="partyMydeenHistory"></div></div>'+
+        '<div class="card party-report-card" id="partyMydeenReportCard"><h3>Report</h3>'+
+        '<div class="party-report-dates"><div class="field"><label>Date From</label><input type="date" id="partyMydeenReportFrom"></div>'+
+        '<div class="field"><label>Date To</label><input type="date" id="partyMydeenReportTo"></div></div>'+
+        '<button type="button" class="primary" id="partyMydeenGenerateReport">Generate Report</button>'+
+        '<div id="partyMydeenReportResult"></div>'+
+        '<div class="party-report-actions"><button type="button" class="secondary" id="partyMydeenPDF">PDF</button><button type="button" class="secondary" id="partyMydeenSharePDF">Share PDF</button></div></div>';
       q('partyMydeenSave').onclick=saveMydeen;
       q('partyMydeenClear').onclick=clearMydeen;
     }
@@ -5022,9 +5013,8 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
     var h=ensureHosts();if(!h)return;
 
     p.classList.remove('hidden');
-    p.classList.add('active','party-detail-open');
+    p.classList.add('active');
     p.style.setProperty('display','block','important');
-    p.setAttribute('aria-hidden','false');
     document.body.classList.add('party-open-mode','v576-party','spb-party-mode');
     document.body.classList.remove('page-open-mode','history-open-mode','v576-home');
 
@@ -5636,5 +5626,46 @@ else setTimeout(wait,100);
   window.addEventListener('beforeunload',snapshot); window.addEventListener('pagehide',snapshot);
 })();
 </script>
+<script id="party-report-pdf-final">
+(function(){
+'use strict';
+function q(id){return document.getElementById(id)}
+function todayKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function weekStart(){var d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-6);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function money(n){return 'Rs. '+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2})}
+function arr(key){try{var a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+function fmtDate(v){var p=String(v||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:String(v||'')}
+function ensureDates(prefix){var f=q(prefix+'From'),t=q(prefix+'To');if(f&&!f.value)f.value=weekStart();if(t&&!t.value)t.value=todayKey()}
+function reportData(key,prefix){
+ ensureDates(prefix);var from=(q(prefix+'From')||{}).value||weekStart(),to=(q(prefix+'To')||{}).value||todayKey();
+ var rows=arr(key).filter(function(x){var d=String(x.date||'');return d>=from&&d<=to}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))||Number(a.id||0)-Number(b.id||0)});
+ var taken=rows.filter(function(x){return x.type==='taken'||x.type==='received'}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+ var given=rows.filter(function(x){return x.type==='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+ return {from:from,to:to,rows:rows,taken:taken,given:given,balance:taken-given};
+}
+function renderReport(key,prefix,resultId){
+ var r=reportData(key,prefix),box=q(resultId);if(r.from>r.to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return null}
+ if(box){var rows=r.rows.map(function(x){return '<div class="party-report-row"><span>'+fmtDate(x.date)+' &nbsp; '+(x.type==='given'?'பணம் தந்தது':'பணம் வாங்கியது')+'</span><b>'+money(x.amount)+'</b></div>'}).join('');box.innerHTML='<div class="party-report-summary"><div class="party-report-range">'+fmtDate(r.from)+' → '+fmtDate(r.to)+'</div><div><span>பணம் வாங்கியது</span><b>'+money(r.taken)+'</b></div><div><span>பணம் தந்தது</span><b>'+money(r.given)+'</b></div><div><span>Balance</span><b>'+money(r.balance)+'</b></div>'+(rows||'<div class="meta">இதுவரை பதிவு இல்லை.</div>')+'</div>';box.dataset.reportReady='1'}
+ return r;
+}
+function escPDF(s){return String(s).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)')}
+function makePDF(title,r){
+ var lines=[title,'Date From: '+fmtDate(r.from)+'   Date To: '+fmtDate(r.to),'','Money Received: '+money(r.taken),'Money Given: '+money(r.given),'Balance: '+money(r.balance),'','Date-wise:'];
+ r.rows.forEach(function(x){lines.push(fmtDate(x.date)+' - '+(x.type==='given'?'Money Given':'Money Received')+' - '+money(x.amount))});
+ var per=42,pages=Math.max(1,Math.ceil(lines.length/per)),objs=[];objs[1]='<< /Type /Catalog /Pages 2 0 R >>';var kids=[];
+ for(var i=0;i<pages;i++)kids.push((3+i*2)+' 0 R');objs[2]='<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+pages+' >>';
+ var fontObj=3+pages*2;
+ for(var p=0;p<pages;p++){var po=3+p*2,co=4+p*2,ch=lines.slice(p*per,(p+1)*per),st='BT\n/F1 16 Tf\n50 790 Td\n';ch.forEach(function(line,idx){if(idx>0)st='/F1 11 Tf\n0 -18 Td\n'+st;st='('+escPDF(line)+') Tj\n'+st});st+='ET';objs[po]='<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 '+fontObj+' 0 R >> >> /Contents '+co+' 0 R >>';objs[co]='<< /Length '+st.length+' >>\nstream\n'+st+'\nendstream'}
+ objs[fontObj]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';var pdf='%PDF-1.4\n',offs=[0];for(var n=1;n<objs.length;n++){offs[n]=pdf.length;pdf+=n+' 0 obj\n'+objs[n]+'\nendobj\n'}var xr=pdf.length;pdf+='xref\n0 '+objs.length+'\n0000000000 65535 f \n';for(var j=1;j<objs.length;j++)pdf+=String(offs[j]).padStart(10,'0')+' 00000 n \n';pdf+='trailer\n<< /Size '+objs.length+' /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF';return new Blob([pdf],{type:'application/pdf'})
+}
+function deliver(name,r,share){var blob=makePDF(name+' Report',r),fn=name+'-Report-'+r.from+'-to-'+r.to+'.pdf';if(share&&navigator.share&&navigator.canShare){try{var f=new File([blob],fn,{type:'application/pdf'});if(navigator.canShare({files:[f]})){navigator.share({title:name+' Report',files:[f]}).catch(function(){});return}}catch(e){}}var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},1000)}
+window.generateMansoorReport=function(){window._mansoorReport=renderReport('saleProfitBookMansoorV1','mansoorReport','mansoorWeeklySummary')}
+window.downloadMansoorPDF=function(){var r=window._mansoorReport||renderReport('saleProfitBookMansoorV1','mansoorReport','mansoorWeeklySummary');if(r)deliver('Mansoor',r,false)}
+window.shareMansoorPDF=function(){var r=window._mansoorReport||renderReport('saleProfitBookMansoorV1','mansoorReport','mansoorWeeklySummary');if(r)deliver('Mansoor',r,true)}
+function setupMydeen(){ensureDates('partyMydeenReport');var b=q('partyMydeenGenerateReport');if(b)b.onclick=function(){window._mydeenReport=renderReport('saleProfitBookMydeenV1','partyMydeenReport','partyMydeenReportResult')};var p=q('partyMydeenPDF');if(p)p.onclick=function(){var r=window._mydeenReport||renderReport('saleProfitBookMydeenV1','partyMydeenReport','partyMydeenReportResult');if(r)deliver('Mydeen',r,false)};var s=q('partyMydeenSharePDF');if(s)s.onclick=function(){var r=window._mydeenReport||renderReport('saleProfitBookMydeenV1','partyMydeenReport','partyMydeenReportResult');if(r)deliver('Mydeen',r,true)}}
+document.addEventListener('DOMContentLoaded',function(){ensureDates('mansoorReport');setTimeout(setupMydeen,1000)});var old=window.renderMydeenUI;window.renderMydeenUI=function(){if(typeof old==='function')old();setTimeout(setupMydeen,50)};
+})();
+</script>
+<style id="party-report-pdf-final-style">.party-report-card h3{margin-top:0}.party-report-dates{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}.party-report-card .primary{width:100%;margin-top:4px}.party-report-actions{display:flex;gap:10px;margin-top:10px}.party-report-actions button{flex:1}.party-report-summary{margin-top:12px;border-top:1px solid #e6ecea;padding-top:10px}.party-report-range{font-weight:800;margin-bottom:8px}.party-report-summary>div:not(.party-report-range){display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #edf1f0}.party-report-row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #edf1f0}.party-report-row span{font-size:13px}.party-report-row b{font-weight:900}@media(max-width:600px){.party-report-dates{grid-template-columns:1fr}.party-report-actions{gap:8px}}</style>
 </body>
 </html>
