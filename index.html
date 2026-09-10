@@ -5648,15 +5648,41 @@ function renderReport(key,prefix,resultId){
  if(box){var rows=r.rows.map(function(x){return '<div class="party-report-row"><span>'+fmtDate(x.date)+' &nbsp; '+(x.type==='given'?'பணம் தந்தது':'பணம் வாங்கியது')+'</span><b>'+money(x.amount)+'</b></div>'}).join('');box.innerHTML='<div class="party-report-summary"><div class="party-report-range">'+fmtDate(r.from)+' → '+fmtDate(r.to)+'</div><div><span>பணம் வாங்கியது</span><b>'+money(r.taken)+'</b></div><div><span>பணம் தந்தது</span><b>'+money(r.given)+'</b></div><div><span>Balance</span><b>'+money(r.balance)+'</b></div>'+(rows||'<div class="meta">இதுவரை பதிவு இல்லை.</div>')+'</div>';box.dataset.reportReady='1'}
  return r;
 }
-function escPDF(s){return String(s).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)')}
+function escPDF(s){
+  return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');
+}
 function makePDF(title,r){
- var lines=[title,'Date From: '+fmtDate(r.from)+'   Date To: '+fmtDate(r.to),'','Money Received: '+money(r.taken),'Money Given: '+money(r.given),'Balance: '+money(r.balance),'','Date-wise:'];
- r.rows.forEach(function(x){lines.push(fmtDate(x.date)+' - '+(x.type==='given'?'Money Given':'Money Received')+' - '+money(x.amount))});
- var per=42,pages=Math.max(1,Math.ceil(lines.length/per)),objs=[];objs[1]='<< /Type /Catalog /Pages 2 0 R >>';var kids=[];
- for(var i=0;i<pages;i++)kids.push((3+i*2)+' 0 R');objs[2]='<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+pages+' >>';
- var fontObj=3+pages*2;
- for(var p=0;p<pages;p++){var po=3+p*2,co=4+p*2,ch=lines.slice(p*per,(p+1)*per),st='BT\n/F1 16 Tf\n50 790 Td\n';ch.forEach(function(line,idx){if(idx>0)st='/F1 11 Tf\n0 -18 Td\n'+st;st='('+escPDF(line)+') Tj\n'+st});st+='ET';objs[po]='<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 '+fontObj+' 0 R >> >> /Contents '+co+' 0 R >>';objs[co]='<< /Length '+st.length+' >>\nstream\n'+st+'\nendstream'}
- objs[fontObj]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';var pdf='%PDF-1.4\n',offs=[0];for(var n=1;n<objs.length;n++){offs[n]=pdf.length;pdf+=n+' 0 obj\n'+objs[n]+'\nendobj\n'}var xr=pdf.length;pdf+='xref\n0 '+objs.length+'\n0000000000 65535 f \n';for(var j=1;j<objs.length;j++)pdf+=String(offs[j]).padStart(10,'0')+' 00000 n \n';pdf+='trailer\n<< /Size '+objs.length+' /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF';return new Blob([pdf],{type:'application/pdf'})
+  /* Minimal, valid PDF. ASCII-only content avoids Android PDF-viewer/font issues. */
+  var lines=[title,'Date From: '+fmtDate(r.from)+'   Date To: '+fmtDate(r.to),'','Money Received: '+money(r.taken),'Money Given: '+money(r.given),'Balance: '+money(r.balance),'','Date-wise:'];
+  r.rows.forEach(function(x){lines.push(fmtDate(x.date)+' - '+(x.type==='given'?'Money Given':'Money Received')+' - '+money(x.amount))});
+  var per=42, pages=Math.max(1,Math.ceil(lines.length/per)), objs=[];
+  objs[1]='<< /Type /Catalog /Pages 2 0 R >>';
+  var kids=[];
+  for(var i=0;i<pages;i++)kids.push((3+i*2)+' 0 R');
+  objs[2]='<< /Type /Pages /Kids ['+kids.join(' ')+'] /Count '+pages+' >>';
+  var fontObj=3+pages*2;
+  for(var pg=0;pg<pages;pg++){
+    var po=3+pg*2,co=4+pg*2,ch=lines.slice(pg*per,(pg+1)*per);
+    var st='BT\n/F1 16 Tf\n50 790 Td\n';
+    ch.forEach(function(line,idx){
+      if(idx===0) st+='('+escPDF(line)+') Tj\n';
+      else st+='/F1 11 Tf\n0 -18 Td\n('+escPDF(line)+') Tj\n';
+    });
+    st+='ET';
+    objs[po]='<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 '+fontObj+' 0 R >> >> /Contents '+co+' 0 R >>';
+    objs[co]='<< /Length '+new TextEncoder().encode(st).length+' >>\nstream\n'+st+'\nendstream';
+  }
+  objs[fontObj]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>';
+  var pdf='%PDF-1.4\n',offs=[0];
+  for(var n=1;n<objs.length;n++){
+    offs[n]=new TextEncoder().encode(pdf).length;
+    pdf+=n+' 0 obj\n'+objs[n]+'\nendobj\n';
+  }
+  var xr=new TextEncoder().encode(pdf).length;
+  pdf+='xref\n0 '+objs.length+'\n0000000000 65535 f \n';
+  for(var j=1;j<objs.length;j++)pdf+=String(offs[j]).padStart(10,'0')+' 00000 n \n';
+  pdf+='trailer\n<< /Size '+objs.length+' /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF';
+  return new Blob([pdf],{type:'application/pdf'});
 }
 function deliver(name,r,share){var blob=makePDF(name+' Report',r),fn=name+'-Report-'+r.from+'-to-'+r.to+'.pdf';if(share&&navigator.share&&navigator.canShare){try{var f=new File([blob],fn,{type:'application/pdf'});if(navigator.canShare({files:[f]})){navigator.share({title:name+' Report',files:[f]}).catch(function(){});return}}catch(e){}}var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},1000)}
 window.generateMansoorReport=function(){window._mansoorReport=renderReport('saleProfitBookMansoorV1','mansoorReport','mansoorWeeklySummary')}
