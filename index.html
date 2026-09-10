@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.16</title>
+<title>Sale Profit Book • V7.17</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1273,11 +1273,34 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 }
 </style>
 
+
+<style id="v717-party-report-colors-final">
+.party-report-summary .report-income,
+.party-report-summary .report-income *{
+  color:#d62828!important;
+}
+.party-report-summary .report-expense,
+.party-report-summary .report-expense *{
+  color:#16803c!important;
+}
+.party-report-summary .party-report-row.report-income,
+.party-report-summary .party-report-row.report-income *{
+  color:#d62828!important;
+}
+.party-report-summary .party-report-row.report-expense,
+.party-report-summary .party-report-row.report-expense *{
+  color:#16803c!important;
+}
+.party-report-summary .report-amount{
+  font-weight:900!important;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.16</div>
+<div class="version">Version 7.17</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -5686,8 +5709,12 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   function render(name,key,prefix,resultId,actionsId){
     var r=getReport(key,prefix);if(!r)return null;
     var box=q(resultId);if(box){
-      var rows=r.rows.map(function(x){var given=String(x.type||'').toLowerCase()==='given';return '<div class="party-report-row"><span>'+fmt(x.date)+' • '+(given?'பணம் தந்தது':'பணம் வாங்கியது')+(x.note?' • '+esc(x.note):'')+'</span><b>'+(given?'−':'＋')+money(x.amount)+'</b></div>';}).join('');
-      box.innerHTML='<div class="party-report-summary"><div class="party-report-range">📅 '+fmt(r.from)+' → '+fmt(r.to)+'</div><div><span>பணம் வாங்கியது</span><b>'+money(r.taken)+'</b></div><div><span>பணம் தந்தது</span><b>'+money(r.given)+'</b></div><div><span>Balance</span><b>'+money(r.balance)+'</b></div>'+(rows||'<div class="meta">இதுவரை பதிவு இல்லை.</div>')+'</div>';
+      var rows=r.rows.map(function(x){
+        var t=String(x.type||'').toLowerCase();
+        var given=(t==='given'||t==='paid'||t==='pay');
+        return '<div class="party-report-row '+(given?'report-expense':'report-income')+'"><span>'+fmt(x.date)+' • '+(given?'பணம் தந்தது':'பணம் வாங்கியது')+(x.note?' • '+esc(x.note):'')+'</span><b class="report-amount">'+(given?'−':'＋')+money(x.amount)+'</b></div>';
+      }).join('');
+      box.innerHTML='<div class="party-report-summary"><div class="party-report-range">📅 '+fmt(r.from)+' → '+fmt(r.to)+'</div><div class="report-income"><span>பணம் வாங்கியது</span><b class="report-amount">'+money(r.taken)+'</b></div><div class="report-expense"><span>பணம் தந்தது</span><b class="report-amount">'+money(r.given)+'</b></div><div><span>Balance</span><b>'+money(r.balance)+'</b></div>'+(rows||'<div class="meta">இதுவரை பதிவு இல்லை.</div>')+'</div>';
       box.dataset.reportReady='1';
     }
     var a=actionsId?q(actionsId):null;if(a)a.style.display='flex';
