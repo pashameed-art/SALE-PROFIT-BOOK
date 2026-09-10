@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.13</title>
+<title>Sale Profit Book • V7.14</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1245,7 +1245,7 @@ body.spb-party-mode .nav-bar button:nth-child(4){
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.13</div>
+<div class="version">Version 7.14</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -5718,6 +5718,60 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <style id="party-report-pdf-v712-style">
 .party-report-actions{display:flex!important;gap:10px;margin-top:10px}.party-report-actions button{flex:1;min-height:48px}.party-report-summary{margin-top:12px;border-top:1px solid #e6ecea;padding-top:10px}.party-report-range{font-weight:800;margin-bottom:8px}.party-report-summary>div:not(.party-report-range),.party-report-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #edf1f0}.party-report-row span{font-size:13px}.party-report-row b{font-weight:900}
 </style>
+
+
+<script id="v714-stock-click-fix">
+(function(){
+  'use strict';
+  function q(id){ return document.getElementById(id); }
+
+  function stockClick(){
+    var box=q('homeStockDetails');
+    var btn=q('homeStockButton');
+    if(!box) return;
+
+    var isOpen = !box.classList.contains('hidden') &&
+                 getComputedStyle(box).display !== 'none';
+
+    if(isOpen){
+      box.classList.add('hidden');
+      box.classList.remove('visible');
+      box.style.setProperty('display','none','important');
+      if(btn) btn.textContent='Stock';
+    }else{
+      box.classList.remove('hidden');
+      box.classList.add('visible');
+      box.style.setProperty('display','block','important');
+      if(btn) btn.textContent='Close Stock';
+      if(typeof window.renderStock==='function'){
+        try{ window.renderStock(); }catch(e){}
+      }
+      setTimeout(function(){
+        try{ box.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
+      },50);
+    }
+  }
+
+  function bind(){
+    var btn=q('homeStockButton');
+    if(!btn || btn.dataset.v714Bound) return;
+    btn.dataset.v714Bound='1';
+    btn.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      stockClick();
+      return false;
+    };
+    btn.removeAttribute('onclick');
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',bind);
+  }else{
+    bind();
+  }
+})();
+</script>
 
 </body>
 </html>
