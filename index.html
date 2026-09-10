@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.14</title>
+<title>Sale Profit Book • V7.15</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1241,11 +1241,27 @@ body.spb-party-mode .nav-bar button:nth-child(4){
 }
 </style>
 
+
+<style id="v715-stock-final-css">
+body.spb-home-mode #homeStockDetails.visible{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+body.spb-home-mode #homeStockDetails.hidden{
+  display:none!important;
+}
+body.spb-home-mode #homeStockDetails .stock-card,
+body.spb-home-mode #homeStockDetails #stockSummary{
+  visibility:visible!important;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.14</div>
+<div class="version">Version 7.15</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1269,7 +1285,7 @@ body.spb-party-mode .nav-bar button:nth-child(4){
 </div>
 <div class="new-history-row">
 <button class="primary" onclick="goToNewEntry()">📝 New Entry</button>
-<button type="button" id="homeStockButton" onclick="toggleHomeStock()">📦 Stock</button>
+<button type="button" id="homeStockButton">Stock</button>
 </div>
 
 <section class="card" id="entryCard">
@@ -5767,6 +5783,83 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
   if(document.readyState==='loading'){
     document.addEventListener('DOMContentLoaded',bind);
+  }else{
+    bind();
+  }
+})();
+</script>
+
+
+<script id="v715-stock-final-controller">
+(function(){
+  'use strict';
+
+  function q(id){ return document.getElementById(id); }
+
+  function openStock(){
+    var box=q('homeStockDetails');
+    var btn=q('homeStockButton');
+    if(!box) return false;
+
+    // Force the app back to Home visibility state before opening Stock.
+    document.body.classList.remove(
+      'page-open-mode','history-open-mode','party-open-mode',
+      'spb-history-mode','spb-expense-mode','spb-party-mode',
+      'spb-report-mode','spb-backup-mode','v576-party'
+    );
+    document.body.classList.add('spb-home-mode','v576-home');
+
+    box.classList.remove('hidden');
+    box.classList.add('visible');
+    box.style.setProperty('display','block','important');
+    box.style.setProperty('visibility','visible','important');
+
+    if(btn) btn.textContent='Close Stock';
+
+    try{
+      if(typeof window.renderStock === 'function') window.renderStock();
+    }catch(e){}
+
+    setTimeout(function(){
+      try{ box.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
+    },50);
+    return false;
+  }
+
+  function closeStock(){
+    var box=q('homeStockDetails');
+    var btn=q('homeStockButton');
+    if(!box) return false;
+
+    box.classList.remove('visible');
+    box.classList.add('hidden');
+    box.style.setProperty('display','none','important');
+    if(btn) btn.textContent='Stock';
+    return false;
+  }
+
+  window.toggleHomeStock=function(){
+    var box=q('homeStockDetails');
+    if(!box) return false;
+    var open=box.classList.contains('visible') &&
+             getComputedStyle(box).display!=='none';
+    return open ? closeStock() : openStock();
+  };
+
+  function bind(){
+    var btn=q('homeStockButton');
+    if(!btn || btn.dataset.v715Bound) return;
+    btn.dataset.v715Bound='1';
+    btn.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      window.toggleHomeStock();
+    },true);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',function(){setTimeout(bind,0);});
   }else{
     bind();
   }
