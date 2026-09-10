@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.17</title>
+<title>Sale Profit Book • V7.18</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1296,11 +1296,76 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 }
 </style>
 
+
+<style id="v718-history-smart-look">
+/* Smart compact Previous History cards */
+#historyCard .history-section-title,
+#historyCard h2{
+  letter-spacing:-.2px;
+}
+#historyCard .history-item,
+#historyCard .history-entry,
+#historyCard .entry-card{
+  border:1px solid #e4eceb!important;
+  border-radius:18px!important;
+  background:#fff!important;
+  padding:14px 14px 12px!important;
+  margin:0 0 10px!important;
+  box-shadow:0 4px 14px rgba(23,79,61,.07)!important;
+}
+#historyCard .history-item-header,
+#historyCard .history-entry-header{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+}
+#historyCard .history-item .actions,
+#historyCard .history-entry .actions,
+#historyCard .entry-actions{
+  display:flex!important;
+  gap:8px!important;
+  margin-top:10px!important;
+}
+#historyCard button{
+  min-height:40px!important;
+  border-radius:12px!important;
+  font-weight:800!important;
+}
+#historyCard .history-item hr,
+#historyCard .history-entry hr{
+  display:none!important;
+}
+/* Keep the transaction amount aligned and prominent */
+#historyCard .history-item b,
+#historyCard .history-entry b{
+  font-weight:900!important;
+}
+/* Mobile */
+@media(max-width:520px){
+  #historyCard{
+    padding:16px!important;
+  }
+  #historyCard .history-item,
+  #historyCard .history-entry,
+  #historyCard .entry-card{
+    padding:13px 12px 11px!important;
+    border-radius:16px!important;
+    margin-bottom:9px!important;
+  }
+  #historyCard .history-item .actions,
+  #historyCard .history-entry .actions,
+  #historyCard .entry-actions{
+    gap:7px!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.17</div>
+<div class="version">Version 7.18</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -5962,6 +6027,27 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
   new MutationObserver(function(){ scan(); })
     .observe(document.body,{subtree:true,childList:true});
+})();
+</script>
+
+
+<script id="v718-history-smart-controller">
+(function(){
+  function smart(){
+    var card=document.getElementById('historyCard');
+    if(!card)return;
+    card.querySelectorAll('hr').forEach(function(x){
+      x.style.margin='8px 0';
+      x.style.border='0';
+      x.style.borderTop='1px solid #e8eeee';
+    });
+    card.querySelectorAll('.history-item,.history-entry,.entry-card').forEach(function(x){
+      x.style.transition='transform .15s ease,box-shadow .15s ease';
+    });
+  }
+  if(document.readyState==='loading')
+    document.addEventListener('DOMContentLoaded',function(){setTimeout(smart,200);});
+  else setTimeout(smart,200);
 })();
 </script>
 
