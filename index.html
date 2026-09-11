@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.28</title>
+<title>Sale Profit Book • V7.29</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1515,7 +1515,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.28</div>
+<div class="version">Version 7.29</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -6396,13 +6396,16 @@ function draw(box,key,editAttr,deleteAttr){
 
   // Calculate the overall running balance in date order first,
   // then show each category separately while preserving each row's balance.
-  var balance=0, balanceById={};
-  all.forEach(function(x){
-    var given=String(x.type||'').toLowerCase()==='given';
-    var amount=Number(x.amount||0);
-    balance += given ? -amount : amount;
-    balanceById[String(x.id)] = balance;
-  });
+  // Use the actual ledger running balance if available.
+  var balanceById={};
+  if(all.length){
+    var running=Number(all[0].balance||0);
+    balanceById[String(all[0].id)] = running;
+    for(var i=1;i<all.length;i++){
+      running = Number(all[i].balance||0);
+      balanceById[String(all[i].id)] = running;
+    }
+  }
 
   function section(given,label,cls){
     var rows=all.filter(function(x){
@@ -6491,7 +6494,7 @@ function refreshHistory(){
 }
 
 function install(){
-  /* V7.28/V7.22 history renderer is saved by the previous controller below. */
+  /* V7.29/V7.22 history renderer is saved by the previous controller below. */
   if(typeof window.openPartyLedger==='function' && !window.openPartyLedger.__v724Wrapped){
     var originalOpen=window.openPartyLedger;
     function wrappedOpen(which){
