@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.27</title>
+<title>Sale Profit Book • V7.28</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1515,7 +1515,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.27</div>
+<div class="version">Version 7.28</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -6373,6 +6373,10 @@ function read(key){
     return Array.isArray(a)?a:[];
   }catch(e){return[];}
 }
+function todayKey(){
+  var d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
 function yesterday(){
   var d=new Date();
   d.setDate(d.getDate()-1);
@@ -6384,7 +6388,7 @@ function draw(box,key,editAttr,deleteAttr){
 
   var all=read(key).filter(function(x){
     var d=String(x.date||'');
-    return d>=START && d<=yesterday();
+    return d>=START && d<=todayKey();
   }).sort(function(a,b){
     return String(a.date||'').localeCompare(String(b.date||'')) ||
            Number(a.id||0)-Number(b.id||0);
@@ -6487,7 +6491,7 @@ function refreshHistory(){
 }
 
 function install(){
-  /* V7.27/V7.22 history renderer is saved by the previous controller below. */
+  /* V7.28/V7.22 history renderer is saved by the previous controller below. */
   if(typeof window.openPartyLedger==='function' && !window.openPartyLedger.__v724Wrapped){
     var originalOpen=window.openPartyLedger;
     function wrappedOpen(which){
