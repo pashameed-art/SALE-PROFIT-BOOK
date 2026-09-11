@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.31</title>
+<title>Sale Profit Book • V7.32</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1511,11 +1511,21 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 }
 </style>
 
+
+<style id="v732-party-return-style">
+.party-return-row{margin-top:10px;display:flex;justify-content:center}
+.party-return-btn{
+  width:100%;max-width:220px;padding:10px 14px;border-radius:10px;
+  border:1px solid #cbd5d1;background:#fff;color:#174f3d;
+  font-weight:700;cursor:pointer;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.31</div>
+<div class="version">Version 7.32</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1746,7 +1756,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <div id="mansoorReportResult"></div>
 <div class="party-report-actions" id="mansoorReportActions" style="display:none">
   <button type="button" class="secondary" id="mansoorPDF">PDF</button>
-  <button type="button" class="secondary" id="mansoorSharePDF">Share PDF</button><button type="button" class="secondary" id="mansoorClearReport">Clear</button><button type="button" class="secondary" id="mansoorRefreshReport">Refresh</button>
+  <button type="button" class="secondary" id="mansoorSharePDF">Share PDF</button><button type="button" class="secondary" id="mansoorClearReport">Clear</button>
 </div>
 </div>
 </section>
@@ -2054,6 +2064,9 @@ body.spb-home-mode #homeStockDetails #stockSummary{
     <div class="party-row">
       <button class="party-choice" onclick="openPartyLedger('mydeen')">🤝 Mydeen</button>
       <button class="party-choice" onclick="openPartyLedger('mansoor')">🤝 Mansoor</button>
+    </div>
+    <div class="party-return-row">
+      <button type="button" class="party-return-btn" onclick="returnToPartyChooser()">← Party</button>
     </div>
   </div>
   <div id="partyLedgerArea"></div>
@@ -5207,7 +5220,7 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
         '<div class="field"><label>Date To</label><input type="date" id="partyMydeenReportTo"></div></div>'+
         '<button type="button" class="primary" id="partyMydeenGenerateReport">Generate Report</button>'+
         '<div id="partyMydeenReportResult"></div>'+
-        '<div class="party-report-actions"><button type="button" class="secondary" id="partyMydeenPDF">PDF</button><button type="button" class="secondary" id="partyMydeenSharePDF">Share PDF</button><button type="button" class="secondary" id="partyMydeenClearReport">Clear</button><button type="button" class="secondary" id="partyMydeenRefreshReport">Refresh</button></div></div>';
+        '<div class="party-report-actions"><button type="button" class="secondary" id="partyMydeenPDF">PDF</button><button type="button" class="secondary" id="partyMydeenSharePDF">Share PDF</button><button type="button" class="secondary" id="partyMydeenClearReport">Clear</button></div></div>';
       q('partyMydeenSave').onclick=saveMydeen;
       q('partyMydeenClear').onclick=clearMydeen;
     }
@@ -6510,7 +6523,7 @@ function refreshHistory(){
 }
 
 function install(){
-  /* V7.31/V7.22 history renderer is saved by the previous controller below. */
+  /* V7.32/V7.22 history renderer is saved by the previous controller below. */
   if(typeof window.openPartyLedger==='function' && !window.openPartyLedger.__v724Wrapped){
     var originalOpen=window.openPartyLedger;
     function wrappedOpen(which){
@@ -6614,6 +6627,39 @@ if(document.readyState==='loading'){
 try{
   new MutationObserver(bind).observe(document.body,{childList:true,subtree:true});
 }catch(e){}
+})();
+</script>
+
+
+<script id="v732-party-return-controller">
+(function(){
+  'use strict';
+  window.returnToPartyChooser=function(){
+    try{
+      var p=document.getElementById('partyPage');
+      var area=document.getElementById('partyLedgerArea');
+      if(area) area.innerHTML='';
+      document.body.classList.remove('party-open-mode','spb-party-mode','v576-party','page-open-mode','history-open-mode');
+      document.querySelectorAll('.page').forEach(function(x){
+        x.classList.remove('active');
+        if(x.id!=='partyPage') x.style.setProperty('display','none','important');
+      });
+      if(p){
+        p.classList.remove('hidden');
+        p.classList.add('active');
+        p.style.setProperty('display','block','important');
+        p.setAttribute('aria-hidden','false');
+      }
+      document.querySelectorAll('#partyPage .party-choice').forEach(function(b){
+        b.classList.remove('selected','active');
+      });
+      window.scrollTo(0,0);
+    }catch(e){
+      var btn=Array.prototype.find.call(document.querySelectorAll('.nav-bar button'),
+        function(b){return (b.textContent||'').trim().toLowerCase().includes('party');});
+      if(btn) btn.click();
+    }
+  };
 })();
 </script>
 
