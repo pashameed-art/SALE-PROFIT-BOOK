@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.36</div>
+<div class="version">Version 7.37</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2066,7 +2066,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
     <h2>👥 Party</h2>
     <div class="party-row">
       <button class="party-choice" onclick="openPartyLedger('mydeen')">🤝 Mydeen</button>
-      <button class="party-choice" onclick="openPartyLedger('mansoor')">🤝 Mansoor</button>
+      <button class="party-choice" onclick="openMansoorParty()">🤝 Mansoor</button>
     </div>
     <div class="party-refresh-row">
       <button type="button" class="party-refresh-btn" onclick="returnToPartyChooser()">↻ Refresh</button>
@@ -6709,6 +6709,39 @@ try{
       );
       if(partyBtn) partyBtn.click();
     }
+  };
+})();
+</script>
+
+
+<script id="v737-mansoor-button-fix">
+(function(){
+  'use strict';
+  window.openMansoorParty=function(){
+    try{
+      // Use the app's normal Party ledger opener first.
+      if(typeof window.openPartyLedger==='function'){
+        window.openPartyLedger('mansoor');
+      }else if(typeof window.showParty==='function'){
+        window.showParty('mansoor');
+      }
+      // Re-render Mansoor after any delayed Party renderer finishes.
+      setTimeout(function(){
+        try{
+          if(typeof window.renderMansoor==='function') window.renderMansoor();
+          if(typeof window.__SPB_V722_HISTORY_RENDER==='function')
+            window.__SPB_V722_HISTORY_RENDER();
+        }catch(e){}
+      },80);
+      setTimeout(function(){
+        try{
+          if(typeof window.renderMansoor==='function') window.renderMansoor();
+          if(typeof window.__SPB_V722_HISTORY_RENDER==='function')
+            window.__SPB_V722_HISTORY_RENDER();
+        }catch(e){}
+      },350);
+      window.scrollTo(0,0);
+    }catch(e){}
   };
 })();
 </script>
