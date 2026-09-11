@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.29</title>
+<title>Sale Profit Book • V7.30</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1515,7 +1515,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.29</div>
+<div class="version">Version 7.30</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -6332,18 +6332,18 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .pch-count{padding:3px 8px;border-radius:999px;background:rgba(0,0,0,.06);color:#666}
 .pch-total{font-weight:900}
 .pch-body{border-top:1px solid rgba(0,0,0,.08);padding:6px;overflow:hidden}
-.pch-head,.pch-row{display:grid;grid-template-columns:54px minmax(0,1fr) 72px 78px 76px;gap:4px;align-items:center;width:100%;box-sizing:border-box}
+.pch-head,.pch-row{display:grid;grid-template-columns:54px minmax(0,1fr) 72px 1fr;gap:4px;align-items:center;width:100%;box-sizing:border-box}
 .pch-head{padding:6px 3px;font-size:11px;font-weight:800;color:#777}
 .pch-row{padding:8px 3px;border-top:1px solid rgba(0,0,0,.06);font-size:12px}
 .pch-date{white-space:nowrap}
 .pch-type{min-width:0;white-space:normal;overflow-wrap:anywhere}
-.pch-amt,.pch-bal{white-space:nowrap;text-align:right;font-weight:800}
+.pch-amt{white-space:nowrap;text-align:right;font-weight:800}
 .pch-actions{display:flex;justify-content:flex-end;gap:3px;min-width:0}
 .pch-btn{border:0;border-radius:7px;padding:5px 6px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
 .pch-edit{background:#eaf5f3;color:#116d64}
 .pch-delete{background:#fdecec;color:#c62828}
 @media(max-width:520px){
- .pch-head,.pch-row{grid-template-columns:50px minmax(72px,1fr) 66px 72px 72px;gap:3px}
+ .pch-head,.pch-row{grid-template-columns:50px minmax(72px,1fr) 66px 1fr;gap:3px}
  .pch-head{font-size:10px}
  .pch-row{font-size:11px}
  .pch-btn{padding:5px 5px;font-size:10px}
@@ -6394,19 +6394,6 @@ function draw(box,key,editAttr,deleteAttr){
            Number(a.id||0)-Number(b.id||0);
   });
 
-  // Calculate the overall running balance in date order first,
-  // then show each category separately while preserving each row's balance.
-  // Use the actual ledger running balance if available.
-  var balanceById={};
-  if(all.length){
-    var running=Number(all[0].balance||0);
-    balanceById[String(all[0].id)] = running;
-    for(var i=1;i<all.length;i++){
-      running = Number(all[i].balance||0);
-      balanceById[String(all[i].id)] = running;
-    }
-  }
-
   function section(given,label,cls){
     var rows=all.filter(function(x){
       return (String(x.type||'').toLowerCase()==='given')===given;
@@ -6419,7 +6406,6 @@ function draw(box,key,editAttr,deleteAttr){
         '<div class="pch-date">'+esc(fmt(x.date))+'</div>'+
         '<div class="pch-type">'+esc(label)+'</div>'+
         '<div class="pch-amt">'+money(x.amount)+'</div>'+
-        '<div class="pch-bal">'+money(balanceById[id])+'</div>'+
         '<div class="pch-actions">'+
           '<button type="button" class="pch-btn pch-edit" '+editAttr+'="'+esc(id)+'">Edit</button>'+
           '<button type="button" class="pch-btn pch-delete" '+deleteAttr+'="'+esc(id)+'">Delete</button>'+
@@ -6434,7 +6420,7 @@ function draw(box,key,editAttr,deleteAttr){
       '</summary>'+
       '<div class="pch-body">'+
         (rows.length
-          ? '<div class="pch-head"><div>Date</div><div>Type</div><div>Amount</div><div>Balance</div><div>Action</div></div>'+body
+          ? '<div class="pch-head"><div>Date</div><div>Type</div><div>Amount</div><div>Action</div></div>'+body
           : '<div style="padding:10px;text-align:center;color:#888;font-size:12px">No entries</div>')+
       '</div>'+
     '</details>';
@@ -6494,7 +6480,7 @@ function refreshHistory(){
 }
 
 function install(){
-  /* V7.29/V7.22 history renderer is saved by the previous controller below. */
+  /* V7.30/V7.22 history renderer is saved by the previous controller below. */
   if(typeof window.openPartyLedger==='function' && !window.openPartyLedger.__v724Wrapped){
     var originalOpen=window.openPartyLedger;
     function wrappedOpen(which){
