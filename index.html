@@ -1512,14 +1512,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 </style>
 
 
-<style id="v732-party-return-style">
-.party-return-row{margin-top:10px;display:flex;justify-content:center}
-.party-return-btn{
-  width:100%;max-width:220px;padding:10px 14px;border-radius:10px;
-  border:1px solid #cbd5d1;background:#fff;color:#174f3d;
-  font-weight:700;cursor:pointer;
-}
-</style>
+
 
 </head>
 <body>
@@ -2064,9 +2057,6 @@ body.spb-home-mode #homeStockDetails #stockSummary{
     <div class="party-row">
       <button class="party-choice" onclick="openPartyLedger('mydeen')">🤝 Mydeen</button>
       <button class="party-choice" onclick="openPartyLedger('mansoor')">🤝 Mansoor</button>
-    </div>
-    <div class="party-return-row">
-      <button type="button" class="party-return-btn" onclick="returnToPartyChooser()">← Party</button>
     </div>
   </div>
   <div id="partyLedgerArea"></div>
@@ -6594,26 +6584,18 @@ function clearReport(prefix){
   if(a) a.style.display='none';
 }
 
-function refreshReport(prefix){
-  var id=(prefix==='mansoor') ? 'mansoorGenerateReport' : 'partyMydeenGenerateReport';
-  var b=document.getElementById(id);
-  if(b) b.click();
-}
 
 function bind(){
   var pairs=[
     ['mansoorClearReport','mansoor',false],
-    ['mansoorRefreshReport','mansoor',true],
     ['partyMydeenClearReport','partyMydeen',false],
-    ['partyMydeenRefreshReport','partyMydeen',true]
   ];
   pairs.forEach(function(x){
     var b=document.getElementById(x[0]);
     if(!b || b.dataset.v727Bound==='1') return;
     b.dataset.v727Bound='1';
     b.addEventListener('click',function(){
-      if(x[2]) refreshReport(x[1]);
-      else clearReport(x[1]);
+      clearReport(x[1]);
     });
   });
 }
@@ -6631,37 +6613,27 @@ try{
 </script>
 
 
-<script id="v732-party-return-controller">
+
+
+<script id="v733-party-button-fix">
 (function(){
-  'use strict';
-  window.returnToPartyChooser=function(){
-    try{
-      var p=document.getElementById('partyPage');
-      var area=document.getElementById('partyLedgerArea');
-      if(area) area.innerHTML='';
-      document.body.classList.remove('party-open-mode','spb-party-mode','v576-party','page-open-mode','history-open-mode');
-      document.querySelectorAll('.page').forEach(function(x){
-        x.classList.remove('active');
-        if(x.id!=='partyPage') x.style.setProperty('display','none','important');
-      });
-      if(p){
-        p.classList.remove('hidden');
-        p.classList.add('active');
-        p.style.setProperty('display','block','important');
-        p.setAttribute('aria-hidden','false');
-      }
-      document.querySelectorAll('#partyPage .party-choice').forEach(function(b){
-        b.classList.remove('selected','active');
-      });
-      window.scrollTo(0,0);
-    }catch(e){
-      var btn=Array.prototype.find.call(document.querySelectorAll('.nav-bar button'),
-        function(b){return (b.textContent||'').trim().toLowerCase().includes('party');});
-      if(btn) btn.click();
-    }
-  };
+  function bind(){
+    document.querySelectorAll('#partyPage .party-choice').forEach(function(btn){
+      if(btn.dataset.v733Bound==='1') return;
+      btn.dataset.v733Bound='1';
+      btn.addEventListener('click',function(ev){
+        ev.preventDefault(); ev.stopImmediatePropagation();
+        var m=(btn.getAttribute('onclick')||'').match(/openPartyLedger\(['"](mydeen|mansoor)['"]\)/i);
+        if(m && typeof window.openPartyLedger==='function'){
+          try{ window.openPartyLedger(m[1]); }catch(e){ console.error(e); }
+        }
+      },true);
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind);
+  else bind();
+  setTimeout(bind,300); setTimeout(bind,1000);
 })();
 </script>
-
 </body>
 </html>
