@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="7.26" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="7.38" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.37</div>
+<div class="version">Version 7.38</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2066,7 +2066,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
     <h2>👥 Party</h2>
     <div class="party-row">
       <button class="party-choice" onclick="openPartyLedger('mydeen')">🤝 Mydeen</button>
-      <button class="party-choice" onclick="openMansoorParty()">🤝 Mansoor</button>
+      <button class="party-choice" onclick="openPartyLedger('mansoor')">🤝 Mansoor</button>
     </div>
     <div class="party-refresh-row">
       <button type="button" class="party-refresh-btn" onclick="returnToPartyChooser()">↻ Refresh</button>
@@ -6712,39 +6712,5 @@ try{
   };
 })();
 </script>
-
-
-<script id="v737-mansoor-button-fix">
-(function(){
-  'use strict';
-  window.openMansoorParty=function(){
-    try{
-      // Use the app's normal Party ledger opener first.
-      if(typeof window.openPartyLedger==='function'){
-        window.openPartyLedger('mansoor');
-      }else if(typeof window.showParty==='function'){
-        window.showParty('mansoor');
-      }
-      // Re-render Mansoor after any delayed Party renderer finishes.
-      setTimeout(function(){
-        try{
-          if(typeof window.renderMansoor==='function') window.renderMansoor();
-          if(typeof window.__SPB_V722_HISTORY_RENDER==='function')
-            window.__SPB_V722_HISTORY_RENDER();
-        }catch(e){}
-      },80);
-      setTimeout(function(){
-        try{
-          if(typeof window.renderMansoor==='function') window.renderMansoor();
-          if(typeof window.__SPB_V722_HISTORY_RENDER==='function')
-            window.__SPB_V722_HISTORY_RENDER();
-        }catch(e){}
-      },350);
-      window.scrollTo(0,0);
-    }catch(e){}
-  };
-})();
-</script>
-
 </body>
 </html>
