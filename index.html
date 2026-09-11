@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.25</title>
+<title>Sale Profit Book • V7.27</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="7.25" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="7.26" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1499,11 +1499,23 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 }
 </style>
 
+
+<style id="v727-party-report-buttons">
+.party-report-extra-actions{
+  display:flex;
+  gap:8px;
+  margin-top:8px;
+}
+.party-report-extra-actions button{
+  flex:1;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.25</div>
+<div class="version">Version 7.27</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1734,7 +1746,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <div id="mansoorReportResult"></div>
 <div class="party-report-actions" id="mansoorReportActions" style="display:none">
   <button type="button" class="secondary" id="mansoorPDF">PDF</button>
-  <button type="button" class="secondary" id="mansoorSharePDF">Share PDF</button>
+  <button type="button" class="secondary" id="mansoorSharePDF">Share PDF</button><button type="button" class="secondary" id="mansoorClearReport">Clear</button><button type="button" class="secondary" id="mansoorRefreshReport">Refresh</button>
 </div>
 </div>
 </section>
@@ -5195,7 +5207,7 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
         '<div class="field"><label>Date To</label><input type="date" id="partyMydeenReportTo"></div></div>'+
         '<button type="button" class="primary" id="partyMydeenGenerateReport">Generate Report</button>'+
         '<div id="partyMydeenReportResult"></div>'+
-        '<div class="party-report-actions"><button type="button" class="secondary" id="partyMydeenPDF">PDF</button><button type="button" class="secondary" id="partyMydeenSharePDF">Share PDF</button></div></div>';
+        '<div class="party-report-actions"><button type="button" class="secondary" id="partyMydeenPDF">PDF</button><button type="button" class="secondary" id="partyMydeenSharePDF">Share PDF</button><button type="button" class="secondary" id="partyMydeenClearReport">Clear</button><button type="button" class="secondary" id="partyMydeenRefreshReport">Refresh</button></div></div>';
       q('partyMydeenSave').onclick=saveMydeen;
       q('partyMydeenClear').onclick=clearMydeen;
     }
@@ -6475,7 +6487,7 @@ function refreshHistory(){
 }
 
 function install(){
-  /* V7.25/V7.22 history renderer is saved by the previous controller below. */
+  /* V7.27/V7.22 history renderer is saved by the previous controller below. */
   if(typeof window.openPartyLedger==='function' && !window.openPartyLedger.__v724Wrapped){
     var originalOpen=window.openPartyLedger;
     function wrappedOpen(which){
@@ -6527,6 +6539,58 @@ if(document.readyState==='loading'){
 /* Re-install in case the party controller defines its functions later. */
 setTimeout(install,1200);
 setTimeout(install,2000);
+})();
+</script>
+
+
+<script id="v727-party-report-buttons-controller">
+(function(){
+'use strict';
+
+function clearReport(prefix){
+  var f=document.getElementById(prefix+'ReportFrom');
+  var t=document.getElementById(prefix+'ReportTo');
+  var r=document.getElementById(prefix+'ReportResult');
+  if(f) f.value='';
+  if(t) t.value='';
+  if(r) r.innerHTML='';
+  var a=document.getElementById(prefix+'ReportActions');
+  if(a) a.style.display='none';
+}
+
+function refreshReport(prefix){
+  var id=(prefix==='mansoor') ? 'mansoorGenerateReport' : 'partyMydeenGenerateReport';
+  var b=document.getElementById(id);
+  if(b) b.click();
+}
+
+function bind(){
+  var pairs=[
+    ['mansoorClearReport','mansoor',false],
+    ['mansoorRefreshReport','mansoor',true],
+    ['partyMydeenClearReport','partyMydeen',false],
+    ['partyMydeenRefreshReport','partyMydeen',true]
+  ];
+  pairs.forEach(function(x){
+    var b=document.getElementById(x[0]);
+    if(!b || b.dataset.v727Bound==='1') return;
+    b.dataset.v727Bound='1';
+    b.addEventListener('click',function(){
+      if(x[2]) refreshReport(x[1]);
+      else clearReport(x[1]);
+    });
+  });
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',bind);
+}else{
+  bind();
+}
+[300,800,1500].forEach(function(ms){setTimeout(bind,ms);});
+try{
+  new MutationObserver(bind).observe(document.body,{childList:true,subtree:true});
+}catch(e){}
 })();
 </script>
 
