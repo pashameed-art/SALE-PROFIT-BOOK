@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.30</title>
+<title>Sale Profit Book • V7.31</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1515,7 +1515,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.30</div>
+<div class="version">Version 7.31</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3274,7 +3274,7 @@ function updateTodayExpenseTotal(){
 <script>
 (function(){
   const MKEY='saleProfitBookMansoorV1';
-  const INITIAL_BALANCE=49497;
+  const INITIAL_BALANCE=39908;
   function localToday(){
     const d=new Date();
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -3391,7 +3391,7 @@ function updateTodayExpenseTotal(){
     const oldDates=Object.keys(oldMap).sort((a,b)=>b.localeCompare(a));
     if(oldDates.length || INITIAL_BALANCE>0){
       html += '<div class="expense-section-title old-expense-title">📜 Previous History</div>';
-      html += '<div class="expense-old-row mansoor-old-toggle mansoor-opening-balance"><span>📅 05.09.26</span><strong>₹'+INITIAL_BALANCE.toLocaleString('en-IN')+'</strong></div>';
+      html += '<div class="expense-old-row mansoor-old-toggle mansoor-opening-balance"><span>📅 11.09.26</span><strong>₹'+INITIAL_BALANCE.toLocaleString('en-IN')+'</strong></div>';
       html += oldDates.map(d=>{
         const net=oldMap[d].taken-oldMap[d].given;
         const sign=net>=0?'+':'-';
@@ -5878,6 +5878,27 @@ else setTimeout(wait,100);
   window.addEventListener('beforeunload',snapshot); window.addEventListener('pagehide',snapshot);
 })();
 </script>
+<script id="v731-mansoor-reset-opening">
+(function(){
+  'use strict';
+  var MA='saleProfitBookMansoorV1', VAULT='spb_data_protected_v2', DONE='spb_mansoor_reset_v731_done';
+  try{
+    if(localStorage.getItem(DONE)!=='1'){
+      localStorage.setItem(MA,'[]');
+      var v={};
+      try{v=JSON.parse(localStorage.getItem(VAULT)||'{}')||{};}catch(e){}
+      v.mansoor=[];
+      v.mansoorOpeningBalance=39908;
+      v.mansoorOpeningDate='2026-09-11';
+      v.savedAt=new Date().toISOString();
+      localStorage.setItem(VAULT,JSON.stringify(v));
+      localStorage.setItem('spb_mansoor_opening_balance_v731','39908');
+      localStorage.setItem('spb_mansoor_opening_date_v731','2026-09-11');
+      localStorage.setItem(DONE,'1');
+    }
+  }catch(e){}
+})();
+</script>
 <script id="party-report-pdf-final">
 (function(){
 'use strict';
@@ -6339,6 +6360,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 .pch-type{min-width:0;white-space:normal;overflow-wrap:anywhere}
 .pch-amt{white-space:nowrap;text-align:right;font-weight:800}
 .pch-actions{display:flex;justify-content:flex-end;gap:3px;min-width:0}
+.pch-opening-row{background:#fafdfc}
 .pch-btn{border:0;border-radius:7px;padding:5px 6px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
 .pch-edit{background:#eaf5f3;color:#116d64}
 .pch-delete{background:#fdecec;color:#c62828}
@@ -6398,7 +6420,15 @@ function draw(box,key,editAttr,deleteAttr){
     var rows=all.filter(function(x){
       return (String(x.type||'').toLowerCase()==='given')===given;
     });
-    var total=rows.reduce(function(s,x){return s+Number(x.amount||0);},0);
+    var opening = (!given && key==='saleProfitBookMansoorV1') ? Number(localStorage.getItem('spb_mansoor_opening_balance_v731')||39908) : 0;
+    var total=opening+rows.reduce(function(s,x){return s+Number(x.amount||0);},0);
+
+    var openingRow = opening ? ('<div class="pch-row pch-opening-row">'+
+      '<div class="pch-date">11.09.26</div>'+
+      '<div class="pch-type">பணம் வாங்கியது</div>'+
+      '<div class="pch-amt">'+money(opening)+'</div>'+
+      '<div class="pch-actions"><span style="color:#888">—</span></div>'+
+      '</div>') : '';
 
     var body=rows.map(function(x){
       var id=String(x.id||'');
@@ -6419,8 +6449,8 @@ function draw(box,key,editAttr,deleteAttr){
         '<span class="pch-meta"><span class="pch-count">'+rows.length+'</span><span class="pch-total">'+money(total)+'</span></span>'+
       '</summary>'+
       '<div class="pch-body">'+
-        (rows.length
-          ? '<div class="pch-head"><div>Date</div><div>Type</div><div>Amount</div><div>Action</div></div>'+body
+        ((rows.length || opening)
+          ? '<div class="pch-head"><div>Date</div><div>Type</div><div>Amount</div><div>Action</div></div>'+openingRow+body
           : '<div style="padding:10px;text-align:center;color:#888;font-size:12px">No entries</div>')+
       '</div>'+
     '</details>';
@@ -6480,7 +6510,7 @@ function refreshHistory(){
 }
 
 function install(){
-  /* V7.30/V7.22 history renderer is saved by the previous controller below. */
+  /* V7.31/V7.22 history renderer is saved by the previous controller below. */
   if(typeof window.openPartyLedger==='function' && !window.openPartyLedger.__v724Wrapped){
     var originalOpen=window.openPartyLedger;
     function wrappedOpen(which){
