@@ -1514,11 +1514,21 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 
 
 
+
+<style id="v733-party-refresh-style">
+.party-refresh-row{margin-top:12px;display:flex;justify-content:center}
+.party-refresh-btn{
+  width:100%;max-width:220px;padding:10px 14px;border-radius:10px;
+  border:1px solid #cbd5d1;background:#fff;color:#174f3d;
+  font-weight:700;cursor:pointer;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.33</div>
+<div class="version">Version 7.34</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2057,6 +2067,9 @@ body.spb-home-mode #homeStockDetails #stockSummary{
     <div class="party-row">
       <button class="party-choice" onclick="openPartyLedger('mydeen')">🤝 Mydeen</button>
       <button class="party-choice" onclick="openPartyLedger('mansoor')">🤝 Mansoor</button>
+    </div>
+    <div class="party-refresh-row">
+      <button type="button" class="party-refresh-btn" onclick="returnToPartyChooser()">↻ Refresh</button>
     </div>
   </div>
   <div id="partyLedgerArea"></div>
@@ -6635,5 +6648,54 @@ try{
   setTimeout(bind,300); setTimeout(bind,1000);
 })();
 </script>
+
+<script id="v733-party-refresh-controller">
+(function(){
+  'use strict';
+  window.returnToPartyChooser=function(){
+    try{
+      var party=document.getElementById('partyPage');
+      if(!party) return;
+
+      // Hide every other page/ledger area.
+      document.querySelectorAll('.page').forEach(function(el){
+        el.classList.remove('active');
+        if(el.id!=='partyPage') el.style.setProperty('display','none','important');
+      });
+
+      document.querySelectorAll('[id*="Page"],[id*="page"]').forEach(function(el){
+        if(el!==party && !party.contains(el)){
+          el.classList.remove('active');
+        }
+      });
+
+      // Clear active Party sub-pages so old Report output is not shown.
+      ['mansoorPage','partyMydeenCard','mansoorReportCard','mydeenReportCard',
+       'mansoorHost','mydeenHost'].forEach(function(id){
+        var el=document.getElementById(id);
+        if(el && el!==party){
+          el.classList.remove('active');
+          if(id!=='partyMydeenCard' && id!=='mansoorReportCard' && id!=='mydeenReportCard')
+            el.style.removeProperty('display');
+        }
+      });
+
+      // Use the app's Party page if available.
+      party.classList.remove('hidden');
+      party.classList.add('active');
+      party.style.setProperty('display','block','important');
+      party.setAttribute('aria-hidden','false');
+
+      // Deselect Mydeen/Mansoor.
+      party.querySelectorAll('.party-choice').forEach(function(b){
+        b.classList.remove('selected','active');
+      });
+
+      window.scrollTo(0,0);
+    }catch(e){}
+  };
+})();
+</script>
+
 </body>
 </html>
