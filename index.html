@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.61</div>
+<div class="version">Version 7.62</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1683,83 +1683,70 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 .v748-gdrive-info.success .v748-gdrive-status{color:#126d66;}
 .v748-gdrive-info.failed .v748-gdrive-status{color:#9b3333;}
 </style>
+
 <div class="page" id="backupPage">
-<div class="backup-box">
-<div class="backup-actions-v455">
-<button class="full-backup" id="gdriveBackupBtn" onclick="gdriveBackup()" type="button">☁️ GDrive Backup</button>
-<label class="backup-restore-label-v455 full-restore">♻️ Restore
-        <input id="restoreFileV551" accept=".json,application/json" hidden="" onchange="partySafeRestore(this.files[0])" type="file"/>
-</label>
-</div>
-<div id="backupStatusV551" class="meta" style="margin-top:12px">One-tap Google Drive backup: saves all app data securely to your Google Drive.</div>
-
-<div id="backupHealthCountsV757" style="margin-top:6px;font-size:14px;"></div>
-  <div id="backupHealthTimeV757" style="margin-top:6px;font-size:13px;"></div>
-</div>
-
-
-<div id="backupDetailsSizeV758" style="margin-top:6px;font-size:14px;"></div>
-  <div id="backupDetailsAgeV758" style="margin-top:6px;font-size:14px;"></div>
-</div>
-
-
-<div id="backupChangeTimeV759" style="margin-top:6px;font-size:13px;"></div>
-</div>
-
-
-<div id="backupIntegrityDetailsV760" style="margin-top:6px;font-size:14px;"></div>
-</div>
-
-
-<div class="card" id="smartBackupCenterV761" style="margin-top:12px;">
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-    <div>
-      <div style="font-size:18px;font-weight:700;">☁️ Backup Center</div>
-      <div id="smartBackupSubV761" style="font-size:13px;opacity:.72;margin-top:3px;">Your backup at a glance</div>
+  <div class="backup-box" style="padding:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <div>
+        <div style="font-size:20px;font-weight:900;">☁️ Backup Center</div>
+        <div style="font-size:12px;opacity:.68;margin-top:3px;">Protect your complete SALE-PROFIT-BOOK data</div>
+      </div>
+      <div id="smartBackupBadgeV762" style="padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800;background:rgba(34,197,94,.12);">CHECKING</div>
     </div>
-    <div id="smartBackupBadgeV761" style="padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(34,197,94,.12);">CHECKING</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px;">
+      <button class="full-backup" id="gdriveBackupBtn" onclick="gdriveBackup()" type="button" style="min-height:46px;">☁️ Backup</button>
+      <label class="backup-restore-label-v455 full-restore" style="min-height:46px;display:flex;align-items:center;justify-content:center;">
+        ♻️ Restore
+        <input id="restoreFileV551" accept=".json,application/json" hidden onchange="partySafeRestore(this.files[0])" type="file"/>
+      </label>
+    </div>
+
+    <div id="backupStatusV551" class="meta" style="margin-top:10px;text-align:center;">
+      One-tap Google Drive backup saves all app data.
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px;">
+      <div style="padding:9px;border-radius:12px;background:rgba(127,127,127,.08);text-align:center;">
+        <div style="font-size:10px;opacity:.62;">LAST BACKUP</div>
+        <b id="smartBackupLastV762" style="display:block;margin-top:4px;font-size:13px;">—</b>
+      </div>
+      <div style="padding:9px;border-radius:12px;background:rgba(127,127,127,.08);text-align:center;">
+        <div style="font-size:10px;opacity:.62;">RECORDS</div>
+        <b id="smartBackupRecordsV762" style="display:block;margin-top:4px;font-size:13px;">—</b>
+      </div>
+      <div style="padding:9px;border-radius:12px;background:rgba(127,127,127,.08);text-align:center;">
+        <div style="font-size:10px;opacity:.62;">FILE</div>
+        <b style="display:block;margin-top:4px;font-size:11px;word-break:break-word;">GDrive JSON</b>
+      </div>
+    </div>
+
+    <div id="smartBackupMessageV762" style="margin-top:10px;padding:9px 10px;border-radius:11px;background:var(--soft,#eef7f6);font-size:12px;line-height:1.4;"></div>
+
+    <details style="margin-top:10px;">
+      <summary style="cursor:pointer;font-weight:800;padding:8px 2px;">📋 Backup Details</summary>
+      <div id="gdriveBackupInfoV748" class="v748-gdrive-info" aria-live="polite" style="margin-top:7px;">
+        <div class="v748-gdrive-info-title">☁️ Google Drive Backup Status</div>
+        <div class="v748-gdrive-status" id="gdriveBackupStateV748">Not backed up yet</div>
+        <div class="v748-gdrive-time" id="gdriveBackupTimeV748">Last Backup: —</div>
+        <div class="v748-gdrive-time" id="gdriveBackupFileV751">Backup File: SALE-PROFIT-BOOK-GDRIVE-BACKUP.json</div>
+      </div>
+      <div class="meta" style="margin-top:9px;">Google sign-in is required for the first GDrive backup. Restore can use a downloaded backup file.</div>
+      <button class="secondary" onclick="exportCSV()" style="margin-top:9px;width:100%;">Export CSV</button>
+    </details>
   </div>
 
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;">
-    <div style="padding:10px;border-radius:12px;background:rgba(127,127,127,.08);">
-      <div style="font-size:11px;opacity:.65;">LAST BACKUP</div>
-      <div id="smartBackupLastV761" style="font-size:13px;font-weight:600;margin-top:4px;">—</div>
-    </div>
-    <div style="padding:10px;border-radius:12px;background:rgba(127,127,127,.08);">
-      <div style="font-size:11px;opacity:.65;">RECORDS</div>
-      <div id="smartBackupRecordsV761" style="font-size:13px;font-weight:600;margin-top:4px;">—</div>
-    </div>
-    <div style="padding:10px;border-radius:12px;background:rgba(127,127,127,.08);">
-      <div style="font-size:11px;opacity:.65;">BACKUP FILE</div>
-      <div id="smartBackupFileV761" style="font-size:13px;font-weight:600;margin-top:4px;">GDrive</div>
-    </div>
-  </div>
-
-  <div id="smartBackupMessageV761" style="margin-top:10px;font-size:13px;line-height:1.45;"></div>
+  <details class="card" style="margin-top:10px;padding:12px;">
+    <summary style="cursor:pointer;font-weight:900;">🕘 Backup History</summary>
+    <div style="margin-top:9px;">
+<div class="card" id="v752-backup-history" style="margin-top:0;">
+<h3 style="margin:0 0 10px;">🕘 Backup History</h3>
+<div id="v752BackupHistoryList"></div>
+<button class="secondary" id="v752ClearBackupHistory" style="margin-top:10px;width:100%;" type="button">Clear Backup History</button>
 </div>
-
-<div id="gdriveBackupInfoV748" class="v748-gdrive-info" aria-live="polite">
-  <div class="v748-gdrive-info-title">☁️ Google Drive Backup Status</div>
-  <div class="v748-gdrive-status" id="gdriveBackupStateV748">Not backed up yet</div>
-  <div class="v748-gdrive-time" id="gdriveBackupTimeV748">Last Backup: —</div>
-  <div class="v748-gdrive-time" id="gdriveBackupFileV751">Backup File: SALE-PROFIT-BOOK-GDRIVE-BACKUP.json</div>
-</div>
-<div class="meta" style="margin-top:12px">☁️ <strong>GDrive Backup</strong> requires Google sign-in the first time. Restore can still use a downloaded backup file.</div>
-<button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
-<div id="removeSaleExpenseModalV610" class="v610-modal" aria-hidden="true">
-  <div class="v610-modal-card" role="dialog" aria-modal="true" aria-labelledby="v610RemoveTitle">
-    <div class="v610-warning">!</div>
-    <h2 id="v610RemoveTitle">Remove Sale &amp; Expense Data?</h2>
-    <p>This will permanently delete all <b>Sale Amount</b> records and <b>Expense Amount</b> records.</p>
-    <p><b>Items, Purchase/Meter rates, Stock, Party data and app settings will remain unchanged.</b></p>
-    <div class="v610-modal-actions">
-      <button class="secondary" type="button" onclick="closeRemoveSaleExpenseV610()">Cancel</button>
-      <button class="v610-danger-confirm" type="button" onclick="removeSaleExpenseV610()">Remove Data</button>
     </div>
-  </div>
+  </details>
 </div>
-</div>
-
 <!-- V7.52 — Google Drive Backup History -->
 <div class="card" id="v752-backup-history" style="margin-top:14px;">
   <h3 style="margin:0 0 10px;">🕘 Backup History</h3>
@@ -1988,7 +1975,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 </script>
 
 
-<!-- V7.61 — Backup Reminder -->
+<!-- V7.62 — Backup Reminder -->
 <div class="card" id="v756-backup-reminder" style="margin-top:14px;">
   <h3 style="margin:0 0 8px;">🔔 Backup Reminder</h3>
   <div id="v756BackupReminder" style="padding:10px;border:1px solid #e1ecea;border-radius:10px;background:var(--soft,#eef7f6);font-weight:700;color:#176f67;">
@@ -2523,6 +2510,73 @@ body.spb-home-mode #homeStockDetails #stockSummary{
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',smartBackupCenterV761);
   else smartBackupCenterV761();
   setTimeout(smartBackupCenterV761,800);
+})();
+</script>
+
+
+<script id="smartBackupCenterScriptV762">
+(function(){
+  function renderV762(){
+    try{
+      const badge=document.getElementById('smartBackupBadgeV762');
+      const lastEl=document.getElementById('smartBackupLastV762');
+      const recEl=document.getElementById('smartBackupRecordsV762');
+      const msg=document.getElementById('smartBackupMessageV762');
+      if(!badge||!lastEl||!recEl||!msg)return;
+
+      const keys=['spb_v4_entries','spb_v4_purchase','spb_v4_expenses','spb_v4_stock',
+                  'saleProfitBookMydeenV1','saleProfitBookMansoorV1','sale','purchase','expense','stock'];
+      let records=0, seen={};
+      keys.forEach(k=>{
+        if(seen[k])return; seen[k]=1;
+        try{
+          const raw=localStorage.getItem(k);
+          if(!raw)return;
+          const v=JSON.parse(raw);
+          if(Array.isArray(v))records+=v.length;
+          else if(v&&Array.isArray(v.data))records+=v.data.length;
+        }catch(e){}
+      });
+      recEl.textContent=records.toLocaleString('en-IN');
+
+      const last=localStorage.getItem('spb_last_gdrive_backup_at');
+      if(!last){
+        badge.textContent='NOT BACKED UP';
+        lastEl.textContent='Not yet';
+        msg.textContent='Create a Google Drive backup to protect your current data.';
+        return;
+      }
+      const d=new Date(last);
+      if(isNaN(d.getTime())){
+        badge.textContent='CHECK';
+        lastEl.textContent='Available';
+        msg.textContent='Backup record found. Check Backup Details for the saved timestamp.';
+        return;
+      }
+      const mins=Math.max(0,Math.floor((Date.now()-d.getTime())/60000));
+      let age;
+      if(mins<1)age='Just now';
+      else if(mins<60)age=mins+' min ago';
+      else if(mins<1440)age=Math.floor(mins/60)+' hr ago';
+      else age=Math.floor(mins/1440)+' day'+(Math.floor(mins/1440)===1?'':'s')+' ago';
+
+      lastEl.textContent=age;
+      if(mins<=4320){
+        badge.textContent='PROTECTED';
+        msg.textContent='✓ Backup is recent.';
+      }else if(mins<=10080){
+        badge.textContent='DUE SOON';
+        msg.textContent='Backup is more than 3 days old. Consider a fresh backup.';
+      }else{
+        badge.textContent='BACKUP DUE';
+        msg.textContent='⚠️ Backup is more than 7 days old. Please create a fresh backup.';
+      }
+    }catch(e){}
+  }
+  window.smartBackupCenterV762=renderV762;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderV762);
+  else renderV762();
+  setTimeout(renderV762,800);
 })();
 </script>
 
