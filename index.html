@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.51</div>
+<div class="version">Version 7.52</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1713,6 +1713,86 @@ body.spb-home-mode #homeStockDetails #stockSummary{
   </div>
 </div>
 </div>
+
+<!-- V7.52 — Google Drive Backup History -->
+<div class="card" id="v752-backup-history" style="margin-top:14px;">
+  <h3 style="margin:0 0 10px;">🕘 Backup History</h3>
+  <div id="v752BackupHistoryList"></div>
+  <button type="button" class="secondary" id="v752ClearBackupHistory" style="margin-top:10px;width:100%;">Clear Backup History</button>
+</div>
+<script id="v752-backup-history-script">
+(function(){
+  'use strict';
+  const KEY='spb_gdrive_backup_history_v752';
+  const MAX=10;
+
+  function read(){
+    try{
+      const a=JSON.parse(localStorage.getItem(KEY)||'[]');
+      return Array.isArray(a)?a:[];
+    }catch(e){return [];}
+  }
+  function write(a){
+    try{localStorage.setItem(KEY,JSON.stringify(a.slice(0,MAX)));}catch(e){}
+  }
+  function fmt(ts){
+    try{
+      return new Date(ts).toLocaleString('en-IN',{
+        day:'2-digit',month:'2-digit',year:'numeric',
+        hour:'2-digit',minute:'2-digit',hour12:true
+      });
+    }catch(e){return String(ts||'');}
+  }
+  function render(){
+    const el=document.getElementById('v752BackupHistoryList');
+    if(!el)return;
+    const a=read();
+    if(!a.length){
+      el.innerHTML='<div style="padding:10px;border-radius:10px;background:var(--soft,#eef7f6);color:#667;">No backup history yet.</div>';
+      return;
+    }
+    el.innerHTML=a.map(function(x,i){
+      const file=String(x.file||'SALE-PROFIT-BOOK-GDRIVE-BACKUP.json')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return '<div style="padding:10px 0;border-bottom:1px solid #e6eeee;">'+
+        '<div style="font-weight:700;color:#176f67;">✅ Backup '+(i+1)+'</div>'+
+        '<div style="font-size:13px;margin-top:3px;">'+fmt(x.time)+'</div>'+
+        '<div style="font-size:12px;color:#6f7f7d;margin-top:3px;">'+file+'</div>'+
+        '</div>';
+    }).join('');
+  }
+  window.spbV752RecordBackup=function(file){
+    const a=read();
+    const now=Date.now();
+    // Avoid duplicate records created by repeated success callbacks within 10 seconds.
+    if(a.length && Math.abs(Number(a[0].time||0)-now)<10000) return;
+    a.unshift({time:now,file:String(file||'SALE-PROFIT-BOOK-GDRIVE-BACKUP.json')});
+    write(a);
+    render();
+  };
+  document.addEventListener('DOMContentLoaded',render);
+  document.addEventListener('click',function(e){
+    if(e.target && e.target.id==='v752ClearBackupHistory'){
+      if(confirm('Clear Backup History?')){
+        localStorage.removeItem(KEY);
+        render();
+      }
+    }
+  });
+  // Capture successful backup messages without changing the existing backup implementation.
+  const oldAlert=window.alert;
+  window.alert=function(msg){
+    try{
+      const s=String(msg||'');
+      if(/GDrive Backup completed successfully/i.test(s)){
+        window.spbV752RecordBackup('SALE-PROFIT-BOOK-GDRIVE-BACKUP.json');
+      }
+    }catch(e){}
+    return oldAlert.apply(this,arguments);
+  };
+})();
+</script>
+
 <div id="v613RemovePanel" class="v613-remove-panel">
   <div class="v613-remove-title">🗑️ Remove Sale &amp; Expense Data</div>
   <div class="v613-label">Select Date Range <span>(Optional)</span></div>
@@ -4288,7 +4368,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const now=new Date();
     return {
       app:"SALE-PROFIT-BOOK",
-      version:"7.51",
+      version:"7.52",
       createdAt:now.toISOString(),
       storage:storage
     };
