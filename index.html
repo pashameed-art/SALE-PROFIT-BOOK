@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.49</div>
+<div class="version">Version 7.50</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -4287,7 +4287,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const now=new Date();
     return {
       app:"SALE-PROFIT-BOOK",
-      version:"7.49",
+      version:"7.50",
       createdAt:now.toISOString(),
       storage:storage
     };
@@ -6827,29 +6827,3 @@ try{new MutationObserver(function(){var a=q('mansoorHistory'),b=q('partyMydeenHi
 </script>
 
 <!-- V7.45 PARTY REPORT SUMMARY — 3-CARD SUMMARY FOR SELECTED DATE RANGE -->
-
-
-<!-- V7.49 — Party Google Drive Auto Sync -->
-<script id="v749-party-gdrive-auto-sync">
-(function(){
-  'use strict';
-  var TIMER=null;
-  function schedule(reason){
-    try{
-      // Auto-sync is enabled only after the user has successfully connected/backed up
-      // to Google Drive in this browser session. Never open a sign-in popup on Save.
-      if(!window.__SPB_GDRIVE_SESSION_READY) return;
-      clearTimeout(TIMER);
-      TIMER=setTimeout(function(){
-        try{
-          if(typeof window.gdriveBackup==='function'){
-            window.gdriveBackup({silent:true, reason:reason||'party-change'});
-          }
-        }catch(e){console.warn('Party Drive auto-sync failed',e);}
-      },900);
-    }catch(e){}
-  }
-  window.__SPB_PARTY_DRIVE_AUTO_SYNC=schedule;
-  window.__SPB_GDRIVE_SESSION_READY=false;
-})();
-</script>
