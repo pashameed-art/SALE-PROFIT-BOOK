@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.45</div>
+<div class="version">Version 7.46</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -6650,6 +6650,82 @@ try{
       if(partyBtn) partyBtn.click();
     }
   };
+})();
+</script>
+
+<script id="v746-party-auto-backup">
+/* V7.46 — PARTY DATA AUTO-BACKUP SAFETY
+   Keeps a protected local snapshot of Mydeen/Mansoor data and restores only
+   when the primary key is genuinely missing. Does not overwrite non-empty data.
+*/
+(function(){
+  'use strict';
+  var KEYS={my:'saleProfitBookMydeenV1',mans:'saleProfitBookMansoorV1'};
+  var BACK={my:'spb_party_auto_backup_mydeen_v746',mans:'spb_party_auto_backup_mansoor_v746'};
+  var STAMP='spb_party_auto_backup_stamp_v746';
+
+  function read(k){try{var v=localStorage.getItem(k);return v===null?null:JSON.parse(v)}catch(e){return null}}
+  function isArray(v){return Array.isArray(v)}
+  function snapshot(key,backKey){
+    var v=read(key);
+    if(isArray(v)){
+      try{localStorage.setItem(backKey,JSON.stringify(v));localStorage.setItem(STAMP,new Date().toISOString())}catch(e){}
+    }
+  }
+  function recover(key,backKey){
+    try{
+      var current=localStorage.getItem(key);
+      if(current!==null) return;
+      var backup=localStorage.getItem(backKey);
+      if(!backup) return;
+      var parsed=JSON.parse(backup);
+      if(!isArray(parsed)) return;
+      localStorage.setItem(key,JSON.stringify(parsed));
+    }catch(e){}
+  }
+
+  /* Protect future writes to the two Party ledgers. */
+  try{
+    var nativeSet=localStorage.setItem.bind(localStorage);
+    localStorage.setItem=function(k,v){
+      nativeSet(k,v);
+      if(k===KEYS.my || k===KEYS.mans){
+        try{
+          var parsed=JSON.parse(v);
+          if(isArray(parsed)){
+            nativeSet(k===KEYS.my?BACK.my:BACK.mans,JSON.stringify(parsed));
+            nativeSet(STAMP,new Date().toISOString());
+          }
+        }catch(e){}
+      }
+    };
+  }catch(e){}
+
+  /* One-time startup recovery for a genuinely missing Party key. */
+  recover(KEYS.my,BACK.my);
+  recover(KEYS.mans,BACK.mans);
+  snapshot(KEYS.my,BACK.my);
+  snapshot(KEYS.mans,BACK.mans);
+
+  document.addEventListener('DOMContentLoaded',function(){
+    setTimeout(function(){
+      recover(KEYS.my,BACK.my); recover(KEYS.mans,BACK.mans);
+      snapshot(KEYS.my,BACK.my); snapshot(KEYS.mans,BACK.mans);
+      try{
+        var p=document.getElementById('partyPage');
+        if(p && !document.getElementById('v746PartySafety')){
+          var card=p.querySelector('.card');
+          if(card){
+            var n=document.createElement('div');
+            n.id='v746PartySafety';
+            n.textContent='🔒 Party data Auto Backup ON';
+            n.style.cssText='margin-top:10px;text-align:center;font-size:12px;font-weight:800;color:#16796f;background:#eef8f6;border-radius:10px;padding:7px 8px;';
+            card.appendChild(n);
+          }
+        }
+      }catch(e){}
+    },300);
+  });
 })();
 </script>
 </body>
