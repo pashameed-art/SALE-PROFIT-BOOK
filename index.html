@@ -1534,7 +1534,7 @@ body:not(.page-open-mode):not(.backup-open-mode) #backupPage{
 
 
 <style id="v766-backup-page-isolation">
-/* V7.66 — Backup page must never render on other pages */
+/* V7.67 — Backup page must never render on other pages */
 #backupPage:not(.active){
   display:none !important;
 }
@@ -1547,11 +1547,22 @@ body.history-open-mode #backupPage{
 }
 </style>
 
+
+<style id="v767-backup-definitive-isolation">
+/* V7.67 — Backup must ONLY appear on the Backup page */
+#backupPage{
+  display:none !important;
+}
+body.backup-open-mode #backupPage.active{
+  display:block !important;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.66</div>
+<div class="version">Version 7.67</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1998,7 +2009,7 @@ body.history-open-mode #backupPage{
 </script>
 
 
-<!-- V7.66 — Backup Reminder -->
+<!-- V7.67 — Backup Reminder -->
 <div class="card" id="v756-backup-reminder" style="margin-top:14px;">
   <h3 style="margin:0 0 8px;">🔔 Backup Reminder</h3>
   <div id="v756BackupReminder" style="padding:10px;border:1px solid #e1ecea;border-radius:10px;background:var(--soft,#eef7f6);font-weight:700;color:#176f67;">
@@ -2772,6 +2783,32 @@ body.history-open-mode #backupPage{
   }else{
     closeBackup();
   }
+})();
+</script>
+
+
+<script id="v767-backup-definitive-guard">
+(function(){
+  function enforceBackupIsolation(){
+    var b=document.getElementById('backupPage');
+    if(!b)return;
+    if(!document.body.classList.contains('backup-open-mode')){
+      b.classList.remove('active');
+      b.style.removeProperty('display');
+    }
+  }
+  function watch(){
+    enforceBackupIsolation();
+    var b=document.getElementById('backupPage');
+    if(b && window.MutationObserver){
+      new MutationObserver(function(){ enforceBackupIsolation(); })
+        .observe(b,{attributes:true,attributeFilter:['class','style']});
+      new MutationObserver(function(){ enforceBackupIsolation(); })
+        .observe(document.body,{attributes:true,attributeFilter:['class']});
+    }
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch);
+  else watch();
 })();
 </script>
 
