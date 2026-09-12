@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.44</div>
+<div class="version">Version 7.45</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3338,6 +3338,11 @@ function updateTodayExpenseTotal(){
       const i=a.findIndex(x=>x.id===mansoorEditId);
       if(i>=0)a[i]={...a[i],type,date,amount,note};
     }else{
+      const duplicate=a.some(x=>String(x.date||'')===String(date) && String(x.type||'')===String(type) && Number(x.amount||0)===Number(amount));
+      if(duplicate){
+        const ok=confirm('இந்த தேதி + வகை + தொகைக்கு ஏற்கனவே ஒரு பதிவு உள்ளது.\n\nமீண்டும் Save செய்ய வேண்டுமா?');
+        if(!ok)return;
+      }
       a.push({id:Date.now(),type,date,amount,note});
     }
     setMansoor(a);
@@ -5486,7 +5491,14 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
     if(!date||amount<=0){alert('தேதி மற்றும் தொகையை உள்ளிடவும்.');return;}
     var a=get();
     if(editingId!==null){var i=a.findIndex(function(r){return String(r.id)===String(editingId)});if(i>=0)a[i]=Object.assign({},a[i],{type:type,date:date,amount:amount,note:note});}
-    else a.push({id:Date.now(),type:type,date:date,amount:amount,note:note});
+    else {
+      var duplicate=a.some(function(r){return String(r.date||'')===String(date) && String(r.type||'')===String(type) && Number(r.amount||0)===Number(amount);});
+      if(duplicate){
+        var ok=confirm('இந்த தேதி + வகை + தொகைக்கு ஏற்கனவே ஒரு பதிவு உள்ளது.\n\nமீண்டும் Save செய்ய வேண்டுமா?');
+        if(!ok)return;
+      }
+      a.push({id:Date.now(),type:type,date:date,amount:amount,note:note});
+    }
     set(a);resetEdit();
     if(q('partyMydeenAmount'))q('partyMydeenAmount').value='';
     if(q('partyMydeenNote'))q('partyMydeenNote').value='';
@@ -6705,4 +6717,4 @@ try{new MutationObserver(function(){var a=q('mansoorHistory'),b=q('partyMydeenHi
 })();
 </script>
 
-<!-- V7.44 PARTY REPORT SUMMARY — 3-CARD SUMMARY FOR SELECTED DATE RANGE -->
+<!-- V7.45 PARTY REPORT SUMMARY — 3-CARD SUMMARY FOR SELECTED DATE RANGE -->
