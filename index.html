@@ -1524,11 +1524,19 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 }
 </style>
 
+
+<style id="v764-home-backup-isolation">
+/* Backup must never appear in the Home view. It is shown only when Backup is opened. */
+body:not(.page-open-mode):not(.backup-open-mode) #backupPage{
+  display:none !important;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.62</div>
+<div class="version">Version 7.64</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1975,7 +1983,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 </script>
 
 
-<!-- V7.62 — Backup Reminder -->
+<!-- V7.64 — Backup Reminder -->
 <div class="card" id="v756-backup-reminder" style="margin-top:14px;">
   <h3 style="margin:0 0 8px;">🔔 Backup Reminder</h3>
   <div id="v756BackupReminder" style="padding:10px;border:1px solid #e1ecea;border-radius:10px;background:var(--soft,#eef7f6);font-weight:700;color:#176f67;">
@@ -2577,6 +2585,26 @@ body.spb-home-mode #homeStockDetails #stockSummary{
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderV762);
   else renderV762();
   setTimeout(renderV762,800);
+})();
+</script>
+
+
+<script id="v764-home-backup-script">
+(function(){
+  function keepBackupOutOfHome(){
+    try{
+      const home=document.querySelector('[onclick*="goHome"]');
+      if(home){
+        home.addEventListener('click', function(){
+          const b=document.getElementById('backupPage');
+          if(b) b.classList.remove('active');
+          document.body.classList.remove('backup-open-mode');
+        }, true);
+      }
+    }catch(e){}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',keepBackupOutOfHome);
+  else keepBackupOutOfHome();
 })();
 </script>
 
