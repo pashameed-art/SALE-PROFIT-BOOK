@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.57</div>
+<div class="version">Version 7.58</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1698,6 +1698,14 @@ body.spb-home-mode #homeStockDetails #stockSummary{
   <div id="backupHealthStateV757">Checking…</div>
   <div id="backupHealthCountsV757" style="margin-top:6px;font-size:14px;"></div>
   <div id="backupHealthTimeV757" style="margin-top:6px;font-size:13px;"></div>
+</div>
+
+
+<div class="card" id="backupDetailsV758" style="margin-top:12px;">
+  <h3>📊 Backup Details</h3>
+  <div id="backupDetailsStateV758">Checking…</div>
+  <div id="backupDetailsSizeV758" style="margin-top:6px;font-size:14px;"></div>
+  <div id="backupDetailsAgeV758" style="margin-top:6px;font-size:14px;"></div>
 </div>
 
 <div id="gdriveBackupInfoV748" class="v748-gdrive-info" aria-live="polite">
@@ -1950,7 +1958,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 </script>
 
 
-<!-- V7.57 — Backup Reminder -->
+<!-- V7.58 — Backup Reminder -->
 <div class="card" id="v756-backup-reminder" style="margin-top:14px;">
   <h3 style="margin:0 0 8px;">🔔 Backup Reminder</h3>
   <div id="v756BackupReminder" style="padding:10px;border:1px solid #e1ecea;border-radius:10px;background:var(--soft,#eef7f6);font-weight:700;color:#176f67;">
@@ -7080,6 +7088,59 @@ try{
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', backupHealthV757);
   else backupHealthV757();
   setTimeout(backupHealthV757, 800);
+})();
+</script>
+
+
+<script>
+(function(){
+  function backupDetailsV758(){
+    try{
+      const state = document.getElementById('backupDetailsStateV758');
+      const size = document.getElementById('backupDetailsSizeV758');
+      const age = document.getElementById('backupDetailsAgeV758');
+      if(!state || !size || !age) return;
+
+      const last = localStorage.getItem('spb_last_gdrive_backup_at');
+      const fileName = 'SALE-PROFIT-BOOK-GDRIVE-BACKUP.json';
+
+      if(!last){
+        state.textContent = 'ℹ️ No GDrive backup timestamp available';
+        size.textContent = 'Backup File: ' + fileName;
+        age.textContent = 'Backup age: Not available';
+        return;
+      }
+
+      const d = new Date(last);
+      if(isNaN(d.getTime())){
+        state.textContent = '⚠️ Backup timestamp could not be read';
+        size.textContent = 'Backup File: ' + fileName;
+        age.textContent = 'Backup age: Not available';
+        return;
+      }
+
+      const diff = Math.max(0, Date.now() - d.getTime());
+      const minutes = Math.floor(diff / 60000);
+      let ageText;
+      if(minutes < 1) ageText = 'Just now';
+      else if(minutes < 60) ageText = minutes + ' minute' + (minutes === 1 ? '' : 's') + ' ago';
+      else if(minutes < 1440){
+        const h = Math.floor(minutes / 60);
+        ageText = h + ' hour' + (h === 1 ? '' : 's') + ' ago';
+      }else{
+        const days = Math.floor(minutes / 1440);
+        ageText = days + ' day' + (days === 1 ? '' : 's') + ' ago';
+      }
+
+      state.textContent = '✓ Last successful GDrive backup found';
+      size.textContent = 'Backup File: ' + fileName;
+      age.textContent = 'Backup age: ' + ageText + ' • ' + d.toLocaleString();
+    }catch(e){}
+  }
+  window.backupDetailsV758 = backupDetailsV758;
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', backupDetailsV758);
+  else backupDetailsV758();
+  setTimeout(backupDetailsV758, 800);
 })();
 </script>
 
