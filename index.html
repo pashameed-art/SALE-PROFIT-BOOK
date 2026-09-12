@@ -1470,7 +1470,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.75</div>
+<div class="version">Version 7.76</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1617,7 +1617,92 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 .v748-gdrive-info.success .v748-gdrive-status{color:#126d66;}
 .v748-gdrive-info.failed .v748-gdrive-status{color:#9b3333;}
 </style>
-<div class="page" id="backupPage"><div class="backup-box" style="padding:14px;"><div style="font-size:20px;font-weight:900;margin-bottom:4px;">☁️ Backup</div><div style="font-size:12px;opacity:.68;margin-bottom:12px;">Google Drive Backup &amp; Restore</div><div class="backup-actions-v455" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><button class="full-backup" id="gdriveBackupBtn" onclick="gdriveBackup()" type="button">☁️ Backup Now</button><label class="backup-restore-label-v455 full-restore" style="display:flex;align-items:center;justify-content:center;">♻️ Restore<input accept=".json,application/json" hidden="" id="restoreFileV551" onchange="partySafeRestore(this.files[0])" type="file"/></label></div><div class="meta" id="backupStatusV551" style="margin-top:10px;text-align:center;">One-tap Google Drive backup</div><div aria-live="polite" class="v748-gdrive-info" id="gdriveBackupInfoV748"><div class="v748-gdrive-info-title">☁️ Google Drive Backup Status</div><div class="v748-gdrive-status" id="gdriveBackupStateV748">Not backed up yet</div><div class="v748-gdrive-time" id="gdriveBackupTimeV748">Last Backup: —</div><div class="v748-gdrive-time" id="gdriveBackupFileV751">Backup File: SALE-PROFIT-BOOK-GDRIVE-BACKUP.json</div></div><details style="margin-top:10px;"><summary style="cursor:pointer;font-weight:800;padding:8px 2px;">🕘 Backup History</summary><div class="card" id="v752-backup-history" style="margin-top:14px;">
+<div class="page" id="backupPage"><div class="backup-box" style="padding:14px;"><div style="font-size:20px;font-weight:900;margin-bottom:4px;">☁️ Backup</div><div style="font-size:12px;opacity:.68;margin-bottom:12px;">Google Drive Backup &amp; Restore</div><div class="backup-actions-v455" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><button class="full-backup" id="gdriveBackupBtn" onclick="gdriveBackup()" type="button">☁️ Backup Now</button><label class="backup-restore-label-v455 full-restore" style="display:flex;align-items:center;justify-content:center;">♻️ Restore<input accept=".json,application/json" hidden="" id="restoreFileV551" onchange="partySafeRestore(this.files[0])" type="file"/></label></div><div class="meta" id="backupStatusV551" style="margin-top:10px;text-align:center;">One-tap Google Drive backup</div><div aria-live="polite" class="v748-gdrive-info" id="gdriveBackupInfoV748"><div class="v748-gdrive-info-title">☁️ Google Drive Backup Status</div><div class="v748-gdrive-status" id="gdriveBackupStateV748">Not backed up yet</div><div class="v748-gdrive-time" id="gdriveBackupTimeV748">Last Backup: —</div><div class="v748-gdrive-time" id="gdriveBackupFileV751">Backup File: SALE-PROFIT-BOOK-GDRIVE-BACKUP.json</div></div>
+<div id="v776-delete-data-card" style="margin-top:12px;border:1px solid #f0d5d5;border-radius:14px;padding:12px;background:#fff8f8;">
+  <div style="font-size:15px;font-weight:900;color:#b52b2b;margin-bottom:8px;">Delete Data</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <button type="button" id="v776DeleteSalesBtn"
+      style="border:0;border-radius:11px;padding:11px 8px;font-weight:900;background:#ffe8e8;color:#b42323;">
+      Delete All Sales
+    </button>
+    <button type="button" id="v776DeleteExpensesBtn"
+      style="border:0;border-radius:11px;padding:11px 8px;font-weight:900;background:#ffe8e8;color:#b42323;">
+      Delete All Expenses
+    </button>
+  </div>
+</div>
+<script id="v776-delete-data-script">
+(function(){
+  'use strict';
+  var EK='spb_v4_entries', XK='spb_v4_expenses';
+
+  function readArray(key){
+    try{
+      var v=JSON.parse(localStorage.getItem(key)||'[]');
+      return Array.isArray(v)?v:[];
+    }catch(e){ return []; }
+  }
+
+  function refreshAll(){
+    try{ if(typeof renderHistory==='function') renderHistory(); }catch(e){}
+    try{ if(typeof renderExpenses==='function') renderExpenses(); }catch(e){}
+    try{ if(typeof refreshDashboard==='function') refreshDashboard(); }catch(e){}
+    try{ if(typeof updateTodayNetProfit==='function') updateTodayNetProfit(); }catch(e){}
+    try{ if(typeof renderStock==='function') renderStock(); }catch(e){}
+    try{ if(typeof renderReports==='function') renderReports(); }catch(e){}
+  }
+
+  function deleteSales(){
+    var count=readArray(EK).length;
+    if(!count){
+      alert('No Sales data to delete.');
+      return;
+    }
+    if(!confirm('Delete ALL Sales data?\\n\\nThis will permanently remove '+count+' sale record(s).\\nExpenses, Purchase, Stock, Party and Settings will remain unchanged.')) return;
+    if(!confirm('Final confirmation: Delete all Sales data?\\n\\nThis action cannot be undone.')) return;
+
+    try{
+      localStorage.setItem(EK,'[]');
+      if(typeof entries!=='undefined') entries=[];
+      if(typeof editingId!=='undefined') editingId=null;
+      refreshAll();
+      alert('✅ All Sales data deleted successfully.');
+    }catch(e){
+      alert('Could not delete Sales data. Please try again.');
+      console.error(e);
+    }
+  }
+
+  function deleteExpenses(){
+    var count=readArray(XK).length;
+    if(!count){
+      alert('No Expense data to delete.');
+      return;
+    }
+    if(!confirm('Delete ALL Expense data?\\n\\nThis will permanently remove '+count+' expense record(s).\\nSales, Purchase, Stock, Party and Settings will remain unchanged.')) return;
+    if(!confirm('Final confirmation: Delete all Expense data?\\n\\nThis action cannot be undone.')) return;
+
+    try{
+      localStorage.setItem(XK,'[]');
+      if(typeof expenses!=='undefined') expenses=[];
+      if(typeof editingExpenseId!=='undefined') editingExpenseId=null;
+      refreshAll();
+      alert('✅ All Expense data deleted successfully.');
+    }catch(e){
+      alert('Could not delete Expense data. Please try again.');
+      console.error(e);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var s=document.getElementById('v776DeleteSalesBtn');
+    var x=document.getElementById('v776DeleteExpensesBtn');
+    if(s) s.addEventListener('click',deleteSales);
+    if(x) x.addEventListener('click',deleteExpenses);
+  });
+})();
+</script>
+<details style="margin-top:10px;"><summary style="cursor:pointer;font-weight:800;padding:8px 2px;">🕘 Backup History</summary><div class="card" id="v752-backup-history" style="margin-top:14px;">
 <h3 style="margin:0 0 10px;">🕘 Backup History</h3>
 <div id="v752BackupHistoryList"></div>
 <button class="secondary" id="v752ClearBackupHistory" style="margin-top:10px;width:100%;" type="button">Clear Backup History</button>
