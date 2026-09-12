@@ -1532,11 +1532,26 @@ body:not(.page-open-mode):not(.backup-open-mode) #backupPage{
 }
 </style>
 
+
+<style id="v766-backup-page-isolation">
+/* V7.66 — Backup page must never render on other pages */
+#backupPage:not(.active){
+  display:none !important;
+}
+body:not(.backup-open-mode) #backupPage:not(.active){
+  display:none !important;
+}
+body.party-open-mode #backupPage,
+body.history-open-mode #backupPage{
+  display:none !important;
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.65</div>
+<div class="version">Version 7.66</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1983,7 +1998,7 @@ body:not(.page-open-mode):not(.backup-open-mode) #backupPage{
 </script>
 
 
-<!-- V7.65 — Backup Reminder -->
+<!-- V7.66 — Backup Reminder -->
 <div class="card" id="v756-backup-reminder" style="margin-top:14px;">
   <h3 style="margin:0 0 8px;">🔔 Backup Reminder</h3>
   <div id="v756BackupReminder" style="padding:10px;border:1px solid #e1ecea;border-radius:10px;background:var(--soft,#eef7f6);font-weight:700;color:#176f67;">
@@ -2701,6 +2716,62 @@ body:not(.page-open-mode):not(.backup-open-mode) #backupPage{
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind);
   else bind();
+})();
+</script>
+
+
+<script id="v766-backup-nav-guard">
+(function(){
+  function closeBackup(){
+    var b=document.getElementById('backupPage');
+    if(b) b.classList.remove('active');
+    document.body.classList.remove('backup-open-mode');
+  }
+
+  var oldGoExpense=window.goExpense;
+  var oldGoParty=window.goParty;
+  var oldGoReports=window.goReports;
+  var oldOpenHistory=window.openHistoryTab;
+  var oldGoHome=window.goHome;
+
+  if(typeof oldGoExpense==='function' && !oldGoExpense.__v766){
+    window.goExpense=function(btn){ closeBackup(); return oldGoExpense.apply(this,arguments); };
+    window.goExpense.__v766=true;
+  }
+  if(typeof oldGoParty==='function' && !oldGoParty.__v766){
+    window.goParty=function(btn){ closeBackup(); return oldGoParty.apply(this,arguments); };
+    window.goParty.__v766=true;
+  }
+  if(typeof oldGoReports==='function' && !oldGoReports.__v766){
+    window.goReports=function(btn){ closeBackup(); return oldGoReports.apply(this,arguments); };
+    window.goReports.__v766=true;
+  }
+  if(typeof oldOpenHistory==='function' && !oldOpenHistory.__v766){
+    window.openHistoryTab=function(btn){ closeBackup(); return oldOpenHistory.apply(this,arguments); };
+    window.openHistoryTab.__v766=true;
+  }
+  if(typeof oldGoHome==='function' && !oldGoHome.__v766){
+    window.goHome=function(btn){ closeBackup(); return oldGoHome.apply(this,arguments); };
+    window.goHome.__v766=true;
+  }
+
+  // Backup is the only action allowed to display the Backup page.
+  var oldGoBackup=window.goBackup;
+  if(typeof oldGoBackup==='function' && !oldGoBackup.__v766){
+    window.goBackup=function(btn){
+      document.body.classList.add('page-open-mode','backup-open-mode');
+      return oldGoBackup.apply(this,arguments);
+    };
+    window.goBackup.__v766=true;
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',function(){
+      closeBackup();
+    });
+  }else{
+    closeBackup();
+  }
 })();
 </script>
 
