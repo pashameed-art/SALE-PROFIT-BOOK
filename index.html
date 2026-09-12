@@ -1524,45 +1524,11 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 }
 </style>
 
-
-<style id="v764-home-backup-isolation">
-/* Backup must never appear in the Home view. It is shown only when Backup is opened. */
-body:not(.page-open-mode):not(.backup-open-mode) #backupPage{
-  display:none !important;
-}
-</style>
-
-
-<style id="v766-backup-page-isolation">
-/* V7.67 — Backup page must never render on other pages */
-#backupPage:not(.active){
-  display:none !important;
-}
-body:not(.backup-open-mode) #backupPage:not(.active){
-  display:none !important;
-}
-body.party-open-mode #backupPage,
-body.history-open-mode #backupPage{
-  display:none !important;
-}
-</style>
-
-
-<style id="v767-backup-definitive-isolation">
-/* V7.67 — Backup must ONLY appear on the Backup page */
-#backupPage{
-  display:none !important;
-}
-body.backup-open-mode #backupPage.active{
-  display:block !important;
-}
-</style>
-
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.67</div>
+<div class="version">Version 7.68</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2009,7 +1975,7 @@ body.backup-open-mode #backupPage.active{
 </script>
 
 
-<!-- V7.67 — Backup Reminder -->
+<!-- V7.68 — Backup Reminder -->
 <div class="card" id="v756-backup-reminder" style="margin-top:14px;">
   <h3 style="margin:0 0 8px;">🔔 Backup Reminder</h3>
   <div id="v756BackupReminder" style="padding:10px;border:1px solid #e1ecea;border-radius:10px;background:var(--soft,#eef7f6);font-weight:700;color:#176f67;">
@@ -2611,204 +2577,6 @@ body.backup-open-mode #backupPage.active{
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderV762);
   else renderV762();
   setTimeout(renderV762,800);
-})();
-</script>
-
-
-<script id="v764-home-backup-script">
-(function(){
-  function keepBackupOutOfHome(){
-    try{
-      const home=document.querySelector('[onclick*="goHome"]');
-      if(home){
-        home.addEventListener('click', function(){
-          const b=document.getElementById('backupPage');
-          if(b) b.classList.remove('active');
-          document.body.classList.remove('backup-open-mode');
-        }, true);
-      }
-    }catch(e){}
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',keepBackupOutOfHome);
-  else keepBackupOutOfHome();
-})();
-</script>
-
-
-<script id="v765-main-navigation-fix">
-(function(){
-  function allPages(){
-    return document.querySelectorAll('.page');
-  }
-  function navButtons(){
-    return document.querySelectorAll('nav button,.nav button,.topnav button');
-  }
-  function hideAll(){
-    allPages().forEach(function(p){ p.classList.remove('active'); });
-  }
-  function active(btn){
-    navButtons().forEach(function(b){ b.classList.remove('active','nav-active'); });
-    if(btn) btn.classList.add('active');
-  }
-  function openPage(id,btn){
-    hideAll();
-    var p=document.getElementById(id);
-    if(p) p.classList.add('active');
-    document.body.classList.add('page-open-mode');
-    active(btn);
-    window.scrollTo(0,0);
-  }
-
-  window.goHome=function(btn){
-    // Restore History card if the History tab temporarily moved it.
-    if(typeof window.returnHomeTab==='function') window.returnHomeTab();
-    hideAll();
-    document.body.classList.remove('page-open-mode','backup-open-mode');
-    active(btn);
-    var home=document.getElementById('homePage');
-    if(home) home.classList.add('active');
-    if(typeof window.refresh==='function') window.refresh();
-    if(typeof window.refreshDashboard==='function') window.refreshDashboard();
-    window.scrollTo(0,0);
-  };
-
-  window.goExpense=function(btn){
-    openPage('expensePage',btn);
-    if(typeof window.renderExpenses==='function') window.renderExpenses();
-  };
-
-  window.goParty=function(btn){
-    openPage('partyPage',btn);
-    if(typeof window.ensureHosts==='function') window.ensureHosts();
-    if(typeof window.returnToPartyChooser==='function') window.returnToPartyChooser();
-  };
-
-  window.goReports=function(btn){
-    openPage('reportPage',btn);
-    if(typeof window.renderReport==='function') window.renderReport();
-  };
-
-  window.goBackup=function(btn){
-    openPage('backupPage',btn);
-    document.body.classList.add('backup-open-mode');
-    if(typeof window.smartBackupCenterV762==='function') window.smartBackupCenterV762();
-    if(typeof window.gdriveBackupStatusV751==='function') window.gdriveBackupStatusV751();
-  };
-
-  // Ensure inline onclick handlers can resolve these functions immediately.
-  window.openHistoryTab = window.openHistoryTab || function(btn){
-    if(typeof window.returnHomeTab==='function'){
-      // Existing V5.55 handler is preferred when available.
-      window.returnHomeTab = window.returnHomeTab;
-    }
-    var page=document.getElementById('historyPage');
-    var card=document.getElementById('historyCard');
-    if(card && page){
-      card.classList.remove('hidden');
-      card.style.display='';
-      page.innerHTML='';
-      page.appendChild(card);
-    }
-    openPage('historyPage',btn);
-    if(typeof window.renderHistory==='function') window.renderHistory();
-  };
-
-  // Fix buttons explicitly by label as a fallback, without removing inline handlers.
-  function bind(){
-    document.querySelectorAll('nav button,.nav button,.topnav button').forEach(function(b){
-      var t=(b.textContent||'').trim().replace(/\s+/g,' ');
-      if(t==='Home') b.onclick=function(){window.goHome(b)};
-      else if(t==='History') b.onclick=function(){window.openHistoryTab(b)};
-      else if(t==='Expense') b.onclick=function(){window.goExpense(b)};
-      else if(t==='Party') b.onclick=function(){window.goParty(b)};
-      else if(t==='Reports') b.onclick=function(){window.goReports(b)};
-      else if(t==='Backup') b.onclick=function(){window.goBackup(b)};
-    });
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind);
-  else bind();
-})();
-</script>
-
-
-<script id="v766-backup-nav-guard">
-(function(){
-  function closeBackup(){
-    var b=document.getElementById('backupPage');
-    if(b) b.classList.remove('active');
-    document.body.classList.remove('backup-open-mode');
-  }
-
-  var oldGoExpense=window.goExpense;
-  var oldGoParty=window.goParty;
-  var oldGoReports=window.goReports;
-  var oldOpenHistory=window.openHistoryTab;
-  var oldGoHome=window.goHome;
-
-  if(typeof oldGoExpense==='function' && !oldGoExpense.__v766){
-    window.goExpense=function(btn){ closeBackup(); return oldGoExpense.apply(this,arguments); };
-    window.goExpense.__v766=true;
-  }
-  if(typeof oldGoParty==='function' && !oldGoParty.__v766){
-    window.goParty=function(btn){ closeBackup(); return oldGoParty.apply(this,arguments); };
-    window.goParty.__v766=true;
-  }
-  if(typeof oldGoReports==='function' && !oldGoReports.__v766){
-    window.goReports=function(btn){ closeBackup(); return oldGoReports.apply(this,arguments); };
-    window.goReports.__v766=true;
-  }
-  if(typeof oldOpenHistory==='function' && !oldOpenHistory.__v766){
-    window.openHistoryTab=function(btn){ closeBackup(); return oldOpenHistory.apply(this,arguments); };
-    window.openHistoryTab.__v766=true;
-  }
-  if(typeof oldGoHome==='function' && !oldGoHome.__v766){
-    window.goHome=function(btn){ closeBackup(); return oldGoHome.apply(this,arguments); };
-    window.goHome.__v766=true;
-  }
-
-  // Backup is the only action allowed to display the Backup page.
-  var oldGoBackup=window.goBackup;
-  if(typeof oldGoBackup==='function' && !oldGoBackup.__v766){
-    window.goBackup=function(btn){
-      document.body.classList.add('page-open-mode','backup-open-mode');
-      return oldGoBackup.apply(this,arguments);
-    };
-    window.goBackup.__v766=true;
-  }
-
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',function(){
-      closeBackup();
-    });
-  }else{
-    closeBackup();
-  }
-})();
-</script>
-
-
-<script id="v767-backup-definitive-guard">
-(function(){
-  function enforceBackupIsolation(){
-    var b=document.getElementById('backupPage');
-    if(!b)return;
-    if(!document.body.classList.contains('backup-open-mode')){
-      b.classList.remove('active');
-      b.style.removeProperty('display');
-    }
-  }
-  function watch(){
-    enforceBackupIsolation();
-    var b=document.getElementById('backupPage');
-    if(b && window.MutationObserver){
-      new MutationObserver(function(){ enforceBackupIsolation(); })
-        .observe(b,{attributes:true,attributeFilter:['class','style']});
-      new MutationObserver(function(){ enforceBackupIsolation(); })
-        .observe(document.body,{attributes:true,attributeFilter:['class']});
-    }
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch);
-  else watch();
 })();
 </script>
 
