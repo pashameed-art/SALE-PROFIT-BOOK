@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="7.39" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="7.40" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.39</div>
+<div class="version">Version 7.40</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -6656,7 +6656,12 @@ try{
       });
 
       var area=document.getElementById('partyLedgerArea');
-      if(area) area.innerHTML='';
+      if(area){
+        area.querySelectorAll('.party-detail-host').forEach(function(el){
+          el.classList.remove('active','party-selected');
+          el.style.setProperty('display','none','important');
+        });
+      }
 
       var mp=document.getElementById('mansoorPage');
       if(mp){
