@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.54</div>
+<div class="version">Version 7.55</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1884,6 +1884,60 @@ body.spb-home-mode #homeStockDetails #stockSummary{
     }catch(e){}
     return oldAlert.apply(this,arguments);
   };
+})();
+</script>
+
+
+<!-- V7.55 — Backup Freshness -->
+<div class="card" id="v755-backup-freshness" style="margin-top:14px;">
+  <h3 style="margin:0 0 8px;">⏱️ Backup Freshness</h3>
+  <div id="v755BackupFreshness" style="padding:10px;border:1px solid #e1ecea;border-radius:10px;background:var(--soft,#eef7f6);font-weight:700;color:#176f67;">
+    Checking backup status…
+  </div>
+</div>
+<script id="v755-backup-freshness-script">
+(function(){
+  'use strict';
+  function render(){
+    const el=document.getElementById('v755BackupFreshness');
+    if(!el)return;
+    try{
+      const ts=localStorage.getItem('spb_last_gdrive_backup_time') ||
+               localStorage.getItem('spb_gdrive_last_backup') ||
+               localStorage.getItem('spb_last_backup_time_v748');
+      if(!ts){
+        el.textContent='⚠️ Backup time not available yet. Please run GDrive Backup once.';
+        return;
+      }
+      const t=Number(ts);
+      if(!Number.isFinite(t) || t<=0){
+        el.textContent='⚠️ Backup time not available yet. Please run GDrive Backup once.';
+        return;
+      }
+      const diff=Math.max(0,Date.now()-t);
+      const mins=Math.floor(diff/60000);
+      let age;
+      if(mins<1) age='Just now';
+      else if(mins<60) age=mins+' minute'+(mins===1?'':'s')+' ago';
+      else {
+        const hrs=Math.floor(mins/60);
+        if(hrs<24) age=hrs+' hour'+(hrs===1?'':'s')+' ago';
+        else {
+          const days=Math.floor(hrs/24);
+          age=days+' day'+(days===1?'':'s')+' ago';
+        }
+      }
+      const when=new Date(t).toLocaleString('en-IN',{
+        day:'2-digit',month:'2-digit',year:'numeric',
+        hour:'2-digit',minute:'2-digit',hour12:true
+      });
+      el.innerHTML='✅ Last backup: '+age+'<br><span style="font-size:13px;font-weight:600;color:#687b79;">'+when+'</span>';
+    }catch(e){
+      el.textContent='Backup status unavailable.';
+    }
+  }
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(render,180);});
+  window.spbV755RefreshBackupFreshness=render;
 })();
 </script>
 
@@ -4462,7 +4516,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const now=new Date();
     return {
       app:"SALE-PROFIT-BOOK",
-      version:"7.54",
+      version:"7.55",
       createdAt:now.toISOString(),
       storage:storage
     };
