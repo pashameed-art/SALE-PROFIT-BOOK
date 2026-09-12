@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.42</div>
+<div class="version">Version 7.44</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -5984,6 +5984,18 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 </script>
 <style id="party-report-pdf-final-style">.party-report-card h3{margin-top:0}.party-report-dates{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}.party-report-card .primary{width:100%;margin-top:4px}.party-report-actions{display:flex;gap:10px;margin-top:10px}.party-report-actions button{flex:1}.party-report-summary{margin-top:12px;border-top:1px solid #e6ecea;padding-top:10px}.party-report-range{font-weight:800;margin-bottom:8px}.party-report-summary>div:not(.party-report-range){display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #edf1f0}.party-report-row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #edf1f0}.party-report-row span{font-size:13px}.party-report-row b{font-weight:900}@media(max-width:600px){.party-report-dates{grid-template-columns:1fr}.party-report-actions{gap:8px}}</style>
 
+<style id="v744-party-report-summary">
+.party-report-heading{font-size:16px;font-weight:900;margin-bottom:10px}
+.party-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 12px}
+.party-summary-box{border:1px solid #e4ecea;border-radius:12px;padding:10px 7px;text-align:center;background:#f7faf9}
+.party-summary-box span{display:block;font-size:11px;font-weight:800;line-height:1.25}
+.party-summary-box b{display:block;font-size:16px;margin-top:6px;font-weight:900}
+.party-summary-box.received{background:#eef9f2}.party-summary-box.received b{color:#16834f}
+.party-summary-box.given{background:#fff1f1}.party-summary-box.given b{color:#c62828}
+.party-summary-box.balance{background:#eef6fb}.party-summary-box.balance b{color:#146b8c}
+@media(max-width:600px){.party-summary-grid{gap:6px}.party-summary-box{padding:9px 4px}.party-summary-box span{font-size:10px}.party-summary-box b{font-size:14px}}
+</style>
+
 <script id="party-report-pdf-v712-fix">
 (function(){
   'use strict';
@@ -6016,7 +6028,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
         var given=(t==='given'||t==='paid'||t==='pay');
         return '<div class="party-report-row '+(given?'report-expense':'report-income')+'"><span>'+fmt(x.date)+' • '+(given?'பணம் தந்தது':'பணம் வாங்கியது')+(x.note?' • '+esc(x.note):'')+'</span><b class="report-amount">'+(given?'−':'＋')+money(x.amount)+'</b></div>';
       }).join('');
-      box.innerHTML='<div class="party-report-summary"><div class="party-report-range">📅 '+fmt(r.from)+' → '+fmt(r.to)+'</div><div class="report-income"><span>பணம் வாங்கியது</span><b class="report-amount">'+money(r.taken)+'</b></div><div class="report-expense"><span>பணம் தந்தது</span><b class="report-amount">'+money(r.given)+'</b></div><div><span>Balance</span><b>'+money(r.balance)+'</b></div>'+(rows||'<div class="meta">இதுவரை பதிவு இல்லை.</div>')+'</div>';
+      box.innerHTML='<div class="party-report-summary"><div class="party-report-heading">📊 Party Report Summary</div><div class="party-report-range">📅 '+fmt(r.from)+' → '+fmt(r.to)+'</div><div class="party-summary-grid"><div class="party-summary-box received"><span>பணம் வாங்கியது</span><b>'+money(r.taken)+'</b></div><div class="party-summary-box given"><span>பணம் தந்தது</span><b>'+money(r.given)+'</b></div><div class="party-summary-box balance"><span>மீதம் பெற வேண்டியது</span><b>'+money(r.balance)+'</b></div></div>'+(rows||'<div class="meta">இதுவரை பதிவு இல்லை.</div>')+'</div>';
       box.dataset.reportReady='1';
     }
     var a=actionsId?q(actionsId):null;if(a)a.style.display='flex';
@@ -6692,3 +6704,5 @@ window.addEventListener('storage',function(e){if(e.key==='saleProfitBookMansoorV
 try{new MutationObserver(function(){var a=q('mansoorHistory'),b=q('partyMydeenHistory');if((a&&!a.querySelector('.p743-summary'))||(b&&!b.querySelector('.p743-summary')))render()}).observe(document.body,{childList:true,subtree:true})}catch(e){}
 })();
 </script>
+
+<!-- V7.44 PARTY REPORT SUMMARY — 3-CARD SUMMARY FOR SELECTED DATE RANGE -->
