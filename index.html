@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.50</div>
+<div class="version">Version 7.51</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1696,6 +1696,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
   <div class="v748-gdrive-info-title">☁️ Google Drive Backup Status</div>
   <div class="v748-gdrive-status" id="gdriveBackupStateV748">Not backed up yet</div>
   <div class="v748-gdrive-time" id="gdriveBackupTimeV748">Last Backup: —</div>
+  <div class="v748-gdrive-time" id="gdriveBackupFileV751">Backup File: SALE-PROFIT-BOOK-GDRIVE-BACKUP.json</div>
 </div>
 <div class="meta" style="margin-top:12px">☁️ <strong>GDrive Backup</strong> requires Google sign-in the first time. Restore can still use a downloaded backup file.</div>
 <button class="secondary" onclick="exportCSV()" style="margin-top:10px">Export CSV</button>
@@ -4268,6 +4269,8 @@ document.addEventListener('DOMContentLoaded',function(){
       box.classList.add('success'); box.classList.remove('failed');
       state.textContent='✅ Backup completed successfully';
       time.textContent='Last Backup: '+d.toLocaleString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+      const f=document.getElementById('gdriveBackupFileV751');
+      if(f)f.textContent='Backup File: SALE-PROFIT-BOOK-GDRIVE-BACKUP.json';
     }catch(e){
       box.classList.remove('success'); box.classList.add('failed');
       state.textContent='Backup status unavailable';
@@ -4285,7 +4288,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const now=new Date();
     return {
       app:"SALE-PROFIT-BOOK",
-      version:"7.50",
+      version:"7.51",
       createdAt:now.toISOString(),
       storage:storage
     };
