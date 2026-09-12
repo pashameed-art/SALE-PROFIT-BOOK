@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.56</div>
+<div class="version">Version 7.57</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1692,6 +1692,14 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 </label>
 </div>
 <div id="backupStatusV551" class="meta" style="margin-top:12px">One-tap Google Drive backup: saves all app data securely to your Google Drive.</div>
+
+<div class="card" id="backupHealthV757" style="margin-top:12px;">
+  <h3>🛡️ Backup Health</h3>
+  <div id="backupHealthStateV757">Checking…</div>
+  <div id="backupHealthCountsV757" style="margin-top:6px;font-size:14px;"></div>
+  <div id="backupHealthTimeV757" style="margin-top:6px;font-size:13px;"></div>
+</div>
+
 <div id="gdriveBackupInfoV748" class="v748-gdrive-info" aria-live="polite">
   <div class="v748-gdrive-info-title">☁️ Google Drive Backup Status</div>
   <div class="v748-gdrive-status" id="gdriveBackupStateV748">Not backed up yet</div>
@@ -1942,7 +1950,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 </script>
 
 
-<!-- V7.56 — Backup Reminder -->
+<!-- V7.57 — Backup Reminder -->
 <div class="card" id="v756-backup-reminder" style="margin-top:14px;">
   <h3 style="margin:0 0 8px;">🔔 Backup Reminder</h3>
   <div id="v756BackupReminder" style="padding:10px;border:1px solid #e1ecea;border-radius:10px;background:var(--soft,#eef7f6);font-weight:700;color:#176f67;">
@@ -7024,6 +7032,57 @@ try{
 })();
 </script>
 <!-- V7.48 — GDrive Last Backup Date & Status -->
+
+<script>
+(function(){
+  function backupHealthV757(){
+    try{
+      const keys = [
+        ['Sale','sale'],['Purchase','purchase'],['Expense','expense'],
+        ['Stock','stock'],['Mydeen','saleProfitBookMydeenV1'],
+        ['Mansoor','saleProfitBookMansoorV1']
+      ];
+      let total = 0, parts = [];
+      keys.forEach(function(pair){
+        const label = pair[0], key = pair[1];
+        let n = 0;
+        try{
+          const raw = localStorage.getItem(key);
+          if(raw){
+            const v = JSON.parse(raw);
+            if(Array.isArray(v)) n = v.length;
+            else if(v && Array.isArray(v.data)) n = v.data.length;
+          }
+        }catch(e){}
+        total += n;
+        parts.push(label + ': ' + n);
+      });
+
+      const last = localStorage.getItem('spb_last_gdrive_backup_at');
+      const state = document.getElementById('backupHealthStateV757');
+      const counts = document.getElementById('backupHealthCountsV757');
+      const time = document.getElementById('backupHealthTimeV757');
+      if(!state || !counts || !time) return;
+
+      counts.textContent = parts.join('  •  ') + '  •  Total records: ' + total;
+
+      if(last){
+        const d = new Date(last);
+        time.textContent = 'Last GDrive backup: ' + (isNaN(d) ? last : d.toLocaleString());
+        state.textContent = total > 0 ? '✓ Data present • Backup record found' : '✓ No records currently stored • Backup record found';
+      }else{
+        time.textContent = 'Last GDrive backup: Not available';
+        state.textContent = total > 0 ? '⚠️ Data is present • No GDrive backup timestamp found' : 'ℹ️ No data records detected yet';
+      }
+    }catch(e){}
+  }
+  window.backupHealthV757 = backupHealthV757;
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', backupHealthV757);
+  else backupHealthV757();
+  setTimeout(backupHealthV757, 800);
+})();
+</script>
+
 </body>
 </html>
 
