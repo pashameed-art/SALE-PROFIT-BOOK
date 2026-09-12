@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.47</div>
+<div class="version">Version 7.49</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3360,6 +3360,7 @@ function updateTodayExpenseTotal(){
       a.push({id:Date.now(),type,date,amount,note});
     }
     setMansoor(a);
+    if(typeof window.__SPB_PARTY_DRIVE_AUTO_SYNC==='function') window.__SPB_PARTY_DRIVE_AUTO_SYNC('mansoor-save');
     mansoorEditId=null;
     clearMansoor();
     renderMansoor();
@@ -3379,6 +3380,7 @@ function updateTodayExpenseTotal(){
   window.deleteMansoor=function(id){
     if(!confirm('இந்த பதிவை Delete செய்யவா?'))return;
     setMansoor(getMansoor().filter(x=>x.id!==id));
+    if(typeof window.__SPB_PARTY_DRIVE_AUTO_SYNC==='function') window.__SPB_PARTY_DRIVE_AUTO_SYNC('mansoor-delete');
     renderMansoor();
   };
 
@@ -4285,7 +4287,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const now=new Date();
     return {
       app:"SALE-PROFIT-BOOK",
-      version:"7.48",
+      version:"7.49",
       createdAt:now.toISOString(),
       storage:storage
     };
@@ -4376,7 +4378,9 @@ document.addEventListener('DOMContentLoaded',function(){
     return data;
   }
 
-  window.gdriveBackup=async function(){
+  window.gdriveBackup=async function(opts){
+    opts=opts||{};
+    const silent=!!opts.silent;
     const btn=document.getElementById('gdriveBackupBtn');
     if(btn){btn.disabled=true;btn.textContent="☁️ Backing up...";}
     try{
@@ -4384,17 +4388,18 @@ document.addEventListener('DOMContentLoaded',function(){
       const token=await gdriveGetToken();
       gdriveStatus("Uploading backup to Google Drive…",true);
       const data=await gdriveUpload(token);
+      window.__SPB_GDRIVE_SESSION_READY=true;
       const n=Object.keys(data.storage||{}).length;
       gdriveStatus("✅ GDrive Backup completed successfully. "+n+" data sections saved.",true);
       try{
         localStorage.setItem("spb_last_gdrive_backup_at",data.createdAt);
       }catch(e){}
       renderGDriveBackupInfo();
-      alert("✅ GDrive Backup completed successfully.\n\nYour FULL SALE-PROFIT-BOOK backup is saved in Google Drive.");
+      if(!silent) alert("✅ GDrive Backup completed successfully.\n\nYour FULL SALE-PROFIT-BOOK backup is saved in Google Drive.");
     }catch(e){
       console.error(e);
       gdriveStatus("❌ GDrive Backup failed. Please check Google sign-in / Drive permission.",false);
-      alert("GDrive Backup failed.\n\nPlease make sure you are signed in to Google and allow Drive access.");
+      if(!silent) alert("GDrive Backup failed.\n\nPlease make sure you are signed in to Google and allow Drive access.");
     }finally{
       if(btn){btn.disabled=false;btn.textContent="☁️ GDrive Backup";}
       renderGDriveBackupInfo();
@@ -5311,6 +5316,7 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
     var a=getMydeen();
     a.push({id:Date.now(),type:type,date:date,amount:amount,note:note});
     setMydeen(a);
+    if(typeof window.__SPB_PARTY_DRIVE_AUTO_SYNC==='function') window.__SPB_PARTY_DRIVE_AUTO_SYNC('mydeen-save');
     clearMydeen();
     renderMydeen();
   }
@@ -6478,7 +6484,7 @@ function draw(box,key,editAttr,deleteAttr){
  function filterRows(data,givenFlag,filter){return data.filter(function(x){var isGiven=String(x.type||'').toLowerCase()==='given';if(isGiven!==givenFlag)return false;if(filter&&filter.date&&String(x.date||'')!==filter.date)return false;return true;});}
  function render(filter){
    filter=filter||{};
-   box.innerHTML='<div class="pch-section-title">📊 Party Quick Summary</div><div class="pch-summary-card"><div class="pch-summary-box taken"><span class="lbl">பணம் வாங்கியது</span><span class="val">'+money(taken)+'</span></div><div class="pch-summary-box given"><span class="lbl">பணம் தந்தது</span><span class="val">'+money(given)+'</span></div><div class="pch-summary-box balance"><span class="lbl">மீதம் பெற வேண்டியது</span><span class="val">'+money(taken-given)+'</span></div></div><div class="pch-section-title">🔎 Previous History Filter</div><div class="pch-filter"><input type="date" id="pchDateFilter" value="'+esc(filter.date||'')+'" title="தேதி filter"><select id="pchTypeFilter"><option value="all">அனைத்தும்</option><option value="taken" '+(filter.type==='taken'?'selected':'')+'>பணம் வாங்கியது</option><option value="given" '+(filter.type==='given'?'selected':'')+'>பணம் தந்தது</option></select><button type="button" class="secondary" id="pchClearFilter">Clear Filter</button></div><div class="party-collapsible-history">'+section(false,'பணம் வாங்கியது','received',filter.type==='given'?null:filter)+section(true,'பணம் தந்தது','given',filter.type==='taken'?null,filter)+'</div>';
+   box.innerHTML='<div class="pch-section-title">📊 Party Quick Summary</div><div class="pch-summary-card"><div class="pch-summary-box taken"><span class="lbl">பணம் வாங்கியது</span><span class="val">'+money(taken)+'</span></div><div class="pch-summary-box given"><span class="lbl">பணம் தந்தது</span><span class="val">'+money(given)+'</span></div><div class="pch-summary-box balance"><span class="lbl">மீதம் பெற வேண்டியது</span><span class="val">'+money(taken-given)+'</span></div></div><div class="pch-section-title">🔎 Previous History Filter</div><div class="pch-filter"><input type="date" id="pchDateFilter" value="'+esc(filter.date||'')+'" title="தேதி filter"><select id="pchTypeFilter"><option value="all">அனைத்தும்</option><option value="taken" '+(filter.type==='taken'?'selected':'')+'>பணம் வாங்கியது</option><option value="given" '+(filter.type==='given'?'selected':'')+'>பணம் தந்தது</option></select><button type="button" class="secondary" id="pchClearFilter">Clear Filter</button></div><div class="party-collapsible-history">'+section(false,'பணம் வாங்கியது','received',filter.type==='given'?null:filter)+section(true,'பணம் தந்தது','given',filter.type==='taken'?null:filter)+'</div>';
    // Correct section filters when a single type is selected.
    var hist=box.querySelector('.party-collapsible-history');
    if(filter.type==='given')hist.innerHTML=section(true,'பணம் தந்தது','given',filter);
@@ -6744,7 +6750,7 @@ try{
           if(card){
             var n=document.createElement('div');
             n.id='v746PartySafety';
-            n.textContent='🔒 Party data Auto Backup ON';
+            n.textContent='☁️ Party → Google Drive Auto Backup ON';
             n.style.cssText='margin-top:10px;text-align:center;font-size:12px;font-weight:800;color:#16796f;background:#eef8f6;border-radius:10px;padding:7px 8px;';
             card.appendChild(n);
           }
@@ -6821,3 +6827,29 @@ try{new MutationObserver(function(){var a=q('mansoorHistory'),b=q('partyMydeenHi
 </script>
 
 <!-- V7.45 PARTY REPORT SUMMARY — 3-CARD SUMMARY FOR SELECTED DATE RANGE -->
+
+
+<!-- V7.49 — Party Google Drive Auto Sync -->
+<script id="v749-party-gdrive-auto-sync">
+(function(){
+  'use strict';
+  var TIMER=null;
+  function schedule(reason){
+    try{
+      // Auto-sync is enabled only after the user has successfully connected/backed up
+      // to Google Drive in this browser session. Never open a sign-in popup on Save.
+      if(!window.__SPB_GDRIVE_SESSION_READY) return;
+      clearTimeout(TIMER);
+      TIMER=setTimeout(function(){
+        try{
+          if(typeof window.gdriveBackup==='function'){
+            window.gdriveBackup({silent:true, reason:reason||'party-change'});
+          }
+        }catch(e){console.warn('Party Drive auto-sync failed',e);}
+      },900);
+    }catch(e){}
+  }
+  window.__SPB_PARTY_DRIVE_AUTO_SYNC=schedule;
+  window.__SPB_GDRIVE_SESSION_READY=false;
+})();
+</script>
