@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.46</div>
+<div class="version">Version 7.47</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3916,7 +3916,7 @@ window.fullBackupV600=function(){
   const entries=safeArray(ENTRIES_KEY), expenses=safeArray(EXPENSES_KEY), items=safeArray(ITEMS_KEY), stock=safeArray(STOCK_KEY);
   const now=new Date(), stamp=now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0')+String(now.getSeconds()).padStart(2,'0');
   const summary={items:items.length,entries:entries.length,expenses:expenses.length,stockRecords:stock.length,storageKeys:Object.keys(storage).length};
-  const data={app:'SALE-PROFIT-BOOK',version:'6.24',createdAt:now.toISOString(),summary:summary,storage:storage};
+  const data={app:'SALE-PROFIT-BOOK',version:'7.47',createdAt:now.toISOString(),summary:summary,storage:storage};
   const json=JSON.stringify(data,null,2);
   const blob=new Blob([json],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
   a.href=url;a.download='SALE-PROFIT-BOOK-SMART-BACKUP-'+stamp+'.json';
@@ -3947,13 +3947,12 @@ window.restoreV600=function(file){
    const keys=Object.keys(storage);if(!keys.length)throw new Error('Backup is empty');
    const summary=data.summary;
    if(summary && (typeof summary.items!=='number'||typeof summary.entries!=='number'||typeof summary.expenses!=='number'))throw new Error('Invalid summary');
-   let message='Restore this backup? Items/Stock data will be restored. Party and Expense data will be preserved.';
+   let message='Restore this FULL backup? Sale, Purchase, Expense, Stock, Mydeen and Mansoor data will be restored.';
    if(data.createdAt)message+='\\n\\nBackup date: '+new Date(data.createdAt).toLocaleString();
    if(summary)message+='\\nItems: '+summary.items+' | Entries: '+summary.entries+' | Expenses: '+summary.expenses;
    if(!confirm(message))return;
-   // DATA-SAFE RESTORE: never clear storage and never overwrite protected Party/Expense data.
-   const protectedKeys=new Set(['saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_expenses']);
-   keys.forEach(k=>{ if(protectedKeys.has(k)) return; localStorage.setItem(k,String(storage[k]??'')); });
+   // FULL RESTORE: restore every saved localStorage data key, including Party and Expense.
+   keys.forEach(k=>{ localStorage.setItem(k,String(storage[k]??'')); });
    alert('✅ Backup restored successfully.\\n\\nThe app will now reload.');
    location.reload();
   }catch(e){
@@ -4246,7 +4245,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const now=new Date();
     return {
       app:"SALE-PROFIT-BOOK",
-      version:"6.22",
+      version:"7.47",
       createdAt:now.toISOString(),
       storage:storage
     };
@@ -4350,7 +4349,7 @@ document.addEventListener('DOMContentLoaded',function(){
       try{
         localStorage.setItem("spb_last_gdrive_backup_at",data.createdAt);
       }catch(e){}
-      alert("✅ GDrive Backup completed successfully.\n\nYour SALE-PROFIT-BOOK data is saved in Google Drive.");
+      alert("✅ GDrive Backup completed successfully.\n\nYour FULL SALE-PROFIT-BOOK backup is saved in Google Drive.");
     }catch(e){
       console.error(e);
       gdriveStatus("❌ GDrive Backup failed. Please check Google sign-in / Drive permission.",false);
@@ -5333,7 +5332,7 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
 @media(max-width:420px){.pch-summary-card{grid-template-columns:1fr 1fr}.pch-summary-box.balance{grid-column:1/-1}}
 </style>
 
-<!-- PARTY DATA PROTECTION — NEVER LOSE MYDEEN / MANSOOR ON RESTORE -->
+<!-- V7.47 FULL PARTY RESTORE — Mydeen / Mansoor are included in Google Drive restore -->
 <script id="party-data-protection-final">
 (function(){
   'use strict';
@@ -5395,39 +5394,23 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
 
   window.partySafeRestore=function(file){
     if(!file)return;
-
-    // Protect the current Party ledger before any normal restore runs.
-    snapshot();
-
-    // The existing restore handles Items/Entries/Expenses/Stock.
-    // Party data is restored immediately afterwards from the protected copy.
+    // V7.47 — FULL RESTORE. The backup was created from the complete localStorage snapshot,
+    // so restore the complete snapshot, including Mydeen, Mansoor and Expense data.
     if(typeof window.restoreV600==='function'){
-      try{window.restoreV600(file);}catch(e){console.error(e);}
-      setTimeout(restoreProtected,150);
-      setTimeout(restoreProtected,500);
-      setTimeout(function(){
-        restoreProtected();
-        try{
-          if(typeof window.updatePartySummary==='function')window.updatePartySummary();
-          if(typeof window.renderPartySummary==='function')window.renderPartySummary();
-        }catch(e){}
-      },900);
+      try{window.restoreV600(file);}
+      catch(e){console.error(e);alert('Restore failed.');}
     }else{
-      // Fallback: parse the file without touching Party keys.
       var reader=new FileReader();
       reader.onload=function(){
         try{
           var obj=JSON.parse(reader.result);
-          if(obj.storage && typeof obj.storage==='object'){
-            Object.keys(obj.storage).forEach(function(k){
-              if(k!==MY && k!==MA && k!==VAULT)
-                localStorage.setItem(k,obj.storage[k]);
-            });
-          }
-          restoreProtected();
-          alert('✅ Backup restored. Mydeen / Mansoor data protected.');
+          if(!obj || !obj.storage || typeof obj.storage!=='object' || Array.isArray(obj.storage)) throw new Error('Invalid backup');
+          Object.keys(obj.storage).forEach(function(k){ localStorage.setItem(k,String(obj.storage[k]??'')); });
+          alert('✅ Full backup restored successfully.\n\nThe app will now reload.');
+          location.reload();
         }catch(e){alert('Invalid backup file.');}
       };
+      reader.onerror=function(){alert('Could not read the backup file.');};
       reader.readAsText(file);
     }
   };
