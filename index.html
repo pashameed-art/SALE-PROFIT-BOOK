@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.41</div>
+<div class="version">Version 7.42</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -3418,6 +3418,7 @@ function updateTodayExpenseTotal(){
       }).join('');
     }
     h.innerHTML=html;
+    if(typeof window.__SPB_V722_HISTORY_RENDER==='function') setTimeout(window.__SPB_V722_HISTORY_RENDER,20);
   };
 
   window.addEventListener('DOMContentLoaded',function(){
@@ -5245,6 +5246,7 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
         '</div>'+
       '</div>';
     }).join(''):'<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';
+    if(typeof window.__SPB_V722_HISTORY_RENDER==='function') setTimeout(window.__SPB_V722_HISTORY_RENDER,20);
   }
 
   function clearMydeen(){
@@ -5315,7 +5317,7 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
 
 
 <style id="v741-party-summary-filter-style">
-.pch-summary-card{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 12px}
+.pch-section-title{font-size:14px;font-weight:900;margin:2px 0 7px;color:#334}.pch-summary-card{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 12px}
 .pch-summary-box{background:#f7faf9;border:1px solid #e3ecea;border-radius:12px;padding:10px;text-align:center}
 .pch-summary-box .lbl{font-size:11px;color:#667;display:block;margin-bottom:4px}
 .pch-summary-box .val{font-size:16px;font-weight:900}
@@ -6426,7 +6428,7 @@ function draw(box,key,editAttr,deleteAttr){
  function filterRows(data,givenFlag,filter){return data.filter(function(x){var isGiven=String(x.type||'').toLowerCase()==='given';if(isGiven!==givenFlag)return false;if(filter&&filter.date&&String(x.date||'')!==filter.date)return false;return true;});}
  function render(filter){
    filter=filter||{};
-   box.innerHTML='<div class="pch-summary-card"><div class="pch-summary-box taken"><span class="lbl">பணம் வாங்கியது</span><span class="val">'+money(taken)+'</span></div><div class="pch-summary-box given"><span class="lbl">பணம் தந்தது</span><span class="val">'+money(given)+'</span></div><div class="pch-summary-box balance"><span class="lbl">மீதம் பெற வேண்டியது</span><span class="val">'+money(taken-given)+'</span></div></div><div class="pch-filter"><input type="date" id="pchDateFilter" value="'+esc(filter.date||'')+'" title="தேதி filter"><select id="pchTypeFilter"><option value="all">அனைத்தும்</option><option value="taken" '+(filter.type==='taken'?'selected':'')+'>பணம் வாங்கியது</option><option value="given" '+(filter.type==='given'?'selected':'')+'>பணம் தந்தது</option></select><button type="button" class="secondary" id="pchClearFilter">Clear Filter</button></div><div class="party-collapsible-history">'+section(false,'பணம் வாங்கியது','received',filter.type==='given'?null:filter)+section(true,'பணம் தந்தது','given',filter.type==='taken'?null,filter)+'</div>';
+   box.innerHTML='<div class="pch-section-title">📊 Party Quick Summary</div><div class="pch-summary-card"><div class="pch-summary-box taken"><span class="lbl">பணம் வாங்கியது</span><span class="val">'+money(taken)+'</span></div><div class="pch-summary-box given"><span class="lbl">பணம் தந்தது</span><span class="val">'+money(given)+'</span></div><div class="pch-summary-box balance"><span class="lbl">மீதம் பெற வேண்டியது</span><span class="val">'+money(taken-given)+'</span></div></div><div class="pch-section-title">🔎 Previous History Filter</div><div class="pch-filter"><input type="date" id="pchDateFilter" value="'+esc(filter.date||'')+'" title="தேதி filter"><select id="pchTypeFilter"><option value="all">அனைத்தும்</option><option value="taken" '+(filter.type==='taken'?'selected':'')+'>பணம் வாங்கியது</option><option value="given" '+(filter.type==='given'?'selected':'')+'>பணம் தந்தது</option></select><button type="button" class="secondary" id="pchClearFilter">Clear Filter</button></div><div class="party-collapsible-history">'+section(false,'பணம் வாங்கியது','received',filter.type==='given'?null:filter)+section(true,'பணம் தந்தது','given',filter.type==='taken'?null,filter)+'</div>';
    // Correct section filters when a single type is selected.
    var hist=box.querySelector('.party-collapsible-history');
    if(filter.type==='given')hist.innerHTML=section(true,'பணம் தந்தது','given',filter);
@@ -6628,3 +6630,65 @@ try{
 </script>
 </body>
 </html>
+
+
+<!-- V7.43 FINAL PARTY QUICK SUMMARY + HISTORY FILTER -->
+<style id="v743-party-summary-filter-final">
+.p743-title{font-size:14px;font-weight:900;margin:2px 0 7px;color:#334}
+.p743-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:11px}
+.p743-box{border:1px solid #e3ecea;border-radius:11px;padding:9px 5px;text-align:center;background:#f7faf9}
+.p743-box .p743-lbl{display:block;font-size:10px;color:#667;margin-bottom:3px;font-weight:800}
+.p743-box .p743-val{display:block;font-size:15px;font-weight:900}
+.p743-box.taken .p743-val{color:#c62828}.p743-box.given .p743-val{color:#16834b}.p743-box.balance .p743-val{color:#116d64}
+.p743-filter{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.p743-filter input,.p743-filter select{width:100%;box-sizing:border-box;border:1px solid #d9e3e1;border-radius:9px;padding:8px 8px;font-size:11px;background:#fff}
+.p743-filter button{grid-column:1/-1;border:0;border-radius:9px;padding:8px;font-weight:800;font-size:11px;background:#eaf5f3;color:#116d64}
+.p743-section{border:1px solid rgba(0,0,0,.08);border-radius:11px;overflow:hidden;background:#fff;margin-bottom:7px}
+.p743-section summary{display:flex;justify-content:space-between;align-items:center;padding:10px 11px;cursor:pointer;font-weight:900;font-size:12px;list-style:none}
+.p743-section summary::-webkit-details-marker{display:none}.p743-received summary{color:#c62828}.p743-given summary{color:#16834b}
+.p743-meta{display:flex;gap:6px;align-items:center;color:inherit;font-size:10px}.p743-count{background:#f1f3f3;color:#777;border-radius:999px;padding:2px 6px}.p743-total{font-weight:900}
+.p743-body{border-top:1px solid rgba(0,0,0,.07);padding:0 8px 5px}.p743-head,.p743-row{display:grid;grid-template-columns:50px minmax(65px,1fr) 65px 1fr;gap:3px;align-items:center}
+.p743-head{font-size:9px;font-weight:900;color:#777;padding:6px 2px}.p743-row{font-size:10px;padding:7px 2px;border-top:1px solid rgba(0,0,0,.055)}
+.p743-date{white-space:nowrap}.p743-type{overflow-wrap:anywhere}.p743-amt{text-align:right;white-space:nowrap;font-weight:900}.p743-actions{display:flex;justify-content:flex-end;gap:3px}.p743-actions button{border:0;border-radius:7px;padding:5px 5px;font-size:9px;font-weight:800}.p743-edit{background:#eaf5f3;color:#116d64}.p743-del{background:#fdecec;color:#c62828}
+.p743-empty{padding:10px;text-align:center;color:#888;font-size:10px}
+@media(max-width:420px){.p743-summary{grid-template-columns:1fr 1fr}.p743-box.balance{grid-column:1/-1}}
+</style>
+<script id="v743-party-summary-filter-final">
+(function(){
+'use strict';
+var START='2026-08-04';
+function q(id){return document.getElementById(id)}
+function money(v){return '₹'+Number(v||0).toLocaleString('en-IN',{maximumFractionDigits:2})}
+function fmt(v){var m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?m[3]+'.'+m[2]+'.'+m[1].slice(2):String(v||'')}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function read(k){try{var a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+function draw(box,key,editAttr,delAttr,state){
+ if(!box)return;
+ var all=read(key).filter(function(x){var d=String(x.date||'');return d>=START&&d<=today()}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))||Number(a.id||0)-Number(b.id||0)});
+ var opening=key==='saleProfitBookMansoorV1'?Number(localStorage.getItem('spb_mansoor_opening_balance_v731')||39908):0;
+ var taken=opening+all.filter(function(x){return String(x.type||'').toLowerCase()!=='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+ var given=all.filter(function(x){return String(x.type||'').toLowerCase()==='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+ var date=state.date||'', type=state.type||'all';
+ function rows(flag){return all.filter(function(x){var g=String(x.type||'').toLowerCase()==='given';if(g!==flag)return false;if(date&&String(x.date||'')!==date)return false;return true})}
+ function section(flag,label,cls){
+   var rs=rows(flag), total=(flag?0:opening)+rs.reduce(function(s,x){return s+Number(x.amount||0)},0);
+   if(type!=='all' && ((type==='given')!==flag)) return '';
+   var open=!date&&!type||state.open;
+   var openingRow=(!flag&&opening&&!date&&type!=='given')?'<div class="p743-row"><div class="p743-date">11.09.26</div><div class="p743-type">பணம் வாங்கியது</div><div class="p743-amt">'+money(opening)+'</div><div class="p743-actions"><span style="color:#888">—</span></div></div>':'';
+   var body=rs.map(function(x){var id=esc(x.id),g=flag;return '<div class="p743-row"><div class="p743-date">'+esc(fmt(x.date))+'</div><div class="p743-type">'+label+'</div><div class="p743-amt" style="color:'+(g?'#16834b':'#c62828')+'">'+(g?'−':'＋')+money(x.amount)+'</div><div class="p743-actions"><button type="button" class="p743-edit" '+editAttr+'="'+id+'">Edit</button><button type="button" class="p743-del" '+delAttr+'="'+id+'">Delete</button></div></div>'}).join('');
+   return '<details class="p743-section p743-'+cls+'" '+(open?'open':'')+'><summary><span>'+label+'</span><span class="p743-meta"><span class="p743-count">'+rs.length+'</span><span class="p743-total">'+money(total)+'</span></span></summary><div class="p743-body">'+((rs.length||openingRow)?'<div class="p743-head"><div>Date</div><div>Type</div><div>Amount</div><div>Action</div></div>'+openingRow+body:'<div class="p743-empty">No entries</div>')+'</div></details>';
+ }
+ box.innerHTML='<div class="p743-title">📊 Party Quick Summary</div><div class="p743-summary"><div class="p743-box taken"><span class="p743-lbl">பணம் வாங்கியது</span><span class="p743-val">'+money(taken)+'</span></div><div class="p743-box given"><span class="p743-lbl">பணம் தந்தது</span><span class="p743-val">'+money(given)+'</span></div><div class="p743-box balance"><span class="p743-lbl">மீதம் பெற வேண்டியது</span><span class="p743-val">'+money(taken-given)+'</span></div></div><div class="p743-title">🔎 Previous History Filter</div><div class="p743-filter"><input id="p743Date" type="date" value="'+esc(date)+'"><select id="p743Type"><option value="all" '+(type==='all'?'selected':'')+'>அனைத்தும்</option><option value="taken" '+(type==='taken'?'selected':'')+'>பணம் வாங்கியது</option><option value="given" '+(type==='given'?'selected':'')+'>பணம் தந்தது</option></select><button type="button" id="p743Clear">Clear Filter</button></div>'+section(false,'பணம் வாங்கியது','received')+section(true,'பணம் தந்தது','given');
+ var df=q('p743Date'),tf=q('p743Type'),cf=q('p743Clear');
+ if(df)df.onchange=function(){draw(box,key,editAttr,delAttr,{date:df.value,type:tf.value,open:true})};
+ if(tf)tf.onchange=function(){draw(box,key,editAttr,delAttr,{date:df.value,type:tf.value,open:true})};
+ if(cf)cf.onclick=function(){draw(box,key,editAttr,delAttr,{})};
+}
+function render(){draw(q('mansoorHistory'),'saleProfitBookMansoorV1','data-mansoor-edit-final','data-mansoor-delete-final',{});draw(q('partyMydeenHistory'),'saleProfitBookMydeenV1','data-mydeen-edit-final','data-mydeen-delete-final',{})}
+function go(){render();setTimeout(render,200);setTimeout(render,700);setTimeout(render,1400)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',go);else go();
+window.addEventListener('storage',function(e){if(e.key==='saleProfitBookMansoorV1'||e.key==='saleProfitBookMydeenV1')setTimeout(render,80)});
+try{new MutationObserver(function(){var a=q('mansoorHistory'),b=q('partyMydeenHistory');if((a&&!a.querySelector('.p743-summary'))||(b&&!b.querySelector('.p743-summary')))render()}).observe(document.body,{childList:true,subtree:true})}catch(e){}
+})();
+</script>
