@@ -1526,7 +1526,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 
 
 <style id="v770-dashboard-compact">
-/* V7.71 Dashboard: compact, readable, no symbols/icons added */
+/* V7.72 Dashboard: compact, readable, no symbols/icons added */
 #homePage .dashboard,
 #homePage .dashboard-grid,
 #homePage .stats-grid,
@@ -1579,7 +1579,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 
 
 <style id="v771-dashboard-layout">
-/* V7.71 — compact dashboard: 4 metrics first row, Net Profit + Expense second row */
+/* V7.72 — compact dashboard: 4 metrics first row, Net Profit + Expense second row */
 #dashboardCard .dashboard-grid{
   display:grid !important;
   grid-template-columns:repeat(4,minmax(0,1fr)) !important;
@@ -1637,11 +1637,73 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 }
 </style>
 
+
+<style id="v772-dashboard-exact-layout">
+/* V7.72 — exact mobile dashboard:
+   Row 1: Sale | Meter | Purchase | Profit
+   Row 2: Net Profit | Expense */
+#dashboardCard .dashboard-grid.v612-dashboard-grid{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  grid-auto-flow:row !important;
+  gap:6px !important;
+}
+#dashboardCard .dashboard-grid.v612-dashboard-grid > .dashboard-stat.v612-sale{
+  grid-column:1 !important; grid-row:1 !important;
+}
+#dashboardCard .dashboard-grid.v612-dashboard-grid > .dashboard-stat.v612-meter{
+  grid-column:2 !important; grid-row:1 !important;
+}
+#dashboardCard .dashboard-grid.v612-dashboard-grid > .dashboard-stat.v612-purchase{
+  grid-column:3 !important; grid-row:1 !important;
+}
+#dashboardCard .dashboard-grid.v612-dashboard-grid > .dashboard-stat.v612-profit{
+  grid-column:4 !important; grid-row:1 !important;
+}
+#dashboardCard .dashboard-grid.v612-dashboard-grid > .dashboard-stat.v612-net{
+  grid-column:1 / span 2 !important; grid-row:2 !important;
+  width:auto !important; min-width:0 !important;
+}
+#dashboardCard .dashboard-grid.v612-dashboard-grid > .dashboard-stat.v612-expense{
+  grid-column:3 / span 2 !important; grid-row:2 !important;
+  width:auto !important; min-width:0 !important;
+}
+#dashboardCard .dashboard-grid.v612-dashboard-grid > .dashboard-stat{
+  min-height:0 !important;
+  height:auto !important;
+  padding:7px 5px !important;
+  margin:0 !important;
+  border-radius:11px !important;
+}
+#dashboardCard .dashboard-grid.v612-dashboard-grid > .dashboard-stat span{
+  font-size:10px !important;
+  line-height:1.1 !important;
+  white-space:nowrap !important;
+}
+#dashboardCard .dashboard-grid.v612-dashboard-grid > .dashboard-stat b{
+  font-size:14px !important;
+  line-height:1.15 !important;
+  margin-top:3px !important;
+}
+#dashboardCard .dashboard-grid.v612-dashboard-grid > .v612-net b,
+#dashboardCard .dashboard-grid.v612-dashboard-grid > .v612-expense b{
+  font-size:15px !important;
+}
+@media(max-width:430px){
+  #dashboardCard .dashboard-grid.v612-dashboard-grid{gap:5px !important;}
+  #dashboardCard .dashboard-grid.v612-dashboard-grid > .dashboard-stat{padding:6px 3px !important;}
+  #dashboardCard .dashboard-grid.v612-dashboard-grid > .dashboard-stat span{font-size:9px !important;}
+  #dashboardCard .dashboard-grid.v612-dashboard-grid > .dashboard-stat b{font-size:13px !important;}
+  #dashboardCard .dashboard-grid.v612-dashboard-grid > .v612-net b,
+  #dashboardCard .dashboard-grid.v612-dashboard-grid > .v612-expense b{font-size:15px !important;}
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.71</div>
+<div class="version">Version 7.72</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -2055,7 +2117,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 </script>
 
 
-<!-- V7.71 — Backup Reminder -->
+<!-- V7.72 — Backup Reminder -->
 <div class="card" id="v756-backup-reminder" style="margin-top:14px;">
   <h3 style="margin:0 0 8px;">🔔 Backup Reminder</h3>
   <div id="v756BackupReminder" style="padding:10px;border:1px solid #e1ecea;border-radius:10px;background:var(--soft,#eef7f6);font-weight:700;color:#176f67;">
