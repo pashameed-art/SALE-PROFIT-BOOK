@@ -1524,11 +1524,64 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 }
 </style>
 
+
+<style id="v770-dashboard-compact">
+/* V7.70 Dashboard: compact, readable, no symbols/icons added */
+#homePage .dashboard,
+#homePage .dashboard-grid,
+#homePage .stats-grid,
+#homePage .summary-grid{
+  gap:6px !important;
+}
+.v770-dash-wrap{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  margin-top:8px;
+}
+.v770-dash-card{
+  min-width:0;
+  padding:8px 7px;
+  border-radius:10px;
+  text-align:center;
+  background:rgba(127,127,127,.07);
+  border:1px solid rgba(127,127,127,.12);
+}
+.v770-dash-card.net{
+  grid-column:1/-1;
+  padding:9px 8px;
+}
+.v770-dash-label{
+  font-size:10px;
+  line-height:1.15;
+  opacity:.68;
+  white-space:nowrap;
+}
+.v770-dash-value{
+  margin-top:3px;
+  font-size:14px;
+  line-height:1.15;
+  font-weight:800;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.v770-dash-card.net .v770-dash-value{
+  font-size:18px;
+}
+@media(max-width:430px){
+  .v770-dash-wrap{gap:5px;}
+  .v770-dash-card{padding:7px 4px;}
+  .v770-dash-value{font-size:13px;}
+  .v770-dash-card.net .v770-dash-value{font-size:17px;}
+}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.69</div>
+<div class="version">Version 7.70</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1942,7 +1995,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 </script>
 
 
-<!-- V7.69 — Backup Reminder -->
+<!-- V7.70 — Backup Reminder -->
 <div class="card" id="v756-backup-reminder" style="margin-top:14px;">
   <h3 style="margin:0 0 8px;">🔔 Backup Reminder</h3>
   <div id="v756BackupReminder" style="padding:10px;border:1px solid #e1ecea;border-radius:10px;background:var(--soft,#eef7f6);font-weight:700;color:#176f67;">
