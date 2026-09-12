@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.58</div>
+<div class="version">Version 7.59</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1706,6 +1706,13 @@ body.spb-home-mode #homeStockDetails #stockSummary{
   <div id="backupDetailsStateV758">Checking…</div>
   <div id="backupDetailsSizeV758" style="margin-top:6px;font-size:14px;"></div>
   <div id="backupDetailsAgeV758" style="margin-top:6px;font-size:14px;"></div>
+</div>
+
+
+<div class="card" id="backupChangeCheckV759" style="margin-top:12px;">
+  <h3>🔍 Backup Change Check</h3>
+  <div id="backupChangeStateV759">Checking…</div>
+  <div id="backupChangeTimeV759" style="margin-top:6px;font-size:13px;"></div>
 </div>
 
 <div id="gdriveBackupInfoV748" class="v748-gdrive-info" aria-live="polite">
@@ -1958,7 +1965,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 </script>
 
 
-<!-- V7.58 — Backup Reminder -->
+<!-- V7.59 — Backup Reminder -->
 <div class="card" id="v756-backup-reminder" style="margin-top:14px;">
   <h3 style="margin:0 0 8px;">🔔 Backup Reminder</h3>
   <div id="v756BackupReminder" style="padding:10px;border:1px solid #e1ecea;border-radius:10px;background:var(--soft,#eef7f6);font-weight:700;color:#176f67;">
@@ -7141,6 +7148,93 @@ try{
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', backupDetailsV758);
   else backupDetailsV758();
   setTimeout(backupDetailsV758, 800);
+})();
+</script>
+
+
+<script>
+(function(){
+  const SNAP='spb_gdrive_backup_snapshot_v759';
+  const KEYS=[
+    'sale','purchase','expense','stock',
+    'saleProfitBookMydeenV1','saleProfitBookMansoorV1'
+  ];
+
+  function snapshotV759(){
+    const obj={};
+    KEYS.forEach(function(k){ obj[k]=localStorage.getItem(k)||''; });
+    const text=JSON.stringify(obj);
+    let h=0;
+    for(let i=0;i<text.length;i++){ h=((h<<5)-h)+text.charCodeAt(i); h|=0; }
+    return String(h);
+  }
+
+  function updateSnapshotV759(){
+    try{
+      localStorage.setItem(SNAP, snapshotV759());
+      localStorage.setItem(SNAP+'_at', new Date().toISOString());
+    }catch(e){}
+  }
+
+  function checkV759(){
+    try{
+      const state=document.getElementById('backupChangeStateV759');
+      const tm=document.getElementById('backupChangeTimeV759');
+      if(!state || !tm) return;
+      const saved=localStorage.getItem(SNAP);
+      const current=snapshotV759();
+      const last=localStorage.getItem('spb_last_gdrive_backup_at');
+
+      if(!last){
+        state.textContent='ℹ️ No successful GDrive backup found yet';
+        tm.textContent='Create a GDrive backup to start change checking.';
+        return;
+      }
+
+      if(!saved){
+        // Existing installations may have a backup timestamp from before V7.59.
+        // Establish a baseline without claiming that current data is unchanged.
+        state.textContent='ℹ️ Baseline not available for this version';
+        tm.textContent='Next successful GDrive backup will establish a change baseline.';
+        return;
+      }
+
+      if(saved===current){
+        state.textContent='✓ Current data matches the last backup baseline';
+      }else{
+        state.textContent='⚠️ Data has changed since the last backup';
+      }
+
+      const d=new Date(last);
+      tm.textContent='Last GDrive backup: '+(isNaN(d.getTime())?last:d.toLocaleString());
+    }catch(e){}
+  }
+
+  window.backupChangeCheckV759=checkV759;
+  window.backupChangeSnapshotV759=updateSnapshotV759;
+
+  // Wrap the existing gdriveBackup function only to record a local baseline
+  // after a successful backup. The original function remains responsible
+  // for the actual Google Drive operation.
+  if(typeof window.gdriveBackup==='function' && !window.gdriveBackup.__v759Wrapped){
+    const original=window.gdriveBackup;
+    async function wrapped(){
+      const result=await original.apply(this,arguments);
+      try{
+        if(localStorage.getItem('spb_last_gdrive_backup_at')){
+          updateSnapshotV759();
+          checkV759();
+        }
+      }catch(e){}
+      return result;
+    }
+    wrapped.__v759Wrapped=true;
+    window.gdriveBackup=wrapped;
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',checkV759);
+  else checkV759();
+  setTimeout(checkV759,1000);
 })();
 </script>
 
