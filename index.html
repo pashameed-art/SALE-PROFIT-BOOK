@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.52</div>
+<div class="version">Version 7.53</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1790,6 +1790,56 @@ body.spb-home-mode #homeStockDetails #stockSummary{
     }catch(e){}
     return oldAlert.apply(this,arguments);
   };
+})();
+</script>
+
+
+<!-- V7.53 — Backup Data Summary -->
+<div class="card" id="v753-backup-data-summary" style="margin-top:14px;">
+  <h3 style="margin:0 0 10px;">📦 Backup Data Summary</h3>
+  <div id="v753BackupSummary" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;"></div>
+  <div style="margin-top:9px;font-size:12px;color:#6f7f7d;">
+    Counts are from the current app data. Backup/Restore logic is unchanged.
+  </div>
+</div>
+<script id="v753-backup-data-summary-script">
+(function(){
+  'use strict';
+  const q=(id)=>document.getElementById(id);
+  function arr(key){
+    try{
+      const v=JSON.parse(localStorage.getItem(key)||'[]');
+      return Array.isArray(v)?v:[];
+    }catch(e){return [];}
+  }
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function render(){
+    const el=q('v753BackupSummary');
+    if(!el)return;
+
+    // Known app keys used by SALE-PROFIT-BOOK.
+    const counts=[
+      ['Sale', arr('spb_v4_entries').length],
+      ['Expense', arr('spb_v4_expenses').length],
+      ['Stock', arr('spb_v4_stock').length],
+      ['Mydeen', arr('saleProfitBookMydeenV1').length],
+      ['Mansoor', arr('saleProfitBookMansoorV1').length]
+    ];
+
+    el.innerHTML=counts.map(function(x){
+      return '<div style="padding:9px 10px;border:1px solid #e1ecea;border-radius:10px;background:var(--soft,#eef7f6);">'+
+        '<div style="font-size:12px;color:#687b79;">'+esc(x[0])+'</div>'+
+        '<strong style="font-size:17px;color:#176f67;">'+Number(x[1]).toLocaleString('en-IN')+'</strong>'+
+        '</div>';
+    }).join('');
+  }
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(render,150);});
+  document.addEventListener('click',function(e){
+    if(e.target && e.target.id==='v753RefreshBackupSummary') render();
+  });
+  window.spbV753RefreshBackupSummary=render;
 })();
 </script>
 
@@ -4368,7 +4418,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const now=new Date();
     return {
       app:"SALE-PROFIT-BOOK",
-      version:"7.52",
+      version:"7.53",
       createdAt:now.toISOString(),
       storage:storage
     };
