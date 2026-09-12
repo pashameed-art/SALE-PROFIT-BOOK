@@ -1528,7 +1528,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.55</div>
+<div class="version">Version 7.56</div>
 
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
@@ -1938,6 +1938,44 @@ body.spb-home-mode #homeStockDetails #stockSummary{
   }
   document.addEventListener('DOMContentLoaded',function(){setTimeout(render,180);});
   window.spbV755RefreshBackupFreshness=render;
+})();
+</script>
+
+
+<!-- V7.56 — Backup Reminder -->
+<div class="card" id="v756-backup-reminder" style="margin-top:14px;">
+  <h3 style="margin:0 0 8px;">🔔 Backup Reminder</h3>
+  <div id="v756BackupReminder" style="padding:10px;border:1px solid #e1ecea;border-radius:10px;background:var(--soft,#eef7f6);font-weight:700;color:#176f67;">
+    Backup reminder will appear after the next backup.
+  </div>
+</div>
+<script id="v756-backup-reminder-script">
+(function(){
+  'use strict';
+  const KEY='spb_last_gdrive_backup_time';
+  function render(){
+    const el=document.getElementById('v756BackupReminder');
+    if(!el)return;
+    try{
+      const ts=Number(localStorage.getItem(KEY)||0);
+      if(!ts){
+        el.textContent='💡 Run GDrive Backup once to start the reminder.';
+        return;
+      }
+      const age=Date.now()-ts;
+      const day=24*60*60*1000;
+      if(age >= 7*day){
+        el.innerHTML='⚠️ <b>Backup is more than 7 days old.</b><br><span style="font-size:13px;font-weight:600;">Please run GDrive Backup.</span>';
+      }else if(age >= 3*day){
+        el.innerHTML='🟠 <b>Backup is more than 3 days old.</b><br><span style="font-size:13px;font-weight:600;">Consider running GDrive Backup.</span>';
+      }else{
+        const days=Math.floor(age/day);
+        el.innerHTML='✅ Backup is recent.<br><span style="font-size:13px;font-weight:600;">Next reminder after 3 days.</span>';
+      }
+    }catch(e){}
+  }
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(render,220);});
+  window.spbV756RefreshBackupReminder=render;
 })();
 </script>
 
@@ -4516,7 +4554,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const now=new Date();
     return {
       app:"SALE-PROFIT-BOOK",
-      version:"7.55",
+      version:"7.56",
       createdAt:now.toISOString(),
       storage:storage
     };
