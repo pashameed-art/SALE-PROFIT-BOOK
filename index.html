@@ -1535,11 +1535,11 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 #v779SaveToast.show{opacity:1;transform:translate(-50%,0);}
 </style>
 
-</head>
+<style id="v780-dashboard-date">#v780SelectedDate{margin-top:4px;text-align:center;font-size:12px;font-weight:700;opacity:.72}</style></head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.79</div>
+<div class="version">Version 7.80</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -6785,7 +6785,7 @@ try{
 })();
 </script>
 
-</body>
+<script id="v780-dashboard-date-script">(function(){function add(){var a=document.querySelectorAll('*');for(var i=0;i<a.length;i++){var e=a[i];if((e.textContent||'').trim()==='Today Dashboard'&&!document.getElementById('v780SelectedDate')){var d=document.createElement('div');var n=new Date();d.id='v780SelectedDate';d.textContent='Selected Date: '+String(n.getDate()).padStart(2,'0')+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+n.getFullYear();e.parentNode.insertBefore(d,e.nextSibling);break}}}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',add):add()})();</script></body>
 </html>
 <!-- V7.43 FINAL PARTY QUICK SUMMARY + HISTORY FILTER -->
 <style id="v743-party-summary-filter-final">
