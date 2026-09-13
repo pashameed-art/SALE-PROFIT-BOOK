@@ -1524,11 +1524,22 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 }
 </style>
 
+
+<style id="v779-save-toast-style">
+#v779SaveToast{
+  position:fixed;left:50%;bottom:78px;transform:translate(-50%,16px);
+  background:#147f74;color:#fff;padding:11px 18px;border-radius:999px;
+  font-size:15px;font-weight:800;box-shadow:0 6px 20px rgba(0,0,0,.18);
+  opacity:0;pointer-events:none;z-index:99999;transition:opacity .18s ease,transform .18s ease;
+}
+#v779SaveToast.show{opacity:1;transform:translate(-50%,0);}
+</style>
+
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.78</div>
+<div class="version">Version 7.79</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -2825,7 +2836,7 @@ function saveEntry(){
   }
   editingId=null;$('saveBtn').textContent='Save Entry';
   localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries));
-  alert(wasEditing?'Entry updated successfully.':'Entry saved successfully.');
+  if(window.v779ShowSaveToast) v779ShowSaveToast(wasEditing?'Entry updated successfully.':'Entry saved successfully.');
   newEntry();
   renderHistory();
   renderStock();
@@ -6759,6 +6770,21 @@ try{
 })();
 </script>
 <!-- V7.48 — GDrive Last Backup Date & Status -->
+<div id="v779SaveToast" aria-live="polite"></div>
+
+<script id="v779-save-toast-script">
+(function(){
+  window.v779ShowSaveToast=function(message){
+    var t=document.getElementById('v779SaveToast');
+    if(!t)return;
+    t.textContent='✓ '+message;
+    t.classList.add('show');
+    clearTimeout(window.v779ToastTimer);
+    window.v779ToastTimer=setTimeout(function(){t.classList.remove('show');},1800);
+  };
+})();
+</script>
+
 </body>
 </html>
 <!-- V7.43 FINAL PARTY QUICK SUMMARY + HISTORY FILTER -->
