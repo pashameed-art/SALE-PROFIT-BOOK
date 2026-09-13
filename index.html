@@ -1578,8 +1578,6 @@ body.spb-home-mode #homeStockDetails #stockSummary{
   }
 }
 </style>
-<div id="v786DateProfit" style="display:none;"></div>
-
 <style id="v784-backup-delete-clean">
 @media(max-width:700px){
   #v776-delete-data-card{
@@ -1599,48 +1597,11 @@ body.spb-home-mode #homeStockDetails #stockSummary{
   }
 }
 </style>
-
-<style id="v786-date-profit-style">
-#v786DateProfit{margin-top:12px}
-.v786-profit-wrap{border:1px solid #dfe8e8;border-radius:14px;padding:11px;background:#fff}
-.v786-profit-title{font-weight:900;font-size:15px;margin-bottom:8px}
-.v786-profit-table{width:100%;border-collapse:collapse;font-size:12px}
-.v786-profit-table th,.v786-profit-table td{padding:7px 4px;border-bottom:1px solid #edf1f1;text-align:right;white-space:nowrap}
-.v786-profit-table th:first-child,.v786-profit-table td:first-child{text-align:left}
-.v786-profit-table th{font-weight:800}.v786-total{font-weight:900}
-@media(max-width:520px){.v786-profit-table{font-size:11px}.v786-profit-table th,.v786-profit-table td{padding:6px 2px}}
-</style>
-<script id="v786-date-profit-script">
-(function(){
-function arr(k){try{var x=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(x)?x:[]}catch(e){return[]}}
-function num(o,ks){for(var i=0;i<ks.length;i++)if(o&&o[ks[i]]!==undefined&&o[ks[i]]!=='')return parseFloat(o[ks[i]])||0;return 0}
-function dt(o){return String(o.date||o.Date||o.entryDate||o.createdDate||'').slice(0,10)}
-function build(){
-var h=document.getElementById('v786DateProfit');if(!h)return;
-var s=arr('spb_v4_entries'),e=arr('spb_v4_expenses'),m={};
-s.forEach(function(o){var d=dt(o);if(!d)return;if(!m[d])m[d]={s:0,p:0,e:0,f:0};m[d].s+=num(o,['sale','sales','amount','total']);m[d].p+=num(o,['purchase','cost','costAmount']);m[d].f+=num(o,['profit','Profit'])});
-e.forEach(function(o){var d=dt(o);if(!d)return;if(!m[d])m[d]={s:0,p:0,e:0,f:0};m[d].e+=num(o,['amount','expense','total'])});
-var ds=Object.keys(m).sort().reverse(),ts=0,tp=0,te=0,tf=0;
-var rows=ds.map(function(d){var x=m[d];ts+=x.s;tp+=x.p;te+=x.e;tf+=x.f;var q=d.split('-'),show=q.length===3?q[2]+'/'+q[1]+'/'+q[0]:d;return '<tr><td>'+show+'</td><td>₹'+x.s.toFixed(0)+'</td><td>₹'+x.p.toFixed(0)+'</td><td>₹'+x.e.toFixed(0)+'</td><td>₹'+x.f.toFixed(0)+'</td></tr>'}).join('');
-h.innerHTML='<div class="v786-profit-wrap"><div class="v786-profit-title">📅 Date-wise Profit</div>'+(ds.length?'<div style="overflow-x:auto"><table class="v786-profit-table"><thead><tr><th>Date</th><th>Sale</th><th>Purchase</th><th>Expense</th><th>Profit</th></tr></thead><tbody>'+rows+'<tr class="v786-total"><td>Total</td><td>₹'+ts.toFixed(0)+'</td><td>₹'+tp.toFixed(0)+'</td><td>₹'+te.toFixed(0)+'</td><td>₹'+tf.toFixed(0)+'</td></tr></tbody></table></div>':'<div style="font-size:13px;opacity:.65">No data available.</div>')+'</div>';
-}
-function visible(){
-var h=document.getElementById('v786DateProfit');if(!h)return;
-var reps=[].slice.call(document.querySelectorAll('[id*="report" i],[class*="report" i]'));
-var parent=h.parentElement, show=false;
-while(parent){var cs=getComputedStyle(parent);if(cs.display!=='none' && cs.visibility!=='hidden'){if((parent.id||'').toLowerCase().includes('report')||(parent.className||'').toString().toLowerCase().includes('report'))show=true;}parent=parent.parentElement}
-h.style.display=show?'block':'none'; if(show)build();
-}
-document.addEventListener('DOMContentLoaded',function(){setTimeout(visible,500);setTimeout(visible,1200)});
-setInterval(visible,1500);
-})();
-</script>
-
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.86</div>
+<div class="version">Version 7.88</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -2302,6 +2263,7 @@ setInterval(visible,1500);
 <select id="reportTypeSelect" onchange="clearSelectedReport()">
 <option value="sale">💰 Sale</option>
 <option value="purchase">🧾 Purchase</option>
+<option value="profit">📈 Profit</option>
 <option value="expense">💸 Expense</option>
 <option value="mansoor">🤝 Mansoor</option>
 <option value="mydeen">🤝 Mydeen</option>
@@ -2537,6 +2499,49 @@ document.getElementById('v646Run').onclick=R;document.getElementById('v646All').
   render();
 })();
 </script>
+
+<style id="v787-date-profit-style">
+#v787DateProfit{margin-top:14px}
+.v787-profit-wrap{border:1px solid #dfe8e8;border-radius:14px;padding:11px;background:#fff}
+.v787-profit-title{font-weight:900;font-size:16px;margin-bottom:8px}
+.v787-profit-table{width:100%;border-collapse:collapse;font-size:12px}
+.v787-profit-table th,.v787-profit-table td{padding:7px 4px;border-bottom:1px solid #edf1f1;text-align:right;white-space:nowrap}
+.v787-profit-table th:first-child,.v787-profit-table td:first-child{text-align:left}
+.v787-profit-table th{font-weight:800}.v787-total{font-weight:900}
+@media(max-width:520px){
+ .v787-profit-table{font-size:11px}
+ .v787-profit-table th,.v787-profit-table td{padding:6px 2px}
+}
+</style>
+<div id="v787DateProfit"></div>
+<script id="v787-date-profit-script">
+(function(){
+function arr(k){try{var x=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(x)?x:[]}catch(e){return[]}}
+function num(o,ks){for(var i=0;i<ks.length;i++)if(o&&o[ks[i]]!==undefined&&o[ks[i]]!=='')return parseFloat(o[ks[i]])||0;return 0}
+function dt(o){return String(o.date||o.Date||o.entryDate||o.createdDate||'').slice(0,10)}
+function build(){
+ var h=document.getElementById('v787DateProfit');if(!h)return;
+ var s=arr('spb_v4_entries'),e=arr('spb_v4_expenses'),m={};
+ s.forEach(function(o){var d=dt(o);if(!d)return;if(!m[d])m[d]={s:0,p:0,e:0,f:0};m[d].s+=num(o,['sale','sales','amount','total']);m[d].p+=num(o,['purchase','cost','costAmount']);m[d].f+=num(o,['profit','Profit'])});
+ e.forEach(function(o){var d=dt(o);if(!d)return;if(!m[d])m[d]={s:0,p:0,e:0,f:0};m[d].e+=num(o,['amount','expense','total'])});
+ var ds=Object.keys(m).sort().reverse(),ts=0,tp=0,te=0,tf=0;
+ var rows=ds.map(function(d){
+   var x=m[d];ts+=x.s;tp+=x.p;te+=x.e;tf+=x.f;
+   var q=d.split('-'),show=q.length===3?q[2]+'/'+q[1]+'/'+q[0]:d;
+   return '<tr><td>'+show+'</td><td>₹'+x.s.toFixed(0)+'</td><td>₹'+x.p.toFixed(0)+'</td><td>₹'+x.e.toFixed(0)+'</td><td>₹'+x.f.toFixed(0)+'</td></tr>';
+ }).join('');
+ h.innerHTML='<div class="v787-profit-wrap"><div class="v787-profit-title">📅 Date-wise Profit</div>'+
+ (ds.length?'<div style="overflow-x:auto"><table class="v787-profit-table"><thead><tr><th>Date</th><th>Sale</th><th>Purchase</th><th>Expense</th><th>Profit</th></tr></thead><tbody>'+
+ rows+'<tr class="v787-total"><td>Total</td><td>₹'+ts.toFixed(0)+'</td><td>₹'+tp.toFixed(0)+'</td><td>₹'+te.toFixed(0)+'</td><td>₹'+tf.toFixed(0)+'</td></tr></tbody></table></div>':
+ '<div style="font-size:13px;opacity:.65">No data available.</div>')+'</div>';
+}
+window.v787BuildDateProfit=build;
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){build();setTimeout(build,800)});
+else{build();setTimeout(build,800)}
+setInterval(build,2000);
+})();
+</script>
+
 </section>
 </main>
 <div class="modal" id="itemModal">
@@ -4059,7 +4064,13 @@ body.party-open-mode #partyPage {
       a=a.filter(function(x){var d=norm(x.date);return d>=from&&d<=to;});
       total=a.reduce(function(s,x){return s+n(x[field]);},0);
       rows=a.map(function(x){return '<div class="report-mini-row"><span>'+esc(x.date)+' • '+esc(x.item||'Item')+'</span><b>'+money(x[field])+'</b></div>';}).join('');
-    }else if(type==='expense'){
+    }else if(type==='profit'){
+      var pr=(typeof entries!=='undefined'&&Array.isArray(entries)?entries:read('saleProfitBookEntriesV1'));
+      title='Profit';
+      pr=pr.filter(function(x){var d=norm(x.date);return d>=from&&d<=to;});
+      total=pr.reduce(function(s,x){var sale=n(x.sale),purchase=n(x.purchase);return s+(x.profit!==undefined&&x.profit!==''?n(x.profit):sale-purchase);},0);
+      rows=pr.map(function(x){var pv=x.profit!==undefined&&x.profit!==''?n(x.profit):n(x.sale)-n(x.purchase);return '<div class="report-mini-row"><span>'+esc(x.date)+' • '+esc(x.item||'Item')+'</span><b>'+money(pv)+'</b></div>';}).join('');
+     }else if(type==='expense'){
       var e=(typeof expenses!=='undefined'&&Array.isArray(expenses)?expenses:read('spb_v4_expenses'));
       title='Expense';e=e.filter(function(x){var d=norm(x.date);return d>=from&&d<=to;});
       total=e.reduce(function(s,x){return s+n(x.amount);},0);
