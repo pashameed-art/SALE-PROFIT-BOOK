@@ -1466,11 +1466,18 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 #backupPage details{background:transparent;}
 #backupPage details summary{list-style:none;}
 #backupPage details summary::-webkit-details-marker{display:none;}
+</style><style id="v777-dashboard">
+/* V7.77 Dashboard — compact mobile layout */
+@media (max-width:700px){
+  .dashboard-grid,.stats-grid,.summary-grid,.today-dashboard-grid{
+    gap:8px !important;
+  }
+}
 </style></head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.76</div>
+<div class="version">Version 7.77</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1619,17 +1626,15 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 </style>
 <div class="page" id="backupPage"><div class="backup-box" style="padding:14px;"><div style="font-size:20px;font-weight:900;margin-bottom:4px;">☁️ Backup</div><div style="font-size:12px;opacity:.68;margin-bottom:12px;">Google Drive Backup &amp; Restore</div><div class="backup-actions-v455" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><button class="full-backup" id="gdriveBackupBtn" onclick="gdriveBackup()" type="button">☁️ Backup Now</button><label class="backup-restore-label-v455 full-restore" style="display:flex;align-items:center;justify-content:center;">♻️ Restore<input accept=".json,application/json" hidden="" id="restoreFileV551" onchange="partySafeRestore(this.files[0])" type="file"/></label></div><div class="meta" id="backupStatusV551" style="margin-top:10px;text-align:center;">One-tap Google Drive backup</div><div aria-live="polite" class="v748-gdrive-info" id="gdriveBackupInfoV748"><div class="v748-gdrive-info-title">☁️ Google Drive Backup Status</div><div class="v748-gdrive-status" id="gdriveBackupStateV748">Not backed up yet</div><div class="v748-gdrive-time" id="gdriveBackupTimeV748">Last Backup: —</div><div class="v748-gdrive-time" id="gdriveBackupFileV751">Backup File: SALE-PROFIT-BOOK-GDRIVE-BACKUP.json</div></div>
 <div id="v776-delete-data-card" style="margin-top:12px;border:1px solid #f0d5d5;border-radius:14px;padding:12px;background:#fff8f8;">
-  <div style="font-size:15px;font-weight:900;color:#b52b2b;margin-bottom:8px;">Delete Data</div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-    <button type="button" id="v776DeleteSalesBtn"
-      style="border:0;border-radius:11px;padding:11px 8px;font-weight:900;background:#ffe8e8;color:#b42323;">
+<div style="font-size:15px;font-weight:900;color:#b52b2b;margin-bottom:8px;">Delete Data</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+<button id="v776DeleteSalesBtn" style="border:0;border-radius:11px;padding:11px 8px;font-weight:900;background:#ffe8e8;color:#b42323;" type="button">
       Delete All Sales
     </button>
-    <button type="button" id="v776DeleteExpensesBtn"
-      style="border:0;border-radius:11px;padding:11px 8px;font-weight:900;background:#ffe8e8;color:#b42323;">
+<button id="v776DeleteExpensesBtn" style="border:0;border-radius:11px;padding:11px 8px;font-weight:900;background:#ffe8e8;color:#b42323;" type="button">
       Delete All Expenses
     </button>
-  </div>
+</div>
 </div>
 <script id="v776-delete-data-script">
 (function(){
@@ -1795,12 +1800,12 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 </div>
 <div class="field">
 <label>தேதி</label>
-<input id="mansoorDate" type="date">
-</input></div>
+<input id="mansoorDate" type="date"/>
+</div>
 <div class="field">
 <label>தொகை ₹</label>
-<input id="mansoorAmount" inputmode="decimal" min="0" placeholder="Amount" step="1" type="number">
-</input></div>
+<input id="mansoorAmount" inputmode="decimal" min="0" placeholder="Amount" step="1" type="number"/>
+</div>
 <div class="field">
 <label>குறிப்பு</label>
 <input id="mansoorNote" placeholder="குறிப்பு (விருப்பம்)" type="text"/>
@@ -1834,14 +1839,14 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <h2>🤝 Supplier கொடுக்கல் – வாங்கல்</h2>
 <div class="field">
 <label>👤 Supplier Name</label>
-<input autocomplete="off" id="supplierName" list="supplierNameList" placeholder="Supplier Name" type="text">
+<input autocomplete="off" id="supplierName" list="supplierNameList" placeholder="Supplier Name" type="text"/>
 <datalist id="supplierNameList"></datalist>
-</input></div>
+</div>
 <div class="supplier-entry-grid">
 <div class="field">
 <label>📅 Date</label>
-<input id="supplierDate" type="date">
-</input></div>
+<input id="supplierDate" type="date"/>
+</div>
 <div class="field">
 <label>🔄 Type</label>
 <select id="supplierType">
@@ -2376,22 +2381,22 @@ document.getElementById('v646Run').onclick=R;document.getElementById('v646All').
 <h2 style="margin-top:0">Add Item</h2>
 <div class="field" id="newItemNameWrap">
 <label>Item Name</label>
-<input autocomplete="off" id="newItemName" placeholder="Type first 2 letters…">
+<input autocomplete="off" id="newItemName" placeholder="Type first 2 letters…"/>
 <div id="newItemSuggestions"></div>
-</input></div>
+</div>
 <div class="field">
 <label>Purchase / Meter ₹</label>
-<input id="newItemRate" inputmode="decimal" min="0" placeholder="225" step="0.01" type="number">
-</input></div>
+<input id="newItemRate" inputmode="decimal" min="0" placeholder="225" step="0.01" type="number"/>
+</div>
 <div class="report-grid">
 <div class="field">
 <label>Stock Date</label>
-<input id="newStockDate" type="date">
-</input></div>
+<input id="newStockDate" type="date"/>
+</div>
 <div class="field">
 <label>Stock Meter</label>
-<input id="newStockMeter" inputmode="decimal" min="0" placeholder="30" step="0.01" type="number"><div class="meta">Add Item செய்யும் போது ஆரம்ப Stock Meter இங்கே உள்ளிடவும்</div>
-</input></div>
+<input id="newStockMeter" inputmode="decimal" min="0" placeholder="30" step="0.01" type="number"/><div class="meta">Add Item செய்யும் போது ஆரம்ப Stock Meter இங்கே உள்ளிடவும்</div>
+</div>
 </div>
 <div class="modal-actions">
 <button class="primary" onclick="saveItem()">Save Item</button>
