@@ -1578,11 +1578,30 @@ body.spb-home-mode #homeStockDetails #stockSummary{
   }
 }
 </style>
+<style id="v784-backup-delete-clean">
+@media(max-width:700px){
+  #v776-delete-data-card{
+    margin-top:10px!important;
+    padding:10px!important;
+    border-radius:13px!important;
+  }
+  #v776-delete-data-card > div:first-child{
+    font-size:14px!important;
+    margin-bottom:7px!important;
+  }
+  #v776-delete-data-card button{
+    min-height:40px!important;
+    padding:8px 6px!important;
+    border-radius:10px!important;
+    font-size:13px!important;
+  }
+}
+</style>
 </head>
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.83</div>
+<div class="version">Version 7.84</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -6828,7 +6847,69 @@ try{
 })();
 </script>
 
-<script id="v780-dashboard-date-script">(function(){function add(){var a=document.querySelectorAll('*');for(var i=0;i<a.length;i++){var e=a[i];if((e.textContent||'').trim()==='Today Dashboard'&&!document.getElementById('v780SelectedDate')){var d=document.createElement('div');var n=new Date();d.id='v780SelectedDate';d.textContent='Selected Date: '+String(n.getDate()).padStart(2,'0')+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+n.getFullYear();e.parentNode.insertBefore(d,e.nextSibling);break}}}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',add):add()})();</script></body>
+<script id="v780-dashboard-date-script">(function(){function add(){var a=document.querySelectorAll('*');for(var i=0;i<a.length;i++){var e=a[i];if((e.textContent||'').trim()==='Today Dashboard'&&!document.getElementById('v780SelectedDate')){var d=document.createElement('div');var n=new Date();d.id='v780SelectedDate';d.textContent='Selected Date: '+String(n.getDate()).padStart(2,'0')+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+n.getFullYear();e.parentNode.insertBefore(d,e.nextSibling);break}}}document.readyState==='loading'?document.addEventListener('DOMContentLoaded',add):add()})();</script>
+<div id="v784Confirm" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:100000;align-items:center;justify-content:center;padding:22px;">
+  <div style="width:min(360px,100%);background:#fff;border-radius:18px;padding:20px;box-shadow:0 12px 40px rgba(0,0,0,.25);">
+    <div id="v784ConfirmTitle" style="font-size:18px;font-weight:900;margin-bottom:8px;">Delete Data?</div>
+    <div id="v784ConfirmText" style="font-size:14px;line-height:1.45;color:#666;margin-bottom:16px;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <button type="button" id="v784Cancel" style="border:0;border-radius:11px;padding:11px;font-weight:800;background:#eef3f3;color:#245f5a;">Cancel</button>
+      <button type="button" id="v784ConfirmBtn" style="border:0;border-radius:11px;padding:11px;font-weight:800;background:#b42323;color:#fff;">Delete</button>
+    </div>
+  </div>
+</div>
+<script id="v784-confirm-script">
+(function(){
+  var modal, confirmBtn, cancelBtn, pending=null;
+  function setup(){
+    modal=document.getElementById('v784Confirm');
+    confirmBtn=document.getElementById('v784ConfirmBtn');
+    cancelBtn=document.getElementById('v784Cancel');
+    var sales=document.getElementById('v776DeleteSalesBtn');
+    var expenses=document.getElementById('v776DeleteExpensesBtn');
+    function ask(kind,count){
+      document.getElementById('v784ConfirmTitle').textContent='Delete All '+kind+'?';
+      document.getElementById('v784ConfirmText').textContent=
+        'This will permanently remove '+count+' '+kind.toLowerCase()+' record(s). This action cannot be undone.';
+      pending=kind;
+      modal.style.display='flex';
+    }
+    if(sales) sales.onclick=function(){
+      var a=[]; try{a=JSON.parse(localStorage.getItem('spb_v4_entries')||'[]')}catch(e){}
+      if(!Array.isArray(a)||!a.length){alert('No Sales data to delete.');return;}
+      ask('Sales',a.length);
+    };
+    if(expenses) expenses.onclick=function(){
+      var a=[]; try{a=JSON.parse(localStorage.getItem('spb_v4_expenses')||'[]')}catch(e){}
+      if(!Array.isArray(a)||!a.length){alert('No Expense data to delete.');return;}
+      ask('Expenses',a.length);
+    };
+    if(cancelBtn) cancelBtn.onclick=function(){pending=null;modal.style.display='none';};
+    if(confirmBtn) confirmBtn.onclick=function(){
+      if(!pending)return;
+      if(pending==='Sales'){
+        localStorage.setItem('spb_v4_entries','[]');
+        if(typeof entries!=='undefined') entries=[];
+      }else{
+        localStorage.setItem('spb_v4_expenses','[]');
+        if(typeof expenses!=='undefined') expenses=[];
+      }
+      try{if(typeof renderHistory==='function')renderHistory();}catch(e){}
+      try{if(typeof renderExpenses==='function')renderExpenses();}catch(e){}
+      try{if(typeof refreshDashboard==='function')refreshDashboard();}catch(e){}
+      try{if(typeof updateTodayNetProfit==='function')updateTodayNetProfit();}catch(e){}
+      try{if(typeof renderStock==='function')renderStock();}catch(e){}
+      try{if(typeof renderReports==='function')renderReports();}catch(e){}
+      modal.style.display='none';
+      alert('✓ All '+pending+' data deleted successfully.');
+      pending=null;
+    };
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
+})();
+</script>
+
+</body>
 </html>
 <!-- V7.43 FINAL PARTY QUICK SUMMARY + HISTORY FILTER -->
 <style id="v743-party-summary-filter-final">
