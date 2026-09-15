@@ -1601,7 +1601,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.89</div>
+<div class="version">Version 7.90</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -4066,29 +4066,27 @@ body.party-open-mode #partyPage {
       rows=a.map(function(x){return '<div class="report-mini-row"><span>'+esc(x.date)+' • '+esc(x.item||'Item')+'</span><b>'+money(x[field])+'</b></div>';}).join('');
     }else if(type==='profit'){
       var pr=(typeof entries!=='undefined'&&Array.isArray(entries)?entries:read('saleProfitBookEntriesV1'));
-      var ex=(typeof expenses!=='undefined'&&Array.isArray(expenses)?expenses:read('spb_v4_expenses'));
       title='Profit';
       pr=pr.filter(function(x){var d=norm(x.date);return d>=from&&d<=to;});
-      ex=ex.filter(function(x){var d=norm(x.date);return d>=from&&d<=to;});
       var byDate={};
       pr.forEach(function(x){
-        var d=norm(x.date); if(!byDate[d])byDate[d]={sale:0,purchase:0,expense:0,profit:0};
+        var d=norm(x.date); if(!d)return;
+        if(!byDate[d])byDate[d]={sale:0,purchase:0,profit:0};
         var sale=n(x.sale),purchase=n(x.purchase);
         byDate[d].sale+=sale;
         byDate[d].purchase+=purchase;
         byDate[d].profit+=(x.profit!==undefined&&x.profit!==''?n(x.profit):sale-purchase);
       });
-      ex.forEach(function(x){
-        var d=norm(x.date); if(!byDate[d])byDate[d]={sale:0,purchase:0,expense:0,profit:0};
-        byDate[d].expense+=n(x.amount);
-      });
       var ds=Object.keys(byDate).sort(function(a,b){return b.localeCompare(a);});
-      var ts=0,tp=0,te=0,tf=0;
-      ds.forEach(function(d){ts+=byDate[d].sale;tp+=byDate[d].purchase;te+=byDate[d].expense;tf+=byDate[d].profit;});
-      total=tf-te;
-      rows='<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left;padding:7px">Date</th><th style="text-align:right;padding:7px">Sale</th><th style="text-align:right;padding:7px">Purchase</th><th style="text-align:right;padding:7px">Expense</th><th style="text-align:right;padding:7px">Profit</th></tr></thead><tbody>'+
-        ds.map(function(d){var x=byDate[d];return '<tr><td style="padding:7px;border-top:1px solid #eee">'+esc(d)+'</td><td style="text-align:right;padding:7px;border-top:1px solid #eee">'+money(x.sale)+'</td><td style="text-align:right;padding:7px;border-top:1px solid #eee">'+money(x.purchase)+'</td><td style="text-align:right;padding:7px;border-top:1px solid #eee">'+money(x.expense)+'</td><td style="text-align:right;padding:7px;border-top:1px solid #eee"><b>'+money(x.profit)+'</b></td></tr>';}).join('')+
-        '<tr><td style="padding:7px;border-top:2px solid #ddd"><b>Total</b></td><td style="text-align:right;padding:7px;border-top:2px solid #ddd"><b>'+money(ts)+'</b></td><td style="text-align:right;padding:7px;border-top:2px solid #ddd"><b>'+money(tp)+'</b></td><td style="text-align:right;padding:7px;border-top:2px solid #ddd"><b>'+money(te)+'</b></td><td style="text-align:right;padding:7px;border-top:2px solid #ddd"><b>'+money(tf)+'</b></td></tr></tbody></table></div>';
+      var ts=0,tp=0,tf=0;
+      var dateRows=ds.map(function(d){
+        var x=byDate[d];ts+=x.sale;tp+=x.purchase;tf+=x.profit;
+        var q=d.split('-'),show=q.length===3?q[2]+'/'+q[1]+'/'+q[0]:d;
+        return '<div style="display:grid;grid-template-columns:1.1fr .9fr .9fr .9fr;gap:6px;padding:7px 0;border-top:1px solid #eee"><span>'+esc(show)+'</span><b style="text-align:right">'+money(x.sale)+'</b><b style="text-align:right">'+money(x.purchase)+'</b><b style="text-align:right">'+money(x.profit)+'</b></div>';
+      }).join('');
+      total=tf;
+      rows='<div style="display:grid;grid-template-columns:1.1fr .9fr .9fr .9fr;gap:6px;padding:8px 0;font-weight:900;border-bottom:2px solid #ddd"><span>Date</span><span style="text-align:right">Sale</span><span style="text-align:right">Purchase</span><span style="text-align:right">Profit</span></div>'+dateRows+
+      '<div style="display:grid;grid-template-columns:1.1fr .9fr .9fr .9fr;gap:6px;padding:9px 0;font-weight:900;border-top:2px solid #ddd"><span>Total</span><span style="text-align:right">'+money(ts)+'</span><span style="text-align:right">'+money(tp)+'</span><span style="text-align:right">'+money(tf)+'</span></div>';
      }else if(type==='expense'){
       var e=(typeof expenses!=='undefined'&&Array.isArray(expenses)?expenses:read('spb_v4_expenses'));
       title='Expense';e=e.filter(function(x){var d=norm(x.date);return d>=from&&d<=to;});
