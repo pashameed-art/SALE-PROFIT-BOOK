@@ -7014,6 +7014,123 @@ try{
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addCard);else addCard();
 })();
 </script>
+
+<script id="v801-item-edit-delete-fix">
+(function(){
+  'use strict';
+
+  // Make the item actions explicitly available to inline handlers and
+  // replace fragile inline-click wiring with delegated button handling.
+  window.spbV801EditItem = function(name){
+    name=String(name||'');
+    if(typeof window.editItem==='function' && window.editItem!==window.spbV801EditItem){
+      return window.editItem(name);
+    }
+    var list=Array.isArray(window.items)?window.items:[];
+    var x=list.find(function(i){return String(i.name)===name;});
+    if(!x){alert('Item not found.');return;}
+    window.editingItemName=name;
+    var n=document.getElementById('newItemName');
+    var r=document.getElementById('newItemRate');
+    var m=document.getElementById('newStockMeter');
+    var d=document.getElementById('newStockDate');
+    if(n)n.value=x.name||'';
+    if(r)r.value=x.rate||'';
+    if(m)m.value='';
+    if(d && typeof window.today==='function')d.value=window.today();
+    var btn=document.querySelector('#itemModal .modal-actions .primary');
+    if(btn)btn.textContent='Update Item';
+    var sug=document.getElementById('newItemSuggestions');
+    if(sug)sug.style.display='none';
+    var modal=document.getElementById('itemModal');
+    if(modal)modal.style.display='flex';
+    document.documentElement.classList.add('modal-open');
+    document.body.classList.add('modal-open');
+    if(n)n.focus();
+  };
+
+  window.spbV801DeleteItem = function(name){
+    name=String(name||'');
+    var list=Array.isArray(window.items)?window.items:[];
+    var x=list.find(function(i){return String(i.name)===name;});
+    if(!x){alert('Item not found.');return;}
+    if(!confirm('Delete this item?'))return;
+    window.items=list.filter(function(i){return String(i.name)!==name;});
+    var key=window.ITEMS_KEY || 'spb_v4_items';
+    try{localStorage.setItem(key,JSON.stringify(window.items));}catch(e){alert('Could not save item changes.');return;}
+    if(typeof window.populateItems==='function')window.populateItems();
+    if(typeof window.renderItems==='function')window.renderItems();
+    if(typeof window.renderStock==='function')window.renderStock();
+    if(typeof window.calculate==='function')window.calculate();
+  };
+
+  // Explicitly expose the original functions when they exist.
+  if(typeof window.editItem!=='function' && typeof editItem==='function')
+    window.editItem=editItem;
+  if(typeof window.deleteItem!=='function' && typeof deleteItem==='function')
+    window.deleteItem=deleteItem;
+
+  function bind(){
+    var list=document.getElementById('itemList');
+    if(!list || list.dataset.v801Bound==='1')return;
+    list.dataset.v801Bound='1';
+    list.addEventListener('click',function(e){
+      var edit=e.target.closest('button[data-v801-edit-item]');
+      if(edit){
+        e.preventDefault();e.stopPropagation();
+        window.spbV801EditItem(edit.getAttribute('data-v801-edit-item'));
+        return;
+      }
+      var del=e.target.closest('button[data-v801-delete-item]');
+      if(del){
+        e.preventDefault();e.stopPropagation();
+        window.spbV801DeleteItem(del.getAttribute('data-v801-delete-item'));
+      }
+    },true);
+  }
+
+  // Patch renderItems after the existing app functions have loaded.
+  function patch(){
+    if(typeof window.renderItems!=='function')return;
+    var original=window.renderItems;
+    if(original.__v801)return;
+    function wrapped(){
+      original.apply(this,arguments);
+      var list=document.getElementById('itemList');
+      if(!list)return;
+      list.querySelectorAll('button[onclick*="editItem"]').forEach(function(b){
+        var m=b.getAttribute('onclick').match(/editItem\((.*)\)/);
+        if(m){
+          try{
+            var name=JSON.parse(m[1]);
+            b.removeAttribute('onclick');
+            b.setAttribute('data-v801-edit-item',name);
+          }catch(e){}
+        }
+      });
+      list.querySelectorAll('button[onclick*="deleteItem"]').forEach(function(b){
+        var m=b.getAttribute('onclick').match(/deleteItem\((.*)\)/);
+        if(m){
+          try{
+            var name=JSON.parse(m[1]);
+            b.removeAttribute('onclick');
+            b.setAttribute('data-v801-delete-item',name);
+          }catch(e){}
+        }
+      });
+      bind();
+    }
+    wrapped.__v801=true;
+    window.renderItems=wrapped;
+    wrapped();
+  }
+
+  if(document.readyState==='loading')
+    document.addEventListener('DOMContentLoaded',function(){setTimeout(patch,0);});
+  else
+    setTimeout(patch,0);
+})();
+</script>
 </body>
 </html>
 <!-- V7.43 FINAL PARTY QUICK SUMMARY + HISTORY FILTER -->
