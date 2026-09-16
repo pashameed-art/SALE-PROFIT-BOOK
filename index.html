@@ -1601,7 +1601,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.90</div>
+<div class="version">Version 7.91</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -6975,6 +6975,67 @@ try{
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
 })();
 </script>
+
+<script id="v791-report-data-fix">
+(function(){
+'use strict';
+function A(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return[]}}
+function N(v){var n=Number(v);return isFinite(n)?n:0}
+function E(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]||c})}
+function M(v){return '₹'+N(v).toLocaleString('en-IN',{maximumFractionDigits:2})}
+function D(v){
+ var s=String(v==null?'':v).trim().slice(0,10),m;
+ m=s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+ if(m)return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');
+ m=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+ if(m)return m[3]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0');
+ m=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2})$/);
+ if(m)return '20'+m[3]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[1]).padStart(2,'0');
+ return s;
+}
+function F(o,n){for(var i=0;i<n.length;i++)if(o&&o[n[i]]!==undefined&&o[n[i]]!=='')return o[n[i]];return 0}
+function DATE(o){return D(F(o,['date','Date','entryDate','expenseDate','createdDate']))}
+function PARTY(k,n){
+ var a=A(k);if(a.length)return a;
+ try{var v=JSON.parse(localStorage.getItem('spb_data_protected_v2')||'{}');if(Array.isArray(v[n]))return v[n]}catch(e){}
+ try{var v2=JSON.parse(localStorage.getItem('spb_party_protected_backup_v1')||'{}');if(Array.isArray(v2[n]))return v2[n]}catch(e){}
+ return a;
+}
+function show(){
+ var type=(document.getElementById('reportTypeSelect')||{}).value||'sale';
+ var f=document.getElementById('selectedReportFrom'),t=document.getElementById('selectedReportTo'),box=document.getElementById('selectedReportResult');
+ var now=new Date(),today=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0'),first=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-01';
+ if(f&&!f.value)f.value=first;if(t&&!t.value)t.value=today;
+ var from=D(f&&f.value),to=D(t&&t.value);if(!box)return;
+ if(!from||!to){alert('Date From மற்றும் Date To தேர்வு செய்யவும்.');return}
+ if(from>to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return}
+ function inRange(a){return a.filter(function(x){var d=DATE(x);return d&&d>=from&&d<=to})}
+ var rows='',title='',total=0;
+ if(type==='sale'||type==='purchase'){
+   var a=inRange(A('spb_v4_entries')),key=type==='sale'?'sale':'purchase';
+   title=type==='sale'?'Sale':'Purchase';total=a.reduce(function(s,x){return s+N(F(x,[key,key==='sale'?'sales':'cost']))},0);
+   rows=a.map(function(x){return '<div class="report-mini-row"><span>'+E(DATE(x))+' • '+E(x.item||x.itemName||'Item')+'</span><b>'+M(F(x,[key,key==='sale'?'sales':'cost']))+'</b></div>'}).join('');
+ }else if(type==='profit'){
+   var a2=inRange(A('spb_v4_entries')),mp={};a2.forEach(function(x){var d=DATE(x);if(!mp[d])mp[d]={s:0,p:0,f:0};var s=N(F(x,['sale','sales','amount','total'])),p=N(F(x,['purchase','cost','costAmount']));mp[d].s+=s;mp[d].p+=p;mp[d].f+=(x.profit!==undefined&&x.profit!==''?N(x.profit):s-p)});
+   var ds=Object.keys(mp).sort().reverse(),ts=0,tp=0,tf=0;
+   var dr=ds.map(function(d){var x=mp[d],q=d.split('-');ts+=x.s;tp+=x.p;tf+=x.f;return '<div style="display:grid;grid-template-columns:1.1fr .9fr .9fr .9fr;gap:6px;padding:7px 0;border-top:1px solid #eee"><span>'+q[2]+'/'+q[1]+'/'+q[0]+'</span><b style="text-align:right">'+M(x.s)+'</b><b style="text-align:right">'+M(x.p)+'</b><b style="text-align:right">'+M(x.f)+'</b></div>'}).join('');
+   title='Profit';total=tf;rows='<div style="display:grid;grid-template-columns:1.1fr .9fr .9fr .9fr;gap:6px;padding:8px 0;font-weight:900;border-bottom:2px solid #ddd"><span>Date</span><span style="text-align:right">Sale</span><span style="text-align:right">Purchase</span><span style="text-align:right">Profit</span></div>'+(dr||'<div class="meta">No records found.</div>')+'<div style="display:grid;grid-template-columns:1.1fr .9fr .9fr .9fr;gap:6px;padding:9px 0;font-weight:900;border-top:2px solid #ddd"><span>Total</span><span style="text-align:right">'+M(ts)+'</span><span style="text-align:right">'+M(tp)+'</span><span style="text-align:right">'+M(tf)+'</span></div>';
+ }else if(type==='expense'){
+   var ex=inRange(A('spb_v4_expenses'));title='Expense';total=ex.reduce(function(s,x){return s+N(F(x,['amount','expense','total']))},0);
+   rows=ex.map(function(x){return '<div class="report-mini-row"><span>'+E(DATE(x))+' • '+E(x.name||x.expenseName||'Expense')+'</span><b>'+M(F(x,['amount','expense','total']))+'</b></div>'}).join('');
+ }else{
+   var isM=type==='mansoor',p=inRange(PARTY(isM?'saleProfitBookMansoorV1':'saleProfitBookMydeenV1',isM?'mansoor':'mydeen')),received=0,given=0;
+   p.forEach(function(x){var ty=String(x.type||x.Type||'').toLowerCase(),amt=N(F(x,['amount','Amount','value']));if(ty==='given'||ty==='paid'||ty==='pay'||ty==='payment')given+=amt;else received+=amt});
+   title=isM?'Mansoor':'Mydeen';total=received-given;
+   rows='<div class="report-mini-row"><span>பணம் வாங்கியது</span><b style="color:#c62828">'+M(received)+'</b></div><div class="report-mini-row"><span>பணம் தந்தது</span><b style="color:#16834b">'+M(given)+'</b></div>'+p.map(function(x){var ty=String(x.type||x.Type||'').toLowerCase(),g=(ty==='given'||ty==='paid'||ty==='pay'||ty==='payment'),amt=N(F(x,['amount','Amount','value']));return '<div class="report-mini-row"><span>'+E(DATE(x))+' • '+(g?'பணம் தந்தது':'பணம் வாங்கியது')+(x.note?' • '+E(x.note):'')+'</span><b style="color:'+(g?'#16834b':'#c62828')+'">'+(g?'-':'+')+M(amt)+'</b></div>'}).join('');
+ }
+ box.innerHTML='<div class="report-result-mini"><h3 style="margin:0 0 8px">📊 '+E(title)+' Report</h3><div class="meta">'+E(from)+' → '+E(to)+'</div><div class="report-mini-row"><span><b>Total '+E(title)+'</b></span><b>'+M(total)+'</b></div>'+(rows||'<div class="meta" style="padding:10px 0">No records found.</div>')+'</div>';
+ box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+window.generateSelectedReport=show;
+})();
+</script>
+
 </body>
 </html>
 <!-- V7.43 FINAL PARTY QUICK SUMMARY + HISTORY FILTER -->
