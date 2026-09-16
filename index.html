@@ -1601,7 +1601,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 7.90</div>
+<div class="version">Version 8.0</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -6111,27 +6111,6 @@ else setTimeout(wait,100);
   window.addEventListener('beforeunload',snapshot); window.addEventListener('pagehide',snapshot);
 })();
 </script>
-<script id="v731-mansoor-reset-opening">
-(function(){
-  'use strict';
-  var MA='saleProfitBookMansoorV1', VAULT='spb_data_protected_v2', DONE='spb_mansoor_reset_v731_done';
-  try{
-    if(localStorage.getItem(DONE)!=='1'){
-      localStorage.setItem(MA,'[]');
-      var v={};
-      try{v=JSON.parse(localStorage.getItem(VAULT)||'{}')||{};}catch(e){}
-      v.mansoor=[];
-      v.mansoorOpeningBalance=39908;
-      v.mansoorOpeningDate='2026-09-11';
-      v.savedAt=new Date().toISOString();
-      localStorage.setItem(VAULT,JSON.stringify(v));
-      localStorage.setItem('spb_mansoor_opening_balance_v731','39908');
-      localStorage.setItem('spb_mansoor_opening_date_v731','2026-09-11');
-      localStorage.setItem(DONE,'1');
-    }
-  }catch(e){}
-})();
-</script>
 <script id="party-report-pdf-final">
 (function(){
 'use strict';
@@ -6976,86 +6955,63 @@ try{
 })();
 </script>
 
-<script id="v800-data-safety">
+<script id="v800-data-safe">
 (function(){
   'use strict';
-  const KEYS=[
-    'spb_v4_entries',
-    'spb_v4_expenses',
-    'saleProfitBookMydeenV1',
-    'saleProfitBookMansoorV1',
-    'spb_v4_stock'
-  ];
-  const SNAP='spb_v8_safety_snapshot_v1';
-
-  function obj(raw){try{return JSON.parse(raw)}catch(e){return null}}
-  function n(raw){
-    const x=obj(raw);
-    if(Array.isArray(x)) return x.length;
-    if(x && typeof x==='object'){
-      for(const k of ['entries','data','items','records'])
-        if(Array.isArray(x[k])) return x[k].length;
-      return Object.keys(x).length;
+  const KEYS=['spb_v4_entries','spb_v4_expenses','saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_stock'];
+  const SNAP='spb_v8_last_safe_snapshot_v1';
+  function read(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function parse(v){try{return JSON.parse(v)}catch(e){return null}}
+  function count(v){
+    const x=parse(v);
+    if(Array.isArray(x))return x.length;
+    if(x&&typeof x==='object'){
+      for(const k of ['entries','data','items','records'])if(Array.isArray(x[k]))return x[k].length;
     }
     return 0;
   }
   function snapshot(reason){
-    const data={};
-    KEYS.forEach(k=>{const v=localStorage.getItem(k); if(v!==null)data[k]=v});
-    try{localStorage.setItem(SNAP,JSON.stringify({
-      version:'V8.0',time:new Date().toISOString(),reason:reason||'safety snapshot',data:data
-    }))}catch(e){}
+    const data={}; let total=0;
+    KEYS.forEach(k=>{const v=read(k);if(v!==null){data[k]=v;total+=count(v)}});
+    if(!total)return;
+    try{localStorage.setItem(SNAP,JSON.stringify({version:'8.0',createdAt:new Date().toISOString(),reason,data}))}catch(e){}
+  }
+  snapshot('V8.0 startup');
+
+  const originalSetItem=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(key,value){
+    const result=originalSetItem.call(this,key,value);
+    if(KEYS.indexOf(key)!==-1)setTimeout(()=>snapshot('after save: '+key),0);
+    return result;
+  };
+
+  function recover(){
+    const snap=parse(read(SNAP));
+    if(!snap||!snap.data)return;
+    const names={'spb_v4_entries':'Sale','spb_v4_expenses':'Expense','saleProfitBookMydeenV1':'Mydeen','saleProfitBookMansoorV1':'Mansoor','spb_v4_stock':'Stock'};
+    const text=KEYS.map(k=>names[k]+': '+count(snap.data[k])).join(' • ');
+    if(!confirm('Recover last safety snapshot?\\n\\n'+text+'\\n\\nCurrent data in these groups will be replaced.'))return;
+    KEYS.forEach(k=>{if(Object.prototype.hasOwnProperty.call(snap.data,k))originalSetItem.call(localStorage,k,String(snap.data[k]))});
+    location.reload();
   }
 
-  // Take a non-destructive safety copy before app writes.
-  try{snapshot('V8.0 startup')}catch(e){}
-
-  const set0=Storage.prototype.setItem;
-  Storage.prototype.setItem=function(k,v){
-    if(KEYS.includes(k)){
-      const old=localStorage.getItem(k);
-      if(old!==null && n(old)>0 && n(String(v))===0){
-        console.warn('[V8.0] BLOCKED empty overwrite',k);
-        return;
-      }
-      try{snapshot('before write: '+k)}catch(e){}
-    }
-    return set0.call(this,k,v);
-  };
-
-  const rem0=Storage.prototype.removeItem;
-  Storage.prototype.removeItem=function(k){
-    if(KEYS.includes(k)){
-      console.warn('[V8.0] BLOCKED protected remove',k);
-      return;
-    }
-    return rem0.call(this,k);
-  };
-
-  const clear0=Storage.prototype.clear;
-  Storage.prototype.clear=function(){
-    console.warn('[V8.0] BLOCKED localStorage.clear()');
-    return;
-  };
-
-  function status(){
-    if(document.getElementById('v800-safe-card')) return;
-    const page=document.getElementById('backupPage');
-    if(!page)return;
-    const d=document.createElement('div');
-    d.id='v800-safe-card';
-    d.style.cssText='margin:10px 0;padding:10px 12px;border:1px solid #d8dee9;border-radius:12px;background:#f8fafc;font-size:12px;line-height:1.5';
-    d.innerHTML='<b>🔒 V8.0 DATA SAFE</b><br>Existing data is protected from automatic empty/reset overwrite.<div id="v800-counts" style="margin-top:5px;opacity:.8"></div>';
-    page.appendChild(d);
+  function addCard(){
+    if(document.getElementById('v800-safe-card'))return;
+    const page=document.getElementById('backupPage'); if(!page)return;
+    const card=document.createElement('div');
+    card.id='v800-safe-card';
+    card.style.cssText='margin:10px 0;padding:11px 12px;border:1px solid #d8dee9;border-radius:12px;background:#f8fafc;font-size:12px;line-height:1.5;';
+    card.innerHTML='<b>🔒 V8.0 DATA SAFE</b><div style="margin-top:4px">Automatic reset/migration of existing data has been removed.</div><div id="v800-safe-counts" style="margin-top:5px;opacity:.8"></div><button id="v800-recover-btn" style="margin-top:8px;padding:7px 10px;border:0;border-radius:8px;font-weight:700">Recover Last Safety Snapshot</button>';
+    page.appendChild(card);
+    document.getElementById('v800-recover-btn').onclick=recover;
     function refresh(){
       const names=['Sale','Expense','Mydeen','Mansoor','Stock'];
-      const el=document.getElementById('v800-counts');
-      if(el) el.textContent=KEYS.map((k,i)=>names[i]+': '+n(localStorage.getItem(k))).join('  •  ');
+      const el=document.getElementById('v800-safe-counts');
+      if(el)el.textContent=KEYS.map((k,i)=>names[i]+': '+count(read(k))).join(' • ');
     }
-    refresh(); setInterval(refresh,2000);
+    refresh();setInterval(refresh,2000);
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',status);
-  else status();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addCard);else addCard();
 })();
 </script>
 </body>
