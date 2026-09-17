@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=805" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.06</title>
+<title>Sale Profit Book • V8.07</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.06" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.07" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1601,7 +1601,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.06</div>
+<div class="version">Version 8.07</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -7067,6 +7067,46 @@ try{
       });
       if(!exists){
         a.push({id:Date.now()+Math.floor(Math.random()*1000),type:r.type,date:r.date,amount:r.amount,note:r.note});
+        changed=true;
+      }
+    });
+    if(changed){
+      localStorage.setItem(KEY,JSON.stringify(a));
+      if(typeof window.renderMydeenUI==='function') window.renderMydeenUI();
+    }
+  }catch(e){}
+})();
+</script>
+
+<!-- V8.07 — Mydeen Money Given entries supplied by user -->
+<script id="v807-mydeen-given-seed">
+(function(){
+  'use strict';
+  var KEY='saleProfitBookMydeenV1';
+  var records=[
+    {date:'2026-08-17',type:'given',amount:5000,note:'GPay'},
+    {date:'2026-08-19',type:'given',amount:1194,note:'GPay / GST'},
+    {date:'2026-09-02',type:'given',amount:10000,note:'GPay'},
+    {date:'2026-09-03',type:'given',amount:12000,note:'GPay'},
+    {date:'2026-09-05',type:'given',amount:19000,note:'Shop ₹5,000 + ₹14,000 sent GPay'},
+    {date:'2026-09-10',type:'given',amount:30000,note:'GPay'},
+    {date:'2026-09-11',type:'given',amount:8000,note:'GPay'},
+    {date:'2026-09-15',type:'given',amount:10000,note:'GPay'},
+    {date:'2026-09-16',type:'given',amount:588,note:'GST'}
+  ];
+  try{
+    var a=JSON.parse(localStorage.getItem(KEY)||'[]');
+    if(!Array.isArray(a)) a=[];
+    var changed=false;
+    records.forEach(function(r){
+      var exists=a.some(function(x){
+        return String(x.date||'')===r.date &&
+               String(x.type||'').toLowerCase()===r.type &&
+               Number(x.amount||0)===r.amount &&
+               String(x.note||'')===r.note;
+      });
+      if(!exists){
+        a.push({id:Date.now()+Math.floor(Math.random()*100000),type:r.type,date:r.date,amount:r.amount,note:r.note});
         changed=true;
       }
     });
