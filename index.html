@@ -8,7 +8,7 @@
 <link href="./manifest.json" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V7.33</title>
+<title>Sale Profit Book • V8.04</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="7.40" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.04" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1601,7 +1601,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.0</div>
+<div class="version">Version 8.04</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -3322,9 +3322,9 @@ function renderItems(){
     return `<div class="item-row ${hidden?'v620-hidden-item':''}">
       <div><b>${esc(x.name)}</b><div class="meta">${money(x.rate)} / meter ${hidden?'<span class="v620-hidden-badge">Hidden</span>':''}</div></div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <button type="button" class="secondary v804-item-action" data-action="edit" data-item-name="${esc(x.name)}">Edit</button>
+        <button type="button" class="secondary" onclick="editItem(${JSON.stringify(x.name)})">Edit</button>
         <button type="button" class="secondary v620-hide-btn" data-hide-item="${esc(x.name)}">${hidden?'👁️ Show':'🙈 Hide'}</button>
-        <button type="button" class="danger v804-item-action" data-action="delete" data-item-name="${esc(x.name)}">Delete</button>
+        <button type="button" class="danger" onclick="deleteItem(${JSON.stringify(x.name)})">Delete</button>
       </div>
     </div>`;
   }).join('');
@@ -3363,40 +3363,6 @@ function deleteItem(name){
   if(!confirm('Delete this item?'))return;
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();renderStock();calculate();
 }
-
-/* V8.04 — Robust mobile Item Edit/Delete controller.
-   Uses event delegation in capture phase, so the buttons work even when
-   inline onclick handlers are unavailable/blocked. */
-(function(){
-  function bindItemActions(){
-    const list=document.getElementById('itemList');
-    if(!list || list.dataset.v804Bound==='1') return;
-    list.dataset.v804Bound='1';
-
-    list.addEventListener('click',function(e){
-      const btn=e.target.closest('.v804-item-action');
-      if(!btn || !list.contains(btn)) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      const name=btn.getAttribute('data-item-name') || '';
-      const action=btn.getAttribute('data-action') || '';
-
-      if(action==='edit'){
-        editItem(name);
-      }else if(action==='delete'){
-        deleteItem(name);
-      }
-    },true);
-  }
-
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',bindItemActions);
-  }else{
-    bindItemActions();
-  }
-})();
 
 init();
 
