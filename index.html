@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=805" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.05</title>
+<title>Sale Profit Book • V8.06</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.05" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.06" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1601,7 +1601,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.05</div>
+<div class="version">Version 8.06</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -7040,6 +7040,41 @@ try{
     refresh();setInterval(refresh,2000);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addCard);else addCard();
+})();
+</script>
+
+<!-- V8.06 — Mydeen Received entries supplied by user -->
+<script id="v806-mydeen-received-seed">
+(function(){
+  'use strict';
+  var KEY='saleProfitBookMydeenV1';
+  var records=[
+    {date:'2026-08-04',type:'taken',amount:93485,note:'Bill 619'},
+    {date:'2026-08-04',type:'taken',amount:97403,note:'Bill 620'},
+    {date:'2026-09-04',type:'taken',amount:86595,note:'New Bill'},
+    {date:'2026-09-12',type:'taken',amount:79660,note:'New Bill'}
+  ];
+  try{
+    var a=JSON.parse(localStorage.getItem(KEY)||'[]');
+    if(!Array.isArray(a)) a=[];
+    var changed=false;
+    records.forEach(function(r){
+      var exists=a.some(function(x){
+        return String(x.date||'')===r.date &&
+               String(x.type||'').toLowerCase()===r.type &&
+               Number(x.amount||0)===r.amount &&
+               String(x.note||'')===r.note;
+      });
+      if(!exists){
+        a.push({id:Date.now()+Math.floor(Math.random()*1000),type:r.type,date:r.date,amount:r.amount,note:r.note});
+        changed=true;
+      }
+    });
+    if(changed){
+      localStorage.setItem(KEY,JSON.stringify(a));
+      if(typeof window.renderMydeenUI==='function') window.renderMydeenUI();
+    }
+  }catch(e){}
 })();
 </script>
 </body>
