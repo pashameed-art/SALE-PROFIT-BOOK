@@ -3322,9 +3322,9 @@ function renderItems(){
     return `<div class="item-row ${hidden?'v620-hidden-item':''}">
       <div><b>${esc(x.name)}</b><div class="meta">${money(x.rate)} / meter ${hidden?'<span class="v620-hidden-badge">Hidden</span>':''}</div></div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <button type="button" class="secondary" onclick="editItem(${JSON.stringify(x.name)})">Edit</button>
+        <button type="button" class="secondary v804-item-action" data-action="edit" data-item-name="${esc(x.name)}">Edit</button>
         <button type="button" class="secondary v620-hide-btn" data-hide-item="${esc(x.name)}">${hidden?'👁️ Show':'🙈 Hide'}</button>
-        <button type="button" class="danger" onclick="deleteItem(${JSON.stringify(x.name)})">Delete</button>
+        <button type="button" class="danger v804-item-action" data-action="delete" data-item-name="${esc(x.name)}">Delete</button>
       </div>
     </div>`;
   }).join('');
@@ -3359,6 +3359,34 @@ window.toggleItemHidden=toggleItemHidden;
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind);
   else bind();
 })();
+
+/* V8.05 — Mobile Item Edit/Delete controller.
+   Delegated handler, matching the proven Hide-button approach. */
+(function(){
+  function bind(){
+    const list=document.getElementById('itemList');
+    if(!list || list.dataset.v805Bound==='1') return;
+    list.dataset.v805Bound='1';
+    list.addEventListener('click',function(e){
+      const btn=e.target.closest('.v804-item-action');
+      if(!btn || !list.contains(btn)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const name=btn.getAttribute('data-item-name') || '';
+      if(btn.getAttribute('data-action')==='edit'){
+        editItem(name);
+      }else if(btn.getAttribute('data-action')==='delete'){
+        deleteItem(name);
+      }
+    }, true);
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',bind);
+  }else{
+    bind();
+  }
+})();
+
 function deleteItem(name){
   if(!confirm('Delete this item?'))return;
   items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();renderStock();calculate();
