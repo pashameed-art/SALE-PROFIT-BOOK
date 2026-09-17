@@ -5,10 +5,10 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#0f766e" name="theme-color"/>
-<link href="./manifest.json?v=805" rel="manifest"/>
+<link href="./manifest.json?v=808" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.07</title>
+<title>Sale Profit Book • V8.08</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.07" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.08" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -630,9 +630,21 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=5.79',{scope:'./'}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=8.08',{scope:'./'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){});
   }
 });
+</script>
+<script id="v808-sw-refresh">
+(function(){
+  if(!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){
+    try{
+      if(sessionStorage.getItem('spb_v808_reloaded')==='1') return;
+      sessionStorage.setItem('spb_v808_reloaded','1');
+      location.reload();
+    }catch(e){}
+  });
+})();
 </script>
 <style id="v557-stock-add-item">
 .stock-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
@@ -1601,7 +1613,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.07</div>
+<div class="version">Version 8.08</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -3444,7 +3456,7 @@ init();
 
 // V4.72: build marker / cache refresh helper.
 (function(){
-  const BUILD = '7.11';
+  const BUILD = '8.08';
   try {
     const old = localStorage.getItem('__spb_build__');
     if(old && old !== BUILD && 'serviceWorker' in navigator){
@@ -3458,12 +3470,12 @@ init();
 
 // V4.74 FULL APP UPDATE
 (function(){
-  const BUILD = '7.11';
+  const BUILD = '8.08';
   try { localStorage.setItem('__spb_build__', BUILD); } catch(e) {}
 })();
 
 // V4.75 CLEAN TODAY TOTAL
-try{localStorage.setItem('__spb_build__','7.11')}catch(e){}
+try{localStorage.setItem('__spb_build__','8.08')}catch(e){}
 
 // V4.81 today/expense date refresh
 window.addEventListener('load', function(){try{updateTodayTotalExpense();}catch(e){}});
@@ -7117,6 +7129,110 @@ try{
   }catch(e){}
 })();
 </script>
+
+<!-- V8.08 DEVICE DATA PROTECTION — IndexedDB + Persistent Storage -->
+<script id="v808-device-data-protection">
+(function(){
+  'use strict';
+  const DB='SALE_PROFIT_BOOK_SAFE_DB_V8';
+  const STORE='snapshots';
+  const SNAP='latest';
+  const KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_stock'];
+  let dbPromise=null, writeTimer=null;
+  function openDB(){
+    if(dbPromise)return dbPromise;
+    dbPromise=new Promise(function(resolve,reject){
+      if(!window.indexedDB)return reject(new Error('IndexedDB unavailable'));
+      const r=indexedDB.open(DB,1);
+      r.onupgradeneeded=function(){
+        const db=r.result;
+        if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:'id'});
+      };
+      r.onsuccess=function(){resolve(r.result)};
+      r.onerror=function(){reject(r.error||new Error('IndexedDB open failed'))};
+    });
+    return dbPromise;
+  }
+  function readStorage(){
+    const data={};
+    KEYS.forEach(function(k){try{const v=localStorage.getItem(k);if(v!==null)data[k]=v}catch(e){}});
+    return data;
+  }
+  function counts(data){
+    return KEYS.reduce(function(n,k){
+      try{const v=JSON.parse(data[k]||'[]');return n+(Array.isArray(v)?v.length:0)}catch(e){return n}
+    },0);
+  }
+  async function saveSnapshot(reason){
+    try{
+      const data=readStorage();
+      if(!Object.keys(data).length)return;
+      const db=await openDB();
+      await new Promise(function(resolve,reject){
+        const tx=db.transaction(STORE,'readwrite');
+        tx.objectStore(STORE).put({id:SNAP,version:'8.08',savedAt:new Date().toISOString(),reason:reason||'auto',data:data});
+        tx.oncomplete=resolve;tx.onerror=function(){reject(tx.error)};
+      });
+      updateStatus('Device safety backup: '+new Date().toLocaleString('en-IN'));
+    }catch(e){console.warn('V8.08 device backup:',e)}
+  }
+  function scheduleSnapshot(reason){
+    clearTimeout(writeTimer);
+    writeTimer=setTimeout(function(){saveSnapshot(reason)},350);
+  }
+  async function getSnapshot(){
+    const db=await openDB();
+    return await new Promise(function(resolve,reject){
+      const tx=db.transaction(STORE,'readonly'),q=tx.objectStore(STORE).get(SNAP);
+      q.onsuccess=function(){resolve(q.result||null)};q.onerror=function(){reject(q.error)};
+    });
+  }
+  function updateStatus(text){
+    const el=document.getElementById('v808-device-status');if(el)el.textContent=text;
+  }
+  async function recover(){
+    try{
+      const snap=await getSnapshot();
+      if(!snap||!snap.data){alert('No Device Safety Backup found yet.');return}
+      const n=counts(snap.data);
+      if(!confirm('Recover the last Device Safety Backup?\n\nRecords in Sale, Expense, Mydeen, Mansoor and Stock will be restored to the saved snapshot.\n\nBackup records found: '+n+'\nSaved: '+new Date(snap.savedAt).toLocaleString('en-IN'))){return}
+      KEYS.forEach(function(k){if(Object.prototype.hasOwnProperty.call(snap.data,k))localStorage.setItem(k,snap.data[k])});
+      alert('✅ Device Safety Backup restored. The app will reload.');
+      location.reload();
+    }catch(e){alert('Device recovery failed. Please use the JSON/Google Drive backup.');console.error(e)}
+  }
+  async function requestPersistent(){
+    try{
+      if(navigator.storage&&navigator.storage.persist){const ok=await navigator.storage.persist();updateStatus(ok?'🔒 Persistent storage enabled':'🔒 Persistent storage requested');}
+    }catch(e){}
+  }
+  function addUI(){
+    if(document.getElementById('v808-device-safe-card'))return;
+    const page=document.getElementById('backupPage');if(!page)return;
+    const card=document.createElement('div');card.id='v808-device-safe-card';
+    card.className='backup-box';
+    card.innerHTML='<h3 style="margin-top:0">🔒 Device Data Protection</h3><div style="font-size:13px;line-height:1.5">App data is also saved inside the device using IndexedDB. This is an extra safety layer against normal app/browser storage problems.</div><div id="v808-device-status" style="margin-top:8px;font-size:12px;color:#126d66">Preparing safety backup…</div><button id="v808-recover" type="button" class="secondary" style="margin-top:10px">♻️ Recover Last Device Backup</button>';
+    page.appendChild(card);
+    document.getElementById('v808-recover').onclick=recover;
+    saveSnapshot('V8.08 startup');
+  }
+  const originalSet=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(key,value){
+    const result=originalSet.call(this,key,value);
+    if(KEYS.indexOf(key)!==-1)scheduleSnapshot('after save: '+key);
+    return result;
+  };
+  const originalRemove=Storage.prototype.removeItem;
+  Storage.prototype.removeItem=function(key){
+    const result=originalRemove.call(this,key);
+    if(KEYS.indexOf(key)!==-1)scheduleSnapshot('after remove: '+key);
+    return result;
+  };
+  window.addEventListener('DOMContentLoaded',function(){requestPersistent();addUI();setTimeout(function(){saveSnapshot('V8.08 startup refresh')},1500)});
+  window.addEventListener('pageshow',function(){setTimeout(function(){saveSnapshot('pageshow')},500)});
+})();
+</script>
+
 </body>
 </html>
 <!-- V7.43 FINAL PARTY QUICK SUMMARY + HISTORY FILTER -->
