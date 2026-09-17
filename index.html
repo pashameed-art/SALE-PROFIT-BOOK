@@ -3361,8 +3361,23 @@ window.toggleItemHidden=toggleItemHidden;
 })();
 function deleteItem(name){
   if(!confirm('Delete this item?'))return;
-  items=items.filter(x=>x.name!==name);localStorage.setItem(ITEMS_KEY,JSON.stringify(items));populateItems();renderItems();renderStock();calculate();
+  items=items.filter(x=>x.name!==name);
+  localStorage.setItem(ITEMS_KEY,JSON.stringify(items));
+  populateItems();
+  renderItems();
+  renderStock();
+  calculate();
 }
+
+/* V8.03 — Fix Add Item Edit/Delete buttons.
+   renderItems() uses these global handlers. */
+window.spbV802EditItem = function(name){
+  editItem(String(name || ''));
+};
+
+window.spbV802DeleteItem = function(name){
+  deleteItem(String(name || ''));
+};
 
 init();
 
