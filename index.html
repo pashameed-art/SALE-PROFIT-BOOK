@@ -5,7 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
 <meta content="#0f766e" name="theme-color"/>
-<link href="./manifest.json?v=808" rel="manifest"/>
+<link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
 <title>Sale Profit Book • V8.08</title>
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.08" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.09" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -630,7 +630,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=8.08',{scope:'./'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=8.09',{scope:'./'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){});
   }
 });
 </script>
@@ -1613,7 +1613,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.08</div>
+<div class="version">Version 8.09</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1644,6 +1644,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 <select id="item" onchange="calculate()">
 <option value="">Select Item</option>
 </select>
+<button type="button" class="mixed-sale-btn" onclick="openMixedSale()">➕ Multiple Items / Mixed Sale</button>
 </div>
 <div class="entry-three"><div class="field">
 <label>Meter</label>
@@ -7233,6 +7234,61 @@ try{
 })();
 </script>
 
+<style id="v809-mixed-sale-style">
+.mixed-sale-btn{margin-top:10px;width:100%;background:#e9f3f2;color:#08665e}
+.mixed-sale-modal{position:fixed;inset:0;background:#0008;display:none;align-items:flex-start;justify-content:center;padding:12px;z-index:12000;overflow:auto}
+.mixed-sale-box{background:#fff;width:min(620px,100%);border-radius:20px;padding:18px;max-height:calc(100dvh - 24px);overflow:auto}
+.mixed-row{display:grid;grid-template-columns:minmax(0,1fr) 90px 120px 42px;gap:7px;align-items:end;margin-top:10px}
+.mixed-row label{font-size:12px;margin-bottom:5px}.mixed-row input,.mixed-row select{height:44px;padding:0 8px;font-size:14px}
+.mixed-remove{height:44px!important;padding:0!important;background:#fbeaea;color:#a33}
+.mixed-total{margin-top:14px;padding:13px;border-radius:14px;background:#eef7f5;font-weight:800}
+@media(max-width:520px){.mixed-row{grid-template-columns:minmax(0,1fr) 72px 100px 40px;gap:5px}.mixed-row input,.mixed-row select{font-size:13px;padding:0 6px}}
+</style>
+
+<div class="mixed-sale-modal" id="mixedSaleModal">
+  <div class="mixed-sale-box">
+    <h2 style="margin:0 0 6px">Multiple Items / Mixed Sale</h2>
+    <div class="meta">ஒரே Sale-ல் பல Item சேர்க்கலாம். ஒவ்வொரு Item-ன் Meter மற்றும் Sale Share மட்டும் உள்ளிடவும். Total Sale கீழே கணக்காகும்.</div>
+    <div id="mixedSaleRows"></div>
+    <button type="button" class="secondary" style="margin-top:12px" onclick="addMixedSaleRow()">➕ Add Another Item</button>
+    <div class="mixed-total">Total Sale: <span id="mixedSaleTotal">₹0</span><br><span style="font-size:13px;font-weight:700;color:#55706c">Total Purchase: <span id="mixedPurchaseTotal">₹0</span> &nbsp; | &nbsp; Total Profit: <span id="mixedProfitTotal">₹0</span></span></div>
+    <div class="field"><label>Paid By</label><select id="mixedPaidBy"><option value="GPay">GPay</option><option value="Cash">Cash</option></select></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px"><button type="button" class="primary" onclick="saveMixedSale()">Save Mixed Sale</button><button type="button" class="secondary" onclick="closeMixedSale()">Close</button></div>
+  </div>
+</div>
+<script id="v809-mixed-sale">
+(function(){
+  function m(n){return '₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2})}
+  function opts(){return '<option value="">Select Item</option>'+(Array.isArray(items)?items.filter(x=>!x.hidden).sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),undefined,{numeric:true,sensitivity:'base'})).map(x=>'<option value="'+esc(x.name)+'">'+esc(x.name)+' — '+m(x.rate)+'/m</option>').join(''):'')}
+  function row(){
+    var d=document.createElement('div'); d.className='mixed-row';
+    d.innerHTML='<div><label>Item</label><select class="mixed-item">'+opts()+'</select></div><div><label>Meter</label><input class="mixed-meter" type="number" min="0" step="0.01" placeholder="3"></div><div><label>Sale Share ₹</label><input class="mixed-sale" type="number" min="0" step="0.01" placeholder="1000"></div><button type="button" class="mixed-remove" title="Remove">×</button>';
+    d.querySelector('.mixed-remove').onclick=function(){var box=document.getElementById('mixedSaleRows');if(box.children.length>1)d.remove();else{d.querySelector('.mixed-item').value='';d.querySelector('.mixed-meter').value='';d.querySelector('.mixed-sale').value=''}update()};
+    d.querySelectorAll('select,input').forEach(function(x){x.addEventListener('input',update);x.addEventListener('change',update)});
+    document.getElementById('mixedSaleRows').appendChild(d); return d;
+  }
+  function update(){
+    var total=0,pur=0;
+    document.querySelectorAll('#mixedSaleRows .mixed-row').forEach(function(r){var name=r.querySelector('.mixed-item').value, meter=Number(r.querySelector('.mixed-meter').value)||0, sale=Number(r.querySelector('.mixed-sale').value)||0, it=(Array.isArray(items)?items:[]).find(function(x){return x.name===name}); total+=sale;pur+=(it?Number(it.rate)||0:0)*meter});
+    document.getElementById('mixedSaleTotal').textContent=m(total);document.getElementById('mixedPurchaseTotal').textContent=m(pur);document.getElementById('mixedProfitTotal').textContent=m(total-pur);
+  }
+  window.openMixedSale=function(){
+    var modal=document.getElementById('mixedSaleModal'),box=document.getElementById('mixedSaleRows'); if(!modal||!box)return;
+    box.innerHTML=''; row(); document.getElementById('mixedPaidBy').value=document.getElementById('paidBy')?document.getElementById('paidBy').value:'GPay'; modal.style.display='flex'; update();
+  };
+  window.addMixedSaleRow=function(){row();update()};
+  window.closeMixedSale=function(){var modal=document.getElementById('mixedSaleModal');if(modal)modal.style.display='none'};
+  window.saveMixedSale=function(){
+    var rows=[].slice.call(document.querySelectorAll('#mixedSaleRows .mixed-row')), data=[], totalSale=0,totalPurchase=0;
+    rows.forEach(function(r){var item=r.querySelector('.mixed-item').value,meter=Number(r.querySelector('.mixed-meter').value)||0,sale=Number(r.querySelector('.mixed-sale').value)||0,rate=((Array.isArray(items)?items:[]).find(function(x){return x.name===item})||{}).rate||0;if(item&&meter>0&&sale>=0&&Number(rate)>0){data.push({item:item,meter:meter,sale:sale,rate:Number(rate)});totalSale+=sale;totalPurchase+=Number(rate)*meter}});
+    if(!data.length){alert('Please add at least one valid Item.');return}
+    if(Math.abs(data.reduce(function(a,x){return a+x.sale},0)-totalSale)>0.001 || totalSale<=0){alert('Please enter Sale Share for the items.');return}
+    var date=document.getElementById('date').value||today(),place=(document.getElementById('place').value||'').trim()||'Kerala',paid=document.getElementById('mixedPaidBy').value||'GPay',gid='MS'+Date.now();
+    var now=Date.now(); data.forEach(function(x,i){entries.unshift({id:now+i,date:date,place:place,item:x.item,meter:x.meter,rate:x.rate,sale:x.sale,paidBy:paid,purchase:x.rate*x.meter,profit:x.sale-x.rate*x.meter,time:localTime(),mixedSaleId:gid,mixedSale:true})});
+    localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries)); closeMixedSale(); renderHistory();renderStock();refreshDashboard(); if(window.v779ShowSaveToast)v779ShowSaveToast('Mixed Sale saved successfully.');
+  };
+})();
+</script>
 </body>
 </html>
 <!-- V7.43 FINAL PARTY QUICK SUMMARY + HISTORY FILTER -->
