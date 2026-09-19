@@ -8,7 +8,25 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.13</title>
+<title>Sale Profit Book • V8.14</title>
+<script id="v814-safe-boot">
+(function(){
+  'use strict';
+  if(!('serviceWorker' in navigator)) return;
+  function reloadOnce(){try{if(sessionStorage.getItem('spb_v814_reloaded')==='1')return;sessionStorage.setItem('spb_v814_reloaded','1');location.reload();}catch(e){}}
+  try{
+    navigator.serviceWorker.register('./sw.js?v=8.14',{scope:'./',updateViaCache:'none'}).then(function(reg){
+      try{reg.update()}catch(e){}
+      if(reg.waiting){try{reg.waiting.postMessage({type:'SKIP_WAITING'})}catch(e){}}
+      try{reg.addEventListener('updatefound',function(){
+        var w=reg.installing;if(!w)return;
+        w.addEventListener('statechange',function(){if(w.state==='installed'){try{w.postMessage({type:'SKIP_WAITING'})}catch(e){}}});
+      })}catch(e){}
+    }).catch(function(){});
+    navigator.serviceWorker.addEventListener('controllerchange',reloadOnce);
+  }catch(e){}
+})();
+</script>
 <script id="v812-emergency-data-guard">
 /* V8.12 DATA SAFE — installed before the rest of the app scripts.
    If any script tries to empty/delete a protected ledger key, first preserve
@@ -670,7 +688,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=8.13',{scope:'./'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=8.14',{scope:'./',updateViaCache:'none'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){});
   }
 });
 </script>
@@ -1673,7 +1691,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.12</div>
+<div class="version">Version 8.14</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -7665,3 +7683,22 @@ try{new MutationObserver(function(){var a=q('mansoorHistory'),b=q('partyMydeenHi
 })();
 </script>
 <!-- V7.45 PARTY REPORT SUMMARY — 3-CARD SUMMARY FOR SELECTED DATE RANGE -->
+
+<!-- V8.14 FINAL DATA-SAFE CHECK — intentionally after ALL legacy scripts. -->
+<script id="v814-final-data-safe-check">
+(function(){
+  'use strict';
+  var KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_stock'];
+  var PREFIX='spb_v812_emergency_good_';
+  function good(v){try{var a=JSON.parse(v||'[]');return Array.isArray(a)&&a.length>0}catch(e){return false}}
+  try{
+    var lost=[];
+    KEYS.forEach(function(k){
+      var cur=localStorage.getItem(k), bk=localStorage.getItem(PREFIX+k);
+      if(good(cur) && !good(bk)){try{localStorage.setItem(PREFIX+k,cur)}catch(e){}}
+      else if(!good(cur) && good(bk)) lost.push(k);
+    });
+    if(lost.length) localStorage.setItem('spb_v814_recovery_needed',JSON.stringify(lost));
+  }catch(e){}
+})();
+</script>
