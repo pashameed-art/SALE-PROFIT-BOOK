@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.08</title>
+<title>Sale Profit Book • V8.11</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.09" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.11" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -630,7 +630,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=8.09',{scope:'./'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=8.11',{scope:'./'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){});
   }
 });
 </script>
@@ -1611,6 +1611,26 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 </style>
 </head>
 <body>
+<script id="v811-early-data-guard">
+(function(){
+  'use strict';
+  /* EARLY DATA GUARD: runs before the rest of the app. It never clears or replaces ledger data.
+     It only keeps a local, last-known-non-empty copy for recovery. */
+  var K=['spb_v4_items','spb_v4_entries','spb_v4_expenses','saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_stock'];
+  var B='spb_v811_early_good_backup_v1';
+  try{
+    var old={}; try{old=JSON.parse(localStorage.getItem(B)||'{}')||{};}catch(e){}
+    var changed=false;
+    K.forEach(function(k){
+      var v=localStorage.getItem(k);
+      if(v===null)return;
+      try{var a=JSON.parse(v);if(Array.isArray(a)&&a.length){old[k]=v;changed=true;}}catch(e){}
+    });
+    if(changed){old.savedAt=new Date().toISOString();localStorage.setItem(B,JSON.stringify(old));}
+  }catch(e){}
+})();
+</script>
+
 <header>
 <h1>Sale Profit Book</h1>
 <div class="version">Version 8.09</div>
@@ -7132,12 +7152,15 @@ try{
 </script>
 
 <!-- V8.08 DEVICE DATA PROTECTION — IndexedDB + Persistent Storage -->
-<script id="v808-device-data-protection">
+<script id="v811-device-data-protection-safe">
 (function(){
   'use strict';
+  /* V8.11 DATA SAFE: keep the last non-empty value for each ledger key.
+     A temporary/accidental [] write must NEVER destroy the recovery copy. */
   const DB='SALE_PROFIT_BOOK_SAFE_DB_V8';
   const STORE='snapshots';
-  const SNAP='latest';
+  const SNAP='lastGood';
+  const EARLY='spb_v811_early_good_backup_v1';
   const KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_stock'];
   let dbPromise=null, writeTimer=null;
   function openDB(){
@@ -7154,82 +7177,74 @@ try{
     });
     return dbPromise;
   }
+  function parseArray(v){try{const a=JSON.parse(v||'[]');return Array.isArray(a)?a:null}catch(e){return null}}
   function readStorage(){
     const data={};
     KEYS.forEach(function(k){try{const v=localStorage.getItem(k);if(v!==null)data[k]=v}catch(e){}});
     return data;
   }
-  function counts(data){
-    return KEYS.reduce(function(n,k){
-      try{const v=JSON.parse(data[k]||'[]');return n+(Array.isArray(v)?v.length:0)}catch(e){return n}
-    },0);
+  function count(v){const a=parseArray(v);return a? a.length:0}
+  function total(data){return KEYS.reduce(function(n,k){return n+count(data[k])},0)}
+  async function getGood(){
+    try{
+      const db=await openDB();
+      return await new Promise(function(resolve,reject){
+        const tx=db.transaction(STORE,'readonly'),q=tx.objectStore(STORE).get(SNAP);
+        q.onsuccess=function(){resolve(q.result||null)};q.onerror=function(){reject(q.error)};
+      });
+    }catch(e){return null}
   }
   async function saveSnapshot(reason){
     try{
-      const data=readStorage();
-      if(!Object.keys(data).length)return;
+      const current=readStorage();
+      if(!Object.keys(current).length)return;
+      const old=await getGood();
+      const data=(old&&old.data)?Object.assign({},old.data):{};
+      /* Seed the protected copy from the synchronous early guard if available. */
+      try{const early=JSON.parse(localStorage.getItem(EARLY)||'{}')||{};KEYS.forEach(function(k){if(!data[k]&&early[k])data[k]=early[k]})}catch(e){}
+      KEYS.forEach(function(k){
+        const n=count(current[k]);
+        /* Only replace the protected copy when real records exist. */
+        if(n>0)data[k]=current[k];
+      });
+      if(total(data)<=0)return;
       const db=await openDB();
       await new Promise(function(resolve,reject){
         const tx=db.transaction(STORE,'readwrite');
-        tx.objectStore(STORE).put({id:SNAP,version:'8.08',savedAt:new Date().toISOString(),reason:reason||'auto',data:data});
+        tx.objectStore(STORE).put({id:SNAP,version:'8.11',savedAt:new Date().toISOString(),reason:reason||'auto',data:data});
         tx.oncomplete=resolve;tx.onerror=function(){reject(tx.error)};
       });
-      updateStatus('Device safety backup: '+new Date().toLocaleString('en-IN'));
-    }catch(e){console.warn('V8.08 device backup:',e)}
+      updateStatus('🔒 Last good device backup: '+new Date().toLocaleString('en-IN'));
+    }catch(e){console.warn('V8.11 device backup:',e)}
   }
-  function scheduleSnapshot(reason){
-    clearTimeout(writeTimer);
-    writeTimer=setTimeout(function(){saveSnapshot(reason)},350);
-  }
-  async function getSnapshot(){
-    const db=await openDB();
-    return await new Promise(function(resolve,reject){
-      const tx=db.transaction(STORE,'readonly'),q=tx.objectStore(STORE).get(SNAP);
-      q.onsuccess=function(){resolve(q.result||null)};q.onerror=function(){reject(q.error)};
-    });
-  }
-  function updateStatus(text){
-    const el=document.getElementById('v808-device-status');if(el)el.textContent=text;
-  }
+  function scheduleSnapshot(reason){clearTimeout(writeTimer);writeTimer=setTimeout(function(){saveSnapshot(reason)},350)}
   async function recover(){
     try{
-      const snap=await getSnapshot();
-      if(!snap||!snap.data){alert('No Device Safety Backup found yet.');return}
-      const n=counts(snap.data);
-      if(!confirm('Recover the last Device Safety Backup?\n\nRecords in Sale, Expense, Mydeen, Mansoor and Stock will be restored to the saved snapshot.\n\nBackup records found: '+n+'\nSaved: '+new Date(snap.savedAt).toLocaleString('en-IN'))){return}
+      const snap=await getGood();
+      if(!snap||!snap.data){alert('No protected device backup found yet.');return}
+      const names={'spb_v4_items':'Items','spb_v4_entries':'Sale','spb_v4_expenses':'Expense','saleProfitBookMydeenV1':'Mydeen','saleProfitBookMansoorV1':'Mansoor','spb_v4_stock':'Stock'};
+      const parts=KEYS.map(function(k){return names[k]+': '+count(snap.data[k])}).join(' • ');
+      if(!confirm('Recover the last GOOD device backup?\n\n'+parts+'\n\nSaved: '+new Date(snap.savedAt).toLocaleString('en-IN')+'\n\nCurrent data will be replaced for the protected keys.'))return;
       KEYS.forEach(function(k){if(Object.prototype.hasOwnProperty.call(snap.data,k))localStorage.setItem(k,snap.data[k])});
-      alert('✅ Device Safety Backup restored. The app will reload.');
+      alert('✅ Last GOOD device backup restored. The app will reload.');
       location.reload();
-    }catch(e){alert('Device recovery failed. Please use the JSON/Google Drive backup.');console.error(e)}
+    }catch(e){alert('Device recovery failed. Please use a JSON/Google Drive backup.');console.error(e)}
   }
-  async function requestPersistent(){
-    try{
-      if(navigator.storage&&navigator.storage.persist){const ok=await navigator.storage.persist();updateStatus(ok?'🔒 Persistent storage enabled':'🔒 Persistent storage requested');}
-    }catch(e){}
-  }
+  function requestPersistent(){try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(function(){})}catch(e){}}
   function addUI(){
-    if(document.getElementById('v808-device-safe-card'))return;
+    if(document.getElementById('v811-device-safe-card'))return;
     const page=document.getElementById('backupPage');if(!page)return;
-    const card=document.createElement('div');card.id='v808-device-safe-card';
-    card.className='backup-box';
-    card.innerHTML='<h3 style="margin-top:0">🔒 Device Data Protection</h3><div style="font-size:13px;line-height:1.5">App data is also saved inside the device using IndexedDB. This is an extra safety layer against normal app/browser storage problems.</div><div id="v808-device-status" style="margin-top:8px;font-size:12px;color:#126d66">Preparing safety backup…</div><button id="v808-recover" type="button" class="secondary" style="margin-top:10px">♻️ Recover Last Device Backup</button>';
-    page.appendChild(card);
-    document.getElementById('v808-recover').onclick=recover;
-    saveSnapshot('V8.08 startup');
+    const card=document.createElement('div');card.id='v811-device-safe-card';card.className='backup-box';
+    card.innerHTML='<h3 style="margin-top:0">🔒 V8.11 DATA SAFE</h3><div style="font-size:13px;line-height:1.5">The protected device backup keeps the last non-empty copy. An accidental empty save cannot overwrite the recovery copy.</div><div id="v811-device-status" style="margin-top:8px;font-size:12px;color:#126d66">Preparing protected backup…</div><button id="v811-recover" type="button" class="secondary" style="margin-top:10px">♻️ Recover Last GOOD Device Backup</button>';
+    page.appendChild(card);document.getElementById('v811-recover').onclick=recover;saveSnapshot('V8.11 startup');
   }
-  const originalSet=Storage.prototype.setItem;
-  Storage.prototype.setItem=function(key,value){
-    const result=originalSet.call(this,key,value);
-    if(KEYS.indexOf(key)!==-1)scheduleSnapshot('after save: '+key);
-    return result;
-  };
-  const originalRemove=Storage.prototype.removeItem;
-  Storage.prototype.removeItem=function(key){
-    const result=originalRemove.call(this,key);
-    if(KEYS.indexOf(key)!==-1)scheduleSnapshot('after remove: '+key);
-    return result;
-  };
-  window.addEventListener('DOMContentLoaded',function(){requestPersistent();addUI();setTimeout(function(){saveSnapshot('V8.08 startup refresh')},1500)});
+  function updateStatus(text){const el=document.getElementById('v811-device-status');if(el)el.textContent=text}
+  const nativeSet=Storage.prototype.setItem.bind(localStorage);
+  Storage.prototype.setItem=function(key,value){const result=nativeSet(key,value);if(KEYS.indexOf(key)!==-1)scheduleSnapshot('after save: '+key);return result};
+  const nativeRemove=Storage.prototype.removeItem.bind(localStorage);
+  Storage.prototype.removeItem=function(key){const result=nativeRemove(key);if(KEYS.indexOf(key)!==-1)scheduleSnapshot('after remove: '+key);return result};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){requestPersistent();addUI();setTimeout(function(){saveSnapshot('V8.11 startup refresh')},1200)});
+  else {requestPersistent();addUI();setTimeout(function(){saveSnapshot('V8.11 startup refresh')},1200)}
   window.addEventListener('pageshow',function(){setTimeout(function(){saveSnapshot('pageshow')},500)});
 })();
 </script>
@@ -7289,6 +7304,144 @@ try{
   };
 })();
 </script>
+
+<!-- V8.10 — OPTIONAL APP PIN LOCK (DATA-SAFE; DOES NOT TOUCH LEDGER KEYS) -->
+<style id="v810-app-pin-style">
+#v810PinBox{margin-top:16px;background:#fff;border-radius:20px;padding:18px;border:1px solid #e1e9e8}
+.v810-pin-title{font-size:20px;font-weight:900;color:#145f59;margin-bottom:6px}
+.v810-pin-note{font-size:13px;color:#667675;line-height:1.45;margin-bottom:14px}
+.v810-pin-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.v810-pin-row button{width:100%;min-height:46px}
+.v810-pin-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:#f3f8f7;border-radius:14px;font-weight:800}
+.v810-pin-toggle input{width:22px;height:22px;accent-color:#117d73}
+#v810PinModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:100000;align-items:center;justify-content:center;padding:20px}
+#v810PinModal.show{display:flex}
+.v810-pin-card{width:min(420px,94vw);background:#fff;border-radius:24px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center}
+.v810-pin-card h2{margin:0 0 8px;color:#145f59}
+.v810-pin-card p{color:#657171;line-height:1.45}
+.v810-pin-input{width:100%;height:58px;text-align:center;letter-spacing:8px;font-size:25px;font-weight:900;border:1px solid #ccd9d7;border-radius:16px;margin:12px 0}
+.v810-pin-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.v810-pin-actions button{width:100%}
+#v810PinError{min-height:20px;color:#c62828;font-weight:800;font-size:13px;margin-top:5px}
+@media(max-width:520px){#v810PinBox{padding:16px}.v810-pin-card{padding:20px}}
+</style>
+
+<div id="v810PinModal" aria-hidden="true">
+  <div class="v810-pin-card" role="dialog" aria-modal="true" aria-labelledby="v810PinTitle">
+    <div style="font-size:38px">🔐</div>
+    <h2 id="v810PinTitle">Sale Profit Book</h2>
+    <p id="v810PinMessage">Enter your App PIN to continue.</p>
+    <input id="v810PinInput" class="v810-pin-input" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••••">
+    <div id="v810PinError"></div>
+    <div class="v810-pin-actions">
+      <button type="button" class="secondary" id="v810PinCancel" style="display:none">Cancel</button>
+      <button type="button" class="primary" id="v810PinAction">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<script id="v810-app-pin-script">
+(function(){
+  'use strict';
+  var ENABLED='spb_app_pin_enabled_v810';
+  var HASH='spb_app_pin_hash_v810';
+  var locked=false, mode='unlock', setupStep=0, pendingEnabled=false;
+  function $(id){return document.getElementById(id)}
+  function isEnabled(){return localStorage.getItem(ENABLED)==='1' && !!localStorage.getItem(HASH)}
+  function showModal(message, action, allowCancel){
+    mode=action||'unlock';
+    var m=$('v810PinModal'), input=$('v810PinInput'), btn=$('v810PinAction'), cancel=$('v810PinCancel');
+    if(!m)return;
+    $('v810PinMessage').textContent=message||'Enter your App PIN to continue.';
+    $('v810PinError').textContent='';
+    btn.textContent=mode==='setup'?'Continue':(mode==='change'?'Save PIN':'Unlock');
+    cancel.style.display=allowCancel?'block':'none';
+    m.classList.add('show');m.setAttribute('aria-hidden','false');
+    setTimeout(function(){input.value='';input.focus()},80);
+  }
+  function hideModal(){var m=$('v810PinModal');if(m){m.classList.remove('show');m.setAttribute('aria-hidden','true')}}
+  async function digest(pin){
+    var data=new TextEncoder().encode(pin),buf=await crypto.subtle.digest('SHA-256',data);
+    return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0')}).join('');
+  }
+  function validPin(pin){return /^\d{6}$/.test(pin)}
+  async function handle(){
+    var input=$('v810PinInput'), pin=String(input.value||'').trim();
+    $('v810PinError').textContent='';
+    if(!validPin(pin)){ $('v810PinError').textContent='6 digit PIN மட்டும் உள்ளிடுங்கள்.'; input.focus(); return; }
+    if(mode==='setup'){
+      if(setupStep===0){
+        window.__v810SetupPin=pin;setupStep=1;showModal('PIN-ஐ மீண்டும் உள்ளிடுங்கள்.','setup-confirm',false);return;
+      }
+      if(setupStep===1){
+        if(pin!==window.__v810SetupPin){$('v810PinError').textContent='PIN இரண்டும் ஒன்றாக இல்லை.';return;}
+        var h=await digest(pin);localStorage.setItem(HASH,h);localStorage.setItem(ENABLED,'1');window.__v810SetupPin='';setupStep=0;hideModal();locked=false;updateUI();alert('✅ App PIN ON செய்யப்பட்டது.');return;
+      }
+    }
+    if(mode==='change'){
+      if(setupStep===0){
+        var old=await digest(pin);if(old!==localStorage.getItem(HASH)){$('v810PinError').textContent='தற்போதைய PIN தவறு.';return;}
+        setupStep=1;showModal('புதிய 6 digit PIN அமைக்கவும்.','change-new',false);return;
+      }
+      if(setupStep===1){
+        window.__v810NewPin=pin;setupStep=2;showModal('புதிய PIN-ஐ மீண்டும் உள்ளிடுங்கள்.','change-confirm',false);return;
+      }
+      if(setupStep===2){
+        if(pin!==window.__v810NewPin){$('v810PinError').textContent='PIN இரண்டும் ஒன்றாக இல்லை.';return;}
+        localStorage.setItem(HASH,await digest(pin));window.__v810NewPin='';setupStep=0;hideModal();alert('✅ App PIN மாற்றப்பட்டது.');return;
+      }
+    }
+    var hash=await digest(pin);
+    if(hash===localStorage.getItem(HASH)){locked=false;hideModal();document.body.style.pointerEvents='';return;}
+    $('v810PinError').textContent='PIN தவறு. மீண்டும் முயற்சிக்கவும்.';input.value='';input.focus();
+  }
+  function updateUI(){
+    var box=$('v810PinBox');if(!box)return;
+    var on=isEnabled();
+    box.innerHTML='<div class="v810-pin-title">🔐 App PIN</div>'+
+      '<div class="v810-pin-note">தேவையான சமயத்தில் மட்டும் PIN Lock பயன்படுத்தலாம். PIN வசதி Sales, Expense, Stock, Mydeen, Mansoor data-வை மாற்றாது.</div>'+
+      '<div class="v810-pin-toggle"><span>App PIN '+(on?'ON':'OFF')+'</span><input id="v810PinToggle" type="checkbox" '+(on?'checked':'')+' aria-label="App PIN"></div>'+
+      '<div class="v810-pin-row">'+
+      '<button type="button" class="secondary" id="v810ChangePin" '+(on?'':'disabled')+'>Change PIN</button>'+
+      '<button type="button" class="primary" id="v810LockNow" '+(on?'':'disabled')+'>🔒 Lock Now</button></div>';
+    $('v810PinToggle').onchange=async function(){
+      if(this.checked){setupStep=0;showModal('புதிய 6 digit App PIN அமைக்கவும்.','setup',false);}
+      else{
+        this.checked=true;setupStep=0;showModal('PIN OFF செய்ய தற்போதைய PIN உள்ளிடுங்கள்.','disable',false);
+      }
+    };
+    $('v810ChangePin').onclick=function(){setupStep=0;showModal('தற்போதைய PIN உள்ளிடுங்கள்.','change',false)};
+    $('v810LockNow').onclick=function(){locked=true;showModal('App Lock செய்யப்பட்டுள்ளது. PIN உள்ளிட்டு திறக்கவும்.','unlock',false)};
+  }
+  // Disable flow is handled separately so the PIN must be known.
+  var originalHandle=handle;
+  async function handleWithDisable(){
+    if(mode==='disable'){
+      var pin=String($('v810PinInput').value||'').trim();
+      if(!validPin(pin)){$('v810PinError').textContent='6 digit PIN மட்டும் உள்ளிடுங்கள்.';return}
+      if(await digest(pin)!==localStorage.getItem(HASH)){$('v810PinError').textContent='PIN தவறு.';return}
+      localStorage.removeItem(ENABLED);localStorage.removeItem(HASH);hideModal();updateUI();alert('✅ App PIN OFF செய்யப்பட்டது.');return;
+    }
+    await originalHandle();
+  }
+  $('v810PinAction').onclick=handleWithDisable;
+  $('v810PinInput').addEventListener('keydown',function(e){if(e.key==='Enter')handleWithDisable()});
+  $('v810PinCancel').onclick=hideModal;
+  window.addEventListener('DOMContentLoaded',function(){
+    // Add settings card to Backup page without changing existing backup UI.
+    var page=$('backupPage');
+    if(page && !$('v810PinBox')){
+      var box=document.createElement('div');box.id='v810PinBox';
+      page.appendChild(box);updateUI();
+    }
+    if(isEnabled()){
+      locked=true;
+      setTimeout(function(){showModal('Enter your 6 digit App PIN to continue.','unlock',false)},120);
+    }
+  });
+})();
+</script>
+
 </body>
 </html>
 <!-- V7.43 FINAL PARTY QUICK SUMMARY + HISTORY FILTER -->
