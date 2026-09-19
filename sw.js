@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sale-profit-book-v8.12-20260919';
+const CACHE_NAME = 'sale-profit-book-v8.13-20260919';
 const APP_URL = './index.html';
 self.addEventListener('install', event => { event.waitUntil((async()=>{ const cache=await caches.open(CACHE_NAME); try{await cache.add(new Request(APP_URL,{cache:'reload'}));}catch(e){} await self.skipWaiting(); })()); });
 self.addEventListener('activate', event => { event.waitUntil((async()=>{ const keys=await caches.keys(); await Promise.all(keys.filter(k=>k.startsWith('sale-profit-book-')&&k!==CACHE_NAME).map(k=>caches.delete(k))); await self.clients.claim(); })()); });

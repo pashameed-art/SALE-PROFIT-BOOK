@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.12</title>
+<title>Sale Profit Book • V8.13</title>
 <script id="v812-emergency-data-guard">
 /* V8.12 DATA SAFE — installed before the rest of the app scripts.
    If any script tries to empty/delete a protected ledger key, first preserve
@@ -670,7 +670,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=8.12',{scope:'./'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=8.13',{scope:'./'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){});
   }
 });
 </script>
@@ -7533,6 +7533,75 @@ try{
 })();
 </script>
 
+
+<!-- V8.13 FINAL STORAGE GUARD — must be the last data-safety layer.
+     Later scripts may replace Storage.prototype.setItem/removeItem, so this
+     final wrapper is installed after all older layers. It never blocks a
+     deliberate delete; it first preserves the last non-empty copy. -->
+<script id="v813-final-storage-guard">
+(function(){
+  'use strict';
+  var KEYS=[
+    'spb_v4_items','spb_v4_entries','spb_v4_expenses',
+    'saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_stock'
+  ];
+  var PREFIX='spb_v812_emergency_good_';
+
+  function isGood(raw){
+    try{
+      var a=JSON.parse(raw||'[]');
+      return Array.isArray(a) && a.length>0;
+    }catch(e){ return false; }
+  }
+  function preserve(k){
+    try{
+      var cur=localStorage.getItem(k);
+      if(!isGood(cur)) return;
+      var bk=PREFIX+k;
+      var old=localStorage.getItem(bk);
+      if(!isGood(old)) localStorage.setItem(bk,cur);
+    }catch(e){}
+  }
+  function preserveAll(){ KEYS.forEach(preserve); }
+
+  // Capture the current good state before any later startup operation.
+  preserveAll();
+
+  try{
+    var previousSet=Storage.prototype.setItem;
+    Storage.prototype.setItem=function(k,v){
+      if(KEYS.indexOf(k)!==-1 && !isGood(v)) preserve(k);
+      return previousSet.apply(this,arguments);
+    };
+
+    var previousRemove=Storage.prototype.removeItem;
+    Storage.prototype.removeItem=function(k){
+      if(KEYS.indexOf(k)!==-1) preserve(k);
+      return previousRemove.apply(this,arguments);
+    };
+  }catch(e){}
+
+  // Expose a manual, non-destructive recovery helper for diagnostics.
+  window.SPB_V813_DATA_GUARD={
+    snapshot:preserveAll,
+    hasProtectedData:function(k){
+      try{return isGood(localStorage.getItem(PREFIX+k));}catch(e){return false;}
+    }
+  };
+
+  // If a later startup script has already emptied a key, do NOT silently
+  // overwrite it. Just record that protected data exists so the recovery UI
+  // can offer it explicitly.
+  try{
+    var lost=[];
+    KEYS.forEach(function(k){
+      var cur=localStorage.getItem(k), bk=localStorage.getItem(PREFIX+k);
+      if(!isGood(cur) && isGood(bk)) lost.push(k);
+    });
+    if(lost.length) localStorage.setItem('spb_v813_recovery_needed',JSON.stringify(lost));
+  }catch(e){}
+})();
+</script>
 </body>
 </html>
 <!-- V7.43 FINAL PARTY QUICK SUMMARY + HISTORY FILTER -->
