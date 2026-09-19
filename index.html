@@ -1922,7 +1922,82 @@ body.spb-home-mode #homeStockDetails #stockSummary{
   });
 })();
 </script>
-</div></div>
+<details style="margin-top:10px;"><summary style="cursor:pointer;font-weight:800;padding:8px 2px;">🕘 Backup History</summary><div class="card" id="v752-backup-history" style="margin-top:14px;">
+<h3 style="margin:0 0 10px;">🕘 Backup History</h3>
+<div id="v752BackupHistoryList"></div>
+<button class="secondary" id="v752ClearBackupHistory" style="margin-top:10px;width:100%;" type="button">Clear Backup History</button>
+</div><script id="v752-backup-history-script">
+(function(){
+  'use strict';
+  const KEY='spb_gdrive_backup_history_v752';
+  const MAX=10;
+
+  function read(){
+    try{
+      const a=JSON.parse(localStorage.getItem(KEY)||'[]');
+      return Array.isArray(a)?a:[];
+    }catch(e){return [];}
+  }
+  function write(a){
+    try{localStorage.setItem(KEY,JSON.stringify(a.slice(0,MAX)));}catch(e){}
+  }
+  function fmt(ts){
+    try{
+      return new Date(ts).toLocaleString('en-IN',{
+        day:'2-digit',month:'2-digit',year:'numeric',
+        hour:'2-digit',minute:'2-digit',hour12:true
+      });
+    }catch(e){return String(ts||'');}
+  }
+  function render(){
+    const el=document.getElementById('v752BackupHistoryList');
+    if(!el)return;
+    const a=read();
+    if(!a.length){
+      el.innerHTML='<div style="padding:10px;border-radius:10px;background:var(--soft,#eef7f6);color:#667;">No backup history yet.</div>';
+      return;
+    }
+    el.innerHTML=a.map(function(x,i){
+      const file=String(x.file||'SALE-PROFIT-BOOK-GDRIVE-BACKUP.json')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      return '<div style="padding:10px 0;border-bottom:1px solid #e6eeee;">'+
+        '<div style="font-weight:700;color:#176f67;">✅ Backup '+(i+1)+'</div>'+
+        '<div style="font-size:13px;margin-top:3px;">'+fmt(x.time)+'</div>'+
+        '<div style="font-size:12px;color:#6f7f7d;margin-top:3px;">'+file+'</div>'+
+        '</div>';
+    }).join('');
+  }
+  window.spbV752RecordBackup=function(file){
+    const a=read();
+    const now=Date.now();
+    // Avoid duplicate records created by repeated success callbacks within 10 seconds.
+    if(a.length && Math.abs(Number(a[0].time||0)-now)<10000) return;
+    a.unshift({time:now,file:String(file||'SALE-PROFIT-BOOK-GDRIVE-BACKUP.json')});
+    write(a);
+    render();
+  };
+  document.addEventListener('DOMContentLoaded',render);
+  document.addEventListener('click',function(e){
+    if(e.target && e.target.id==='v752ClearBackupHistory'){
+      if(confirm('Clear Backup History?')){
+        localStorage.removeItem(KEY);
+        render();
+      }
+    }
+  });
+  // Capture successful backup messages without changing the existing backup implementation.
+  const oldAlert=window.alert;
+  window.alert=function(msg){
+    try{
+      const s=String(msg||'');
+      if(/GDrive Backup completed successfully/i.test(s)){
+        window.spbV752RecordBackup('SALE-PROFIT-BOOK-GDRIVE-BACKUP.json');
+      }
+    }catch(e){}
+    return oldAlert.apply(this,arguments);
+  };
+})();
+</script></details></div></div>
 <section class="page hidden" id="mansoorPage">
 <div class="card">
 <h2>🤝 Mansoor கொடுக்கல் வாங்கல்</h2>
@@ -7338,144 +7413,6 @@ try{
   };
 })();
 </script>
-
-<!-- V8.10 — OPTIONAL APP PIN LOCK (DATA-SAFE; DOES NOT TOUCH LEDGER KEYS) -->
-<style id="v810-app-pin-style">
-#v810PinBox{margin-top:16px;background:#fff;border-radius:20px;padding:18px;border:1px solid #e1e9e8}
-.v810-pin-title{font-size:20px;font-weight:900;color:#145f59;margin-bottom:6px}
-.v810-pin-note{font-size:13px;color:#667675;line-height:1.45;margin-bottom:14px}
-.v810-pin-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-.v810-pin-row button{width:100%;min-height:46px}
-.v810-pin-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:#f3f8f7;border-radius:14px;font-weight:800}
-.v810-pin-toggle input{width:22px;height:22px;accent-color:#117d73}
-#v810PinModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:100000;align-items:center;justify-content:center;padding:20px}
-#v810PinModal.show{display:flex}
-.v810-pin-card{width:min(420px,94vw);background:#fff;border-radius:24px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center}
-.v810-pin-card h2{margin:0 0 8px;color:#145f59}
-.v810-pin-card p{color:#657171;line-height:1.45}
-.v810-pin-input{width:100%;height:58px;text-align:center;letter-spacing:8px;font-size:25px;font-weight:900;border:1px solid #ccd9d7;border-radius:16px;margin:12px 0}
-.v810-pin-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-.v810-pin-actions button{width:100%}
-#v810PinError{min-height:20px;color:#c62828;font-weight:800;font-size:13px;margin-top:5px}
-@media(max-width:520px){#v810PinBox{padding:16px}.v810-pin-card{padding:20px}}
-</style>
-
-<div id="v810PinModal" aria-hidden="true">
-  <div class="v810-pin-card" role="dialog" aria-modal="true" aria-labelledby="v810PinTitle">
-    <div style="font-size:38px">🔐</div>
-    <h2 id="v810PinTitle">Sale Profit Book</h2>
-    <p id="v810PinMessage">Enter your App PIN to continue.</p>
-    <input id="v810PinInput" class="v810-pin-input" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="••••••">
-    <div id="v810PinError"></div>
-    <div class="v810-pin-actions">
-      <button type="button" class="secondary" id="v810PinCancel" style="display:none">Cancel</button>
-      <button type="button" class="primary" id="v810PinAction">Unlock</button>
-    </div>
-  </div>
-</div>
-
-<script id="v810-app-pin-script">
-(function(){
-  'use strict';
-  var ENABLED='spb_app_pin_enabled_v810';
-  var HASH='spb_app_pin_hash_v810';
-  var locked=false, mode='unlock', setupStep=0, pendingEnabled=false;
-  function $(id){return document.getElementById(id)}
-  function isEnabled(){return localStorage.getItem(ENABLED)==='1' && !!localStorage.getItem(HASH)}
-  function showModal(message, action, allowCancel){
-    mode=action||'unlock';
-    var m=$('v810PinModal'), input=$('v810PinInput'), btn=$('v810PinAction'), cancel=$('v810PinCancel');
-    if(!m)return;
-    $('v810PinMessage').textContent=message||'Enter your App PIN to continue.';
-    $('v810PinError').textContent='';
-    btn.textContent=mode==='setup'?'Continue':(mode==='change'?'Save PIN':'Unlock');
-    cancel.style.display=allowCancel?'block':'none';
-    m.classList.add('show');m.setAttribute('aria-hidden','false');
-    setTimeout(function(){input.value='';input.focus()},80);
-  }
-  function hideModal(){var m=$('v810PinModal');if(m){m.classList.remove('show');m.setAttribute('aria-hidden','true')}}
-  async function digest(pin){
-    var data=new TextEncoder().encode(pin),buf=await crypto.subtle.digest('SHA-256',data);
-    return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0')}).join('');
-  }
-  function validPin(pin){return /^\d{6}$/.test(pin)}
-  async function handle(){
-    var input=$('v810PinInput'), pin=String(input.value||'').trim();
-    $('v810PinError').textContent='';
-    if(!validPin(pin)){ $('v810PinError').textContent='6 digit PIN மட்டும் உள்ளிடுங்கள்.'; input.focus(); return; }
-    if(mode==='setup'){
-      if(setupStep===0){
-        window.__v810SetupPin=pin;setupStep=1;showModal('PIN-ஐ மீண்டும் உள்ளிடுங்கள்.','setup-confirm',false);return;
-      }
-      if(setupStep===1){
-        if(pin!==window.__v810SetupPin){$('v810PinError').textContent='PIN இரண்டும் ஒன்றாக இல்லை.';return;}
-        var h=await digest(pin);localStorage.setItem(HASH,h);localStorage.setItem(ENABLED,'1');window.__v810SetupPin='';setupStep=0;hideModal();locked=false;updateUI();alert('✅ App PIN ON செய்யப்பட்டது.');return;
-      }
-    }
-    if(mode==='change'){
-      if(setupStep===0){
-        var old=await digest(pin);if(old!==localStorage.getItem(HASH)){$('v810PinError').textContent='தற்போதைய PIN தவறு.';return;}
-        setupStep=1;showModal('புதிய 6 digit PIN அமைக்கவும்.','change-new',false);return;
-      }
-      if(setupStep===1){
-        window.__v810NewPin=pin;setupStep=2;showModal('புதிய PIN-ஐ மீண்டும் உள்ளிடுங்கள்.','change-confirm',false);return;
-      }
-      if(setupStep===2){
-        if(pin!==window.__v810NewPin){$('v810PinError').textContent='PIN இரண்டும் ஒன்றாக இல்லை.';return;}
-        localStorage.setItem(HASH,await digest(pin));window.__v810NewPin='';setupStep=0;hideModal();alert('✅ App PIN மாற்றப்பட்டது.');return;
-      }
-    }
-    var hash=await digest(pin);
-    if(hash===localStorage.getItem(HASH)){locked=false;hideModal();document.body.style.pointerEvents='';return;}
-    $('v810PinError').textContent='PIN தவறு. மீண்டும் முயற்சிக்கவும்.';input.value='';input.focus();
-  }
-  function updateUI(){
-    var box=$('v810PinBox');if(!box)return;
-    var on=isEnabled();
-    box.innerHTML='<div class="v810-pin-title">🔐 App PIN</div>'+
-      '<div class="v810-pin-note">தேவையான சமயத்தில் மட்டும் PIN Lock பயன்படுத்தலாம். PIN வசதி Sales, Expense, Stock, Mydeen, Mansoor data-வை மாற்றாது.</div>'+
-      '<div class="v810-pin-toggle"><span>App PIN '+(on?'ON':'OFF')+'</span><input id="v810PinToggle" type="checkbox" '+(on?'checked':'')+' aria-label="App PIN"></div>'+
-      '<div class="v810-pin-row">'+
-      '<button type="button" class="secondary" id="v810ChangePin" '+(on?'':'disabled')+'>Change PIN</button>'+
-      '<button type="button" class="primary" id="v810LockNow" '+(on?'':'disabled')+'>🔒 Lock Now</button></div>';
-    $('v810PinToggle').onchange=async function(){
-      if(this.checked){setupStep=0;showModal('புதிய 6 digit App PIN அமைக்கவும்.','setup',false);}
-      else{
-        this.checked=true;setupStep=0;showModal('PIN OFF செய்ய தற்போதைய PIN உள்ளிடுங்கள்.','disable',false);
-      }
-    };
-    $('v810ChangePin').onclick=function(){setupStep=0;showModal('தற்போதைய PIN உள்ளிடுங்கள்.','change',false)};
-    $('v810LockNow').onclick=function(){locked=true;showModal('App Lock செய்யப்பட்டுள்ளது. PIN உள்ளிட்டு திறக்கவும்.','unlock',false)};
-  }
-  // Disable flow is handled separately so the PIN must be known.
-  var originalHandle=handle;
-  async function handleWithDisable(){
-    if(mode==='disable'){
-      var pin=String($('v810PinInput').value||'').trim();
-      if(!validPin(pin)){$('v810PinError').textContent='6 digit PIN மட்டும் உள்ளிடுங்கள்.';return}
-      if(await digest(pin)!==localStorage.getItem(HASH)){$('v810PinError').textContent='PIN தவறு.';return}
-      localStorage.removeItem(ENABLED);localStorage.removeItem(HASH);hideModal();updateUI();alert('✅ App PIN OFF செய்யப்பட்டது.');return;
-    }
-    await originalHandle();
-  }
-  $('v810PinAction').onclick=handleWithDisable;
-  $('v810PinInput').addEventListener('keydown',function(e){if(e.key==='Enter')handleWithDisable()});
-  $('v810PinCancel').onclick=hideModal;
-  window.addEventListener('DOMContentLoaded',function(){
-    // Add settings card to Backup page without changing existing backup UI.
-    var page=$('backupPage');
-    if(page && !$('v810PinBox')){
-      var box=document.createElement('div');box.id='v810PinBox';
-      page.appendChild(box);updateUI();
-    }
-    if(isEnabled()){
-      locked=true;
-      setTimeout(function(){showModal('Enter your 6 digit App PIN to continue.','unlock',false)},120);
-    }
-  });
-})();
-</script>
-
 
 <!-- V8.13 FINAL STORAGE GUARD — must be the last data-safety layer.
      Later scripts may replace Storage.prototype.setItem/removeItem, so this
