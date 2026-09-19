@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sale-profit-book-v8.14-20260920';
+const CACHE_NAME = 'sale-profit-book-v8.15-20260920';
 const APP_URL = './index.html';
 self.addEventListener('message', event => { if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting(); });
 self.addEventListener('install', event => { event.waitUntil((async()=>{ const cache=await caches.open(CACHE_NAME); try{await cache.add(new Request(APP_URL,{cache:'reload'}));}catch(e){} await self.skipWaiting(); })()); });
