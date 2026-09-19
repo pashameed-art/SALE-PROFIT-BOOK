@@ -7115,7 +7115,7 @@ try{
   }
 
   function addCard(){
-    if(document.getElementById('v800-safe-card'))return;
+    return; /* Legacy V8.0 DATA SAFE card removed from UI; protection logic retained. */
     const page=document.getElementById('backupPage'); if(!page)return;
     const card=document.createElement('div');
     card.id='v800-safe-card';
@@ -7238,7 +7238,7 @@ try{
     return map;
   }
   function install(){
-    if(document.getElementById('v812-recovery-card'))return;
+    return; /* Legacy V8.12 DATA RECOVERY SCAN card removed from UI; scanner logic retained. */
     var page=document.getElementById('backupPage');if(!page)return;
     var card=document.createElement('div');card.id='v812-recovery-card';card.className='backup-box';
     card.innerHTML='<h3 style="margin-top:0">🛡️ V8.12 DATA RECOVERY SCAN</h3><div style="font-size:13px;line-height:1.5">Read-only scan. It does not change your data.</div><div id="v812-scan-result" style="margin-top:8px;font-size:13px;white-space:pre-line">Tap Scan Recovery Data.</div><button id="v812-scan" type="button" class="secondary" style="margin-top:10px">🔎 Scan Recovery Data</button><button id="v812-recover" type="button" class="primary" style="margin-top:8px;display:none">♻️ Recover Best Available Copy</button>';
@@ -7341,7 +7341,7 @@ try{
   }
   function requestPersistent(){try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(function(){})}catch(e){}}
   function addUI(){
-    if(document.getElementById('v811-device-safe-card'))return;
+    return; /* Legacy V8.11 DATA SAFE card removed from UI; device protection retained. */
     const page=document.getElementById('backupPage');if(!page)return;
     const card=document.createElement('div');card.id='v811-device-safe-card';card.className='backup-box';
     card.innerHTML='<h3 style="margin-top:0">🔒 V8.11 DATA SAFE</h3><div style="font-size:13px;line-height:1.5">The protected device backup keeps the last non-empty copy. An accidental empty save cannot overwrite the recovery copy.</div><div id="v811-device-status" style="margin-top:8px;font-size:12px;color:#126d66">Preparing protected backup…</div><button id="v811-recover" type="button" class="secondary" style="margin-top:10px">♻️ Recover Last GOOD Device Backup</button>';
