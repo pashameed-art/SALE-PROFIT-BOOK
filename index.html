@@ -8,7 +8,47 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.11</title>
+<title>Sale Profit Book • V8.12</title>
+<script id="v812-emergency-data-guard">
+/* V8.12 DATA SAFE — installed before the rest of the app scripts.
+   If any script tries to empty/delete a protected ledger key, first preserve
+   the current non-empty value in a separate emergency localStorage key.
+   This does NOT block intentional deletion; it creates a recovery copy first. */
+(function(){
+  'use strict';
+  var KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_stock'];
+  var PREFIX='spb_v812_emergency_good_';
+  function nonEmpty(raw){
+    try{var a=JSON.parse(raw||'[]');return Array.isArray(a)&&a.length>0;}catch(e){return false;}
+  }
+  function preserve(key){
+    try{
+      var cur=localStorage.getItem(key);
+      if(nonEmpty(cur)){
+        var bk=PREFIX+key;
+        var old=localStorage.getItem(bk);
+        if(!nonEmpty(old)) localStorage.setItem(bk,cur);
+      }
+    }catch(e){}
+  }
+  function snapshotAll(){KEYS.forEach(preserve);}
+  /* Capture whatever good data exists before later scripts execute. */
+  snapshotAll();
+  try{
+    var nativeSet=Storage.prototype.setItem;
+    Storage.prototype.setItem=function(key,value){
+      if(KEYS.indexOf(key)!==-1 && (value==='[]' || value==='' || value==='null')) preserve(key);
+      return nativeSet.apply(this,arguments);
+    };
+    var nativeRemove=Storage.prototype.removeItem;
+    Storage.prototype.removeItem=function(key){
+      if(KEYS.indexOf(key)!==-1) preserve(key);
+      return nativeRemove.apply(this,arguments);
+    };
+  }catch(e){}
+  window.SPB_V812_GUARD={snapshot:snapshotAll,keys:KEYS,prefix:PREFIX};
+})();
+</script>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +471,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.11" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.12" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -630,7 +670,7 @@ html.modal-open, body.modal-open{
 <script id="clean-sw-registration">
 window.addEventListener('load',function(){
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=8.11',{scope:'./'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){});
+    navigator.serviceWorker.register('./sw.js?v=8.12',{scope:'./'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){});
   }
 });
 </script>
@@ -1633,7 +1673,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.09</div>
+<div class="version">Version 8.12</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -7151,6 +7191,57 @@ try{
 })();
 </script>
 
+<!-- V8.12 RECOVERY SCANNER — read-only scan until user explicitly recovers -->
+<script id="v812-recovery-scanner">
+(function(){
+  'use strict';
+  var KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_stock'];
+  var NAMES={'spb_v4_items':'Items','spb_v4_entries':'Sale','spb_v4_expenses':'Expense','saleProfitBookMydeenV1':'Mydeen','saleProfitBookMansoorV1':'Mansoor','spb_v4_stock':'Stock'};
+  var PREFIX='spb_v812_emergency_good_';
+  function countRaw(raw){try{var a=JSON.parse(raw||'[]');return Array.isArray(a)?a.length:0}catch(e){return 0}}
+  function read(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function sources(){
+    var out=[];
+    KEYS.forEach(function(k){out.push({label:'Current • '+NAMES[k],data:read(k),kind:'current',key:k});});
+    KEYS.forEach(function(k){out.push({label:'Emergency • '+NAMES[k],data:read(PREFIX+k),kind:'emergency',key:k});});
+    try{
+      var v=JSON.parse(localStorage.getItem('spb_v8_last_safe_snapshot_v1')||'null');
+      if(v&&v.data) KEYS.forEach(function(k){out.push({label:'V8.0 snapshot • '+NAMES[k],data:v.data[k]||null,kind:'snapshot',key:k});});
+    }catch(e){}
+    try{
+      var v=JSON.parse(localStorage.getItem('spb_data_protected_v2')||'null');
+      if(v) ['mydeen','mansoor','expenses'].forEach(function(n){var k=n==='mydeen'?'saleProfitBookMydeenV1':n==='mansoor'?'saleProfitBookMansoorV1':'spb_v4_expenses';out.push({label:'Protected vault • '+NAMES[k],data:v[n]||null,kind:'vault',key:k});});
+    }catch(e){}
+    return out;
+  }
+  function best(){
+    var map={};
+    sources().forEach(function(x){var c=countRaw(x.data);if(!map[x.key]||c>map[x.key].count)map[x.key]={count:c,data:x.data,label:x.label,kind:x.kind};});
+    return map;
+  }
+  function install(){
+    if(document.getElementById('v812-recovery-card'))return;
+    var page=document.getElementById('backupPage');if(!page)return;
+    var card=document.createElement('div');card.id='v812-recovery-card';card.className='backup-box';
+    card.innerHTML='<h3 style="margin-top:0">🛡️ V8.12 DATA RECOVERY SCAN</h3><div style="font-size:13px;line-height:1.5">Read-only scan. It does not change your data.</div><div id="v812-scan-result" style="margin-top:8px;font-size:13px;white-space:pre-line">Tap Scan Recovery Data.</div><button id="v812-scan" type="button" class="secondary" style="margin-top:10px">🔎 Scan Recovery Data</button><button id="v812-recover" type="button" class="primary" style="margin-top:8px;display:none">♻️ Recover Best Available Copy</button>';
+    page.appendChild(card);
+    var scan=document.getElementById('v812-scan'),rec=document.getElementById('v812-recover'),res=document.getElementById('v812-scan-result');
+    scan.onclick=function(){
+      var b=best(),lines=[],has=false;
+      KEYS.forEach(function(k){var x=b[k]||{count:0,label:'None'};lines.push(NAMES[k]+': '+x.count+' records'+(x.count?'  ← '+x.label:''));if(x.count)has=true;});
+      res.textContent=lines.join('\n');
+      rec.style.display=has?'block':'none';
+      rec.onclick=function(){
+        var latest=best(), parts=KEYS.map(function(k){var x=latest[k]||{count:0};return NAMES[k]+': '+x.count}).join(' • ');
+        if(!confirm('Recover the best available protected copy?\n\n'+parts+'\n\nOnly keys with a non-empty protected copy will be replaced.'))return;
+        KEYS.forEach(function(k){var x=latest[k];if(x&&x.count>0){try{localStorage.setItem(k,x.data)}catch(e){}}});
+        alert('✅ Protected data recovery completed. The app will reload.');location.reload();
+      };
+    };
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+})();
+</script>
 <!-- V8.08 DEVICE DATA PROTECTION — IndexedDB + Persistent Storage -->
 <script id="v811-device-data-protection-safe">
 (function(){
