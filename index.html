@@ -1691,7 +1691,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.20</div>
+<div class="version">Version 8.21</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -6170,28 +6170,25 @@ function renderReport(key,prefix,resultId){
   var r=reportData(key,prefix),box=q(resultId);
   if(!r)return null;
   if(box){
-    var takenRows=r.rows.filter(function(x){return x.type!=='given';}).map(function(x){
-      return '<div class="party-report-row report-income"><span>'+fmtDate(x.date)+' &nbsp; '+(x.note?esc(x.note):'பணம் வாங்கியது')+'</span><b>'+money(x.amount)+'</b></div>';
+    var rows=r.rows.map(function(x){
+      var t=String(x.type||'').toLowerCase();
+      var given=(t==='given'||t==='paid'||t==='pay');
+      return '<div class="party-report-table-row '+(given?'report-expense':'report-income')+'">'+
+        '<div class="party-report-cell report-date">'+fmtDate(x.date)+'</div>'+
+        '<div class="party-report-cell report-type">'+(given?'Money Given':'Money Received')+'</div>'+
+        '<div class="party-report-cell report-amount">'+money(x.amount)+'</div>'+
+        '<div class="party-report-cell report-note">'+(x.note?esc(x.note):'')+'</div>'+
+      '</div>';
     }).join('');
-    var givenRows=r.rows.filter(function(x){return x.type==='given';}).map(function(x){
-      return '<div class="party-report-row report-expense"><span>'+fmtDate(x.date)+' &nbsp; '+(x.note?esc(x.note):'பணம் தந்தது')+'</span><b>'+money(x.amount)+'</b></div>';
-    }).join('');
-
     box.innerHTML=
       '<div class="party-report-summary">'+
         '<div class="party-report-range">'+fmtDate(r.from)+' → '+fmtDate(r.to)+'</div>'+
         '<div class="report-total report-income"><span>பணம் வாங்கியது</span><b>'+money(r.taken)+'</b></div>'+
         '<div class="report-total report-expense"><span>பணம் தந்தது</span><b>'+money(r.given)+'</b></div>'+
         '<div class="report-total"><span>Balance</span><b>'+money(r.balance)+'</b></div>'+
-
-        '<div class="party-report-group report-income-group">'+
-          '<div class="party-report-group-title report-income">பணம் வாங்கியது</div>'+
-          (takenRows||'<div class="meta">பணம் வாங்கியது இல்லை.</div>')+
-        '</div>'+
-
-        '<div class="party-report-group report-expense-group">'+
-          '<div class="party-report-group-title report-expense">பணம் தந்தது</div>'+
-          (givenRows||'<div class="meta">பணம் தந்தது இல்லை.</div>')+
+        '<div class="party-report-table">'+
+          '<div class="party-report-table-head"><div>Date</div><div>Type</div><div>Amount</div><div>Notes</div></div>'+
+          (rows||'<div class="meta party-report-empty">இதுவரை பதிவு இல்லை.</div>')+
         '</div>'+
       '</div>';
     box.dataset.reportReady='1';
@@ -7814,3 +7811,50 @@ try{new MutationObserver(function(){var a=q('mansoorHistory'),b=q('partyMydeenHi
   }
 }
 </style>
+<style id="v821-party-report-real-final">
+/* V8.21: final authoritative Party Report table layout. */
+#partyPage .party-report-summary .party-report-table{
+  display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;
+  box-sizing:border-box!important;overflow:hidden!important;
+  margin:12px 0 0!important;padding:0!important;
+}
+#partyPage .party-report-summary .party-report-table-head,
+#partyPage .party-report-summary .party-report-table-row{
+  display:grid!important;
+  grid-template-columns:minmax(62px,24%) minmax(82px,30%) minmax(62px,20%) minmax(0,26%)!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  box-sizing:border-box!important;
+}
+#partyPage .party-report-summary .party-report-table-head{
+  background:#174f3d!important;color:#fff!important;font-weight:900!important;
+  font-size:10px!important;line-height:1.15!important;padding:8px 2px!important;
+}
+#partyPage .party-report-summary .party-report-table-head>div{
+  min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
+  padding:0 3px!important;white-space:nowrap!important;overflow:hidden!important;
+}
+#partyPage .party-report-summary .party-report-table-row{
+  align-items:start!important;padding:8px 2px!important;
+  border-top:1px solid #e5ecea!important;column-gap:0!important;
+}
+#partyPage .party-report-summary .party-report-table-row:nth-child(odd){background:#f8fbfa!important}
+#partyPage .party-report-summary .party-report-cell{
+  min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
+  padding:0 3px!important;font-size:10px!important;line-height:1.25!important;
+  font-weight:700!important;overflow-wrap:anywhere!important;word-break:break-word!important;
+}
+#partyPage .party-report-summary .party-report-table-row .report-date{white-space:nowrap!important;overflow:hidden!important}
+#partyPage .party-report-summary .party-report-table-row .report-type,
+#partyPage .party-report-summary .party-report-table-row .report-note{white-space:normal!important}
+#partyPage .party-report-summary .party-report-table-row .report-amount{
+  text-align:right!important;white-space:nowrap!important;font-weight:900!important;
+}
+#partyPage .party-report-summary .party-report-empty{grid-column:1/-1!important;padding:12px!important}
+@media(max-width:380px){
+  #partyPage .party-report-summary .party-report-table-head,
+  #partyPage .party-report-summary .party-report-table-row{grid-template-columns:23% 29% 20% 28%!important}
+  #partyPage .party-report-summary .party-report-cell,
+  #partyPage .party-report-summary .party-report-table-head>div{font-size:8.8px!important;padding-left:2px!important;padding-right:2px!important}
+}
+</style>
+
