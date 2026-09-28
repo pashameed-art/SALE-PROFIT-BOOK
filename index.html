@@ -1691,7 +1691,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.17</div>
+<div class="version">Version 8.18</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -7408,6 +7408,63 @@ try{
   }catch(e){}
 })();
 </script>
+
+<style id="v818-report-final-mobile-fix">
+/* V8.18 FINAL: prevent the generic .party-report-summary direct-child flex rule
+   from turning the 4-column report table into a horizontal flex row. */
+.party-report-summary > .party-report-table{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  padding:0!important;
+  margin:10px 0 0!important;
+  border:1px solid #dfe7e5!important;
+  border-radius:12px!important;
+  overflow:hidden!important;
+  justify-content:initial!important;
+  align-items:initial!important;
+  gap:0!important;
+}
+.party-report-summary > .party-report-table > .party-report-table-head,
+.party-report-summary > .party-report-table > .party-report-table-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,24%) minmax(0,30%) minmax(0,20%) minmax(0,26%)!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  flex:none!important;
+}
+.party-report-summary > .party-report-table > .party-report-table-head{
+  padding:8px 2px!important;
+}
+.party-report-summary > .party-report-table > .party-report-table-row{
+  padding:7px 2px!important;
+  border-top:1px solid #e5ecea!important;
+}
+.party-report-summary > .party-report-table .party-report-cell{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  padding:0 3px!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+.party-report-summary > .party-report-table .report-date{white-space:nowrap!important;overflow:hidden!important}
+.party-report-summary > .party-report-table .report-type,
+.party-report-summary > .party-report-table .report-note{white-space:normal!important}
+.party-report-summary > .party-report-table .report-amount{text-align:right!important;white-space:nowrap!important}
+@media(max-width:380px){
+  .party-report-summary > .party-report-table > .party-report-table-head,
+  .party-report-summary > .party-report-table > .party-report-table-row{
+    grid-template-columns:minmax(0,24%) minmax(0,30%) minmax(0,20%) minmax(0,26%)!important;
+  }
+  .party-report-summary > .party-report-table .party-report-cell{font-size:8.7px!important;padding:0 2px!important}
+}
+</style>
 </body>
 </html>
 <!-- V7.43 FINAL PARTY QUICK SUMMARY + HISTORY FILTER -->
