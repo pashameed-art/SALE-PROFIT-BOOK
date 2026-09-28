@@ -1691,7 +1691,7 @@ body.spb-home-mode #homeStockDetails #stockSummary{
 
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.21</div>
+<div class="version">Version 8.22</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -6272,9 +6272,14 @@ x.fillText('Money Given: '+money(r.given),L,212);
 x.fillText('Balance: '+money(r.balance),L,249);
 var y=292;
 x.font='bold 27px Arial,"Noto Sans",sans-serif';x.fillText('Date-wise Transactions',L,y);y+=28;
-var cols=[L,255,545,755,R];
+var cols=[L,260,530,690,R];
 function wrap(text,maxWidth,font){x.font=font;var words=String(text||'').split(/\s+/),out=[],cur='';words.forEach(function(w){var test=cur?cur+' '+w:w;if(cur&&x.measureText(test).width>maxWidth){out.push(cur);cur=w}else cur=test});if(cur||!out.length)out.push(cur);return out}
-function rowHeight(row){var noteLines=wrap(row.note||'',cols[4]-cols[3]-20,'22px Arial,"Noto Sans",sans-serif');return Math.max(58,24+noteLines.length*25)}
+function rowHeight(row){
+  var typeText=String(row.type||'').toLowerCase()==='given'?'Money Given':'Money Received';
+  var typeLines=wrap(typeText,cols[2]-cols[1]-20,'20px Arial,"Noto Sans",sans-serif');
+  var noteLines=wrap(row.note||'',cols[4]-cols[3]-20,'20px Arial,"Noto Sans",sans-serif');
+  return Math.max(62,24+Math.max(typeLines.length,noteLines.length)*25);
+}
 function header(){
 var h=48;x.fillStyle='#174f3d';x.fillRect(L,y,tableW,h);x.fillStyle='#fff';x.font='bold 22px Arial,"Noto Sans",sans-serif';
 x.fillText('Date',cols[0]+12,y+31);x.fillText('Type',cols[1]+12,y+31);x.fillText('Amount',cols[2]+12,y+31);x.fillText('Notes',cols[3]+12,y+31);y+=h;
@@ -6287,9 +6292,10 @@ if(i%2===0){x.fillStyle='#f7faf9';x.fillRect(L,y,tableW,rh)}else{x.fillStyle='#f
 x.strokeStyle='#dfe7e5';x.lineWidth=1;x.strokeRect(L,y,tableW,rh);
 [cols[1],cols[2],cols[3]].forEach(function(cx){x.beginPath();x.moveTo(cx,y);x.lineTo(cx,y+rh);x.stroke()});
 x.fillStyle='#172326';x.font='20px Arial,"Noto Sans",sans-serif';x.fillText(fmt(row.date),cols[0]+12,y+32);
-x.font='bold 20px Arial,"Noto Sans",sans-serif';x.fillText(String(row.type||'').toLowerCase()==='given'?'Money Given':'Money Received',cols[1]+12,y+32);
+var typeText=String(row.type||'').toLowerCase()==='given'?'Money Given':'Money Received';
+var typeLines=wrap(typeText,cols[2]-cols[1]-20,'20px Arial,"Noto Sans",sans-serif');x.font='bold 20px Arial,"Noto Sans",sans-serif';typeLines.forEach(function(t,k){x.fillText(t,cols[1]+12,y+27+k*25)});
 x.textAlign='right';x.font='bold 21px Arial,"Noto Sans",sans-serif';x.fillText(money(row.amount),cols[3]-12,y+32);x.textAlign='left';
-var noteLines=wrap(row.note||'',cols[4]-cols[3]-20,'20px Arial,"Noto Sans",sans-serif');x.font='20px Arial,"Noto Sans",sans-serif';noteLines.forEach(function(t,k){x.fillText(t,cols[3]+12,y+27+k*25)});
+var noteLines=wrap(row.note||'',cols[4]-cols[3]-20,'20px Arial,"Noto Sans",sans-serif');x.font='bold 20px Arial,"Noto Sans",sans-serif';noteLines.forEach(function(t,k){x.fillText(t,cols[3]+12,y+27+k*25)});
 y+=rh;
 }
 return {data:c.toDataURL('image/jpeg',0.92),next:endIndex};
@@ -7464,7 +7470,7 @@ try{
 </style>
 
 <style id="v820-report-mobile-final">
-/* V8.20 FINAL: keep the Party/Report page locked to the viewport width on mobile. */
+/* V8.20 FINAL: keep the Party/Report page locked to the viewport width on mobile. PDF Notes column fix added in V8.22. */
 html, body {
   width:100% !important;
   max-width:100% !important;
