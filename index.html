@@ -6233,7 +6233,34 @@ function read(key){try{var a=JSON.parse(localStorage.getItem(key)||'[]');return 
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function setDates(prefix){var f=q(prefix+'From'),t=q(prefix+'To');if(f&&!f.value)f.value=firstDay();if(t&&!t.value)t.value=today()}
 function getReport(key,prefix){setDates(prefix);var f=q(prefix+'From'),t=q(prefix+'To'),from=f&&f.value||'',to=t&&t.value||'';if(!from||!to){alert('Date From மற்றும் Date To தேர்வு செய்யவும்.');return null}if(from>to){alert('Date From, Date To-வை விட முன்னதாக இருக்க வேண்டும்.');return null}var rows=read(key).filter(function(x){var d=String(x.date||'');return d>=from&&d<=to}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))||num(a.id)-num(b.id)}),taken=0,given=0;rows.forEach(function(x){var t=String(x.type||'').toLowerCase();if(t==='given'||t==='paid'||t==='pay')given+=num(x.amount);else taken+=num(x.amount)});return{from:from,to:to,rows:rows,taken:taken,given:given,balance:taken-given}}
-function render(name,key,prefix,resultId,actionsId){var r=getReport(key,prefix);if(!r)return null;var box=q(resultId);if(box){var rows=r.rows.map(function(x){var t=String(x.type||'').toLowerCase(),g=t==='given'||t==='paid'||t==='pay';return '<div class="party-report-row '+(g?'report-expense':'report-income')+'"><span>'+fmt(x.date)+' • '+(g?'பணம் தந்தது':'பணம் வாங்கியது')+(x.note?' • '+esc(x.note):'')+'</span><b class="report-amount">'+(g?'−':'＋')+money(x.amount)+'</b></div>'}).join('');box.innerHTML='<div class="party-report-summary"><div class="party-report-heading">📊 Party Report Summary</div><div class="party-report-range">📅 '+fmt(r.from)+' → '+fmt(r.to)+'</div><div class="party-summary-grid"><div class="party-summary-box received"><span>பணம் வாங்கியது</span><b>'+money(r.taken)+'</b></div><div class="party-summary-box given"><span>பணம் தந்தது</span><b>'+money(r.given)+'</b></div><div class="party-summary-box balance"><span>மீதம் பெற வேண்டியது</span><b>'+money(r.balance)+'</b></div></div>'+(rows||'<div class="meta">இதுவரை பதிவு இல்லை.</div>')+'</div>';box.dataset.reportReady='1'}var a=actionsId?q(actionsId):null;if(a)a.style.display='flex';return r}
+function render(name,key,prefix,resultId,actionsId){
+var r=getReport(key,prefix);if(!r)return null;
+var box=q(resultId);
+if(box){
+var rows=r.rows.map(function(x){
+var t=String(x.type||'').toLowerCase(),given=(t==='given'||t==='paid'||t==='pay');
+return '<div class="party-report-table-row '+(given?'report-expense':'report-income')+'">'+
+'<div class="party-report-cell report-date">'+fmt(x.date)+'</div>'+
+'<div class="party-report-cell report-type">'+(given?'Money Given':'Money Received')+'</div>'+
+'<div class="party-report-cell report-amount">'+money(x.amount)+'</div>'+
+'<div class="party-report-cell report-note">'+(x.note?esc(x.note):'')+'</div>'+
+'</div>';
+}).join('');
+box.innerHTML='<div class="party-report-summary">'+
+'<div class="party-report-heading">📊 Party Report Summary</div>'+
+'<div class="party-report-range">📅 '+fmt(r.from)+' → '+fmt(r.to)+'</div>'+
+'<div class="party-summary-grid"><div class="party-summary-box received"><span>பணம் வாங்கியது</span><b>'+money(r.taken)+'</b></div>'+
+'<div class="party-summary-box given"><span>பணம் தந்தது</span><b>'+money(r.given)+'</b></div>'+
+'<div class="party-summary-box balance"><span>மீதம் பெற வேண்டியது</span><b>'+money(r.balance)+'</b></div></div>'+
+'<div class="party-report-table">'+
+'<div class="party-report-table-head"><div>Date</div><div>Type</div><div>Amount</div><div>Notes</div></div>'+
+(rows||'<div class="meta party-report-empty">இதுவரை பதிவு இல்லை.</div>')+
+'</div></div>';
+box.dataset.reportReady='1';
+}
+var a=actionsId?q(actionsId):null;if(a)a.style.display='flex';
+return r
+}
 function jpegBytes(dataUrl){var b64=dataUrl.split(',')[1],bin=atob(b64),a=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a}
 function jpegSize(data){for(var i=2;i<data.length-9;){if(data[i]!==255){i++;continue}var m=data[i+1];if(m===216||m===217){i+=2;continue}var len=(data[i+2]<<8)|data[i+3];if(m>=192&&m<=195)return{w:(data[i+7]<<8)|data[i+8],h:(data[i+5]<<8)|data[i+6]};i+=2+len}return{w:1190,h:1684}}
 function drawPage(title,r,rows,startIndex,endIndex){
@@ -7404,6 +7431,76 @@ try{
 .p743-empty{padding:10px;text-align:center;color:#888;font-size:10px}
 @media(max-width:420px){.p743-summary{grid-template-columns:1fr 1fr}.p743-box.balance{grid-column:1/-1}}
 </style>
+<style id="v817-party-report-table-alignment">
+.party-report-table{
+  width:100%;
+  margin-top:10px;
+  border:1px solid #dfe7e5;
+  border-radius:12px;
+  overflow:hidden;
+  background:#fff;
+}
+.party-report-table-head,
+.party-report-table-row{
+  display:grid!important;
+  grid-template-columns:72px 82px 62px minmax(0,1fr)!important;
+  width:100%;
+  box-sizing:border-box;
+}
+.party-report-table-head{
+  background:#174f3d!important;
+  color:#fff!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  line-height:1.15!important;
+  padding:8px 5px!important;
+  column-gap:0!important;
+}
+.party-report-table-head>div{
+  padding:0 4px!important;
+  min-width:0!important;
+  white-space:nowrap!important;
+}
+.party-report-table-row{
+  align-items:start!important;
+  border-top:1px solid #e5ecea!important;
+  padding:7px 5px!important;
+  column-gap:0!important;
+  box-sizing:border-box!important;
+}
+.party-report-table-row:nth-child(even){background:#f8fbfa!important}
+.party-report-cell{
+  min-width:0!important;
+  padding:0 4px!important;
+  box-sizing:border-box!important;
+  font-size:9.5px!important;
+  line-height:1.25!important;
+  font-weight:700!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+.party-report-table-row .report-date{white-space:nowrap!important}
+.party-report-table-row .report-type{white-space:normal!important}
+.party-report-table-row .report-amount{
+  text-align:right!important;
+  white-space:nowrap!important;
+  font-weight:900!important;
+}
+.party-report-table-row .report-note{white-space:normal!important}
+.party-report-empty{
+  grid-column:1/-1!important;
+  padding:10px!important;
+}
+@media(max-width:380px){
+  .party-report-table-head,
+  .party-report-table-row{
+    grid-template-columns:68px 78px 58px minmax(0,1fr)!important;
+  }
+  .party-report-table-head{font-size:9px!important}
+  .party-report-cell{font-size:9px!important;padding:0 3px!important}
+}
+</style>
+
 <script id="v743-party-summary-filter-final">
 (function(){
 'use strict';
