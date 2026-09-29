@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.22</title>
+<title>Sale Profit Book • V8.23</title>
 <script id="v814-safe-boot">
 (function(){
   'use strict';
@@ -25,46 +25,6 @@
     }).catch(function(){});
     navigator.serviceWorker.addEventListener('controllerchange',reloadOnce);
   }catch(e){}
-})();
-</script>
-<script id="v812-emergency-data-guard">
-/* V8.12 DATA SAFE — installed before the rest of the app scripts.
-   If any script tries to empty/delete a protected ledger key, first preserve
-   the current non-empty value in a separate emergency localStorage key.
-   This does NOT block intentional deletion; it creates a recovery copy first. */
-(function(){
-  'use strict';
-  var KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_stock'];
-  var PREFIX='spb_v812_emergency_good_';
-  function nonEmpty(raw){
-    try{var a=JSON.parse(raw||'[]');return Array.isArray(a)&&a.length>0;}catch(e){return false;}
-  }
-  function preserve(key){
-    try{
-      var cur=localStorage.getItem(key);
-      if(nonEmpty(cur)){
-        var bk=PREFIX+key;
-        var old=localStorage.getItem(bk);
-        if(!nonEmpty(old)) localStorage.setItem(bk,cur);
-      }
-    }catch(e){}
-  }
-  function snapshotAll(){KEYS.forEach(preserve);}
-  /* Capture whatever good data exists before later scripts execute. */
-  snapshotAll();
-  try{
-    var nativeSet=Storage.prototype.setItem;
-    Storage.prototype.setItem=function(key,value){
-      if(KEYS.indexOf(key)!==-1 && (value==='[]' || value==='' || value==='null')) preserve(key);
-      return nativeSet.apply(this,arguments);
-    };
-    var nativeRemove=Storage.prototype.removeItem;
-    Storage.prototype.removeItem=function(key){
-      if(KEYS.indexOf(key)!==-1) preserve(key);
-      return nativeRemove.apply(this,arguments);
-    };
-  }catch(e){}
-  window.SPB_V812_GUARD={snapshot:snapshotAll,keys:KEYS,prefix:PREFIX};
 })();
 </script>
 <style>
@@ -1831,7 +1791,7 @@ button{font-weight:900!important}
 
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.22</div>
+<div class="version">Version 8.23</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -2018,15 +1978,11 @@ button{font-weight:900!important}
       alert('No Sales data to delete.');
       return;
     }
-    /* V8.21: lock the target before the confirmation dialogs.
-       The watchdog must not restore these records while the user is confirming. */
-    try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.beginIntentionalDelete) SPB_V815_DATA_LOCK.beginIntentionalDelete([EK]); }catch(e){}
+    /* V8.23: two confirmations are required before permanent deletion. */
     if(!confirm('Delete ALL Sales data?\\n\\nThis will permanently remove '+count+' sale record(s).\\nExpenses, Purchase, Stock, Party and Settings will remain unchanged.')){
-      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([EK],false); }catch(e){}
       return;
     }
     if(!confirm('Final confirmation: Delete all Sales data?\\n\\nThis action cannot be undone.')){
-      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([EK],false); }catch(e){}
       return;
     }
 
@@ -2036,11 +1992,9 @@ button{font-weight:900!important}
       if(typeof entries!=='undefined') entries=[];
       if(typeof editingId!=='undefined') editingId=null;
       deleted=true;
-      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([EK],true); }catch(e){}
       refreshAll();
       alert('✅ All Sales data deleted successfully.');
     }catch(e){
-      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([EK],deleted); }catch(x){}
       alert('Could not delete Sales data. Please try again.');
       console.error(e);
     }
@@ -2052,15 +2006,11 @@ button{font-weight:900!important}
       alert('No Expense data to delete.');
       return;
     }
-    /* V8.21: lock the target before the confirmation dialogs.
-       The watchdog must not restore these records while the user is confirming. */
-    try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.beginIntentionalDelete) SPB_V815_DATA_LOCK.beginIntentionalDelete([XK]); }catch(e){}
+    /* V8.23: two confirmations are required before permanent deletion. */
     if(!confirm('Delete ALL Expense data?\\n\\nThis will permanently remove '+count+' expense record(s).\\nSales, Purchase, Stock, Party and Settings will remain unchanged.')){
-      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([XK],false); }catch(e){}
       return;
     }
     if(!confirm('Final confirmation: Delete all Expense data?\\n\\nThis action cannot be undone.')){
-      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([XK],false); }catch(e){}
       return;
     }
 
@@ -2070,11 +2020,9 @@ button{font-weight:900!important}
       if(typeof expenses!=='undefined') expenses=[];
       if(typeof editingExpenseId!=='undefined') editingExpenseId=null;
       deleted=true;
-      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([XK],true); }catch(e){}
       refreshAll();
       alert('✅ All Expense data deleted successfully.');
     }catch(e){
-      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([XK],deleted); }catch(x){}
       alert('Could not delete Expense data. Please try again.');
       console.error(e);
     }
@@ -2720,7 +2668,8 @@ function build(){
 window.v787BuildDateProfit=build;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){build();setTimeout(build,800)});
 else{build();setTimeout(build,800)}
-setInterval(build,2000);
+window.addEventListener('focus',build);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)build()});
 })();
 </script>
 
@@ -5039,7 +4988,8 @@ document.addEventListener('DOMContentLoaded',function(){
       }catch(e){}
     }
     refresh();
-    setInterval(refresh,1000);
+    window.addEventListener('focus',refresh);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh()});
   }
   document.addEventListener('DOMContentLoaded',()=>setTimeout(addDashboard,400));
 })();
@@ -5759,22 +5709,6 @@ body.party-open-mode #partyPage{display:block!important;visibility:visible!impor
     }catch(e){}
   }
 
-  // Keep a protected copy whenever Party data is written.
-  var originalSet=Storage.prototype.setItem;
-  Storage.prototype.setItem=function(key,value){
-    originalSet.call(this,key,value);
-    if(key===MY || key===MA){
-      try{
-        var m=localStorage.getItem(MY);
-        var a=localStorage.getItem(MA);
-        if(m!==null || a!==null)
-          originalSet.call(this,VAULT,JSON.stringify({
-            mydeen:m,mansoor:a,savedAt:new Date().toISOString()
-          }));
-      }catch(e){}
-    }
-  };
-
   window.partySafeRestore=function(file){
     if(!file)return;
     // V7.47 — FULL RESTORE. The backup was created from the complete localStorage snapshot,
@@ -6253,27 +6187,6 @@ function wait(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(wait,100);});
 else setTimeout(wait,100);
-})();
-</script>
-<script id="data-safe-final-protection">
-(function(){
-  'use strict';
-  var MY='saleProfitBookMydeenV1', MA='saleProfitBookMansoorV1', EX='spb_v4_expenses', VAULT='spb_data_protected_v2';
-  function arr(raw){try{var v=JSON.parse(raw||'[]');return Array.isArray(v)?v:null;}catch(e){return null;}}
-  function snapshot(){try{
-    var old={}; try{old=JSON.parse(localStorage.getItem(VAULT)||'{}')||{};}catch(e){}
-    var m=localStorage.getItem(MY), a=localStorage.getItem(MA), x=localStorage.getItem(EX);
-    var data={mydeen:arr(m)!==null?m:(old.mydeen||null),mansoor:arr(a)!==null?a:(old.mansoor||null),expenses:arr(x)!==null?x:(old.expenses||null),savedAt:new Date().toISOString()};
-    if(data.mydeen!==null||data.mansoor!==null||data.expenses!==null) localStorage.setItem(VAULT,JSON.stringify(data));
-  }catch(e){}}
-  function recover(){try{
-    var v=JSON.parse(localStorage.getItem(VAULT)||'{}')||{};
-    [['mydeen',MY],['mansoor',MA],['expenses',EX]].forEach(function(p){var cur=arr(localStorage.getItem(p[1])); if((cur===null||cur.length===0)&&Array.isArray(arr(v[p[0]]))&&arr(v[p[0]]).length){localStorage.setItem(p[1],v[p[0]]);}});
-  }catch(e){}}
-  snapshot(); recover();
-  var originalSet=Storage.prototype.setItem;
-  Storage.prototype.setItem=function(key,value){originalSet.call(this,key,value);if(key===MY||key===MA||key===EX){setTimeout(snapshot,0);}};
-  window.addEventListener('beforeunload',snapshot); window.addEventListener('pagehide',snapshot);
 })();
 </script>
 <script id="party-report-pdf-final">
@@ -6775,7 +6688,7 @@ function draw(box,key,editAttr,deleteAttr){
  function filterRows(data,givenFlag,filter){return data.filter(function(x){var isGiven=String(x.type||'').toLowerCase()==='given';if(isGiven!==givenFlag)return false;if(filter&&filter.date&&String(x.date||'')!==filter.date)return false;return true;});}
  function render(filter){
    filter=filter||{};
-   box.innerHTML='<div class="pch-section-title">📊 Party Quick Summary</div><div class="pch-summary-card"><div class="pch-summary-box taken"><span class="lbl">பணம் வாங்கியது</span><span class="val">'+money(taken)+'</span></div><div class="pch-summary-box given"><span class="lbl">பணம் தந்தது</span><span class="val">'+money(given)+'</span></div><div class="pch-summary-box balance"><span class="lbl">மீதம் பெற வேண்டியது</span><span class="val">'+money(taken-given)+'</span></div></div><div class="pch-section-title">🔎 Previous History Filter</div><div class="pch-filter"><input type="date" id="pchDateFilter" value="'+esc(filter.date||'')+'" title="தேதி filter"><select id="pchTypeFilter"><option value="all">அனைத்தும்</option><option value="taken" '+(filter.type==='taken'?'selected':'')+'>பணம் வாங்கியது</option><option value="given" '+(filter.type==='given'?'selected':'')+'>பணம் தந்தது</option></select><button type="button" class="secondary" id="pchClearFilter">Clear Filter</button></div><div class="party-collapsible-history">'+section(false,'பணம் வாங்கியது','received',filter.type==='given'?null:filter)+section(true,'பணம் தந்தது','given',filter.type==='taken'?null,filter)+'</div>';
+   box.innerHTML='<div class="pch-section-title">📊 Party Quick Summary</div><div class="pch-summary-card"><div class="pch-summary-box taken"><span class="lbl">பணம் வாங்கியது</span><span class="val">'+money(taken)+'</span></div><div class="pch-summary-box given"><span class="lbl">பணம் தந்தது</span><span class="val">'+money(given)+'</span></div><div class="pch-summary-box balance"><span class="lbl">மீதம் பெற வேண்டியது</span><span class="val">'+money(taken-given)+'</span></div></div><div class="pch-section-title">🔎 Previous History Filter</div><div class="pch-filter"><input type="date" id="pchDateFilter" value="'+esc(filter.date||'')+'" title="தேதி filter"><select id="pchTypeFilter"><option value="all">அனைத்தும்</option><option value="taken" '+(filter.type==='taken'?'selected':'')+'>பணம் வாங்கியது</option><option value="given" '+(filter.type==='given'?'selected':'')+'>பணம் தந்தது</option></select><button type="button" class="secondary" id="pchClearFilter">Clear Filter</button></div><div class="party-collapsible-history">'+section(false,'பணம் வாங்கியது','received',filter.type==='given'?null:filter)+section(true,'பணம் தந்தது','given',filter.type==='taken'?null:filter)+'</div>';
    // Correct section filters when a single type is selected.
    var hist=box.querySelector('.party-collapsible-history');
    if(filter.type==='given')hist.innerHTML=section(true,'பணம் தந்தது','given',filter);
@@ -7123,118 +7036,7 @@ try{
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
 })();
 </script>
-
-<script id="v800-data-safe">
-(function(){
-  'use strict';
-  const KEYS=['spb_v4_entries','spb_v4_expenses','saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_stock'];
-  const SNAP='spb_v8_last_safe_snapshot_v1';
-  function read(k){try{return localStorage.getItem(k)}catch(e){return null}}
-  function parse(v){try{return JSON.parse(v)}catch(e){return null}}
-  function count(v){
-    const x=parse(v);
-    if(Array.isArray(x))return x.length;
-    if(x&&typeof x==='object'){
-      for(const k of ['entries','data','items','records'])if(Array.isArray(x[k]))return x[k].length;
-    }
-    return 0;
-  }
-  function snapshot(reason){
-    const data={}; let total=0;
-    KEYS.forEach(k=>{const v=read(k);if(v!==null){data[k]=v;total+=count(v)}});
-    if(!total)return;
-    try{localStorage.setItem(SNAP,JSON.stringify({version:'8.0',createdAt:new Date().toISOString(),reason,data}))}catch(e){}
-  }
-  snapshot('V8.0 startup');
-
-  const originalSetItem=Storage.prototype.setItem;
-  Storage.prototype.setItem=function(key,value){
-    const result=originalSetItem.call(this,key,value);
-    if(KEYS.indexOf(key)!==-1)setTimeout(()=>snapshot('after save: '+key),0);
-    return result;
-  };
-
-  function recover(){
-    const snap=parse(read(SNAP));
-    if(!snap||!snap.data)return;
-    const names={'spb_v4_entries':'Sale','spb_v4_expenses':'Expense','saleProfitBookMydeenV1':'Mydeen','saleProfitBookMansoorV1':'Mansoor','spb_v4_stock':'Stock'};
-    const text=KEYS.map(k=>names[k]+': '+count(snap.data[k])).join(' • ');
-    if(!confirm('Recover last safety snapshot?\\n\\n'+text+'\\n\\nCurrent data in these groups will be replaced.'))return;
-    KEYS.forEach(k=>{if(Object.prototype.hasOwnProperty.call(snap.data,k))originalSetItem.call(localStorage,k,String(snap.data[k]))});
-    location.reload();
-  }
-
-  function addCard(){
-    return; /* Legacy V8.0 DATA SAFE card removed from UI; protection logic retained. */
-    const page=document.getElementById('backupPage'); if(!page)return;
-    const card=document.createElement('div');
-    card.id='v800-safe-card';
-    card.style.cssText='margin:10px 0;padding:11px 12px;border:1px solid #d8dee9;border-radius:12px;background:#f8fafc;font-size:12px;line-height:1.5;';
-    card.innerHTML='<b>🔒 V8.0 DATA SAFE</b><div style="margin-top:4px">Automatic reset/migration of existing data has been removed.</div><div id="v800-safe-counts" style="margin-top:5px;opacity:.8"></div><button id="v800-recover-btn" style="margin-top:8px;padding:7px 10px;border:0;border-radius:8px;font-weight:700">Recover Last Safety Snapshot</button>';
-    page.appendChild(card);
-    document.getElementById('v800-recover-btn').onclick=recover;
-    function refresh(){
-      const names=['Sale','Expense','Mydeen','Mansoor','Stock'];
-      const el=document.getElementById('v800-safe-counts');
-      if(el)el.textContent=KEYS.map((k,i)=>names[i]+': '+count(read(k))).join(' • ');
-    }
-    refresh();setInterval(refresh,2000);
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addCard);else addCard();
-})();
-</script>
-
 <!-- V8.12 RECOVERY SCANNER — read-only scan until user explicitly recovers -->
-<script id="v812-recovery-scanner">
-(function(){
-  'use strict';
-  var KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_stock'];
-  var NAMES={'spb_v4_items':'Items','spb_v4_entries':'Sale','spb_v4_expenses':'Expense','saleProfitBookMydeenV1':'Mydeen','saleProfitBookMansoorV1':'Mansoor','spb_v4_stock':'Stock'};
-  var PREFIX='spb_v812_emergency_good_';
-  function countRaw(raw){try{var a=JSON.parse(raw||'[]');return Array.isArray(a)?a.length:0}catch(e){return 0}}
-  function read(k){try{return localStorage.getItem(k)}catch(e){return null}}
-  function sources(){
-    var out=[];
-    KEYS.forEach(function(k){out.push({label:'Current • '+NAMES[k],data:read(k),kind:'current',key:k});});
-    KEYS.forEach(function(k){out.push({label:'Emergency • '+NAMES[k],data:read(PREFIX+k),kind:'emergency',key:k});});
-    try{
-      var v=JSON.parse(localStorage.getItem('spb_v8_last_safe_snapshot_v1')||'null');
-      if(v&&v.data) KEYS.forEach(function(k){out.push({label:'V8.0 snapshot • '+NAMES[k],data:v.data[k]||null,kind:'snapshot',key:k});});
-    }catch(e){}
-    try{
-      var v=JSON.parse(localStorage.getItem('spb_data_protected_v2')||'null');
-      if(v) ['mydeen','mansoor','expenses'].forEach(function(n){var k=n==='mydeen'?'saleProfitBookMydeenV1':n==='mansoor'?'saleProfitBookMansoorV1':'spb_v4_expenses';out.push({label:'Protected vault • '+NAMES[k],data:v[n]||null,kind:'vault',key:k});});
-    }catch(e){}
-    return out;
-  }
-  function best(){
-    var map={};
-    sources().forEach(function(x){var c=countRaw(x.data);if(!map[x.key]||c>map[x.key].count)map[x.key]={count:c,data:x.data,label:x.label,kind:x.kind};});
-    return map;
-  }
-  function install(){
-    return; /* Legacy V8.12 DATA RECOVERY SCAN card removed from UI; scanner logic retained. */
-    var page=document.getElementById('backupPage');if(!page)return;
-    var card=document.createElement('div');card.id='v812-recovery-card';card.className='backup-box';
-    card.innerHTML='<h3 style="margin-top:0">🛡️ V8.12 DATA RECOVERY SCAN</h3><div style="font-size:13px;line-height:1.5">Read-only scan. It does not change your data.</div><div id="v812-scan-result" style="margin-top:8px;font-size:13px;white-space:pre-line">Tap Scan Recovery Data.</div><button id="v812-scan" type="button" class="secondary" style="margin-top:10px">🔎 Scan Recovery Data</button><button id="v812-recover" type="button" class="primary" style="margin-top:8px;display:none">♻️ Recover Best Available Copy</button>';
-    page.appendChild(card);
-    var scan=document.getElementById('v812-scan'),rec=document.getElementById('v812-recover'),res=document.getElementById('v812-scan-result');
-    scan.onclick=function(){
-      var b=best(),lines=[],has=false;
-      KEYS.forEach(function(k){var x=b[k]||{count:0,label:'None'};lines.push(NAMES[k]+': '+x.count+' records'+(x.count?'  ← '+x.label:''));if(x.count)has=true;});
-      res.textContent=lines.join('\n');
-      rec.style.display=has?'block':'none';
-      rec.onclick=function(){
-        var latest=best(), parts=KEYS.map(function(k){var x=latest[k]||{count:0};return NAMES[k]+': '+x.count}).join(' • ');
-        if(!confirm('Recover the best available protected copy?\n\n'+parts+'\n\nOnly keys with a non-empty protected copy will be replaced.'))return;
-        KEYS.forEach(function(k){var x=latest[k];if(x&&x.count>0){try{localStorage.setItem(k,x.data)}catch(e){}}});
-        alert('✅ Protected data recovery completed. The app will reload.');location.reload();
-      };
-    };
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
-})();
-</script>
 <!-- V8.08 DEVICE DATA PROTECTION — IndexedDB + Persistent Storage -->
 <script id="v811-device-data-protection-safe">
 (function(){
@@ -7323,10 +7125,6 @@ try{
     page.appendChild(card);document.getElementById('v811-recover').onclick=recover;saveSnapshot('V8.11 startup');
   }
   function updateStatus(text){const el=document.getElementById('v811-device-status');if(el)el.textContent=text}
-  const nativeSet=Storage.prototype.setItem.bind(localStorage);
-  Storage.prototype.setItem=function(key,value){const result=nativeSet(key,value);if(KEYS.indexOf(key)!==-1)scheduleSnapshot('after save: '+key);return result};
-  const nativeRemove=Storage.prototype.removeItem.bind(localStorage);
-  Storage.prototype.removeItem=function(key){const result=nativeRemove(key);if(KEYS.indexOf(key)!==-1)scheduleSnapshot('after remove: '+key);return result};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){requestPersistent();addUI();setTimeout(function(){saveSnapshot('V8.11 startup refresh')},1200)});
   else {requestPersistent();addUI();setTimeout(function(){saveSnapshot('V8.11 startup refresh')},1200)}
   window.addEventListener('pageshow',function(){setTimeout(function(){saveSnapshot('pageshow')},500)});
@@ -7386,75 +7184,6 @@ try{
     var now=Date.now(); data.forEach(function(x,i){entries.unshift({id:now+i,date:date,place:place,item:x.item,meter:x.meter,rate:x.rate,sale:x.sale,paidBy:paid,purchase:x.rate*x.meter,profit:x.sale-x.rate*x.meter,time:localTime(),mixedSaleId:gid,mixedSale:true})});
     localStorage.setItem(ENTRIES_KEY,JSON.stringify(entries)); closeMixedSale(); renderHistory();renderStock();refreshDashboard(); if(window.v779ShowSaveToast)v779ShowSaveToast('Mixed Sale saved successfully.');
   };
-})();
-</script>
-
-<!-- V8.13 FINAL STORAGE GUARD — must be the last data-safety layer.
-     Later scripts may replace Storage.prototype.setItem/removeItem, so this
-     final wrapper is installed after all older layers. It never blocks a
-     deliberate delete; it first preserves the last non-empty copy. -->
-<script id="v813-final-storage-guard">
-(function(){
-  'use strict';
-  var KEYS=[
-    'spb_v4_items','spb_v4_entries','spb_v4_expenses',
-    'saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_stock'
-  ];
-  var PREFIX='spb_v812_emergency_good_';
-
-  function isGood(raw){
-    try{
-      var a=JSON.parse(raw||'[]');
-      return Array.isArray(a) && a.length>0;
-    }catch(e){ return false; }
-  }
-  function preserve(k){
-    try{
-      var cur=localStorage.getItem(k);
-      if(!isGood(cur)) return;
-      var bk=PREFIX+k;
-      var old=localStorage.getItem(bk);
-      if(!isGood(old)) localStorage.setItem(bk,cur);
-    }catch(e){}
-  }
-  function preserveAll(){ KEYS.forEach(preserve); }
-
-  // Capture the current good state before any later startup operation.
-  preserveAll();
-
-  try{
-    var previousSet=Storage.prototype.setItem;
-    Storage.prototype.setItem=function(k,v){
-      if(KEYS.indexOf(k)!==-1 && !isGood(v)) preserve(k);
-      return previousSet.apply(this,arguments);
-    };
-
-    var previousRemove=Storage.prototype.removeItem;
-    Storage.prototype.removeItem=function(k){
-      if(KEYS.indexOf(k)!==-1) preserve(k);
-      return previousRemove.apply(this,arguments);
-    };
-  }catch(e){}
-
-  // Expose a manual, non-destructive recovery helper for diagnostics.
-  window.SPB_V813_DATA_GUARD={
-    snapshot:preserveAll,
-    hasProtectedData:function(k){
-      try{return isGood(localStorage.getItem(PREFIX+k));}catch(e){return false;}
-    }
-  };
-
-  // If a later startup script has already emptied a key, do NOT silently
-  // overwrite it. Just record that protected data exists so the recovery UI
-  // can offer it explicitly.
-  try{
-    var lost=[];
-    KEYS.forEach(function(k){
-      var cur=localStorage.getItem(k), bk=localStorage.getItem(PREFIX+k);
-      if(!isGood(cur) && isGood(bk)) lost.push(k);
-    });
-    if(lost.length) localStorage.setItem('spb_v813_recovery_needed',JSON.stringify(lost));
-  }catch(e){}
 })();
 </script>
 
@@ -7596,7 +7325,7 @@ main {
 </body>
 </html>
 <!-- V7.43 FINAL PARTY QUICK SUMMARY + HISTORY FILTER -->
-<style id="v743-party-summary-filter-final">
+<style id="v743-party-summary-filter-final-style">
 .p743-title{font-size:14px;font-weight:900;margin:2px 0 7px;color:#334}
 .p743-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:11px}
 .p743-box{border:1px solid #e3ecea;border-radius:11px;padding:9px 5px;text-align:center;background:#f7faf9}
@@ -7733,92 +7462,6 @@ try{new MutationObserver(function(){var a=q('mansoorHistory'),b=q('partyMydeenHi
 <!-- V7.45 PARTY REPORT SUMMARY — 3-CARD SUMMARY FOR SELECTED DATE RANGE -->
 
 <!-- V8.15 FINAL DATA-LOCK WATCHDOG — after ALL legacy scripts. -->
-<script id="v815-final-data-lock-watchdog">
-(function(){
-  'use strict';
-  var KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_stock'];
-  var PREFIX='spb_v812_emergency_good_';
-  var lastUserAction=0;
-  var actionWindow=2500;
-  var intentionalDeleteKeys={};
-  function good(v){try{var a=JSON.parse(v||'[]');return Array.isArray(a)&&a.length>0}catch(e){return false}}
-  function preserve(k){try{var cur=localStorage.getItem(k);if(!good(cur))return;var bk=PREFIX+k;var old=localStorage.getItem(bk);if(!good(old))localStorage.setItem(bk,cur)}catch(e){}}
-  function preserveAll(){KEYS.forEach(preserve)}
-  function restoreIfLost(k){
-    try{
-      /* V8.21: an explicit Delete All operation must never be undone by the watchdog. */
-      if(intentionalDeleteKeys[k]) return false;
-      var cur=localStorage.getItem(k), bk=localStorage.getItem(PREFIX+k);
-      if(good(cur)){ if(!good(bk)) localStorage.setItem(PREFIX+k,cur); return false; }
-      if(!good(bk)) return false;
-      // A write caused by a recent user interaction is allowed to be intentional.
-      if(Date.now()-lastUserAction < actionWindow) return false;
-      localStorage.setItem(k,bk);
-      localStorage.setItem('spb_v815_recovery_needed',JSON.stringify([k]));
-      return true;
-    }catch(e){return false}
-  }
-
-  function beginIntentionalDelete(keys){
-    try{
-      (keys||[]).forEach(function(k){intentionalDeleteKeys[k]=true});
-      lastUserAction=Date.now();
-    }catch(e){}
-  }
-
-  function finishIntentionalDelete(keys,success){
-    try{
-      (keys||[]).forEach(function(k){
-        if(success){
-          /* Remove the emergency copy only after the intentional delete succeeded.
-             Otherwise the watchdog could restore the deleted records later. */
-          localStorage.removeItem(PREFIX+k);
-        }
-        delete intentionalDeleteKeys[k];
-      });
-      lastUserAction=Date.now();
-    }catch(e){}
-  }
-  try{preserveAll()}catch(e){}
-  try{
-    document.addEventListener('click',function(){lastUserAction=Date.now()},true);
-    document.addEventListener('touchstart',function(){lastUserAction=Date.now()},true);
-  }catch(e){}
-  // Re-check continuously so delayed/background startup code cannot leave a protected key empty.
-  setInterval(function(){
-    var restored=[];
-    KEYS.forEach(function(k){if(restoreIfLost(k))restored.push(k)});
-    if(restored.length){
-      try{if(typeof refreshAll==='function')refreshAll();}catch(e){}
-      try{if(typeof renderExpenses==='function')renderExpenses();}catch(e){}
-      try{if(typeof renderHistory==='function')renderHistory();}catch(e){}
-      try{if(typeof refreshDashboard==='function')refreshDashboard();}catch(e){}
-    }
-  },500);
-  // Also guard direct writes/removes that happen outside a user action.
-  try{
-    var prevSet=Storage.prototype.setItem;
-    Storage.prototype.setItem=function(k,v){
-      if(KEYS.indexOf(k)!==-1 && !good(v) && Date.now()-lastUserAction>=actionWindow) preserve(k);
-      return prevSet.apply(this,arguments);
-    };
-    var prevRemove=Storage.prototype.removeItem;
-    Storage.prototype.removeItem=function(k){
-      if(KEYS.indexOf(k)!==-1 && Date.now()-lastUserAction>=actionWindow) preserve(k);
-      return prevRemove.apply(this,arguments);
-    };
-  }catch(e){}
-  try{
-    window.SPB_V815_DATA_LOCK={
-      snapshot:preserveAll,
-      check:function(){KEYS.forEach(restoreIfLost)},
-      beginIntentionalDelete:beginIntentionalDelete,
-      finishIntentionalDelete:finishIntentionalDelete
-    };
-  }catch(e){}
-})();
-</script>
-
 <style id="v819-party-report-final-fix">
 /* V8.19 FINAL: force the Report table to remain a 4-column grid on mobile. */
 .party-report-summary > .party-report-table {
