@@ -4796,7 +4796,7 @@ document.addEventListener('DOMContentLoaded',function(){
   };
   // Ensure the balance always uses the Mydeen ledger key and never Bike data.
   document.addEventListener('DOMContentLoaded',function(){
-    setTimeout(function(){addRestoreUI();refreshMydeenBalance626();},150);
+    setTimeout(function(){if(typeof addRestoreUI==='function')addRestoreUI();refreshMydeenBalance626();},150);
   });
 })();
 </script>
@@ -5955,8 +5955,8 @@ function wrap(id,title,open){
   var el=q(id);if(!el||el.closest('.report-pro-section'))return;
   var d=document.createElement('details');d.className='report-pro-section';d.open=!!open;
   var s=document.createElement('summary');s.textContent=title;d.appendChild(s);
-  var b=document.createElement('div');b.className='report-pro-body';b.appendChild(el);d.appendChild(b);
-  el.parentNode.insertBefore(d,el);
+  var b=document.createElement('div');b.className='report-pro-body';d.appendChild(b);
+  el.parentNode.insertBefore(d,el);b.appendChild(el);
 }
 function build(){
   if(built)return;
@@ -7280,7 +7280,7 @@ function render(){draw(q('mansoorHistory'),'saleProfitBookMansoorV1','data-manso
 function go(){render();setTimeout(render,200);setTimeout(render,700);setTimeout(render,1400)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',go);else go();
 window.addEventListener('storage',function(e){if(e.key==='saleProfitBookMansoorV1'||e.key==='saleProfitBookMydeenV1')setTimeout(render,80)});
-try{new MutationObserver(function(){var a=q('mansoorHistory'),b=q('partyMydeenHistory');if((a&&!a.querySelector('.p743-summary'))||(b&&!b.querySelector('.p743-summary')))render()}).observe(document.body,{childList:true,subtree:true})}catch(e){}
+try{var __t=null,__n=0;setInterval(function(){__n=0},5000);new MutationObserver(function(){if(__t||__n>=10)return;__t=setTimeout(function(){__t=null;var a=q('mansoorHistory'),b=q('partyMydeenHistory');if((a&&!a.querySelector('.p743-summary'))||(b&&!b.querySelector('.p743-summary'))){__n++;render()}},100)}).observe(document.body,{childList:true,subtree:true})}catch(e){}
 })();
 </script>
 <!-- V7.45 PARTY REPORT SUMMARY — 3-CARD SUMMARY FOR SELECTED DATE RANGE -->
