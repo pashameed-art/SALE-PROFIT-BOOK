@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.20</title>
+<title>Sale Profit Book • V8.21</title>
 <script id="v814-safe-boot">
 (function(){
   'use strict';
@@ -489,7 +489,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.12" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.21" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1878,16 +1878,29 @@ body.spb-home-mode #homeStockDetails #stockSummary{
       alert('No Sales data to delete.');
       return;
     }
-    if(!confirm('Delete ALL Sales data?\\n\\nThis will permanently remove '+count+' sale record(s).\\nExpenses, Purchase, Stock, Party and Settings will remain unchanged.')) return;
-    if(!confirm('Final confirmation: Delete all Sales data?\\n\\nThis action cannot be undone.')) return;
+    /* V8.21: lock the target before the confirmation dialogs.
+       The watchdog must not restore these records while the user is confirming. */
+    try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.beginIntentionalDelete) SPB_V815_DATA_LOCK.beginIntentionalDelete([EK]); }catch(e){}
+    if(!confirm('Delete ALL Sales data?\\n\\nThis will permanently remove '+count+' sale record(s).\\nExpenses, Purchase, Stock, Party and Settings will remain unchanged.')){
+      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([EK],false); }catch(e){}
+      return;
+    }
+    if(!confirm('Final confirmation: Delete all Sales data?\\n\\nThis action cannot be undone.')){
+      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([EK],false); }catch(e){}
+      return;
+    }
 
+    var deleted=false;
     try{
       localStorage.setItem(EK,'[]');
       if(typeof entries!=='undefined') entries=[];
       if(typeof editingId!=='undefined') editingId=null;
+      deleted=true;
+      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([EK],true); }catch(e){}
       refreshAll();
       alert('✅ All Sales data deleted successfully.');
     }catch(e){
+      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([EK],deleted); }catch(x){}
       alert('Could not delete Sales data. Please try again.');
       console.error(e);
     }
@@ -1899,16 +1912,29 @@ body.spb-home-mode #homeStockDetails #stockSummary{
       alert('No Expense data to delete.');
       return;
     }
-    if(!confirm('Delete ALL Expense data?\\n\\nThis will permanently remove '+count+' expense record(s).\\nSales, Purchase, Stock, Party and Settings will remain unchanged.')) return;
-    if(!confirm('Final confirmation: Delete all Expense data?\\n\\nThis action cannot be undone.')) return;
+    /* V8.21: lock the target before the confirmation dialogs.
+       The watchdog must not restore these records while the user is confirming. */
+    try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.beginIntentionalDelete) SPB_V815_DATA_LOCK.beginIntentionalDelete([XK]); }catch(e){}
+    if(!confirm('Delete ALL Expense data?\\n\\nThis will permanently remove '+count+' expense record(s).\\nSales, Purchase, Stock, Party and Settings will remain unchanged.')){
+      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([XK],false); }catch(e){}
+      return;
+    }
+    if(!confirm('Final confirmation: Delete all Expense data?\\n\\nThis action cannot be undone.')){
+      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([XK],false); }catch(e){}
+      return;
+    }
 
+    var deleted=false;
     try{
       localStorage.setItem(XK,'[]');
       if(typeof expenses!=='undefined') expenses=[];
       if(typeof editingExpenseId!=='undefined') editingExpenseId=null;
+      deleted=true;
+      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([XK],true); }catch(e){}
       refreshAll();
       alert('✅ All Expense data deleted successfully.');
     }catch(e){
+      try{ if(window.SPB_V815_DATA_LOCK && SPB_V815_DATA_LOCK.finishIntentionalDelete) SPB_V815_DATA_LOCK.finishIntentionalDelete([XK],deleted); }catch(x){}
       alert('Could not delete Expense data. Please try again.');
       console.error(e);
     }
@@ -7694,11 +7720,14 @@ try{new MutationObserver(function(){var a=q('mansoorHistory'),b=q('partyMydeenHi
   var PREFIX='spb_v812_emergency_good_';
   var lastUserAction=0;
   var actionWindow=2500;
+  var intentionalDeleteKeys={};
   function good(v){try{var a=JSON.parse(v||'[]');return Array.isArray(a)&&a.length>0}catch(e){return false}}
   function preserve(k){try{var cur=localStorage.getItem(k);if(!good(cur))return;var bk=PREFIX+k;var old=localStorage.getItem(bk);if(!good(old))localStorage.setItem(bk,cur)}catch(e){}}
   function preserveAll(){KEYS.forEach(preserve)}
   function restoreIfLost(k){
     try{
+      /* V8.21: an explicit Delete All operation must never be undone by the watchdog. */
+      if(intentionalDeleteKeys[k]) return false;
       var cur=localStorage.getItem(k), bk=localStorage.getItem(PREFIX+k);
       if(good(cur)){ if(!good(bk)) localStorage.setItem(PREFIX+k,cur); return false; }
       if(!good(bk)) return false;
@@ -7708,6 +7737,27 @@ try{new MutationObserver(function(){var a=q('mansoorHistory'),b=q('partyMydeenHi
       localStorage.setItem('spb_v815_recovery_needed',JSON.stringify([k]));
       return true;
     }catch(e){return false}
+  }
+
+  function beginIntentionalDelete(keys){
+    try{
+      (keys||[]).forEach(function(k){intentionalDeleteKeys[k]=true});
+      lastUserAction=Date.now();
+    }catch(e){}
+  }
+
+  function finishIntentionalDelete(keys,success){
+    try{
+      (keys||[]).forEach(function(k){
+        if(success){
+          /* Remove the emergency copy only after the intentional delete succeeded.
+             Otherwise the watchdog could restore the deleted records later. */
+          localStorage.removeItem(PREFIX+k);
+        }
+        delete intentionalDeleteKeys[k];
+      });
+      lastUserAction=Date.now();
+    }catch(e){}
   }
   try{preserveAll()}catch(e){}
   try{
@@ -7738,7 +7788,14 @@ try{new MutationObserver(function(){var a=q('mansoorHistory'),b=q('partyMydeenHi
       return prevRemove.apply(this,arguments);
     };
   }catch(e){}
-  try{window.SPB_V815_DATA_LOCK={snapshot:preserveAll,check:function(){KEYS.forEach(restoreIfLost)}}}catch(e){}
+  try{
+    window.SPB_V815_DATA_LOCK={
+      snapshot:preserveAll,
+      check:function(){KEYS.forEach(restoreIfLost)},
+      beginIntentionalDelete:beginIntentionalDelete,
+      finishIntentionalDelete:finishIntentionalDelete
+    };
+  }catch(e){}
 })();
 </script>
 
