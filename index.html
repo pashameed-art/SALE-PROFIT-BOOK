@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.21</title>
+<title>Sale Profit Book • V8.22</title>
 <script id="v814-safe-boot">
 (function(){
   'use strict';
@@ -489,7 +489,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.21" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.22" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1667,6 +1667,146 @@ body.spb-home-mode #homeStockDetails #stockSummary{
   }
 }
 </style>
+
+<style id="v822-trendy-ui">
+/* V8.22 — Trendy modern mobile UI. Visual-only override; app logic/storage untouched. */
+:root{
+  --teal:#117d73;
+  --teal-dark:#0b5d56;
+  --mint:#eaf7f4;
+  --mint-2:#f4fbfa;
+  --bg:#f3f7f7;
+  --text:#1f2d2d;
+  --muted:#718080;
+  --line:#e1e9e8;
+  --card:#ffffff;
+}
+html{background:var(--bg)}
+body{
+  background:linear-gradient(180deg,#eef7f6 0,#f7f9f9 210px,var(--bg) 420px)!important;
+  color:var(--text)!important;
+  font-family:Arial,sans-serif!important;
+  -webkit-font-smoothing:antialiased;
+}
+header{
+  position:relative!important;
+  overflow:hidden!important;
+  background:linear-gradient(135deg,#0e756c 0%,#168c80 58%,#0d6a62 100%)!important;
+  padding:24px 18px 22px!important;
+  border-radius:0 0 28px 28px!important;
+  box-shadow:0 10px 28px rgba(10,94,87,.18)!important;
+}
+header:after{
+  content:"";position:absolute;right:-55px;top:-70px;width:190px;height:190px;border-radius:50%;
+  background:rgba(255,255,255,.08);pointer-events:none;
+}
+header h1{position:relative;z-index:1;font-size:29px!important;letter-spacing:-.6px!important;font-weight:900!important}
+.version{position:relative;z-index:1;margin-top:8px!important;font-size:13px!important;font-weight:800!important;opacity:.95}
+.subtitle{position:relative;z-index:1;margin-top:5px!important;font-size:15px!important;font-weight:800!important;opacity:.96}
+.nav-bar{
+  position:relative!important;z-index:5!important;
+  margin:14px 12px 4px!important;padding:5px!important;
+  border-radius:19px!important;
+  background:rgba(255,255,255,.88)!important;
+  border:1px solid rgba(211,226,224,.9)!important;
+  box-shadow:0 7px 20px rgba(34,77,73,.08)!important;
+  backdrop-filter:blur(12px)!important;
+  -webkit-backdrop-filter:blur(12px)!important;
+}
+.nav-bar button{
+  height:43px!important;border-radius:14px!important;border:0!important;
+  background:transparent!important;color:#17685f!important;
+  font-weight:900!important;font-size:13px!important;
+  transition:all .18s ease!important;
+}
+.nav-bar button.nav-active,.nav-bar button.active,.nav-bar button[aria-current="page"]{
+  background:#174f3d!important;color:#fff!important;
+  box-shadow:0 5px 13px rgba(23,79,61,.22)!important;
+}
+main{padding:10px 12px 40px!important;max-width:720px!important}
+.state-date-row{margin:12px 0!important;gap:10px!important}
+.state-date-row .field,.field{min-width:0}
+.state-date-row label{font-size:12px!important;color:#718080!important;margin-left:2px!important}
+.state-date-row input{
+  height:50px!important;border-radius:15px!important;border:1px solid var(--line)!important;
+  background:#fff!important;box-shadow:0 3px 10px rgba(30,70,67,.04)!important;
+}
+.new-history-row{gap:9px!important;margin:10px 0 13px!important}
+.new-history-row button,.home-entry-history button{
+  border-radius:17px!important;font-weight:900!important;box-shadow:0 5px 14px rgba(22,80,74,.08)!important;
+}
+.card,.report-box,.backup-box,.history-filters,.history-card,.dua-card{
+  background:rgba(255,255,255,.96)!important;
+  border:1px solid rgba(221,232,230,.9)!important;
+  border-radius:22px!important;
+  box-shadow:0 7px 24px rgba(33,70,67,.065)!important;
+}
+.card{padding:18px!important;margin-top:12px!important}
+.entryCard{}
+.new-entry-title{border-radius:15px!important;background:linear-gradient(135deg,#117d73,#159184)!important}
+label{font-size:12px!important;font-weight:900!important;color:#687a78!important}
+input,select{
+  height:48px!important;border-radius:14px!important;border:1px solid #dbe6e4!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8)!important;
+  font-weight:800!important;background:#fff!important;
+}
+input:focus,select:focus{
+  outline:none!important;border-color:#159184!important;
+  box-shadow:0 0 0 3px rgba(21,145,132,.11)!important;
+}
+button{font-weight:900!important}
+.primary{background:linear-gradient(135deg,#117d73,#159184)!important;box-shadow:0 6px 15px rgba(17,125,115,.18)!important}
+.secondary{background:#e9f5f3!important;color:#126b63!important}
+#entryCard .primary{height:50px!important;border-radius:15px!important}
+.purchase-profit-row .auto{background:#f1f7f6!important;border-color:#dce8e6!important}
+.summary,.summary-grid,.report-summary-grid{gap:8px!important}
+.summary .stat,.summary-grid .stat,.report-summary-grid>div{
+  background:linear-gradient(180deg,#f7fbfa,#edf7f5)!important;
+  border:1px solid #deebe9!important;border-radius:16px!important;
+}
+#dashboardCard{padding:18px!important}
+#dashboardCard .dashboard-title{font-size:20px!important;font-weight:900!important;color:#164e4a!important}
+#dashboardCard .dashboard-grid{gap:9px!important}
+#dashboardCard .dashboard-stat{
+  min-height:88px!important;border-radius:17px!important;
+  border:1px solid #dfebe9!important;background:linear-gradient(180deg,#fbfdfd,#f0f8f6)!important;
+  box-shadow:none!important;
+}
+#dashboardCard .dashboard-stat span{font-size:12px!important;color:#667876!important}
+#dashboardCard .dashboard-stat b{font-size:20px!important;font-weight:900!important}
+#dashboardCard .v612-net{background:linear-gradient(135deg,#e4f7f1,#f3fbf9)!important;border-color:#cde8df!important}
+#dashboardCard .v612-net b{font-size:22px!important}
+.dua-card{padding:19px 17px!important;margin-top:12px!important}
+.dua-title{font-size:15px!important;margin-bottom:8px!important}
+.dua-text{font-size:14px!important;line-height:1.55!important;color:#3b4948!important}
+.history-filters{padding:14px!important;margin-top:12px!important}
+.history-filters input{background:#fbfdfd!important}
+.filter-buttons button{border-radius:13px!important}
+.report-date-card,.expense-old-row,.expense-row,.mansoor-old-details,.supplier-detail-box{
+  border-radius:17px!important;border:1px solid #e0ebe9!important;
+  box-shadow:0 3px 12px rgba(32,75,71,.045)!important;
+}
+.report-date-stat{background:#eef8f6!important;border:1px solid #dcebe8!important}
+.report-date-title{font-size:16px!important}
+.stock-table-wrap{border-radius:16px!important;border-color:#dce9e7!important;box-shadow:0 4px 14px rgba(30,70,67,.04)!important}
+.stock-table thead th{background:#eaf6f4!important}
+.backup-actions-v455 button,.backup-restore-label-v455{border-radius:15px!important;box-shadow:0 5px 13px rgba(25,80,74,.07)!important}
+#v776-delete-data-card{border-radius:17px!important;box-shadow:none!important}
+.tab-page-back{border-radius:13px!important}
+.install-wrap{padding:0 12px!important}
+@media(max-width:520px){
+  header{padding:21px 16px 19px!important;border-radius:0 0 24px 24px!important}
+  header h1{font-size:27px!important}
+  .nav-bar{margin-left:10px!important;margin-right:10px!important}
+  .nav-bar button{height:42px!important;font-size:12px!important;padding:0 9px!important}
+  main{padding-left:10px!important;padding-right:10px!important}
+  .card{padding:16px!important;border-radius:20px!important}
+  .state-date-row input{height:48px!important}
+  .summary .stat,.summary-grid .stat,.report-summary-grid>div{padding:9px 4px!important}
+  #dashboardCard .dashboard-stat{min-height:82px!important}
+}
+</style>
+
 </head>
 <body>
 <script id="v811-early-data-guard">
