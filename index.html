@@ -9,21 +9,22 @@
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
 <title>Sale Profit Book • V8.23</title>
-<script id="v814-safe-boot">
+<script id="v823-safe-sw-boot">
 (function(){
   'use strict';
   if(!('serviceWorker' in navigator)) return;
-  function reloadOnce(){try{if(sessionStorage.getItem('spb_v814_reloaded')==='1')return;sessionStorage.setItem('spb_v814_reloaded','1');location.reload();}catch(e){}}
+  function reloadOnce(){
+    try{
+      if(sessionStorage.getItem('spb_v823_sw_reloaded')==='1') return;
+      sessionStorage.setItem('spb_v823_sw_reloaded','1');
+      location.reload();
+    }catch(e){}
+  }
   try{
-    navigator.serviceWorker.register('./sw.js?v=8.15',{scope:'./',updateViaCache:'none'}).then(function(reg){
-      try{reg.update()}catch(e){}
-      if(reg.waiting){try{reg.waiting.postMessage({type:'SKIP_WAITING'})}catch(e){}}
-      try{reg.addEventListener('updatefound',function(){
-        var w=reg.installing;if(!w)return;
-        w.addEventListener('statechange',function(){if(w.state==='installed'){try{w.postMessage({type:'SKIP_WAITING'})}catch(e){}}});
-      })}catch(e){}
-    }).catch(function(){});
     navigator.serviceWorker.addEventListener('controllerchange',reloadOnce);
+    navigator.serviceWorker.register('./sw.js?v=8.23',{scope:'./',updateViaCache:'none'})
+      .then(function(reg){ try{reg.update()}catch(e){} })
+      .catch(function(){});
   }catch(e){}
 })();
 </script>
@@ -449,7 +450,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.22" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.23" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -645,25 +646,8 @@ html.modal-open, body.modal-open{
   .report-date-summary{grid-template-columns:1fr 1fr}
 }
 </style>
-<script id="clean-sw-registration">
-window.addEventListener('load',function(){
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js?v=8.15',{scope:'./',updateViaCache:'none'}).then(function(r){try{r.update()}catch(e){}}).catch(function(){});
-  }
-});
-</script>
-<script id="v808-sw-refresh">
-(function(){
-  if(!('serviceWorker' in navigator)) return;
-  navigator.serviceWorker.addEventListener('controllerchange',function(){
-    try{
-      if(sessionStorage.getItem('spb_v808_reloaded')==='1') return;
-      sessionStorage.setItem('spb_v808_reloaded','1');
-      location.reload();
-    }catch(e){}
-  });
-})();
-</script>
+
+
 <style id="v557-stock-add-item">
 .stock-title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .stock-title-row .stock-section-title{margin:0!important}
