@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.29</title>
+<title>Sale Profit Book • V8.30</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -1728,7 +1728,7 @@ button{font-weight:900!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.28</div>
+<div class="version">Version 8.30</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -7102,6 +7102,51 @@ main {
   }
 }
 </style>
+
+<script id="v830-item-bootstrap">
+(function(){
+  'use strict';
+  var KEY='spb_v4_items';
+  var ONCE='spb_v830_items_bootstrapped';
+  var DEFAULTS=[
+    {name:'AJAY GWALIAR',rate:165,hidden:false},
+    {name:'BSL DIPLAMAT SUPER',rate:230},
+    {name:'BSL EXCUTIVE CHOICE',rate:225},
+    {name:'BSL OFFICER CHARM',rate:225},
+    {name:'IPS SHATAK FAB',rate:165},
+    {name:'RAYMOND BONANZA',rate:390},
+    {name:'RAYMOND PREMIUM TROVIN',rate:365},
+    {name:'RAYMOND SUPER TROVINE',rate:450},
+    {name:'RAYMOND TRIDENT',rate:352},
+    {name:'RAYMOND TRO STRETCH',rate:425},
+    {name:'RAYMOND TROVINE',rate:335},
+    {name:'TNP AJAY',rate:185},
+    {name:'TNP BOND',rate:200}
+  ];
+  function read(){try{var a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
+  function sync(){
+    try{
+      var a=read();
+      if(a.length){
+        if(typeof items!=='undefined') items=a;
+        if(typeof populateItems==='function') populateItems();
+        if(typeof renderItems==='function') renderItems();
+        return;
+      }
+      var marked=localStorage.getItem(ONCE)==='1';
+      if(!marked){
+        localStorage.setItem(KEY,JSON.stringify(DEFAULTS));
+        localStorage.setItem(ONCE,'1');
+        if(typeof items!=='undefined') items=DEFAULTS.slice();
+      }
+      if(typeof populateItems==='function') populateItems();
+      if(typeof renderItems==='function') renderItems();
+    }catch(e){console.warn('V8.30 item bootstrap skipped',e)}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',sync,{once:true});
+  else sync();
+})();
+</script>
 </body>
 </html>
 <!-- V7.43 FINAL PARTY QUICK SUMMARY + HISTORY FILTER -->
