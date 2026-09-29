@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.30</title>
+<title>Sale Profit Book • V8.31</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.29" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.31" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1728,7 +1728,7 @@ button{font-weight:900!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.30</div>
+<div class="version">Version 8.31</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1991,7 +1991,9 @@ button{font-weight:900!important}
 <h2>🤝 Mansoor கொடுக்கல் வாங்கல்</h2>
 <div class="mansoor-balance">
 <div>தற்போது பெற வேண்டியது</div>
-<strong id="mansoorBalance">₹43,334</strong>
+<strong id="mansoorBalance">₹0</strong>
+<button type="button" onclick="editMansoorOpening()" style="margin-top:8px;padding:6px 12px;border:0;border-radius:9px;background:#d6ebe7;color:#116d64;font-weight:800;font-size:13px;cursor:pointer">✏️ Opening Balance</button>
+<div id="mansoorOpeningWarn" style="display:none;margin-top:6px;font-size:12px;font-weight:800;color:#c62828">⚠️ Opening Balance இன்னும் set செய்யப்படவில்லை — மேலே ✏️ தட்டி உள்ளிடவும்.</div>
 </div>
 <div class="form-grid">
 <div class="field">
@@ -3602,7 +3604,18 @@ function updateTodayExpenseTotal(){
 <script>
 (function(){
   const MKEY='saleProfitBookMansoorV1';
-  const INITIAL_BALANCE=39908;
+  const OPEN_KEY='spb_mansoor_opening_balance_v731';
+  function getOpening(){var v=localStorage.getItem(OPEN_KEY),n=Number(v);return(v!==null&&v!==''&&isFinite(n))?n:0;}
+  window.spbMansoorOpening=getOpening;
+  window.editMansoorOpening=function(){
+    var cur=localStorage.getItem(OPEN_KEY);
+    var v=prompt('Mansoor Opening Balance ₹ (11.09.26 அன்று பெற வேண்டிய தொகை):',cur===null?'':cur);
+    if(v===null)return;
+    var n=Number(String(v).replace(/[,\s₹]/g,''));
+    if(String(v).trim()===''||!isFinite(n)){alert('சரியான தொகையை உள்ளிடவும்.');return;}
+    localStorage.setItem(OPEN_KEY,String(n));
+    if(typeof window.renderMansoor==='function')window.renderMansoor();
+  };
   function localToday(){
     const d=new Date();
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -3690,8 +3703,9 @@ function updateTodayExpenseTotal(){
     const a=all.slice().sort((x,y)=>String(y.date).localeCompare(String(x.date))||y.id-x.id);
     const taken=a.filter(x=>x.type==='taken').reduce((s,x)=>s+Number(x.amount||0),0);
     const given=a.filter(x=>x.type==='given').reduce((s,x)=>s+Number(x.amount||0),0);
-    const balance=INITIAL_BALANCE+taken-given;
+    const balance=getOpening()+taken-given;
     const b=document.getElementById('mansoorBalance'); if(b)b.textContent='₹'+balance.toLocaleString('en-IN');
+    const ow=document.getElementById('mansoorOpeningWarn'); if(ow)ow.style.display=(localStorage.getItem(OPEN_KEY)===null)?'block':'none';
 
     const h=document.getElementById('mansoorHistory'); if(!h)return;
     if(!a.length){h.innerHTML='<div class="expense-empty-note">இதுவரை புதிய பதிவு இல்லை.</div>';return;}
@@ -3722,9 +3736,9 @@ function updateTodayExpenseTotal(){
     }
 
     const oldDates=Object.keys(oldMap).sort((a,b)=>b.localeCompare(a));
-    if(oldDates.length || INITIAL_BALANCE>0){
+    if(oldDates.length || getOpening()!==0){
       html += '<div class="expense-section-title old-expense-title">📜 Previous History</div>';
-      html += '<div class="expense-old-row mansoor-old-toggle mansoor-opening-balance"><span>📅 11.09.26</span><strong>₹'+INITIAL_BALANCE.toLocaleString('en-IN')+'</strong></div>';
+      html += '<div class="expense-old-row mansoor-old-toggle mansoor-opening-balance"><span>📅 11.09.26</span><strong>₹'+getOpening().toLocaleString('en-IN')+'</strong></div>';
       html += oldDates.map(d=>{
         const net=oldMap[d].taken-oldMap[d].given;
         const sign=net>=0?'+':'-';
@@ -3984,7 +3998,7 @@ window.printReport=function(){
     const input=document.getElementById('restoreFileV551'); if(input) input.value='';
   }
   window.fullBackupV551=fullBackupV551;
-  window.restoreV551=restoreV551;
+  window.restoreV551=function(f){return (typeof window.restoreV600==='function')?window.restoreV600(f):restoreV551(f);};
 })();
 </script>
 <script id="v484-stability-fix">
@@ -4267,38 +4281,60 @@ window.fullBackupV600=function(){
 };
 window.restoreV600=function(file){
  if(!file)return;
+ const inp=document.getElementById('restoreFileV551');
+ const setSt=function(m,ok){const st=document.getElementById('backupStatusV551');if(st){st.textContent=m;st.style.color=ok?'#126d66':'#9b3333';}};
+ const norm=function(v){if(typeof v==='string')return v;if(v===null||v===undefined)return '';return JSON.stringify(v);};
  const reader=new FileReader();
  reader.onload=function(){
+  let snap=null;
   try{
-   const data=JSON.parse(reader.result);let storage=null;
-   if(data&&data.app==='SALE-PROFIT-BOOK'&&data.storage&&typeof data.storage==='object'&&!Array.isArray(data.storage))storage=data.storage;
-   else if(data&&Array.isArray(data.items)&&Array.isArray(data.entries))storage={
-    [ITEMS_KEY]:JSON.stringify(data.items),[ENTRIES_KEY]:JSON.stringify(data.entries),
-    [EXPENSES_KEY]:JSON.stringify(Array.isArray(data.expenses)?data.expenses:[]),
-    [STOCK_KEY]:JSON.stringify(Array.isArray(data.stockMovements)?data.stockMovements:[])
+   const data=JSON.parse(reader.result);let raw=null;
+   if(data&&data.app==='SALE-PROFIT-BOOK'&&data.storage&&typeof data.storage==='object'&&!Array.isArray(data.storage))raw=data.storage;
+   else if(data&&Array.isArray(data.items)&&Array.isArray(data.entries))raw={
+    'spb_v4_items':JSON.stringify(data.items),'spb_v4_entries':JSON.stringify(data.entries),
+    'spb_v4_expenses':JSON.stringify(Array.isArray(data.expenses)?data.expenses:[]),
+    'spb_v4_stock':JSON.stringify(Array.isArray(data.stockMovements)?data.stockMovements:[])
    };
    else throw new Error('Invalid backup format');
-   const keys=Object.keys(storage);if(!keys.length)throw new Error('Backup is empty');
+   const keys=Object.keys(raw);if(!keys.length)throw new Error('Backup is empty');
    const summary=data.summary;
-   if(summary && (typeof summary.items!=='number'||typeof summary.entries!=='number'||typeof summary.expenses!=='number'))throw new Error('Invalid summary');
+   if(summary&&(typeof summary.items!=='number'||typeof summary.entries!=='number'||typeof summary.expenses!=='number'))throw new Error('Invalid summary');
+   const storage={};keys.forEach(function(k){storage[k]=norm(raw[k]);});
+   // Validate every list-type key BEFORE touching current data.
+   ['spb_v4_items','spb_v4_entries','spb_v4_expenses','spb_v4_stock','saleProfitBookMansoorV1','saleProfitBookMydeenV1'].forEach(function(k){
+    if(k in storage&&storage[k]!==''&&!Array.isArray(JSON.parse(storage[k])))throw new Error('Invalid data in '+k);
+   });
    let message='Restore this FULL backup? Sale, Purchase, Expense, Stock, Mydeen and Mansoor data will be restored.';
-   if(data.createdAt)message+='\\n\\nBackup date: '+new Date(data.createdAt).toLocaleString();
-   if(summary)message+='\\nItems: '+summary.items+' | Entries: '+summary.entries+' | Expenses: '+summary.expenses;
+   if(data.createdAt)message+='\n\nBackup date: '+new Date(data.createdAt).toLocaleString();
+   if(summary)message+='\nItems: '+summary.items+' | Entries: '+summary.entries+' | Expenses: '+summary.expenses;
+   message+='\n\nதற்போதைய data முதலில் ஒரு file-ஆக Downloads-ல் save ஆகும்.';
    if(!confirm(message))return;
-   // FULL RESTORE: restore every saved localStorage data key, including Party and Expense.
-   keys.forEach(k=>{ localStorage.setItem(k,String(storage[k]??'')); });
-   alert('✅ Backup restored successfully.\\n\\nThe app will now reload.');
-   location.reload();
+   // 1) Save CURRENT data (in memory + as a downloadable file) before anything is overwritten.
+   snap={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k!==null)snap[k]=localStorage.getItem(k);}
+   try{
+    const d={app:'SALE-PROFIT-BOOK',version:'8.31',createdAt:new Date().toISOString(),note:'AUTO backup before restore',storage:snap};
+    const url=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json;charset=utf-8'}));
+    const a=document.createElement('a');a.href=url;
+    a.download='SALE-PROFIT-BOOK-BEFORE-RESTORE-'+new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')+'.json';
+    document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},4000);
+   }catch(e){console.error('pre-restore backup file failed',e);}
+   // 2) Write; if anything fails midway, roll every key back.
+   try{keys.forEach(function(k){localStorage.setItem(k,storage[k]);});}
+   catch(w){
+    keys.forEach(function(k){try{if(k in snap)localStorage.setItem(k,snap[k]);else localStorage.removeItem(k);}catch(e){}});
+    throw w;
+   }
+   setSt('✅ Backup restored. Reloading…',true);
+   alert('✅ Backup restored successfully.\n\nதற்போதைய data-ன் copy Downloads-ல் SALE-PROFIT-BOOK-BEFORE-RESTORE-… என save ஆகியுள்ளது.\n\nApp reload ஆகும்.');
+   setTimeout(function(){location.reload();},1500);
   }catch(e){
-   const st=document.getElementById('backupStatusV551');
-   if(st){st.textContent='❌ Restore failed: invalid or damaged backup file.';st.style.color='#9b3333';}
+   console.error(e);
+   setSt(snap?'❌ Restore failed (storage full?). பழைய data அப்படியே மீட்கப்பட்டது.':'❌ Restore failed: invalid or damaged backup file. Current data unchanged.',false);
   }
  };
- reader.onerror=function(){
-  const st=document.getElementById('backupStatusV551');
-  if(st){st.textContent='❌ Could not read the backup file.';st.style.color='#9b3333';}
- };
+ reader.onerror=function(){setSt('❌ Could not read the backup file.',false);};
  reader.readAsText(file);
+ if(inp)inp.value='';
 };
 window.updateSmartBackupInfo=function(){
  const el=document.getElementById('smartBackupInfo');if(!el)return;
@@ -6622,7 +6658,7 @@ function todayKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMont
 function draw(box,key,editAttr,deleteAttr){
  if(!box)return;
  var all=read(key).filter(function(x){var d=String(x.date||'');return d>=START&&d<=todayKey();}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))||Number(a.id||0)-Number(b.id||0);});
- var opening=key==='saleProfitBookMansoorV1'?Number(localStorage.getItem('spb_mansoor_opening_balance_v731')||39908):0;
+ var opening=key==='saleProfitBookMansoorV1'?Number(localStorage.getItem('spb_mansoor_opening_balance_v731')||0):0;
  var taken=opening+all.filter(function(x){return String(x.type||'').toLowerCase()==='taken';}).reduce(function(s,x){return s+Number(x.amount||0);},0);
  var given=all.filter(function(x){return String(x.type||'').toLowerCase()==='given';}).reduce(function(s,x){return s+Number(x.amount||0);},0);
  function section(givenFlag,label,cls,filter){
@@ -7257,7 +7293,7 @@ function read(k){try{var a=JSON.parse(localStorage.getItem(k)||'[]');return Arra
 function draw(box,key,editAttr,delAttr,state){
  if(!box)return;
  var all=read(key).filter(function(x){var d=String(x.date||'');return d>=START&&d<=today()}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))||Number(a.id||0)-Number(b.id||0)});
- var opening=key==='saleProfitBookMansoorV1'?Number(localStorage.getItem('spb_mansoor_opening_balance_v731')||39908):0;
+ var opening=key==='saleProfitBookMansoorV1'?Number(localStorage.getItem('spb_mansoor_opening_balance_v731')||0):0;
  var taken=opening+all.filter(function(x){return String(x.type||'').toLowerCase()!=='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0);
  var given=all.filter(function(x){return String(x.type||'').toLowerCase()==='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0);
  var date=state.date||'', type=state.type||'all';
