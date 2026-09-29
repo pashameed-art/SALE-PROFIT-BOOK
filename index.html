@@ -2033,10 +2033,6 @@ button{font-weight:900!important}
     var deleted=false;
     try{
       localStorage.setItem(EK,'[]');
-      /* V8.22: permanent delete tombstone prevents every recovery/watchdog layer
-         from resurrecting Sales after an intentional Delete All operation. */
-      localStorage.setItem('spb_v822_deleted_'+EK,'1');
-      try{ localStorage.removeItem('spb_v812_emergency_good_'+EK); }catch(e){}
       if(typeof entries!=='undefined') entries=[];
       if(typeof editingId!=='undefined') editingId=null;
       deleted=true;
@@ -2071,10 +2067,6 @@ button{font-weight:900!important}
     var deleted=false;
     try{
       localStorage.setItem(XK,'[]');
-      /* V8.22: permanent delete tombstone prevents every recovery/watchdog layer
-         from resurrecting Expenses after an intentional Delete All operation. */
-      localStorage.setItem('spb_v822_deleted_'+XK,'1');
-      try{ localStorage.removeItem('spb_v812_emergency_good_'+XK); }catch(e){}
       if(typeof expenses!=='undefined') expenses=[];
       if(typeof editingExpenseId!=='undefined') editingExpenseId=null;
       deleted=true;
@@ -4913,51 +4905,6 @@ document.addEventListener('DOMContentLoaded',function(){
   });
 })();
 </script>
-<script id="v632-sterling-stockout">
-(function(){
-  try{
-    const DONE='spb_v633_sterling21_sold';
-    if(localStorage.getItem(DONE)==='1') return;
-    const sk='spb_v4_stock';
-    let movements=JSON.parse(localStorage.getItem(sk)||'[]');
-    if(!Array.isArray(movements)) movements=[];
-    const arr=JSON.parse(localStorage.getItem('spb_v4_items')||'[]');
-    const actual=(Array.isArray(arr)?arr:[]).find(x=>String(x.name||'').trim().toLowerCase()==='sterling');
-    const itemName=actual && actual.name ? actual.name : 'Sterling';
-    movements.push({
-      id:Date.now(),
-      date:'2026-09-05',
-      item:itemName,
-      meter:21,
-      type:'Stock Out',
-      note:'Sold Meter'
-    });
-    localStorage.setItem(sk,JSON.stringify(movements));
-    localStorage.setItem(DONE,'1');
-    if(typeof stockMovements!=='undefined') stockMovements=movements;
-    if(typeof renderStock==='function') renderStock();
-  }catch(e){}
-})();
-</script>
-<script id="v634-sterling-duplicate-fix">
-(function(){
-  try{
-    const KEY='spb_v4_stock';
-    let a=JSON.parse(localStorage.getItem(KEY)||'[]');
-    if(!Array.isArray(a)) return;
-    const cleaned=a.filter(x=>{
-      const item=String(x.item||'').trim().toLowerCase();
-      const date=String(x.date||'').slice(0,10);
-      const type=String(x.type||'').toLowerCase();
-      const meter=Number(x.meter||0);
-      return !(item==='sterling' && date==='2026-09-06' && type==='stock out' && meter===21);
-    });
-    localStorage.setItem(KEY,JSON.stringify(cleaned));
-    if(typeof stockMovements!=='undefined') stockMovements=cleaned;
-    if(typeof renderStock==='function') renderStock();
-  }catch(e){}
-})();
-</script>
 <script id="v635-stock-protection">
 (function(){
   try{
@@ -7237,81 +7184,6 @@ try{
 })();
 </script>
 
-<!-- V8.06 — Mydeen Received entries supplied by user -->
-<script id="v806-mydeen-received-seed">
-(function(){
-  'use strict';
-  var KEY='saleProfitBookMydeenV1';
-  var records=[
-    {date:'2026-08-04',type:'taken',amount:93485,note:'Bill 619'},
-    {date:'2026-08-04',type:'taken',amount:97403,note:'Bill 620'},
-    {date:'2026-09-04',type:'taken',amount:86595,note:'New Bill'},
-    {date:'2026-09-12',type:'taken',amount:79660,note:'New Bill'}
-  ];
-  try{
-    var a=JSON.parse(localStorage.getItem(KEY)||'[]');
-    if(!Array.isArray(a)) a=[];
-    var changed=false;
-    records.forEach(function(r){
-      var exists=a.some(function(x){
-        return String(x.date||'')===r.date &&
-               String(x.type||'').toLowerCase()===r.type &&
-               Number(x.amount||0)===r.amount &&
-               String(x.note||'')===r.note;
-      });
-      if(!exists){
-        a.push({id:Date.now()+Math.floor(Math.random()*1000),type:r.type,date:r.date,amount:r.amount,note:r.note});
-        changed=true;
-      }
-    });
-    if(changed){
-      localStorage.setItem(KEY,JSON.stringify(a));
-      if(typeof window.renderMydeenUI==='function') window.renderMydeenUI();
-    }
-  }catch(e){}
-})();
-</script>
-
-<!-- V8.07 — Mydeen Money Given entries supplied by user -->
-<script id="v807-mydeen-given-seed">
-(function(){
-  'use strict';
-  var KEY='saleProfitBookMydeenV1';
-  var records=[
-    {date:'2026-08-17',type:'given',amount:5000,note:'GPay'},
-    {date:'2026-08-19',type:'given',amount:1194,note:'GPay / GST'},
-    {date:'2026-09-02',type:'given',amount:10000,note:'GPay'},
-    {date:'2026-09-03',type:'given',amount:12000,note:'GPay'},
-    {date:'2026-09-05',type:'given',amount:19000,note:'Shop ₹5,000 + ₹14,000 sent GPay'},
-    {date:'2026-09-10',type:'given',amount:30000,note:'GPay'},
-    {date:'2026-09-11',type:'given',amount:8000,note:'GPay'},
-    {date:'2026-09-15',type:'given',amount:10000,note:'GPay'},
-    {date:'2026-09-16',type:'given',amount:588,note:'GST'}
-  ];
-  try{
-    var a=JSON.parse(localStorage.getItem(KEY)||'[]');
-    if(!Array.isArray(a)) a=[];
-    var changed=false;
-    records.forEach(function(r){
-      var exists=a.some(function(x){
-        return String(x.date||'')===r.date &&
-               String(x.type||'').toLowerCase()===r.type &&
-               Number(x.amount||0)===r.amount &&
-               String(x.note||'')===r.note;
-      });
-      if(!exists){
-        a.push({id:Date.now()+Math.floor(Math.random()*100000),type:r.type,date:r.date,amount:r.amount,note:r.note});
-        changed=true;
-      }
-    });
-    if(changed){
-      localStorage.setItem(KEY,JSON.stringify(a));
-      if(typeof window.renderMydeenUI==='function') window.renderMydeenUI();
-    }
-  }catch(e){}
-})();
-</script>
-
 <!-- V8.12 RECOVERY SCANNER — read-only scan until user explicitly recovers -->
 <script id="v812-recovery-scanner">
 (function(){
@@ -7866,49 +7738,41 @@ try{new MutationObserver(function(){var a=q('mansoorHistory'),b=q('partyMydeenHi
   'use strict';
   var KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','saleProfitBookMydeenV1','saleProfitBookMansoorV1','spb_v4_stock'];
   var PREFIX='spb_v812_emergency_good_';
-  var DELETED_PREFIX='spb_v822_deleted_';
   var lastUserAction=0;
   var actionWindow=2500;
   var intentionalDeleteKeys={};
   function good(v){try{var a=JSON.parse(v||'[]');return Array.isArray(a)&&a.length>0}catch(e){return false}}
-  function tombstone(k){try{return localStorage.getItem(DELETED_PREFIX+k)==='1'}catch(e){return false}}
-  function clearTombstone(k){try{localStorage.removeItem(DELETED_PREFIX+k)}catch(e){}}
-  function preserve(k){try{
-    if(tombstone(k)) return;
-    var cur=localStorage.getItem(k);if(!good(cur))return;
-    var bk=PREFIX+k;var old=localStorage.getItem(bk);if(!good(old))localStorage.setItem(bk,cur);
-  }catch(e){}}
+  function preserve(k){try{var cur=localStorage.getItem(k);if(!good(cur))return;var bk=PREFIX+k;var old=localStorage.getItem(bk);if(!good(old))localStorage.setItem(bk,cur)}catch(e){}}
   function preserveAll(){KEYS.forEach(preserve)}
   function restoreIfLost(k){
     try{
-      /* V8.22: intentional Delete All creates a tombstone. A tombstoned key is
-         NEVER restored from emergency/snapshot/watchdog copies. */
-      if(intentionalDeleteKeys[k] || tombstone(k)) return false;
+      /* V8.21: an explicit Delete All operation must never be undone by the watchdog. */
+      if(intentionalDeleteKeys[k]) return false;
       var cur=localStorage.getItem(k), bk=localStorage.getItem(PREFIX+k);
       if(good(cur)){ if(!good(bk)) localStorage.setItem(PREFIX+k,cur); return false; }
       if(!good(bk)) return false;
+      // A write caused by a recent user interaction is allowed to be intentional.
       if(Date.now()-lastUserAction < actionWindow) return false;
       localStorage.setItem(k,bk);
       localStorage.setItem('spb_v815_recovery_needed',JSON.stringify([k]));
       return true;
     }catch(e){return false}
   }
+
   function beginIntentionalDelete(keys){
     try{
       (keys||[]).forEach(function(k){intentionalDeleteKeys[k]=true});
       lastUserAction=Date.now();
     }catch(e){}
   }
+
   function finishIntentionalDelete(keys,success){
     try{
       (keys||[]).forEach(function(k){
         if(success){
-          /* V8.22: mark the intentional deletion BEFORE releasing the lock,
-             and remove every emergency copy that could resurrect the data. */
-          try{localStorage.setItem(DELETED_PREFIX+k,'1')}catch(e){}
-          try{localStorage.removeItem(PREFIX+k)}catch(e){}
-        }else{
-          clearTombstone(k);
+          /* Remove the emergency copy only after the intentional delete succeeded.
+             Otherwise the watchdog could restore the deleted records later. */
+          localStorage.removeItem(PREFIX+k);
         }
         delete intentionalDeleteKeys[k];
       });
@@ -7920,28 +7784,27 @@ try{new MutationObserver(function(){var a=q('mansoorHistory'),b=q('partyMydeenHi
     document.addEventListener('click',function(){lastUserAction=Date.now()},true);
     document.addEventListener('touchstart',function(){lastUserAction=Date.now()},true);
   }catch(e){}
+  // Re-check continuously so delayed/background startup code cannot leave a protected key empty.
   setInterval(function(){
     var restored=[];
     KEYS.forEach(function(k){if(restoreIfLost(k))restored.push(k)});
     if(restored.length){
-      try{if(typeof refreshAll==='function')refreshAll()}catch(e){}
-      try{if(typeof renderExpenses==='function')renderExpenses()}catch(e){}
-      try{if(typeof renderHistory==='function')renderHistory()}catch(e){}
-      try{if(typeof refreshDashboard==='function')refreshDashboard()}catch(e){}
+      try{if(typeof refreshAll==='function')refreshAll();}catch(e){}
+      try{if(typeof renderExpenses==='function')renderExpenses();}catch(e){}
+      try{if(typeof renderHistory==='function')renderHistory();}catch(e){}
+      try{if(typeof refreshDashboard==='function')refreshDashboard();}catch(e){}
     }
   },500);
+  // Also guard direct writes/removes that happen outside a user action.
   try{
     var prevSet=Storage.prototype.setItem;
     Storage.prototype.setItem=function(k,v){
-      /* Any legitimate new non-empty write starts a new data lifecycle and
-         clears the old Delete All tombstone. Empty writes never clear it. */
-      if(KEYS.indexOf(k)!==-1 && good(v)) clearTombstone(k);
-      if(KEYS.indexOf(k)!==-1 && !good(v) && !tombstone(k) && Date.now()-lastUserAction>=actionWindow) preserve(k);
+      if(KEYS.indexOf(k)!==-1 && !good(v) && Date.now()-lastUserAction>=actionWindow) preserve(k);
       return prevSet.apply(this,arguments);
     };
     var prevRemove=Storage.prototype.removeItem;
     Storage.prototype.removeItem=function(k){
-      if(KEYS.indexOf(k)!==-1 && !tombstone(k) && Date.now()-lastUserAction>=actionWindow) preserve(k);
+      if(KEYS.indexOf(k)!==-1 && Date.now()-lastUserAction>=actionWindow) preserve(k);
       return prevRemove.apply(this,arguments);
     };
   }catch(e){}
