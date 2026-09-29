@@ -3609,7 +3609,7 @@ function updateTodayExpenseTotal(){
   window.spbMansoorOpening=getOpening;
   window.editMansoorOpening=function(){
     var cur=localStorage.getItem(OPEN_KEY);
-    var v=prompt('Mansoor Opening Balance ₹ (11.09.26 அன்று பெற வேண்டிய தொகை):',cur===null?'':cur);
+    var v=prompt('Mansoor Opening Balance ₹ (28.09.2026 அன்று பெற வேண்டிய தொகை):',cur===null?'':cur);
     if(v===null)return;
     var n=Number(String(v).replace(/[,\s₹]/g,''));
     if(String(v).trim()===''||!isFinite(n)){alert('சரியான தொகையை உள்ளிடவும்.');return;}
@@ -3738,7 +3738,7 @@ function updateTodayExpenseTotal(){
     const oldDates=Object.keys(oldMap).sort((a,b)=>b.localeCompare(a));
     if(oldDates.length || getOpening()!==0){
       html += '<div class="expense-section-title old-expense-title">📜 Previous History</div>';
-      html += '<div class="expense-old-row mansoor-old-toggle mansoor-opening-balance"><span>📅 11.09.26</span><strong>₹'+getOpening().toLocaleString('en-IN')+'</strong></div>';
+      html += '<div class="expense-old-row mansoor-old-toggle mansoor-opening-balance"><span>📅 28.09.2026</span><strong>₹'+getOpening().toLocaleString('en-IN')+'</strong></div>';
       html += oldDates.map(d=>{
         const net=oldMap[d].taken-oldMap[d].given;
         const sign=net>=0?'+':'-';
@@ -6664,7 +6664,7 @@ function draw(box,key,editAttr,deleteAttr){
  function section(givenFlag,label,cls,filter){
    var rows=filter?filterRows(all,givenFlag,filter):all.filter(function(x){return (String(x.type||'').toLowerCase()==='given')===givenFlag;});
    var total=(givenFlag?0:opening)+rows.reduce(function(s,x){return s+Number(x.amount||0);},0);
-   var openingRow=(!givenFlag&&opening)?'<div class="pch-row pch-opening-row"><div class="pch-date">11.09.26</div><div class="pch-type">பணம் வாங்கியது</div><div class="pch-amt">'+money(opening)+'</div><div class="pch-actions"><span style="color:#888">—</span></div></div>':'';
+   var openingRow=(!givenFlag&&opening)?'<div class="pch-row pch-opening-row"><div class="pch-date">28.09.2026</div><div class="pch-type">பணம் வாங்கியது</div><div class="pch-amt">'+money(opening)+'</div><div class="pch-actions"><span style="color:#888">—</span></div></div>':'';
    var body=rows.map(function(x){var id=String(x.id||'');return '<div class="pch-row"><div class="pch-date">'+esc(fmt(x.date))+'</div><div class="pch-type">'+esc(label)+'</div><div class="pch-amt">'+money(x.amount)+'</div><div class="pch-actions"><button type="button" class="pch-btn pch-edit" '+editAttr+'="'+esc(id)+'">Edit</button><button type="button" class="pch-btn pch-delete" '+deleteAttr+'="'+esc(id)+'">Delete</button></div></div>';}).join('');
    return '<details class="pch-section" '+(filter&&filter.open?'open':'')+'><summary class="pch-summary '+cls+'"><span>'+label+'</span><span class="pch-meta"><span class="pch-count">'+rows.length+'</span><span class="pch-total">'+money(total)+'</span></span></summary><div class="pch-body">'+((rows.length||(!givenFlag&&opening))?'<div class="pch-head"><div>Date</div><div>Type</div><div>Amount</div><div>Action</div></div>'+openingRow+body:'<div style="padding:10px;text-align:center;color:#888;font-size:12px">No entries</div>')+'</div></details>';
  }
@@ -7302,7 +7302,7 @@ function draw(box,key,editAttr,delAttr,state){
    var rs=rows(flag), total=(flag?0:opening)+rs.reduce(function(s,x){return s+Number(x.amount||0)},0);
    if(type!=='all' && ((type==='given')!==flag)) return '';
    var open=!date&&!type||state.open;
-   var openingRow=(!flag&&opening&&!date&&type!=='given')?'<div class="p743-row"><div class="p743-date">11.09.26</div><div class="p743-type">பணம் வாங்கியது</div><div class="p743-amt">'+money(opening)+'</div><div class="p743-actions"><span style="color:#888">—</span></div></div>':'';
+   var openingRow=(!flag&&opening&&!date&&type!=='given')?'<div class="p743-row"><div class="p743-date">28.09.2026</div><div class="p743-type">பணம் வாங்கியது</div><div class="p743-amt">'+money(opening)+'</div><div class="p743-actions"><span style="color:#888">—</span></div></div>':'';
    var body=rs.map(function(x){var id=esc(x.id),g=flag;return '<div class="p743-row"><div class="p743-date">'+esc(fmt(x.date))+'</div><div class="p743-type">'+label+'</div><div class="p743-amt" style="color:'+(g?'#16834b':'#c62828')+'">'+(g?'−':'＋')+money(x.amount)+'</div><div class="p743-actions"><button type="button" class="p743-edit" '+editAttr+'="'+id+'">Edit</button><button type="button" class="p743-del" '+delAttr+'="'+id+'">Delete</button></div></div>'}).join('');
    return '<details class="p743-section p743-'+cls+'" '+(open?'open':'')+'><summary><span>'+label+'</span><span class="p743-meta"><span class="p743-count">'+rs.length+'</span><span class="p743-total">'+money(total)+'</span></span></summary><div class="p743-body">'+((rs.length||openingRow)?'<div class="p743-head"><div>Date</div><div>Type</div><div>Amount</div><div>Action</div></div>'+openingRow+body:'<div class="p743-empty">No entries</div>')+'</div></details>';
  }
