@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.31</title>
+<title>Sale Profit Book • V8.32</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.31" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.32" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1728,7 +1728,7 @@ button{font-weight:900!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.31</div>
+<div class="version">Version 8.32</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -6659,19 +6659,19 @@ function draw(box,key,editAttr,deleteAttr){
  if(!box)return;
  var all=read(key).filter(function(x){var d=String(x.date||'');return d>=START&&d<=todayKey();}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))||Number(a.id||0)-Number(b.id||0);});
  var opening=key==='saleProfitBookMansoorV1'?Number(localStorage.getItem('spb_mansoor_opening_balance_v731')||0):0;
- var taken=opening+all.filter(function(x){return String(x.type||'').toLowerCase()==='taken';}).reduce(function(s,x){return s+Number(x.amount||0);},0);
+ var taken=all.filter(function(x){return String(x.type||'').toLowerCase()==='taken';}).reduce(function(s,x){return s+Number(x.amount||0);},0);
  var given=all.filter(function(x){return String(x.type||'').toLowerCase()==='given';}).reduce(function(s,x){return s+Number(x.amount||0);},0);
  function section(givenFlag,label,cls,filter){
    var rows=filter?filterRows(all,givenFlag,filter):all.filter(function(x){return (String(x.type||'').toLowerCase()==='given')===givenFlag;});
-   var total=(givenFlag?0:opening)+rows.reduce(function(s,x){return s+Number(x.amount||0);},0);
-   var openingRow=(!givenFlag&&opening)?'<div class="pch-row pch-opening-row"><div class="pch-date">28.09.2026</div><div class="pch-type">பணம் வாங்கியது</div><div class="pch-amt">'+money(opening)+'</div><div class="pch-actions"><span style="color:#888">—</span></div></div>':'';
+   var total=rows.reduce(function(s,x){return s+Number(x.amount||0);},0);
+   var openingRow=false?'<div class="pch-row pch-opening-row"><div class="pch-date">28.09.2026</div><div class="pch-type">பணம் வாங்கியது</div><div class="pch-amt">'+money(opening)+'</div><div class="pch-actions"><span style="color:#888">—</span></div></div>':'';
    var body=rows.map(function(x){var id=String(x.id||'');return '<div class="pch-row"><div class="pch-date">'+esc(fmt(x.date))+'</div><div class="pch-type">'+esc(label)+'</div><div class="pch-amt">'+money(x.amount)+'</div><div class="pch-actions"><button type="button" class="pch-btn pch-edit" '+editAttr+'="'+esc(id)+'">Edit</button><button type="button" class="pch-btn pch-delete" '+deleteAttr+'="'+esc(id)+'">Delete</button></div></div>';}).join('');
-   return '<details class="pch-section" '+(filter&&filter.open?'open':'')+'><summary class="pch-summary '+cls+'"><span>'+label+'</span><span class="pch-meta"><span class="pch-count">'+rows.length+'</span><span class="pch-total">'+money(total)+'</span></span></summary><div class="pch-body">'+((rows.length||(!givenFlag&&opening))?'<div class="pch-head"><div>Date</div><div>Type</div><div>Amount</div><div>Action</div></div>'+openingRow+body:'<div style="padding:10px;text-align:center;color:#888;font-size:12px">No entries</div>')+'</div></details>';
+   return '<details class="pch-section" '+(filter&&filter.open?'open':'')+'><summary class="pch-summary '+cls+'"><span>'+label+'</span><span class="pch-meta"><span class="pch-count">'+rows.length+'</span><span class="pch-total">'+money(total)+'</span></span></summary><div class="pch-body">'+(rows.length?'<div class="pch-head"><div>Date</div><div>Type</div><div>Amount</div><div>Action</div></div>'+openingRow+body:'<div style="padding:10px;text-align:center;color:#888;font-size:12px">No entries</div>')+'</div></details>';
  }
  function filterRows(data,givenFlag,filter){return data.filter(function(x){var isGiven=String(x.type||'').toLowerCase()==='given';if(isGiven!==givenFlag)return false;if(filter&&filter.date&&String(x.date||'')!==filter.date)return false;return true;});}
  function render(filter){
    filter=filter||{};
-   box.innerHTML='<div class="pch-section-title">📊 Party Quick Summary</div><div class="pch-summary-card"><div class="pch-summary-box taken"><span class="lbl">பணம் வாங்கியது</span><span class="val">'+money(taken)+'</span></div><div class="pch-summary-box given"><span class="lbl">பணம் தந்தது</span><span class="val">'+money(given)+'</span></div><div class="pch-summary-box balance"><span class="lbl">மீதம் பெற வேண்டியது</span><span class="val">'+money(taken-given)+'</span></div></div><div class="pch-section-title">🔎 Previous History Filter</div><div class="pch-filter"><input type="date" id="pchDateFilter" value="'+esc(filter.date||'')+'" title="தேதி filter"><select id="pchTypeFilter"><option value="all">அனைத்தும்</option><option value="taken" '+(filter.type==='taken'?'selected':'')+'>பணம் வாங்கியது</option><option value="given" '+(filter.type==='given'?'selected':'')+'>பணம் தந்தது</option></select><button type="button" class="secondary" id="pchClearFilter">Clear Filter</button></div><div class="party-collapsible-history">'+section(false,'பணம் வாங்கியது','received',filter.type==='given'?null:filter)+section(true,'பணம் தந்தது','given',filter.type==='taken'?null:filter)+'</div>';
+   box.innerHTML='<div class="pch-section-title">📊 Party Quick Summary</div><div class="pch-summary-card">'+(opening?'<div class="pch-summary-box balance" style="background:#eef7f5"><span class="lbl">📅 28.09.2026 • Opening Balance</span><span class="val">'+money(opening)+'</span></div>':'')+'<div class="pch-summary-box taken"><span class="lbl">பணம் வாங்கியது</span><span class="val">'+money(taken)+'</span></div><div class="pch-summary-box given"><span class="lbl">பணம் தந்தது</span><span class="val">'+money(given)+'</span></div><div class="pch-summary-box balance"><span class="lbl">மீதம் பெற வேண்டியது</span><span class="val">'+money(opening+taken-given)+'</span></div></div><div class="pch-section-title">🔎 Previous History Filter</div><div class="pch-filter"><input type="date" id="pchDateFilter" value="'+esc(filter.date||'')+'" title="தேதி filter"><select id="pchTypeFilter"><option value="all">அனைத்தும்</option><option value="taken" '+(filter.type==='taken'?'selected':'')+'>பணம் வாங்கியது</option><option value="given" '+(filter.type==='given'?'selected':'')+'>பணம் தந்தது</option></select><button type="button" class="secondary" id="pchClearFilter">Clear Filter</button></div><div class="party-collapsible-history">'+section(false,'பணம் வாங்கியது','received',filter.type==='given'?null:filter)+section(true,'பணம் தந்தது','given',filter.type==='taken'?null:filter)+'</div>';
    // Correct section filters when a single type is selected.
    var hist=box.querySelector('.party-collapsible-history');
    if(filter.type==='given')hist.innerHTML=section(true,'பணம் தந்தது','given',filter);
@@ -7294,19 +7294,19 @@ function draw(box,key,editAttr,delAttr,state){
  if(!box)return;
  var all=read(key).filter(function(x){var d=String(x.date||'');return d>=START&&d<=today()}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))||Number(a.id||0)-Number(b.id||0)});
  var opening=key==='saleProfitBookMansoorV1'?Number(localStorage.getItem('spb_mansoor_opening_balance_v731')||0):0;
- var taken=opening+all.filter(function(x){return String(x.type||'').toLowerCase()!=='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0);
+ var taken=all.filter(function(x){return String(x.type||'').toLowerCase()!=='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0);
  var given=all.filter(function(x){return String(x.type||'').toLowerCase()==='given'}).reduce(function(s,x){return s+Number(x.amount||0)},0);
  var date=state.date||'', type=state.type||'all';
  function rows(flag){return all.filter(function(x){var g=String(x.type||'').toLowerCase()==='given';if(g!==flag)return false;if(date&&String(x.date||'')!==date)return false;return true})}
  function section(flag,label,cls){
-   var rs=rows(flag), total=(flag?0:opening)+rs.reduce(function(s,x){return s+Number(x.amount||0)},0);
+   var rs=rows(flag), total=rs.reduce(function(s,x){return s+Number(x.amount||0)},0);
    if(type!=='all' && ((type==='given')!==flag)) return '';
    var open=!date&&!type||state.open;
-   var openingRow=(!flag&&opening&&!date&&type!=='given')?'<div class="p743-row"><div class="p743-date">28.09.2026</div><div class="p743-type">பணம் வாங்கியது</div><div class="p743-amt">'+money(opening)+'</div><div class="p743-actions"><span style="color:#888">—</span></div></div>':'';
+   var openingRow=false?'<div class="p743-row"><div class="p743-date">28.09.2026</div><div class="p743-type">பணம் வாங்கியது</div><div class="p743-amt">'+money(opening)+'</div><div class="p743-actions"><span style="color:#888">—</span></div></div>':'';
    var body=rs.map(function(x){var id=esc(x.id),g=flag;return '<div class="p743-row"><div class="p743-date">'+esc(fmt(x.date))+'</div><div class="p743-type">'+label+'</div><div class="p743-amt" style="color:'+(g?'#16834b':'#c62828')+'">'+(g?'−':'＋')+money(x.amount)+'</div><div class="p743-actions"><button type="button" class="p743-edit" '+editAttr+'="'+id+'">Edit</button><button type="button" class="p743-del" '+delAttr+'="'+id+'">Delete</button></div></div>'}).join('');
    return '<details class="p743-section p743-'+cls+'" '+(open?'open':'')+'><summary><span>'+label+'</span><span class="p743-meta"><span class="p743-count">'+rs.length+'</span><span class="p743-total">'+money(total)+'</span></span></summary><div class="p743-body">'+((rs.length||openingRow)?'<div class="p743-head"><div>Date</div><div>Type</div><div>Amount</div><div>Action</div></div>'+openingRow+body:'<div class="p743-empty">No entries</div>')+'</div></details>';
  }
- box.innerHTML='<div class="p743-title">📊 Party Quick Summary</div><div class="p743-summary"><div class="p743-box taken"><span class="p743-lbl">பணம் வாங்கியது</span><span class="p743-val">'+money(taken)+'</span></div><div class="p743-box given"><span class="p743-lbl">பணம் தந்தது</span><span class="p743-val">'+money(given)+'</span></div><div class="p743-box balance"><span class="p743-lbl">மீதம் பெற வேண்டியது</span><span class="p743-val">'+money(taken-given)+'</span></div></div><div class="p743-title">🔎 Previous History Filter</div><div class="p743-filter"><input id="p743Date" type="date" value="'+esc(date)+'"><select id="p743Type"><option value="all" '+(type==='all'?'selected':'')+'>அனைத்தும்</option><option value="taken" '+(type==='taken'?'selected':'')+'>பணம் வாங்கியது</option><option value="given" '+(type==='given'?'selected':'')+'>பணம் தந்தது</option></select><button type="button" id="p743Clear">Clear Filter</button></div>'+section(false,'பணம் வாங்கியது','received')+section(true,'பணம் தந்தது','given');
+ box.innerHTML='<div class="p743-title">📊 Party Quick Summary</div><div class="p743-summary">'+(opening?'<div class="p743-box balance" style="background:#eef7f5"><span class="p743-lbl">📅 28.09.2026 • Opening Balance</span><span class="p743-val">'+money(opening)+'</span></div>':'')+'<div class="p743-box taken"><span class="p743-lbl">பணம் வாங்கியது</span><span class="p743-val">'+money(taken)+'</span></div><div class="p743-box given"><span class="p743-lbl">பணம் தந்தது</span><span class="p743-val">'+money(given)+'</span></div><div class="p743-box balance"><span class="p743-lbl">மீதம் பெற வேண்டியது</span><span class="p743-val">'+money(opening+taken-given)+'</span></div></div><div class="p743-title">🔎 Previous History Filter</div><div class="p743-filter"><input id="p743Date" type="date" value="'+esc(date)+'"><select id="p743Type"><option value="all" '+(type==='all'?'selected':'')+'>அனைத்தும்</option><option value="taken" '+(type==='taken'?'selected':'')+'>பணம் வாங்கியது</option><option value="given" '+(type==='given'?'selected':'')+'>பணம் தந்தது</option></select><button type="button" id="p743Clear">Clear Filter</button></div>'+section(false,'பணம் வாங்கியது','received')+section(true,'பணம் தந்தது','given');
  var df=q('p743Date'),tf=q('p743Type'),cf=q('p743Clear');
  if(df)df.onchange=function(){draw(box,key,editAttr,delAttr,{date:df.value,type:tf.value,open:true})};
  if(tf)tf.onchange=function(){draw(box,key,editAttr,delAttr,{date:df.value,type:tf.value,open:true})};
