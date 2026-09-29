@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.34</title>
+<title>Sale Profit Book • V8.35</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.34" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.35" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1728,7 +1728,7 @@ button{font-weight:900!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.34</div>
+<div class="version">Version 8.35</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -6172,6 +6172,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 else setTimeout(wait,100);
 })();
 </script>
+<script id="spb-debounce-helper">window.__spbDebounce=function(fn,ms){var t=0;return function(){if(t)return;t=setTimeout(function(){t=0;try{fn()}catch(e){console.error(e)}},ms||120)}};</script>
 <script id="party-report-pdf-final">
 (function(){
 'use strict';
@@ -6331,7 +6332,7 @@ for(var n=1;n<next;n++)add(n,objs[n]);var xref=pos,tail='xref'+NL+'0 '+next+NL+'
 }
 function deliver(name,r,share){var blob=makePDF(name+' Report',r),fn=name+'-Report-'+r.from+'-to-'+r.to+'.pdf';if(share&&navigator.share){try{var f=new File([blob],fn,{type:'application/pdf'});if(!navigator.canShare||navigator.canShare({files:[f]}))return navigator.share({title:name+' Report',text:name+' Report • '+fmt(r.from)+' to '+fmt(r.to),files:[f]})}catch(e){}}var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=fn;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},3000)}
 function bind(){var list=[['mansoorGenerateReport',function(){window.__mansoorReport=render('Mansoor',MKEY,'mansoorReport','mansoorReportResult','mansoorReportActions')}],['mansoorPDF',function(){var r=window.__mansoorReport||render('Mansoor',MKEY,'mansoorReport','mansoorReportResult','mansoorReportActions');if(r)deliver('Mansoor',r,false)}],['mansoorSharePDF',function(){var r=window.__mansoorReport||render('Mansoor',MKEY,'mansoorReport','mansoorReportResult','mansoorReportActions');if(r)deliver('Mansoor',r,true)}],['partyMydeenGenerateReport',function(){window.__mydeenReport=render('Mydeen',YKEY,'partyMydeenReport','partyMydeenReportResult','')}],['partyMydeenPDF',function(){var r=window.__mydeenReport||render('Mydeen',YKEY,'partyMydeenReport','partyMydeenReportResult','');if(r)deliver('Mydeen',r,false)}],['partyMydeenSharePDF',function(){var r=window.__mydeenReport||render('Mydeen',YKEY,'partyMydeenReport','partyMydeenReportResult','');if(r)deliver('Mydeen',r,true)}]];list.forEach(function(a){var b=q(a[0]);if(b&&!b.dataset.v816Bound){b.dataset.v816Bound='1';b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();a[1]()})}});var c=q('partyMydeenClearReport');if(c&&!c.dataset.v816Bound){c.dataset.v816Bound='1';c.addEventListener('click',function(){var b=q('partyMydeenReportResult');if(b)b.innerHTML='';var a=q('partyMydeenReportCard')&&q('partyMydeenReportCard').querySelector('.party-report-actions');if(a)a.style.display='none';window.__mydeenReport=null})}}
-new MutationObserver(bind).observe(document.documentElement,{childList:true,subtree:true});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){bind();setTimeout(bind,300);setTimeout(bind,1000)});else{bind();setTimeout(bind,300);setTimeout(bind,1000)}window.__SPB_V816_PDF_FIX={makePDF:makePDF,deliver:deliver,bind:bind};
+new MutationObserver(window.__spbDebounce(bind)).observe(document.documentElement,{childList:true,subtree:true});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){bind();setTimeout(bind,300);setTimeout(bind,1000)});else{bind();setTimeout(bind,300);setTimeout(bind,1000)}window.__SPB_V816_PDF_FIX={makePDF:makePDF,deliver:deliver,bind:bind};
 })();
 </script>
 <style id="party-report-pdf-v712-style">
@@ -6514,7 +6515,7 @@ new MutationObserver(bind).observe(document.documentElement,{childList:true,subt
     setTimeout(scan,800);
   }
 
-  new MutationObserver(function(){ scan(); })
+  new MutationObserver(window.__spbDebounce(scan))
     .observe(document.body,{subtree:true,childList:true});
 })();
 </script>
@@ -6690,7 +6691,7 @@ window.__SPB_V722_HISTORY_RENDER=render;
 function go(){setTimeout(render,100);setTimeout(render,500);setTimeout(render,1000);setTimeout(render,1600);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',go);else go();
 window.addEventListener('storage',function(e){if(e.key==='saleProfitBookMansoorV1'||e.key==='saleProfitBookMydeenV1')go();});
-try{var mo=new MutationObserver(function(){var a=document.getElementById('mansoorHistory'),b=document.getElementById('partyMydeenHistory');if((a&&!a.querySelector('.party-collapsible-history'))||(b&&!b.querySelector('.party-collapsible-history')))render();});mo.observe(document.body,{childList:true,subtree:true});}catch(e){}
+try{var mo=new MutationObserver(window.__spbDebounce(function(){var a=document.getElementById('mansoorHistory'),b=document.getElementById('partyMydeenHistory');if((a&&!a.querySelector('.party-collapsible-history'))||(b&&!b.querySelector('.party-collapsible-history')))render();}));mo.observe(document.body,{childList:true,subtree:true});}catch(e){}
 })();
 </script>
 <script id="v724-party-open-refresh-fix">
@@ -6797,7 +6798,7 @@ if(document.readyState==='loading'){
 }
 [300,800,1500].forEach(function(ms){setTimeout(bind,ms);});
 try{
-  new MutationObserver(bind).observe(document.body,{childList:true,subtree:true});
+  new MutationObserver(window.__spbDebounce(bind)).observe(document.body,{childList:true,subtree:true});
 }catch(e){}
 })();
 </script>
@@ -7285,6 +7286,7 @@ main {
 <script id="v743-party-summary-filter-final">
 (function(){
 'use strict';
+return; /* V8.35: duplicate of the v722 history renderer; the two re-rendered each other in a loop. Disabled. */
 var START='2026-08-04';
 function q(id){return document.getElementById(id)}
 function money(v){return '₹'+Number(v||0).toLocaleString('en-IN',{maximumFractionDigits:2})}
