@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.37</title>
+<title>Sale Profit Book • V8.38</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.37" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.38" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1728,7 +1728,7 @@ button{font-weight:900!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.37</div>
+<div class="version">Version 8.38</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1781,6 +1781,8 @@ button{font-weight:900!important}
 <label>Customer பெயர் (Credit)</label>
 <input autocomplete="off" id="creditCustomer" list="creditCustomerList" placeholder="Customer name" type="text"/>
 <datalist id="creditCustomerList"></datalist>
+<label style="margin-top:10px">Mobile No (விருப்பம்)</label>
+<input autocomplete="off" id="creditMobile" inputmode="numeric" maxlength="18" placeholder="10 இலக்க Mobile No" type="tel"/>
 <button class="secondary" onclick="openCreditBook()" style="margin-top:8px" type="button">📒 Credit Book</button>
 </div>
 <div class="purchase-profit-row"><div class="field">
@@ -4311,7 +4313,7 @@ window.restoreV600=function(file){
    if(summary&&(typeof summary.items!=='number'||typeof summary.entries!=='number'||typeof summary.expenses!=='number'))throw new Error('Invalid summary');
    const storage={};keys.forEach(function(k){storage[k]=norm(raw[k]);});
    // Validate every list-type key BEFORE touching current data.
-   ['spb_v4_items','spb_v4_entries','spb_v4_expenses','spb_v4_stock','saleProfitBookMansoorV1','saleProfitBookMydeenV1','spb_credit_payments_v1'].forEach(function(k){
+   ['spb_v4_items','spb_v4_entries','spb_v4_expenses','spb_v4_stock','saleProfitBookMansoorV1','saleProfitBookMydeenV1','spb_credit_payments_v1','spb_credit_customers_v1'].forEach(function(k){
     if(k in storage&&storage[k]!==''&&!Array.isArray(JSON.parse(storage[k])))throw new Error('Invalid data in '+k);
    });
    let message='Restore this FULL backup? Sale, Purchase, Expense, Stock, Mydeen and Mansoor data will be restored.';
@@ -4372,7 +4374,7 @@ setInterval(refreshDatesSafely,60000);
 (function(){
 'use strict';
 const BUILD='6.21';
-const KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','spb_v4_stock','saleProfitBookMansoorV1','saleProfitBookMydeenV1','spb_credit_payments_v1'];
+const KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','spb_v4_stock','saleProfitBookMansoorV1','saleProfitBookMydeenV1','spb_credit_payments_v1','spb_credit_customers_v1'];
 
 function parseArray(key){
   try{
@@ -6925,7 +6927,7 @@ try{
 <button class="secondary" onclick="addMixedSaleRow()" style="margin-top:12px" type="button">➕ Add Another Item</button>
 <div class="mixed-total">Total Sale: <span id="mixedSaleTotal">₹0</span><br/><span style="font-size:13px;font-weight:700;color:#55706c">Total Purchase: <span id="mixedPurchaseTotal">₹0</span>   |   Total Profit: <span id="mixedProfitTotal">₹0</span></span></div>
 <div class="field"><label>Paid By</label><select id="mixedPaidBy"><option value="GPay">GPay</option><option value="Cash">Cash</option><option value="Credit">Credit (கடன்)</option></select></div>
-<div class="field" id="mixedCustomerField" style="display:none"><label>Customer பெயர் (Credit)</label><input autocomplete="off" id="mixedCustomer" list="creditCustomerList" placeholder="Customer name" type="text"/></div>
+<div class="field" id="mixedCustomerField" style="display:none"><label>Customer பெயர் (Credit)</label><input autocomplete="off" id="mixedCustomer" list="creditCustomerList" placeholder="Customer name" type="text"/><label style="margin-top:10px">Mobile No (விருப்பம்)</label><input autocomplete="off" id="mixedMobile" inputmode="numeric" maxlength="18" placeholder="10 இலக்க Mobile No" type="tel"/></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px"><button class="primary" onclick="saveMixedSale()" type="button">Save Mixed Sale</button><button class="secondary" onclick="closeMixedSale()" type="button">Close</button></div>
 </div>
 </div>
@@ -7415,11 +7417,14 @@ try{var __t=null,__n=0;setInterval(function(){__n=0},5000);new MutationObserver(
 .cb-amt small{display:block;font-size:11px;color:#889;font-weight:700}
 .cb-del{width:auto!important;margin:4px 0 0!important;border:0;background:none;color:#b03030;font-size:12px;font-weight:800;padding:2px 0}
 .cb-empty{text-align:center;color:#778;padding:22px 8px;font-weight:700}
+.cb-contact{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 10px;padding:10px 12px;background:#f5faf9;border:1px solid #cfe3df;border-radius:12px;font-weight:800;color:#155b50}
+.cb-contact span{flex:1;min-width:110px}
+.cb-link{text-decoration:none;background:#e9f3f2;color:#155b50;border-radius:10px;padding:8px 12px;font-size:14px;font-weight:800}
 </style>
 <script id="spb-credit-book">
 (function(){
 'use strict';
-var ENT='spb_v4_entries', PAY='spb_credit_payments_v1';
+var ENT='spb_v4_entries', PAY='spb_credit_payments_v1', CUS='spb_credit_customers_v1';
 var state={view:'list',key:null,search:'',payOpen:false};
 function $(id){return document.getElementById(id)}
 function E(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
@@ -7430,6 +7435,16 @@ function todayKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMont
 function readArr(k){try{var a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
 function normName(n){return String(n||'').replace(/\s+/g,' ').trim()}
 function keyOf(n){return normName(n).toLowerCase()}
+function normMobile(v){var d=String(v||'').replace(/[^\d+]/g,'');d=d.replace(/^\+?91(?=\d{10}$)/,'').replace(/^0(?=\d{10}$)/,'');return d}
+function okMobile(d){return /^[6-9]\d{9}$/.test(d)}
+function mobileOf(name){var k=keyOf(name),f=readArr(CUS).filter(function(x){return x&&x.key===k})[0];return f&&f.mobile?String(f.mobile):''}
+function setMobile(name,mob){
+  var k=keyOf(name);if(!k)return;
+  var a=readArr(CUS),found=false;
+  a.forEach(function(x){if(x&&x.key===k){x.name=normName(name);if(mob)x.mobile=mob;else delete x.mobile;found=true}});
+  if(!found&&mob)a.push({key:k,name:normName(name),mobile:mob});
+  localStorage.setItem(CUS,JSON.stringify(a.filter(function(x){return x&&x.mobile})));
+}
 function toast(m){if(typeof window.v779ShowSaveToast==='function')window.v779ShowSaveToast(m)}
 
 /* ---------- ledger (always computed from saved data) ---------- */
@@ -7446,7 +7461,7 @@ function ledger(){
     var nm=normName(p.customer);if(!nm)return;
     var c=get(nm);c.pays.push(p);c.paid+=num(p.amount);
   });
-  return Object.keys(map).map(function(k){var c=map[k];c.due=Math.round((c.sale-c.paid)*100)/100;return c});
+  return Object.keys(map).map(function(k){var c=map[k];c.due=Math.round((c.sale-c.paid)*100)/100;c.mobile=mobileOf(c.name);return c});
 }
 function dueHtml(d){
   if(d>0.004)return '<b class="cb-due">'+money(d)+'</b>';
@@ -7491,11 +7506,11 @@ function renderList(){
   renderListRows();
 }
 function renderListRows(){
-  var all=ledger(),q=keyOf(state.search),box=$('cbRows');if(!box)return;
-  var shown=all.filter(function(c){return !q||c.key.indexOf(q)>=0});
+  var all=ledger(),q=keyOf(state.search),qd=q.replace(/\D/g,''),box=$('cbRows');if(!box)return;
+  var shown=all.filter(function(c){return !q||c.key.indexOf(q)>=0||(qd&&String(c.mobile||'').indexOf(qd)>=0)});
   var open=shown.filter(function(c){return Math.abs(c.due)>0.004}).sort(function(a,b){return b.due-a.due});
   var done=shown.filter(function(c){return Math.abs(c.due)<=0.004}).sort(function(a,b){return a.name.localeCompare(b.name)});
-  function row(c){return '<div class="cb-row" data-k="'+E(c.key)+'"><div><b>'+E(c.name)+'</b><small>'+(c.last?'கடைசி Credit: '+fd(c.last):'Payments only')+'</small></div><div>'+dueHtml(c.due)+'</div></div>'}
+  function row(c){return '<div class="cb-row" data-k="'+E(c.key)+'"><div><b>'+E(c.name)+'</b><small>'+(c.last?'கடைசி Credit: '+fd(c.last):'Payments only')+(c.mobile?' • 📱 '+E(c.mobile):'')+'</small></div><div>'+dueHtml(c.due)+'</div></div>'}
   var h='';
   if(open.length)h+=open.map(row).join('');
   if(done.length)h+='<div class="cb-sec">✓ முடிந்தவை (Settled)</div>'+done.map(row).join('');
@@ -7509,8 +7524,9 @@ function renderDetail(c){
   tx.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:a.id-b.id});
   var run=0;tx.forEach(function(r){run+=(r.t==='sale'?r.amt:-r.amt);r.bal=Math.round(run*100)/100});
   tx.reverse();
+  var contact=contactHtml(c);
   var h='<div class="cb-sum"><span>பெற வேண்டியது</span><strong style="color:'+(c.due<=0.004?'#16834b':'#c62828')+'">'+(c.due<-0.004?money(-c.due)+' advance':money(Math.max(c.due,0)))+'</strong><small>Credit '+money(c.sale)+' • Received '+money(c.paid)+'</small></div>'+
-    '<div class="cb-actions"><button class="cb-pri" data-act="payopen" type="button">💰 Payment received</button><button class="cb-sec-btn" data-act="share" type="button">📤 Share</button></div>';
+    contact+'<div class="cb-actions"><button class="cb-pri" data-act="payopen" type="button">💰 Payment received</button><button class="cb-sec-btn" data-act="share" type="button">📤 Share</button></div>';
   if(state.payOpen){
     h+='<div class="cb-form"><label>Amount ₹</label><input id="cbPayAmt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="'+(c.due>0?c.due:'0')+'">'+
       '<label>Date</label><input id="cbPayDate" type="date" value="'+todayKey()+'">'+
@@ -7526,6 +7542,18 @@ function renderDetail(c){
   }).join(''):'<div class="cb-empty">பதிவுகள் இல்லை.</div>';
   $('cbBody').innerHTML=h;
 }
+function contactHtml(c){
+  if(c.mobile)return '<div class="cb-contact"><span>📱 '+E(c.mobile)+'</span><a class="cb-link" href="tel:+91'+E(c.mobile)+'">📞 Call</a><a class="cb-link" href="'+waLink(c)+'" target="_blank" rel="noopener">💬 WhatsApp</a><button class="cb-sec-btn" data-act="mobedit" type="button" style="padding:8px 12px!important">✏️</button></div>';
+  return '<div class="cb-contact"><button class="cb-sec-btn" data-act="mobedit" type="button" style="width:100%!important;padding:10px!important">📱 Mobile No சேர்க்க</button></div>';
+}
+function waLink(c){return 'https://wa.me/91'+c.mobile+'?text='+encodeURIComponent(statement(c))}
+function editMobile(c){
+  var v=prompt('Mobile No — '+c.name+' (காலியாக விட்டால் நீக்கப்படும்):',c.mobile||'');
+  if(v===null)return;
+  var d=normMobile(v);
+  if(d&&!okMobile(d)){alert('சரியான 10 இலக்க Mobile No உள்ளிடவும்.');return}
+  setMobile(c.name,d);render();
+}
 function onBodyClick(e){
   var row=e.target.closest&&e.target.closest('.cb-row');
   if(row){state.view='detail';state.key=row.getAttribute('data-k');state.payOpen=false;render();$('cbBody').scrollTop=0;return}
@@ -7538,6 +7566,7 @@ function onBodyClick(e){
   else if(act==='paysave'){savePayment(c)}
   else if(act==='paydel'){delPayment(b.getAttribute('data-id'))}
   else if(act==='share'){share(c)}
+  else if(act==='mobedit'){editMobile(c)}
 }
 function savePayment(c){
   var amt=num(($('cbPayAmt')||{}).value), date=($('cbPayDate')||{}).value||todayKey(), mode=($('cbPayMode')||{}).value||'Cash', note=normName(($('cbPayNote')||{}).value);
@@ -7553,20 +7582,24 @@ function delPayment(id){
   var a=readArr(PAY).filter(function(p){return String(p.id)!==String(id)});
   localStorage.setItem(PAY,JSON.stringify(a));render();
 }
-function share(c){
+function statement(c){
   var L=['📒 '+c.name+' — Credit Statement ('+fd(todayKey())+')',''];
   var tx=[];
   c.sales.forEach(function(x){tx.push({d:String(x.date||''),i:num(x.id),s:fd(x.date)+' – '+(x.item||'')+(x.meter?' '+x.meter+'m':'')+': '+money(x.sale)})});
   c.pays.forEach(function(p){tx.push({d:String(p.date||''),i:num(p.id),s:fd(p.date)+' – Payment ('+(p.mode||'')+'): −'+money(p.amount)})});
   tx.sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:a.i-b.i}).forEach(function(r){L.push(r.s)});
   L.push('','Credit: '+money(c.sale),'Received: '+money(c.paid),'மீதம்: '+money(c.due));
-  var text=L.join('\n');
+  return L.join('\n');
+}
+function share(c){
+  var text=statement(c);
   if(navigator.share){navigator.share({text:text}).catch(function(){})}
   else window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
 }
 window.openCreditBook=open;window.closeCreditBook=close;
 
 /* ---------- Sale form: Credit → customer name ---------- */
+function clearCredit(){var c=$('creditCustomer'),m=$('creditMobile');if(c)c.value='';if(m){m.value='';m.dataset.auto=''}}
 function fillNames(){
   var names=ledger().map(function(c){return c.name}).sort(),h=names.map(function(n){return '<option value="'+E(n)+'">'}).join('');
   var dl=$('creditCustomerList');if(dl)dl.innerHTML=h;
@@ -7583,22 +7616,27 @@ function wrap(name,after){
   var orig=window[name];if(typeof orig!=='function')return;
   window[name]=function(){var r=orig.apply(this,arguments);try{after.apply(this,arguments)}catch(e){console.error(name,e)}return r};
 }
-wrap('newEntry',function(){var c=$('creditCustomer');if(c)c.value='';syncForm()});
-wrap('goToNewEntry',function(){var c=$('creditCustomer');if(c)c.value='';syncForm()});
-wrap('openNewEntry',function(){var c=$('creditCustomer');if(c)c.value='';syncForm()});
+wrap('newEntry',function(){clearCredit();syncForm()});
+wrap('goToNewEntry',function(){clearCredit();syncForm()});
+wrap('openNewEntry',function(){clearCredit();syncForm()});
 wrap('editEntry',function(id){
   var x=(typeof entries!=='undefined'?entries:[]).filter(function(e){return e.id===id})[0],c=$('creditCustomer');
   if(c)c.value=(x&&x.paidBy==='Credit'&&x.customer)?x.customer:'';
+  var cm=$('creditMobile');if(cm){cm.dataset.auto='';cm.value=(x&&x.paidBy==='Credit'&&x.customer)?mobileOf(x.customer):''}
   syncForm();fillNames();
 });
 wrap('openMixedSale',function(){
-  var mc=$('mixedCustomer'),c=$('creditCustomer');if(mc)mc.value=c?c.value:'';syncForm();fillNames();
+  var mc=$('mixedCustomer'),c=$('creditCustomer');if(mc)mc.value=c?c.value:'';
+  var mm=$('mixedMobile'),cm=$('creditMobile');if(mm){mm.dataset.auto='';mm.value=cm?cm.value:''}
+  syncForm();fillNames();
 });
 
 var origSave=window.saveEntry;
 if(typeof origSave==='function')window.saveEntry=function(){
   var paid=($('paidBy')||{}).value,cust=normName(($('creditCustomer')||{}).value);
   if(paid==='Credit'&&!cust){alert('Credit sale-க்கு Customer பெயர் தேவை.');var i=$('creditCustomer');if(i)i.focus();return}
+  var mob=normMobile(($('creditMobile')||{}).value);
+  if(paid==='Credit'&&mob&&!okMobile(mob)){alert('சரியான 10 இலக்க Mobile No உள்ளிடவும் (அல்லது காலியாக விடவும்).');var im=$('creditMobile');if(im)im.focus();return}
   var wasEditing=(typeof editingId!=='undefined'&&editingId!==null),editId=wasEditing?editingId:null,before=entries.length;
   var r=origSave.apply(this,arguments);
   try{
@@ -7606,7 +7644,7 @@ if(typeof origSave==='function')window.saveEntry=function(){
     if(wasEditing){if(editingId===null)saved=entries.filter(function(x){return x.id===editId})[0]}
     else if(entries.length===before+1)saved=entries[0];
     if(saved){
-      if(paid==='Credit')saved.customer=cust;else delete saved.customer;
+      if(paid==='Credit'){saved.customer=cust;if(mob)setMobile(cust,mob)}else delete saved.customer;
       localStorage.setItem(ENT,JSON.stringify(entries));
       refreshViews();
     }
@@ -7618,14 +7656,17 @@ var origMixed=window.saveMixedSale;
 if(typeof origMixed==='function')window.saveMixedSale=function(){
   var mp=$('mixedPaidBy'),paid=mp&&mp.value,mc=$('mixedCustomer'),cust=normName(mc&&mc.value);
   if(paid==='Credit'&&!cust){alert('Credit sale-க்கு Customer பெயர் தேவை.');if(mc)mc.focus();return}
+  var mmob=normMobile((($('mixedMobile'))||{}).value);
+  if(paid==='Credit'&&mmob&&!okMobile(mmob)){alert('சரியான 10 இலக்க Mobile No உள்ளிடவும் (அல்லது காலியாக விடவும்).');var imm=$('mixedMobile');if(imm)imm.focus();return}
   var ids={};entries.forEach(function(x){ids[x.id]=1});
   var r=origMixed.apply(this,arguments);
   try{
     var added=entries.filter(function(x){return !ids[x.id]});
     if(added.length){
-      if(paid==='Credit')added.forEach(function(x){x.customer=cust});
+      if(paid==='Credit'){added.forEach(function(x){x.customer=cust});if(mmob)setMobile(cust,mmob)}
       localStorage.setItem(ENT,JSON.stringify(entries));
       if(mc)mc.value='';
+      var mmx=$('mixedMobile');if(mmx){mmx.value='';mmx.dataset.auto=''}
       refreshViews();
     }
   }catch(e){console.error('credit mixed save',e)}
@@ -7633,7 +7674,18 @@ if(typeof origMixed==='function')window.saveMixedSale=function(){
   return r;
 };
 
+function autoMobile(nameId,mobId){
+  var n=$(nameId),m=$(mobId);if(!n||!m)return;
+  function f(){
+    var mo=mobileOf(n.value);
+    if(mo){if(!normMobile(m.value)||m.dataset.auto==='1'){m.value=mo;m.dataset.auto='1'}}
+    else if(m.dataset.auto==='1'){m.value='';m.dataset.auto=''}
+  }
+  n.addEventListener('input',f);n.addEventListener('change',f);n.addEventListener('blur',f);
+  m.addEventListener('input',function(){m.dataset.auto=''});
+}
 function init(){
+  autoMobile('creditCustomer','creditMobile');autoMobile('mixedCustomer','mixedMobile');
   var p=$('paidBy'),mp=$('mixedPaidBy');
   if(p)p.addEventListener('change',syncForm);
   if(mp)mp.addEventListener('change',syncForm);
