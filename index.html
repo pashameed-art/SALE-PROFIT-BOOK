@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.35</title>
+<title>Sale Profit Book • V8.36</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.35" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.36" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1728,7 +1728,7 @@ button{font-weight:900!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.35</div>
+<div class="version">Version 8.36</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1774,8 +1774,15 @@ button{font-weight:900!important}
 <select id="paidBy">
 <option selected="" value="GPay">GPay</option>
 <option value="Cash">Cash</option>
+<option value="Credit">Credit (கடன்)</option>
 </select>
 </div></div>
+<div class="field" id="creditCustomerField" style="display:none">
+<label>Customer பெயர் (Credit)</label>
+<input autocomplete="off" id="creditCustomer" list="creditCustomerList" placeholder="Customer name" type="text"/>
+<datalist id="creditCustomerList"></datalist>
+<button class="secondary" onclick="openCreditBook()" style="margin-top:8px" type="button">📒 Credit Book</button>
+</div>
 <div class="purchase-profit-row"><div class="field">
 <label>Purchase ₹</label>
 <input class="auto" id="purchase" placeholder="Auto" readonly="" type="text"/>
@@ -2330,6 +2337,7 @@ button{font-weight:900!important}
 <button class="party-choice" onclick="openPartyLedger('mydeen')">🤝 Mydeen</button>
 <button class="party-choice" onclick="openPartyLedger('mansoor')">🤝 Mansoor</button>
 </div>
+<div style="margin-top:12px"><button class="cb-open-btn" onclick="openCreditBook()" type="button">📒 Credit Book (கடன்)</button></div>
 <div class="party-refresh-row">
 <button class="party-refresh-btn" onclick="returnToPartyChooser()" type="button">↻ Refresh</button>
 </div>
@@ -2875,8 +2883,9 @@ function generateReport(){
    purchase:a.purchase+Number(x.purchase||0),
    profit:a.profit+Number(x.profit||0),
    gpay:a.gpay+(String(x.paidBy||'GPay').toLowerCase()==='gpay'?Number(x.sale||0):0),
-   cash:a.cash+(String(x.paidBy||'').toLowerCase()==='cash'?Number(x.sale||0):0)
- }),{meter:0,sale:0,purchase:0,profit:0,gpay:0,cash:0});
+   cash:a.cash+(String(x.paidBy||'').toLowerCase()==='cash'?Number(x.sale||0):0),
+    credit:a.credit+(String(x.paidBy||'').toLowerCase()==='credit'?Number(x.sale||0):0)
+  }),{meter:0,sale:0,purchase:0,profit:0,gpay:0,cash:0,credit:0});
 
  const expenseTotal=exps.reduce((s,x)=>s+Number(x.amount||0),0);
  const netProfit=total.profit-expenseTotal;
@@ -2901,7 +2910,7 @@ function generateReport(){
  });
  const reportDateCards=Object.keys(groupedDates).sort((a,b)=>b.localeCompare(a)).map(d=>{
    const g=groupedDates[d], key=d.replace(/-/g,'');
-   const saleRows=g.sales.map(x=>`<div class="report-detail-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div></div>`).join('');
+   const saleRows=g.sales.map(x=>`<div class="report-detail-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')+(x.customer?' • '+esc(x.customer):'')}</div></div>`).join('');
    const expenseRows=g.expenses.map(x=>`<div class="report-detail-row"><b>💸 Expense: ${esc(x.name)} — ${money(x.amount)}</b><div class="report-detail-meta">Expense</div></div>`).join('');
    const details=(saleRows+expenseRows)||'<div class="empty">No details found</div>';
    return `<div class="report-date-card" onclick="toggleReportDateDetails('rd${key}')">
@@ -2920,7 +2929,7 @@ function generateReport(){
   <div class="stat">💸 Expense<b>${money(expenseTotal)}</b></div>
   <div class="stat">💵 Net Profit<b>${money(netProfit)}</b></div>
   <div class="stat">💳 GPay<b>${money(total.gpay)}</b></div>
-  <div class="stat">💵 Cash<b>${money(total.cash)}</b></div>
+  <div class="stat">💵 Cash<b>${money(total.cash)}</b></div>${total.credit?`<div class="stat">📒 Credit<b>${money(total.credit)}</b></div>`:''}
  </div>
  <div class="history-card"><b>📅 ${esc(from)} → ${esc(to)}</b><br><span class="meta">Sales: ${sales.length} • Expenses: ${exps.length}</span></div>
  <div class="history-card"><b>📅 Date-wise Summary</b><div class="meta" style="margin-top:6px">Tap a date to view Sale Amount, Expense Amount and full details.</div>${reportDateCards}</div>
@@ -3143,7 +3152,7 @@ function renderHistory(){
 
   function dateCard(d,i){
     const g=grouped[d], key='hd'+d.replace(/-/g,'')+'_'+i;
-    const saleRows=g.sales.map(x=>`<div class="report-detail-row history-sale-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')}</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editEntry(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteEntry(${x.id})">Delete</button></div></div>`).join('');
+    const saleRows=g.sales.map(x=>`<div class="report-detail-row history-sale-row"><b>💰 ${esc(x.item)} — ${money(x.sale)}</b><div class="report-detail-meta">Meter ${Number(x.meter||0).toFixed(2)} • Purchase ${money(x.purchase)} • Profit ${money(x.profit)} • ${esc(x.paidBy||'GPay')+(x.customer?' • '+esc(x.customer):'')}</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editEntry(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteEntry(${x.id})">Delete</button></div></div>`).join('');
     const expenseRows=g.expenses.map(x=>`<div class="report-detail-row history-expense-row"><b>💸 Expense: ${esc(x.name)} — ${money(x.amount)}</b><div class="report-detail-meta">Expense</div><div class="history-actions"><button class="edit-btn" onclick="event.stopPropagation();editExpense(${x.id})">Edit</button><button class="danger" onclick="event.stopPropagation();deleteExpense(${x.id})">Delete</button></div></div>`).join('');
     const details=(saleRows+expenseRows)||'<div class="empty">No details found</div>';
     return `<div class="report-date-card" id="card${key}">
@@ -3795,7 +3804,7 @@ function updateTodayExpenseTotal(){
       return String(x.date||'')>=from && String(x.date||'')<=to;
     });
 
-    var meter=0,sale=0,purchase=0,profit=0,gpay=0,cash=0,expense=0;
+    var meter=0,sale=0,purchase=0,profit=0,gpay=0,cash=0,credit=0,expense=0;
     salesList.forEach(function(x){
       meter+=num(x.meter);
       sale+=num(x.sale);
@@ -3804,6 +3813,7 @@ function updateTodayExpenseTotal(){
       var p=String(x.paidBy||'GPay').toLowerCase();
       if(p.indexOf('gpay')>=0 || p.indexOf('google')>=0) gpay+=num(x.sale);
       else if(p.indexOf('cash')>=0) cash+=num(x.sale);
+      else if(p.indexOf('credit')>=0) credit+=num(x.sale);
     });
     expenseList.forEach(function(x){ expense+=num(x.amount); });
     var netProfit=profit-expense;
@@ -3841,7 +3851,7 @@ function updateTodayExpenseTotal(){
     var dateCards=reportDates.map(function(d,i){
       var g=byDate[d], id='reportDateDetails_'+i, details='';
       g.sales.forEach(function(x){
-        details+='<div class="report-detail-row"><b>'+esc(x.item||'Item')+'</b><div class="report-detail-meta">Sale '+rsMoney(x.sale)+' • Meter '+num(x.meter).toFixed(2)+' • Purchase '+rsMoney(x.purchase)+' • Profit '+rsMoney(x.profit)+' • '+esc(x.paidBy||'GPay')+'</div></div>';
+        details+='<div class="report-detail-row"><b>'+esc(x.item||'Item')+'</b><div class="report-detail-meta">Sale '+rsMoney(x.sale)+' • Meter '+num(x.meter).toFixed(2)+' • Purchase '+rsMoney(x.purchase)+' • Profit '+rsMoney(x.profit)+' • '+esc(x.paidBy||'GPay')+(x.customer?' • '+esc(x.customer):'')+'</div></div>';
       });
       g.expenses.forEach(function(x){
         details+='<div class="report-detail-row"><b>Expense: '+esc(x.name||'Expense')+'</b><div class="report-detail-meta">'+rsMoney(x.amount)+'</div></div>';
@@ -3869,7 +3879,7 @@ function updateTodayExpenseTotal(){
       '<div><span>💸 Expense</span><b>'+rsMoney(expense)+'</b></div>'+
       '<div><span>💵 Net Profit</span><b>'+rsMoney(netProfit)+'</b></div>'+
       '<div><span>💳 GPay</span><b>'+rsMoney(gpay)+'</b></div>'+
-      '<div><span>💵 Cash</span><b>'+rsMoney(cash)+'</b></div>'+
+      '<div><span>💵 Cash</span><b>'+rsMoney(cash)+'</b></div>'+(credit?'<div><span>📒 Credit</span><b>'+rsMoney(credit)+'</b></div>':'')+
       '</div>'+
       '<h3>📅 Date-wise Summary</h3>'+dateCards;
     box.classList.remove('hidden');
@@ -4301,7 +4311,7 @@ window.restoreV600=function(file){
    if(summary&&(typeof summary.items!=='number'||typeof summary.entries!=='number'||typeof summary.expenses!=='number'))throw new Error('Invalid summary');
    const storage={};keys.forEach(function(k){storage[k]=norm(raw[k]);});
    // Validate every list-type key BEFORE touching current data.
-   ['spb_v4_items','spb_v4_entries','spb_v4_expenses','spb_v4_stock','saleProfitBookMansoorV1','saleProfitBookMydeenV1'].forEach(function(k){
+   ['spb_v4_items','spb_v4_entries','spb_v4_expenses','spb_v4_stock','saleProfitBookMansoorV1','saleProfitBookMydeenV1','spb_credit_payments_v1'].forEach(function(k){
     if(k in storage&&storage[k]!==''&&!Array.isArray(JSON.parse(storage[k])))throw new Error('Invalid data in '+k);
    });
    let message='Restore this FULL backup? Sale, Purchase, Expense, Stock, Mydeen and Mansoor data will be restored.';
@@ -4362,8 +4372,7 @@ setInterval(refreshDatesSafely,60000);
 (function(){
 'use strict';
 const BUILD='6.21';
-const KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','spb_v4_stock',
-            'saleProfitBookMansoorV1','saleProfitBookMydeenV1'];
+const KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','spb_v4_stock','saleProfitBookMansoorV1','saleProfitBookMydeenV1','spb_credit_payments_v1'];
 
 function parseArray(key){
   try{
@@ -6966,7 +6975,8 @@ try{
 <div id="mixedSaleRows"></div>
 <button class="secondary" onclick="addMixedSaleRow()" style="margin-top:12px" type="button">➕ Add Another Item</button>
 <div class="mixed-total">Total Sale: <span id="mixedSaleTotal">₹0</span><br/><span style="font-size:13px;font-weight:700;color:#55706c">Total Purchase: <span id="mixedPurchaseTotal">₹0</span>   |   Total Profit: <span id="mixedProfitTotal">₹0</span></span></div>
-<div class="field"><label>Paid By</label><select id="mixedPaidBy"><option value="GPay">GPay</option><option value="Cash">Cash</option></select></div>
+<div class="field"><label>Paid By</label><select id="mixedPaidBy"><option value="GPay">GPay</option><option value="Cash">Cash</option><option value="Credit">Credit (கடன்)</option></select></div>
+<div class="field" id="mixedCustomerField" style="display:none"><label>Customer பெயர் (Credit)</label><input autocomplete="off" id="mixedCustomer" list="creditCustomerList" placeholder="Customer name" type="text"/></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px"><button class="primary" onclick="saveMixedSale()" type="button">Save Mixed Sale</button><button class="secondary" onclick="closeMixedSale()" type="button">Close</button></div>
 </div>
 </div>
@@ -7446,3 +7456,288 @@ try{var __t=null,__n=0;setInterval(function(){__n=0},5000);new MutationObserver(
   #partyPage .party-report-summary .party-report-table-head>div{font-size:8.8px!important;padding-left:2px!important;padding-right:2px!important}
 }
 </style>
+<style id="spb-credit-style">
+.cb-open-btn{width:100%;height:54px;border:0;border-radius:16px;background:#e9f3f2;color:#155b50;font-size:15px;font-weight:800}
+.cb-open-btn:active{background:#174f42;color:#fff}
+.cb-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100000;display:none;align-items:flex-end;justify-content:center}
+.cb-modal.open{display:flex}
+.cb-sheet{width:min(560px,100%);max-height:92vh;background:#fff;border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden}
+.cb-head{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid #e3ecea}
+.cb-head h3{flex:1;margin:0;font-size:18px;color:#0f4f49;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cb-head button{width:auto!important;margin:0!important;border:0;background:#e9f3f2;color:#155b50;border-radius:10px;font-size:16px;font-weight:800;padding:6px 12px}
+.cb-body{overflow:auto;padding:14px 16px calc(24px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch}
+.cb-sum{background:#eef7f5;border-radius:14px;padding:12px;text-align:center;margin-bottom:10px}
+.cb-sum span{display:block;font-size:13px;color:#55706c;font-weight:700}
+.cb-sum strong{display:block;font-size:26px;color:#c62828;margin:2px 0}
+.cb-sum small{color:#55706c;font-weight:700}
+.cb-search{width:100%;box-sizing:border-box;margin:4px 0 10px;padding:10px 12px;border:1px solid #d9e3e1;border-radius:12px;font-size:15px}
+.cb-sec{font-size:12px;font-weight:800;color:#667;margin:12px 0 6px}
+.cb-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:1px solid #e3ecea;border-radius:12px;margin-bottom:8px;background:#f9fbfa}
+.cb-row:active{background:#e9f3f2}
+.cb-row b{display:block;font-size:15px;color:#172026}
+.cb-row small{color:#667;font-weight:600}
+.cb-due{color:#c62828}.cb-adv{color:#16834b}.cb-ok{color:#16834b}
+.cb-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.cb-actions button,.cb-form button{width:auto!important;margin:0!important;border:0;border-radius:12px;padding:12px;font-size:15px;font-weight:800}
+.cb-pri{background:#0f766e;color:#fff}.cb-sec-btn{background:#e9f3f2;color:#155b50}
+.cb-form{border:1px solid #cfe3df;border-radius:14px;padding:12px;margin:8px 0 12px;background:#f5faf9}
+.cb-form label{display:block;font-size:12px;font-weight:800;color:#55706c;margin:8px 0 3px}
+.cb-form input,.cb-form select{width:100%;box-sizing:border-box;padding:10px;border:1px solid #d9e3e1;border-radius:10px;font-size:15px;background:#fff}
+.cb-form .cb-two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.cb-tx{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #edf2f1}
+.cb-tx b{display:block;font-size:13px;color:#334}
+.cb-tx span{font-size:13px;color:#667}
+.cb-amt{text-align:right;font-weight:800;font-size:15px;white-space:nowrap}
+.cb-amt.sale{color:#c62828}.cb-amt.pay{color:#16834b}
+.cb-amt small{display:block;font-size:11px;color:#889;font-weight:700}
+.cb-del{width:auto!important;margin:4px 0 0!important;border:0;background:none;color:#b03030;font-size:12px;font-weight:800;padding:2px 0}
+.cb-empty{text-align:center;color:#778;padding:22px 8px;font-weight:700}
+</style>
+<script id="spb-credit-book">
+(function(){
+'use strict';
+var ENT='spb_v4_entries', PAY='spb_credit_payments_v1';
+var state={view:'list',key:null,search:'',payOpen:false};
+function $(id){return document.getElementById(id)}
+function E(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+function num(v){var n=Number(v);return isFinite(n)?n:0}
+function money(n){return '₹'+num(n).toLocaleString('en-IN',{maximumFractionDigits:2})}
+function fd(v){var p=String(v||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:String(v||'')}
+function todayKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function readArr(k){try{var a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+function normName(n){return String(n||'').replace(/\s+/g,' ').trim()}
+function keyOf(n){return normName(n).toLowerCase()}
+function toast(m){if(typeof window.v779ShowSaveToast==='function')window.v779ShowSaveToast(m)}
+
+/* ---------- ledger (always computed from saved data) ---------- */
+function ledger(){
+  var map={};
+  function get(nm){var k=keyOf(nm);return map[k]||(map[k]={key:k,name:nm,sales:[],pays:[],sale:0,paid:0,last:''})}
+  readArr(ENT).forEach(function(x){
+    if(String(x.paidBy||'')!=='Credit')return;
+    var nm=normName(x.customer)||'(பெயர் இல்லை)', c=get(nm);
+    c.sales.push(x);c.sale+=num(x.sale);
+    if(String(x.date||'')>=c.last){c.last=String(x.date||'');c.name=nm}
+  });
+  readArr(PAY).forEach(function(p){
+    var nm=normName(p.customer);if(!nm)return;
+    var c=get(nm);c.pays.push(p);c.paid+=num(p.amount);
+  });
+  return Object.keys(map).map(function(k){var c=map[k];c.due=Math.round((c.sale-c.paid)*100)/100;return c});
+}
+function dueHtml(d){
+  if(d>0.004)return '<b class="cb-due">'+money(d)+'</b>';
+  if(d<-0.004)return '<b class="cb-adv">'+money(-d)+' advance</b>';
+  return '<b class="cb-ok">Settled ✓</b>';
+}
+
+/* ---------- Credit Book modal ---------- */
+function modal(){
+  var m=$('cbModal');if(m)return m;
+  m=document.createElement('div');m.id='cbModal';m.className='cb-modal';
+  m.innerHTML='<div class="cb-sheet"><div class="cb-head"><button id="cbBack" type="button" style="display:none">←</button><h3 id="cbTitle">📒 Credit Book</h3><button id="cbClose" type="button">✕</button></div><div class="cb-body" id="cbBody"></div></div>';
+  document.body.appendChild(m);
+  m.addEventListener('click',function(e){if(e.target===m)close()});
+  $('cbClose').onclick=close;
+  $('cbBack').onclick=function(){state.view='list';state.key=null;state.payOpen=false;render()};
+  $('cbBody').addEventListener('click',onBodyClick);
+  $('cbBody').addEventListener('input',function(e){
+    if(e.target.id==='cbSearch'){state.search=e.target.value;renderListRows()}
+  });
+  return m;
+}
+function open(){modal().classList.add('open');document.body.style.overflow='hidden';state.view='list';state.key=null;state.payOpen=false;state.search='';render()}
+function close(){var m=$('cbModal');if(m)m.classList.remove('open');document.body.style.overflow='';fillNames()}
+
+function render(){
+  var back=$('cbBack'),title=$('cbTitle');
+  if(state.view==='detail'){
+    var c=ledger().filter(function(x){return x.key===state.key})[0];
+    if(!c){state.view='list';state.key=null}
+    else{back.style.display='';title.textContent=c.name;renderDetail(c);return}
+  }
+  back.style.display='none';title.textContent='📒 Credit Book';renderList();
+}
+function renderList(){
+  var all=ledger(),totalDue=0,n=0;
+  all.forEach(function(c){if(c.due>0.004){totalDue+=c.due;n++}});
+  $('cbBody').innerHTML=
+    '<div class="cb-sum"><span>மொத்தம் பெற வேண்டியது</span><strong>'+money(totalDue)+'</strong><small>'+n+' customer'+(n===1?'':'s')+'</small></div>'+
+    '<input class="cb-search" id="cbSearch" placeholder="🔎 Customer தேடு" value="'+E(state.search)+'" autocomplete="off">'+
+    '<div id="cbRows"></div>';
+  renderListRows();
+}
+function renderListRows(){
+  var all=ledger(),q=keyOf(state.search),box=$('cbRows');if(!box)return;
+  var shown=all.filter(function(c){return !q||c.key.indexOf(q)>=0});
+  var open=shown.filter(function(c){return Math.abs(c.due)>0.004}).sort(function(a,b){return b.due-a.due});
+  var done=shown.filter(function(c){return Math.abs(c.due)<=0.004}).sort(function(a,b){return a.name.localeCompare(b.name)});
+  function row(c){return '<div class="cb-row" data-k="'+E(c.key)+'"><div><b>'+E(c.name)+'</b><small>'+(c.last?'கடைசி Credit: '+fd(c.last):'Payments only')+'</small></div><div>'+dueHtml(c.due)+'</div></div>'}
+  var h='';
+  if(open.length)h+=open.map(row).join('');
+  if(done.length)h+='<div class="cb-sec">✓ முடிந்தவை (Settled)</div>'+done.map(row).join('');
+  if(!h)h='<div class="cb-empty">'+(all.length?'எதுவும் கிடைக்கவில்லை.':'இன்னும் Credit sale எதுவும் இல்லை.<br>Sale Entry-ல் Paid By → Credit தேர்ந்தெடுக்கவும்.')+'</div>';
+  box.innerHTML=h;
+}
+function renderDetail(c){
+  var tx=[];
+  c.sales.forEach(function(x){tx.push({t:'sale',date:String(x.date||''),id:num(x.id),amt:num(x.sale),txt:(x.item||'')+(x.meter?' • '+x.meter+'m':'')})});
+  c.pays.forEach(function(p){tx.push({t:'pay',date:String(p.date||''),id:num(p.id),amt:num(p.amount),txt:'Payment • '+(p.mode||'')+(p.note?' • '+p.note:''),ref:p.id})});
+  tx.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:a.id-b.id});
+  var run=0;tx.forEach(function(r){run+=(r.t==='sale'?r.amt:-r.amt);r.bal=Math.round(run*100)/100});
+  tx.reverse();
+  var h='<div class="cb-sum"><span>பெற வேண்டியது</span><strong style="color:'+(c.due<=0.004?'#16834b':'#c62828')+'">'+(c.due<-0.004?money(-c.due)+' advance':money(Math.max(c.due,0)))+'</strong><small>Credit '+money(c.sale)+' • Received '+money(c.paid)+'</small></div>'+
+    '<div class="cb-actions"><button class="cb-pri" data-act="payopen" type="button">💰 Payment received</button><button class="cb-sec-btn" data-act="share" type="button">📤 Share</button></div>';
+  if(state.payOpen){
+    h+='<div class="cb-form"><label>Amount ₹</label><input id="cbPayAmt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="'+(c.due>0?c.due:'0')+'">'+
+      '<label>Date</label><input id="cbPayDate" type="date" value="'+todayKey()+'">'+
+      '<label>Paid By</label><select id="cbPayMode"><option>GPay</option><option>Cash</option></select>'+
+      '<label>Note (optional)</label><input id="cbPayNote" type="text" autocomplete="off">'+
+      '<div class="cb-two"><button class="cb-pri" data-act="paysave" type="button">Save</button><button class="cb-sec-btn" data-act="paycancel" type="button">Cancel</button></div>'+
+      (c.due>0?'<div style="margin-top:8px"><button class="cb-sec-btn" data-act="payfull" type="button" style="width:100%!important">முழு தொகை '+money(c.due)+'</button></div>':'')+'</div>';
+  }
+  h+='<div class="cb-sec">பரிவர்த்தனைகள்</div>';
+  h+=tx.length?tx.map(function(r){
+    return '<div class="cb-tx"><div><b>'+fd(r.date)+'</b><span>'+E(r.txt)+'</span>'+(r.t==='pay'?'<br><button class="cb-del" data-act="paydel" data-id="'+E(r.ref)+'" type="button">Delete</button>':'')+'</div>'+
+      '<div class="cb-amt '+r.t+'">'+(r.t==='sale'?'+':'−')+money(r.amt)+'<small>Bal '+money(r.bal)+'</small></div></div>';
+  }).join(''):'<div class="cb-empty">பதிவுகள் இல்லை.</div>';
+  $('cbBody').innerHTML=h;
+}
+function onBodyClick(e){
+  var row=e.target.closest&&e.target.closest('.cb-row');
+  if(row){state.view='detail';state.key=row.getAttribute('data-k');state.payOpen=false;render();$('cbBody').scrollTop=0;return}
+  var b=e.target.closest&&e.target.closest('button[data-act]');if(!b)return;
+  var act=b.getAttribute('data-act');
+  var c=ledger().filter(function(x){return x.key===state.key})[0];if(!c)return;
+  if(act==='payopen'){state.payOpen=true;render();var a=$('cbPayAmt');if(a)a.focus()}
+  else if(act==='paycancel'){state.payOpen=false;render()}
+  else if(act==='payfull'){var a2=$('cbPayAmt');if(a2)a2.value=c.due>0?c.due:''}
+  else if(act==='paysave'){savePayment(c)}
+  else if(act==='paydel'){delPayment(b.getAttribute('data-id'))}
+  else if(act==='share'){share(c)}
+}
+function savePayment(c){
+  var amt=num(($('cbPayAmt')||{}).value), date=($('cbPayDate')||{}).value||todayKey(), mode=($('cbPayMode')||{}).value||'Cash', note=normName(($('cbPayNote')||{}).value);
+  if(!(amt>0)){alert('சரியான Amount உள்ளிடவும்.');return}
+  if(amt>c.due+0.005&&!confirm('இந்த payment, மீதம் உள்ள தொகையை விட அதிகம் ('+money(c.due)+'). Advance ஆக பதிவாகும். Save செய்யவா?'))return;
+  var a=readArr(PAY);
+  a.push({id:Date.now(),date:date,customer:c.name,amount:Math.round(amt*100)/100,mode:mode,note:note,time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})});
+  localStorage.setItem(PAY,JSON.stringify(a));
+  state.payOpen=false;render();toast('Payment saved successfully.');
+}
+function delPayment(id){
+  if(!confirm('இந்த Payment-ஐ delete செய்யவா?'))return;
+  var a=readArr(PAY).filter(function(p){return String(p.id)!==String(id)});
+  localStorage.setItem(PAY,JSON.stringify(a));render();
+}
+function share(c){
+  var L=['📒 '+c.name+' — Credit Statement ('+fd(todayKey())+')',''];
+  var tx=[];
+  c.sales.forEach(function(x){tx.push({d:String(x.date||''),i:num(x.id),s:fd(x.date)+' – '+(x.item||'')+(x.meter?' '+x.meter+'m':'')+': '+money(x.sale)})});
+  c.pays.forEach(function(p){tx.push({d:String(p.date||''),i:num(p.id),s:fd(p.date)+' – Payment ('+(p.mode||'')+'): −'+money(p.amount)})});
+  tx.sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:a.i-b.i}).forEach(function(r){L.push(r.s)});
+  L.push('','Credit: '+money(c.sale),'Received: '+money(c.paid),'மீதம்: '+money(c.due));
+  var text=L.join('\n');
+  if(navigator.share){navigator.share({text:text}).catch(function(){})}
+  else window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+}
+window.openCreditBook=open;window.closeCreditBook=close;
+
+/* ---------- Sale form: Credit → customer name ---------- */
+function fillNames(){
+  var names=ledger().map(function(c){return c.name}).sort(),h=names.map(function(n){return '<option value="'+E(n)+'">'}).join('');
+  var dl=$('creditCustomerList');if(dl)dl.innerHTML=h;
+}
+function syncForm(){
+  var p=$('paidBy'),f=$('creditCustomerField');if(p&&f)f.style.display=(p.value==='Credit')?'block':'none';
+  var mp=$('mixedPaidBy'),mf=$('mixedCustomerField');if(mp&&mf)mf.style.display=(mp.value==='Credit')?'block':'none';
+}
+function refreshViews(){
+  try{if(typeof renderHistory==='function')renderHistory()}catch(e){}
+  try{if(typeof refreshDashboard==='function')refreshDashboard()}catch(e){}
+}
+function wrap(name,after){
+  var orig=window[name];if(typeof orig!=='function')return;
+  window[name]=function(){var r=orig.apply(this,arguments);try{after.apply(this,arguments)}catch(e){console.error(name,e)}return r};
+}
+wrap('newEntry',function(){var c=$('creditCustomer');if(c)c.value='';syncForm()});
+wrap('goToNewEntry',function(){var c=$('creditCustomer');if(c)c.value='';syncForm()});
+wrap('openNewEntry',function(){var c=$('creditCustomer');if(c)c.value='';syncForm()});
+wrap('editEntry',function(id){
+  var x=(typeof entries!=='undefined'?entries:[]).filter(function(e){return e.id===id})[0],c=$('creditCustomer');
+  if(c)c.value=(x&&x.paidBy==='Credit'&&x.customer)?x.customer:'';
+  syncForm();fillNames();
+});
+wrap('openMixedSale',function(){
+  var mc=$('mixedCustomer'),c=$('creditCustomer');if(mc)mc.value=c?c.value:'';syncForm();fillNames();
+});
+
+var origSave=window.saveEntry;
+if(typeof origSave==='function')window.saveEntry=function(){
+  var paid=($('paidBy')||{}).value,cust=normName(($('creditCustomer')||{}).value);
+  if(paid==='Credit'&&!cust){alert('Credit sale-க்கு Customer பெயர் தேவை.');var i=$('creditCustomer');if(i)i.focus();return}
+  var wasEditing=(typeof editingId!=='undefined'&&editingId!==null),editId=wasEditing?editingId:null,before=entries.length;
+  var r=origSave.apply(this,arguments);
+  try{
+    var saved=null;
+    if(wasEditing){if(editingId===null)saved=entries.filter(function(x){return x.id===editId})[0]}
+    else if(entries.length===before+1)saved=entries[0];
+    if(saved){
+      if(paid==='Credit')saved.customer=cust;else delete saved.customer;
+      localStorage.setItem(ENT,JSON.stringify(entries));
+      refreshViews();
+    }
+  }catch(e){console.error('credit save',e)}
+  syncForm();fillNames();
+  return r;
+};
+var origMixed=window.saveMixedSale;
+if(typeof origMixed==='function')window.saveMixedSale=function(){
+  var mp=$('mixedPaidBy'),paid=mp&&mp.value,mc=$('mixedCustomer'),cust=normName(mc&&mc.value);
+  if(paid==='Credit'&&!cust){alert('Credit sale-க்கு Customer பெயர் தேவை.');if(mc)mc.focus();return}
+  var ids={};entries.forEach(function(x){ids[x.id]=1});
+  var r=origMixed.apply(this,arguments);
+  try{
+    var added=entries.filter(function(x){return !ids[x.id]});
+    if(added.length){
+      if(paid==='Credit')added.forEach(function(x){x.customer=cust});
+      localStorage.setItem(ENT,JSON.stringify(entries));
+      if(mc)mc.value='';
+      refreshViews();
+    }
+  }catch(e){console.error('credit mixed save',e)}
+  syncForm();fillNames();
+  return r;
+};
+
+function init(){
+  var p=$('paidBy'),mp=$('mixedPaidBy');
+  if(p)p.addEventListener('change',syncForm);
+  if(mp)mp.addEventListener('change',syncForm);
+  var ci=$('creditCustomer');if(ci)ci.addEventListener('focus',fillNames);
+  var mc=$('mixedCustomer');if(mc)mc.addEventListener('focus',fillNames);
+  syncForm();fillNames();
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<script id="spb-sw-register">
+(function(){
+  function badge(){
+    var b=document.getElementById('spbOfflineBadge');
+    if(!b){
+      b=document.createElement('div');b.id='spbOfflineBadge';
+      b.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:14px;background:#333;color:#fff;padding:7px 14px;border-radius:18px;font-size:12px;font-weight:700;z-index:99998;display:none;max-width:90vw;text-align:center';
+      b.textContent='📴 Offline — data இந்த phone-ல் சேமிக்கப்படும்';
+      document.body.appendChild(b);
+    }
+    b.style.display=navigator.onLine?'none':'block';
+  }
+  window.addEventListener('online',badge);window.addEventListener('offline',badge);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',badge);else badge();
+  if(!('serviceWorker' in navigator))return;
+  if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1')return;
+  function reg(){navigator.serviceWorker.register('./sw.js').catch(function(e){console.warn('Offline mode unavailable:',e)})}
+  if(document.readyState==='complete')reg();else window.addEventListener('load',reg);
+})();
+</script>
