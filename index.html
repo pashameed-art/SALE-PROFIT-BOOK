@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.36</title>
+<title>Sale Profit Book • V8.37</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.36" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.37" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1728,7 +1728,7 @@ button{font-weight:900!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.36</div>
+<div class="version">Version 8.37</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -4759,57 +4759,6 @@ document.addEventListener('DOMContentLoaded',function(){
   window.addEventListener('DOMContentLoaded',renderGDriveBackupInfo);
 })();
 </script>
-<!-- V6.25: Restore SALE-PROFIT-BOOK items from verified uploaded backup.
-     Do not import MASS BIKE item names. Only repairs the item list when the current list
-     is empty or clearly contains the known MASS BIKE sample items. -->
-<script>
-(function restoreVerifiedSaleProfitItems() {
-  const verifiedItems = [
- {"name":"AJAY GWALIAR","rate":165,"hidden":false},
- {"name":"BSL DIPLAMAT SUPER","rate":230},
- {"name":"BSL EXCUTIVE CHOICE","rate":225},
- {"name":"BSL OFFICER CHARM","rate":225},
- {"name":"IPS SHATAK FAB","rate":165},
- {"name":"RAYMOND BONANZA","rate":390},
- {"name":"RAYMOND PREMIUM TROVIN","rate":365},
- {"name":"RAYMOND SUPER TROVINE","rate":450},
- {"name":"RAYMOND TRIDENT","rate":352},
- {"name":"RAYMOND TRO STRETCH","rate":425},
- {"name":"RAYMOND TROVINE","rate":335},
- {"name":"TNP AJAY","rate":185},
- {"name":"TNP BOND","rate":200}
-];
-  try {
-    const raw = localStorage.getItem('spb_v4_items');
-    let current = [];
-    try { current = JSON.parse(raw || '[]'); } catch(e) { current = []; }
-    if (!Array.isArray(current)) current = [];
-    const names = current.map(x => String(x && x.name || '').trim().toLowerCase());
-    const bikeNames = new Set(['access 125','activa 6g','pulsar 150','jupiter classic','hero pleasure','activa','jupiter (blue)','dio']);
-    const hasKnownBikeItem = names.some(n => bikeNames.has(n));
-    const hasVerifiedSaleItem = names.some(n => verifiedItems.some(v => v.name.toLowerCase() === n));
-    if (current.length === 0 || (hasKnownBikeItem && !hasVerifiedSaleItem)) {
-      localStorage.setItem('spb_v4_items', JSON.stringify(verifiedItems));
-      if (typeof items !== 'undefined') {
-        items = verifiedItems.slice();
-      }
-      console.log('V6.25: SALE-PROFIT-BOOK items restored:', verifiedItems.length);
-    }
-  } catch(e) {
-    console.warn('V6.25 item restore skipped', e);
-  }
-  document.addEventListener('DOMContentLoaded', function() {
-    try {
-      const current = JSON.parse(localStorage.getItem('spb_v4_items') || '[]');
-      if (Array.isArray(current) && current.length) {
-        if (typeof items !== 'undefined') items = current;
-        if (typeof populateItems === 'function') populateItems();
-        if (typeof renderItems === 'function') renderItems();
-      }
-    } catch(e) {}
-  });
-})();
-</script>
 <script id="v626-mydeen-fix">
 (function(){
   'use strict';
@@ -7152,45 +7101,19 @@ main {
 }
 </style>
 
-<script id="v830-item-bootstrap">
+<script id="spb-items-sync">
 (function(){
   'use strict';
-  var KEY='spb_v4_items';
-  var ONCE='spb_v830_items_bootstrapped';
-  var DEFAULTS=[
-    {name:'AJAY GWALIAR',rate:165,hidden:false},
-    {name:'BSL DIPLAMAT SUPER',rate:230},
-    {name:'BSL EXCUTIVE CHOICE',rate:225},
-    {name:'BSL OFFICER CHARM',rate:225},
-    {name:'IPS SHATAK FAB',rate:165},
-    {name:'RAYMOND BONANZA',rate:390},
-    {name:'RAYMOND PREMIUM TROVIN',rate:365},
-    {name:'RAYMOND SUPER TROVINE',rate:450},
-    {name:'RAYMOND TRIDENT',rate:352},
-    {name:'RAYMOND TRO STRETCH',rate:425},
-    {name:'RAYMOND TROVINE',rate:335},
-    {name:'TNP AJAY',rate:185},
-    {name:'TNP BOND',rate:200}
-  ];
-  function read(){try{var a=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
+  /* V8.37: no item names or rates in the code. Items live only in this phone's storage
+     (and in your backup file). New phone / cleared data: Backup -> Restore, or Add Item. */
   function sync(){
     try{
-      var a=read();
-      if(a.length){
-        if(typeof items!=='undefined') items=a;
-        if(typeof populateItems==='function') populateItems();
-        if(typeof renderItems==='function') renderItems();
-        return;
-      }
-      var marked=localStorage.getItem(ONCE)==='1';
-      if(!marked){
-        localStorage.setItem(KEY,JSON.stringify(DEFAULTS));
-        localStorage.setItem(ONCE,'1');
-        if(typeof items!=='undefined') items=DEFAULTS.slice();
-      }
+      var a=JSON.parse(localStorage.getItem('spb_v4_items')||'[]');
+      if(!Array.isArray(a)||!a.length)return;
+      if(typeof items!=='undefined') items=a;
       if(typeof populateItems==='function') populateItems();
       if(typeof renderItems==='function') renderItems();
-    }catch(e){console.warn('V8.30 item bootstrap skipped',e)}
+    }catch(e){console.warn('item sync skipped',e)}
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',sync,{once:true});
   else sync();
