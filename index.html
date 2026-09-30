@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.38</title>
+<title>Sale Profit Book • V8.39</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.38" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.39" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1728,7 +1728,7 @@ button{font-weight:900!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.38</div>
+<div class="version">Version 8.39</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1885,7 +1885,8 @@ button{font-weight:900!important}
 .v748-gdrive-info.success .v748-gdrive-status{color:#126d66;}
 .v748-gdrive-info.failed .v748-gdrive-status{color:#9b3333;}
 </style>
-<div class="page" id="backupPage"><div class="backup-box" style="padding:14px;"><div style="font-size:20px;font-weight:900;margin-bottom:4px;">☁️ Backup</div><div style="font-size:12px;opacity:.68;margin-bottom:12px;">Google Drive Backup &amp; Restore</div><div class="backup-actions-v455" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><button class="full-backup" id="gdriveBackupBtn" onclick="gdriveBackup()" type="button">☁️ Backup Now</button><label class="backup-restore-label-v455 full-restore" style="display:flex;align-items:center;justify-content:center;">♻️ Restore<input accept=".json,application/json" hidden="" id="restoreFileV551" onchange="partySafeRestore(this.files[0])" type="file"/></label></div><div class="meta" id="backupStatusV551" style="margin-top:10px;text-align:center;">One-tap Google Drive backup</div><div aria-live="polite" class="v748-gdrive-info" id="gdriveBackupInfoV748"><div class="v748-gdrive-info-title">☁️ Google Drive Backup Status</div><div class="v748-gdrive-status" id="gdriveBackupStateV748">Not backed up yet</div><div class="v748-gdrive-time" id="gdriveBackupTimeV748">Last Backup: —</div><div class="v748-gdrive-time" id="gdriveBackupFileV751">Backup File: SALE-PROFIT-BOOK-GDRIVE-BACKUP.json</div></div>
+<div class="page" id="backupPage"><div class="backup-box" style="padding:14px;"><div style="font-size:20px;font-weight:900;margin-bottom:4px;">☁️ Backup</div><div style="font-size:12px;opacity:.68;margin-bottom:12px;">Google Drive Backup &amp; Restore</div><div class="backup-actions-v455" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><button class="full-backup" id="gdriveBackupBtn" onclick="gdriveBackup()" type="button">☁️ Backup Now</button><label class="backup-restore-label-v455 full-restore" style="display:flex;align-items:center;justify-content:center;">♻️ Restore<input accept=".json,application/json" hidden="" id="restoreFileV551" onchange="partySafeRestore(this.files[0])" type="file"/></label></div><div class="meta" id="backupStatusV551" style="margin-top:10px;text-align:center;">One-tap Google Drive backup</div><div aria-live="polite" class="v748-gdrive-info" id="gdriveBackupInfoV748"><div class="v748-gdrive-info-title">☁️ Google Drive Backup Status</div><div class="v748-gdrive-status" id="gdriveBackupStateV748">Not backed up yet</div><div class="v748-gdrive-time" id="gdriveBackupTimeV748">Last Backup: —</div><div class="v748-gdrive-time" id="gdriveBackupFileV751">Backup File: —</div></div>
+<button class="secondary" id="gdriveListBtn" onclick="gdriveOpenList()" style="width:100%;margin-top:10px" type="button">📂 Drive Backups — பழையவற்றை Restore செய்ய</button>
 <div id="v776-delete-data-card" style="margin-top:12px;border:1px solid #f0d5d5;border-radius:14px;padding:12px;background:#fff8f8;">
 <div style="font-size:15px;font-weight:900;color:#b52b2b;margin-bottom:8px;">Delete Data</div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -4595,8 +4596,14 @@ document.addEventListener('DOMContentLoaded',function(){
 (function(){
   const GDRIVE_CLIENT_ID = "123737120474-8sqc1sb4p0i9j7s9nq56j4gkd784lm1n.apps.googleusercontent.com";
   const GDRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+  const PREFIX = "SALE-PROFIT-BOOK-Backup-";          /* one NEW dated file per backup */
+  const LEGACY = "SALE-PROFIT-BOOK-GDRIVE-BACKUP.json"; /* old single file: never touched */
+  const KEEP = 10;                                     /* newest dated copies kept; older go to Drive Trash */
+  const K_AT='spb_last_gdrive_backup_at', K_SIG='spb_backup_sig_v1', K_NAME='spb_last_gdrive_backup_name';
+  const SIG_KEYS=['spb_v4_items','spb_v4_entries','spb_v4_expenses','spb_v4_stock','saleProfitBookMansoorV1','saleProfitBookMydeenV1','spb_credit_payments_v1','spb_credit_customers_v1','spb_mansoor_opening_balance_v731'];
   let gdriveTokenClient = null;
   let gdriveAccessToken = null;
+  let gdriveTokenExp = 0;
 
   function gdriveStatus(msg, ok){
     const st=document.getElementById('backupStatusV551');
@@ -4605,6 +4612,12 @@ document.addEventListener('DOMContentLoaded',function(){
       st.style.color=ok ? '#126d66' : '#9b3333';
     }
   }
+  function pad(n){return String(n).padStart(2,'0')}
+  function stampOf(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'_'+pad(d.getHours())+'-'+pad(d.getMinutes())+'-'+pad(d.getSeconds())}
+  function fnv(str){let h=0x811c9dc5;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h.toString(16)}
+  function backupSignature(){let s='';SIG_KEYS.forEach(function(k){s+=k+'='+(localStorage.getItem(k)||'')+'\u0001'});return fnv(s)+':'+s.length}
+  window.spbBackupSignature=backupSignature;
+  function fmtWhen(v){const d=new Date(v);return isNaN(d.getTime())?'—':d.toLocaleString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true})}
 
   function renderGDriveBackupInfo(){
     const box=document.getElementById('gdriveBackupInfoV748');
@@ -4612,7 +4625,7 @@ document.addEventListener('DOMContentLoaded',function(){
     const time=document.getElementById('gdriveBackupTimeV748');
     if(!box||!state||!time)return;
     try{
-      const at=localStorage.getItem('spb_last_gdrive_backup_at');
+      const at=localStorage.getItem(K_AT);
       if(!at){
         box.classList.remove('success','failed');
         state.textContent='Not backed up yet';
@@ -4623,9 +4636,9 @@ document.addEventListener('DOMContentLoaded',function(){
       if(isNaN(d.getTime()))throw new Error('bad date');
       box.classList.add('success'); box.classList.remove('failed');
       state.textContent='✅ Backup completed successfully';
-      time.textContent='Last Backup: '+d.toLocaleString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+      time.textContent='Last Backup: '+fmtWhen(at);
       const f=document.getElementById('gdriveBackupFileV751');
-      if(f)f.textContent='Backup File: SALE-PROFIT-BOOK-GDRIVE-BACKUP.json';
+      if(f)f.textContent='Backup File: '+(localStorage.getItem(K_NAME)||LEGACY+' (பழைய)');
     }catch(e){
       box.classList.remove('success'); box.classList.add('failed');
       state.textContent='Backup status unavailable';
@@ -4634,17 +4647,16 @@ document.addEventListener('DOMContentLoaded',function(){
   }
   window.renderGDriveBackupInfo=renderGDriveBackupInfo;
 
-  function gdriveCollectData(){
+  function gdriveCollectData(createdAt){
     const storage={};
     for(let i=0;i<localStorage.length;i++){
       const k=localStorage.key(i);
       if(k!==null) storage[k]=localStorage.getItem(k);
     }
-    const now=new Date();
     return {
       app:"SALE-PROFIT-BOOK",
-      version:"7.56",
-      createdAt:now.toISOString(),
+      version:"8.39",
+      createdAt:createdAt,
       storage:storage
     };
   }
@@ -4669,96 +4681,211 @@ document.addEventListener('DOMContentLoaded',function(){
   }
 
   async function gdriveGetToken(){
+    if(gdriveAccessToken && Date.now()<gdriveTokenExp) return gdriveAccessToken;
     await gdriveLoadGIS();
     return new Promise((resolve,reject)=>{
+      const cb=(resp)=>{
+        if(resp && resp.access_token){
+          gdriveAccessToken=resp.access_token;
+          gdriveTokenExp=Date.now()+Math.max(60,(Number(resp.expires_in)||3600)-120)*1000;
+          resolve(resp.access_token);
+        } else reject(new Error('Google authorization was not completed'));
+      };
       try{
         if(!gdriveTokenClient){
-          gdriveTokenClient=google.accounts.oauth2.initTokenClient({
-            client_id:GDRIVE_CLIENT_ID,
-            scope:GDRIVE_SCOPE,
-            callback:(resp)=>{
-              if(resp && resp.access_token){gdriveAccessToken=resp.access_token;resolve(resp.access_token);}
-              else reject(new Error('Google authorization was not completed'));
-            }
-          });
+          gdriveTokenClient=google.accounts.oauth2.initTokenClient({client_id:GDRIVE_CLIENT_ID,scope:GDRIVE_SCOPE,callback:cb});
         } else {
-          gdriveTokenClient.callback=(resp)=>{
-            if(resp && resp.access_token){gdriveAccessToken=resp.access_token;resolve(resp.access_token);}
-            else reject(new Error('Google authorization was not completed'));
-          };
+          gdriveTokenClient.callback=cb;
         }
         gdriveTokenClient.requestAccessToken({prompt:""});
       }catch(e){reject(e);}
     });
   }
 
-  async function gdriveFindBackup(token){
-    const q="name = 'SALE-PROFIT-BOOK-GDRIVE-BACKUP.json' and trashed = false";
-    const url="https://www.googleapis.com/drive/v3/files?q="+encodeURIComponent(q)+"&spaces=drive&fields=files(id,name)";
-    const r=await fetch(url,{headers:{Authorization:"Bearer "+token}});
-    if(!r.ok) throw new Error("Could not search Google Drive");
-    const d=await r.json();
-    return d.files && d.files.length ? d.files[0] : null;
+  async function gdriveListAll(token){
+    const q="trashed = false and mimeType = 'application/json'";
+    let files=[],pageToken='';
+    do{
+      const url="https://www.googleapis.com/drive/v3/files?q="+encodeURIComponent(q)+"&spaces=drive&pageSize=100&fields="+encodeURIComponent("nextPageToken,files(id,name,createdTime,modifiedTime,size)")+(pageToken?"&pageToken="+encodeURIComponent(pageToken):"");
+      const r=await fetch(url,{headers:{Authorization:"Bearer "+token}});
+      if(!r.ok) throw new Error("Could not list Google Drive files");
+      const d=await r.json();
+      files=files.concat(d.files||[]);
+      pageToken=d.nextPageToken||'';
+    }while(pageToken && files.length<500);
+    return files.filter(function(f){return /^SALE-PROFIT-BOOK-/i.test(f&&f.name||'')});
   }
 
-  async function gdriveUpload(token){
-    const data=gdriveCollectData();
-    const json=JSON.stringify(data,null,2);
-    const blob=new Blob([json],{type:"application/json"});
-    const existing=await gdriveFindBackup(token);
-    const metadata={name:"SALE-PROFIT-BOOK-GDRIVE-BACKUP.json",mimeType:"application/json"};
-    let url,method,body;
-
-    if(existing){
-      url="https://www.googleapis.com/upload/drive/v3/files/"+encodeURIComponent(existing.id)+"?uploadType=multipart";
-      method="PATCH";
-    }else{
-      url="https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart";
-      method="POST";
-    }
-
+  async function gdriveUploadNew(token,name,data){
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
     const form=new FormData();
-    form.append("metadata",new Blob([JSON.stringify(metadata)],{type:"application/json"}));
+    form.append("metadata",new Blob([JSON.stringify({name:name,mimeType:"application/json"})],{type:"application/json"}));
     form.append("file",blob);
-
-    const r=await fetch(url,{
-      method:method,
-      headers:{Authorization:"Bearer "+token},
-      body:form
+    const r=await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name",{
+      method:"POST",headers:{Authorization:"Bearer "+token},body:form
     });
-    if(!r.ok){
-      let detail="";
-      try{detail=await r.text();}catch(e){}
-      throw new Error("Google Drive upload failed");
+    if(!r.ok) throw new Error("Google Drive upload failed");
+    const j=await r.json().catch(function(){return {}});
+    return j.id||'';
+  }
+
+  /* keep the newest KEEP dated copies; older ones go to Drive Trash (recoverable). Never touches the legacy file. */
+  async function gdriveCleanup(token,keepId){
+    const all=await gdriveListAll(token);
+    const dated=all.filter(function(f){return f.name.indexOf(PREFIX)===0}).sort(function(a,b){return a.name<b.name?1:a.name>b.name?-1:0});
+    const keep=new Set(dated.slice(0,KEEP).map(function(f){return f.id}));
+    if(keepId)keep.add(keepId);
+    let trashed=0;
+    for(const f of dated){
+      if(keep.has(f.id))continue;
+      const r=await fetch("https://www.googleapis.com/drive/v3/files/"+encodeURIComponent(f.id),{method:"PATCH",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({trashed:true})});
+      if(r.ok)trashed++;
     }
-    return data;
+    return {copies:dated.length-trashed,trashed:trashed};
   }
 
   window.gdriveBackup=async function(){
     const btn=document.getElementById('gdriveBackupBtn');
     if(btn){btn.disabled=true;btn.textContent="☁️ Backing up...";}
+    const prev={at:localStorage.getItem(K_AT),sig:localStorage.getItem(K_SIG),name:localStorage.getItem(K_NAME)};
+    const restorePrev=function(){[[K_AT,prev.at],[K_SIG,prev.sig],[K_NAME,prev.name]].forEach(function(p){try{if(p[1]===null)localStorage.removeItem(p[0]);else localStorage.setItem(p[0],p[1])}catch(e){}})};
     try{
       gdriveStatus("Connecting to Google Drive…",true);
       const token=await gdriveGetToken();
       gdriveStatus("Uploading backup to Google Drive…",true);
-      const data=await gdriveUpload(token);
-      const n=Object.keys(data.storage||{}).length;
-      gdriveStatus("✅ GDrive Backup completed successfully. "+n+" data sections saved.",true);
+      const now=new Date(), iso=now.toISOString(), name=PREFIX+stampOf(now)+".json";
+      /* stamp first so the backup file itself carries "backed up at this moment"; undone if upload fails */
+      try{localStorage.setItem(K_AT,iso);localStorage.setItem(K_SIG,JSON.stringify({sig:backupSignature(),at:iso}));localStorage.setItem(K_NAME,name);}catch(e){}
+      let data,id;
       try{
-        localStorage.setItem("spb_last_gdrive_backup_at",data.createdAt);
-      }catch(e){}
+        data=gdriveCollectData(iso);
+        id=await gdriveUploadNew(token,name,data);
+      }catch(e){restorePrev();throw e;}
+      const n=Object.keys(data.storage||{}).length;
+      let info=null;
+      try{gdriveStatus("Checking old copies…",true);info=await gdriveCleanup(token,id);}catch(e){console.warn("Drive cleanup skipped",e);}
+      gdriveStatus("✅ GDrive Backup completed. "+n+" data sections saved"+(info?" • Drive copies: "+info.copies:"")+".",true);
       renderGDriveBackupInfo();
-      alert("✅ GDrive Backup completed successfully.\n\nYour FULL SALE-PROFIT-BOOK backup is saved in Google Drive.");
+      try{window.dispatchEvent(new Event('spb-gdrive-backup-done'))}catch(e){}
+      alert("✅ GDrive Backup completed successfully.\n\nபுதிய file: "+name+(info?"\nDrive-ல் மொத்தம் "+info.copies+" backup copies உள்ளன (புதியவை "+KEEP+" வரை)."+(info.trashed?"\nபழைய "+info.trashed+" copy Drive Trash-க்கு மாற்றப்பட்டது.":""):""));
     }catch(e){
       console.error(e);
       gdriveStatus("❌ GDrive Backup failed. Please check Google sign-in / Drive permission.",false);
       alert("GDrive Backup failed.\n\nPlease make sure you are signed in to Google and allow Drive access.");
     }finally{
-      if(btn){btn.disabled=false;btn.textContent="☁️ GDrive Backup";}
+      if(btn){btn.disabled=false;btn.textContent="☁️ Backup Now";}
       renderGDriveBackupInfo();
     }
   };
+
+  /* ---------- Drive backups list + restore ---------- */
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+  function gdModal(){
+    let m=document.getElementById('gdModal');if(m)return m;
+    m=document.createElement('div');m.id='gdModal';m.className='cb-modal';
+    m.innerHTML='<div class="cb-sheet"><div class="cb-head"><button id="gdRefresh" type="button" title="Refresh">↻</button><h3>☁️ Drive Backups</h3><button id="gdClose" type="button">✕</button></div><div class="cb-body" id="gdBody"></div></div>';
+    document.body.appendChild(m);
+    m.addEventListener('click',function(e){if(e.target===m)closeList()});
+    document.getElementById('gdClose').onclick=closeList;
+    document.getElementById('gdRefresh').onclick=function(){loadList()};
+    document.getElementById('gdBody').addEventListener('click',function(e){
+      const b=e.target.closest&&e.target.closest('button[data-gdid]');
+      if(b)restoreFromDrive(b.getAttribute('data-gdid'),b.getAttribute('data-gdname'));
+    });
+    return m;
+  }
+  function closeList(){const m=document.getElementById('gdModal');if(m)m.classList.remove('open');document.body.style.overflow=''}
+  async function loadList(){
+    const body=document.getElementById('gdBody');
+    body.innerHTML='<div class="cb-empty">Google Drive-ஐ இணைக்கிறது…</div>';
+    try{
+      const token=await gdriveGetToken();
+      body.innerHTML='<div class="cb-empty">Backups ஏற்றுகிறது…</div>';
+      const all=await gdriveListAll(token);
+      const dated=all.filter(function(f){return f.name.indexOf(PREFIX)===0}).sort(function(a,b){return a.name<b.name?1:a.name>b.name?-1:0});
+      const legacy=all.filter(function(f){return f.name===LEGACY});
+      const rows=dated.concat(legacy);
+      if(!rows.length){body.innerHTML='<div class="cb-empty">Drive-ல் backup எதுவும் இல்லை.<br>முதலில் ☁️ Backup Now தட்டவும்.</div>';return}
+      body.innerHTML='<div class="cb-sum"><span>Drive-ல் உள்ள Backups</span><strong>'+rows.length+'</strong><small>புதியவை மேலே • Restore செய்ய ♻️ தட்டவும்</small></div>'+
+        rows.map(function(f,i){
+          const when=fmtWhen(f.modifiedTime||f.createdTime), kb=f.size?Math.max(1,Math.round(Number(f.size)/1024))+' KB':'';
+          const tag=f.name===LEGACY?' • பழைய single file':(i===0?' • சமீபத்தியது':'');
+          return '<div class="cb-row" style="cursor:default"><div><b>'+esc(when)+'</b><small>'+esc(f.name)+(kb?' • '+kb:'')+esc(tag)+'</small></div><div><button class="cb-sec-btn" type="button" data-gdid="'+esc(f.id)+'" data-gdname="'+esc(f.name)+'" style="padding:9px 12px!important">♻️ Restore</button></div></div>';
+        }).join('');
+    }catch(e){
+      console.error(e);
+      body.innerHTML='<div class="cb-empty">Backups ஏற்ற முடியவில்லை.<br>Google sign-in / இணையத்தைச் சரிபார்க்கவும்.</div>';
+    }
+  }
+  async function restoreFromDrive(id,name){
+    const body=document.getElementById('gdBody');
+    try{
+      body.innerHTML='<div class="cb-empty">'+esc(name)+' பதிவிறக்குகிறது…</div>';
+      const token=await gdriveGetToken();
+      const r=await fetch("https://www.googleapis.com/drive/v3/files/"+encodeURIComponent(id)+"?alt=media",{headers:{Authorization:"Bearer "+token}});
+      if(!r.ok) throw new Error("download failed");
+      const text=await r.text();
+      closeList();
+      const file=new File([text],name||'drive-backup.json',{type:'application/json'});
+      if(typeof window.partySafeRestore==='function')window.partySafeRestore(file);else window.restoreV600(file);
+    }catch(e){
+      console.error(e);
+      body.innerHTML='<div class="cb-empty">பதிவிறக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.</div>';
+    }
+  }
+  window.gdriveOpenList=function(){
+    gdModal().classList.add('open');document.body.style.overflow='hidden';loadList();
+  };
   window.addEventListener('DOMContentLoaded',renderGDriveBackupInfo);
+})();
+</script>
+<script id="spb-backup-reminder">
+(function(){
+  'use strict';
+  var K_AT='spb_last_gdrive_backup_at',K_SIG='spb_backup_sig_v1',K_SNZ='spb_backup_snooze_until';
+  var DAY=24*3600e3,SNOOZE=8*3600e3;
+  function arr(k){try{var a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+  function hasData(){return ['spb_v4_entries','spb_v4_expenses','saleProfitBookMansoorV1','saleProfitBookMydeenV1','spb_credit_payments_v1'].some(function(k){return arr(k).length>0})}
+  function due(){
+    if(!hasData())return null;
+    var at=localStorage.getItem(K_AT),t=at?new Date(at).getTime():NaN,age=isFinite(t)?Date.now()-t:Infinity;
+    if(age<DAY)return null;
+    var m=null;try{m=JSON.parse(localStorage.getItem(K_SIG)||'null')}catch(e){}
+    var cur=typeof window.spbBackupSignature==='function'?window.spbBackupSignature():null;
+    if(m&&cur&&m.sig===cur)return null;
+    return {age:age,never:!isFinite(age)};
+  }
+  function bar(){
+    var b=document.getElementById('spbBackupBar');if(b)return b;
+    b=document.createElement('div');b.id='spbBackupBar';
+    b.style.cssText='position:fixed;left:10px;right:10px;bottom:12px;z-index:9990;display:none;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:#fff4e5;border:1px solid #f2c680;box-shadow:0 6px 18px rgba(0,0,0,.18);font-weight:800;color:#8a4b00;font-size:14px';
+    b.innerHTML='<span id="spbBackupMsg" style="flex:1"></span><button id="spbBackupGo" type="button" style="border:0;border-radius:10px;padding:9px 12px;background:#126d66;color:#fff;font-weight:900">☁️ Backup Now</button><button id="spbBackupLater" type="button" aria-label="Later" style="border:0;border-radius:10px;padding:9px 11px;background:#f3e2c4;color:#8a4b00;font-weight:900">✕</button>';
+    document.body.appendChild(b);
+    document.getElementById('spbBackupLater').onclick=function(){try{localStorage.setItem(K_SNZ,String(Date.now()+SNOOZE))}catch(e){}hide()};
+    document.getElementById('spbBackupGo').onclick=function(){
+      hide();
+      var nav=[].slice.call(document.querySelectorAll('.nav-bar button')).filter(function(x){return (x.textContent||'').trim()==='Backup'})[0];
+      if(nav)nav.click();
+      if(typeof window.gdriveBackup==='function')window.gdriveBackup();
+    };
+    return b;
+  }
+  function hide(){var b=document.getElementById('spbBackupBar');if(b)b.style.display='none'}
+  function check(){
+    try{
+      var d=due();
+      if(!d||Date.now()<Number(localStorage.getItem(K_SNZ)||0)){hide();return}
+      var b=bar(),days=Math.floor(d.age/DAY);
+      document.getElementById('spbBackupMsg').textContent=d.never?'☁️ இன்னும் Drive Backup எடுக்கவில்லை':'☁️ Backup எடுத்து '+days+' நாள் ஆகிறது — புதிய பதிவுகள் உள்ளன';
+      b.style.display='flex';
+    }catch(e){console.warn('backup reminder skipped',e)}
+  }
+  window.spbBackupReminderCheck=check;
+  window.addEventListener('spb-gdrive-backup-done',hide);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(check,400)});
+  setInterval(check,10*60*1000);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(check,2500)});
+  else setTimeout(check,2500);
 })();
 </script>
 <script id="v626-mydeen-fix">
