@@ -8,7 +8,7 @@
 <link href="./manifest.json?v=809" rel="manifest"/>
 <meta content="yes" name="apple-mobile-web-app-capable"/>
 <meta content="no-cache,no-store,must-revalidate" http-equiv="Cache-Control"/>
-<title>Sale Profit Book • V8.39</title>
+<title>Sale Profit Book • V8.40</title>
 <style>
 :root{--teal:#117d73;--light:#e9f3f2;--bg:#f5f8f8;--text:#263238;--muted:#708080;--line:#d8e1e0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
@@ -431,7 +431,7 @@ html.modal-open, body.modal-open{
 .report-breakdown .breakdown-name{font-weight:800}
 .report-breakdown .breakdown-amount{font-weight:900}
 </style>
-<meta content="8.39" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
+<meta content="8.40" name="app-version"/><!-- V4.48 REPORT EXPENSE BREAKDOWN --><style id="v450-report-actions">#reportPage .secondary{width:100%;}</style><style id="v451-mansoor-edit">
 .mansoor-edit{padding:7px 10px;background:#eaf5f3;border:0;border-radius:9px;font-weight:800;color:#116d64}.mansoor-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mansoor-row{grid-template-columns:1fr auto minmax(150px,auto)!important}
 </style>
 <style id="v455-backup">
@@ -1728,7 +1728,7 @@ button{font-weight:900!important}
 <body>
 <header>
 <h1>Sale Profit Book</h1>
-<div class="version">Version 8.39</div>
+<div class="version">Version 8.40</div>
 <div class="subtitle">Sale • Purchase • Profit</div>
 </header>
 <nav class="nav-bar nav-five">
@@ -1753,6 +1753,7 @@ button{font-weight:900!important}
 <button class="primary" onclick="goToNewEntry()">📝 New Entry</button>
 <button id="homeStockButton" type="button">Stock</button>
 </div>
+<div id="lowStockCard" style="display:none"></div>
 <section class="card" id="entryCard">
 <div class="field">
 <label>Item Name</label>
@@ -2646,6 +2647,10 @@ else{build();setTimeout(build,800)}
 <label>Purchase / Meter ₹</label>
 <input id="newItemRate" inputmode="decimal" min="0" placeholder="225" step="0.01" type="number"/>
 </div>
+<div class="field">
+<label>Low Stock Alert — குறைந்தபட்ச Meter (விருப்பம்)</label>
+<input id="newItemMin" inputmode="decimal" min="0" placeholder="10" step="0.01" type="number"/><div class="meta">Stock இதற்குக் கீழே போனால் Home-ல் எச்சரிக்கை வரும். காலியாக விட்டால் எச்சரிக்கை இல்லை.</div>
+</div>
 <div class="report-grid">
 <div class="field">
 <label>Stock Date</label>
@@ -3366,14 +3371,15 @@ function initNewItemAutocomplete(){
   document.addEventListener('click',e=>{if(!e.target.closest('#newItemNameWrap') && box)box.style.display='none';});
 }
 function saveItem(){
-  const name=$('newItemName').value.trim(),rate=Number($('newItemRate').value),stock=Number($('newStockMeter').value)||0;
+  const name=$('newItemName').value.trim(),rate=Number($('newItemRate').value),stock=Number($('newStockMeter').value)||0,minStock=Number($('newItemMin')&&$('newItemMin').value)||0;
+  const applyMin=function(it){if(it){if(minStock>0)it.min=minStock;else delete it.min;}};
   if(!name||!(rate>0)){alert('Enter Item Name and Purchase / Meter.');return}
   if(editingItemName){
     const oldName=editingItemName;
     const old=items.find(x=>x.name===oldName);
     const duplicate=items.find(x=>x.name.toLowerCase()===name.toLowerCase() && x.name!==oldName);
     if(duplicate){alert('An item with this name already exists.');return}
-    if(old){old.name=name;old.rate=rate;}
+    if(old){old.name=name;old.rate=rate;applyMin(old);}
     stockMovements.forEach(x=>{if(x.item===oldName)x.item=name;});
     entries.forEach(x=>{if(x.item===oldName)x.item=name;});
     localStorage.setItem(STOCK_KEY,JSON.stringify(stockMovements));
@@ -3381,14 +3387,14 @@ function saveItem(){
     editingItemName=null;
   }else{
     const old=items.find(x=>x.name.toLowerCase()===name.toLowerCase());
-    if(old)old.rate=rate;else items.push({name,rate});
+    if(old){old.rate=rate;applyMin(old);}else{const ni={name,rate};applyMin(ni);items.push(ni);}
     if(stock>0){
       stockMovements.unshift({id:Date.now(),date:$('newStockDate').value||today(),item:name,meter:stock,type:'Stock In'});
       localStorage.setItem(STOCK_KEY,JSON.stringify(stockMovements));
     }
   }
   localStorage.setItem(ITEMS_KEY,JSON.stringify(items));
-  $('newItemName').value='';$('newItemRate').value='';$('newStockMeter').value='';$('newStockDate').value=today();
+  $('newItemName').value='';$('newItemRate').value='';$('newStockMeter').value='';if($('newItemMin'))$('newItemMin').value='';$('newStockDate').value=today();
   $('newItemSuggestions').style.display='none';
   const btn=document.querySelector('#itemModal .modal-actions .primary'); if(btn)btn.textContent='Save Item';
   populateItems();renderItems();renderStock();calculate();
@@ -3398,6 +3404,7 @@ function editItem(name){
   editingItemName=name;
   $('newItemName').value=x.name;
   $('newItemRate').value=x.rate||'';
+  if($('newItemMin'))$('newItemMin').value=x.min||'';
   $('newStockMeter').value='';
   $('newStockDate').value=today();
   const btn=document.querySelector('#itemModal .modal-actions .primary'); if(btn)btn.textContent='Update Item';
@@ -3411,7 +3418,7 @@ function renderItems(){
   list.innerHTML=sorted.map(x=>{
     const hidden=!!x.hidden;
     return `<div class="item-row ${hidden?'v620-hidden-item':''}">
-      <div><b>${esc(x.name)}</b><div class="meta">${money(x.rate)} / meter ${hidden?'<span class="v620-hidden-badge">Hidden</span>':''}</div></div>
+      <div><b>${esc(x.name)}</b><div class="meta">${money(x.rate)} / meter ${x.min>0?'• ⚠️ Min '+x.min+' m ':''}${hidden?'<span class="v620-hidden-badge">Hidden</span>':''}</div></div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <button type="button" class="secondary v804-item-action" data-action="edit" data-item-name="${esc(x.name)}">Edit</button>
         <button type="button" class="secondary v620-hide-btn" data-hide-item="${esc(x.name)}">${hidden?'👁️ Show':'🙈 Hide'}</button>
@@ -4888,6 +4895,115 @@ document.addEventListener('DOMContentLoaded',function(){
   else setTimeout(check,2500);
 })();
 </script>
+<script id="spb-low-stock">
+(function(){
+  'use strict';
+  /* Low-stock alert: per-item "min meter" (item.min). Balance = Stock In - Stock Out - sold meters (same as the Stock page). */
+  var WATCH={spb_v4_items:1,spb_v4_entries:1,spb_v4_stock:1};
+  function arr(k){try{var a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+  function num(v){v=Number(v);return isFinite(v)?v:0}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]})}
+  function m2(v){return (Math.round(v*100)/100).toFixed(2).replace(/\.?0+$/,'')+' m'}
+  function balances(){
+    var b={};
+    arr('spb_v4_stock').forEach(function(x){var n=x&&x.item;if(!n)return;b[n]=(b[n]||0)+(String(x.type||'Stock In')==='Stock Out'?-num(x.meter):num(x.meter))});
+    arr('spb_v4_entries').forEach(function(x){var n=x&&x.item;if(!n)return;b[n]=(b[n]||0)-num(x.meter)});
+    return b;
+  }
+  function lowList(){
+    var bal=balances(),out=[];
+    arr('spb_v4_items').forEach(function(it){
+      var min=num(it&&it.min);
+      if(!it||!it.name||!(min>0)||it.hidden)return;
+      var cur=num(bal[it.name]);
+      if(cur<=min)out.push({name:it.name,bal:cur,min:min});
+    });
+    out.sort(function(a,b){return (a.bal/a.min)-(b.bal/b.min)||a.name.localeCompare(b.name)});
+    return out;
+  }
+  window.spbLowStock=lowList;
+  var last=null; /* name -> true while low; null until the first silent pass */
+  function toastTop(msg){
+    var t=document.getElementById('spbLowToast');
+    if(!t){t=document.createElement('div');t.id='spbLowToast';
+      t.style.cssText='position:fixed;left:12px;right:12px;top:14px;z-index:9995;padding:12px 14px;border-radius:14px;background:#fff4e5;border:1px solid #f2c680;box-shadow:0 8px 22px rgba(0,0,0,.22);font-weight:800;color:#8a4b00;font-size:14px;display:none;line-height:1.4';
+      document.body.appendChild(t);t.onclick=function(){t.style.display='none'};}
+    t.innerHTML=msg;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none'},5000);
+  }
+  function render(){
+    try{
+      var list=lowList(),card=document.getElementById('lowStockCard');
+      var now={};list.forEach(function(x){now[x.name]=1});
+      if(last!==null){
+        var fresh=list.filter(function(x){return !last[x.name]});
+        if(fresh.length)toastTop('⚠️ குறைவான stock: '+fresh.map(function(x){return '<b>'+esc(x.name)+'</b> — '+esc(m2(x.bal))+' மீதம் (min '+esc(m2(x.min))+')'}).join('<br>'));
+      }
+      last=now;
+      if(card){
+        if(!list.length){card.style.display='none';card.innerHTML=''}
+        else{
+          card.style.display='block';
+          var open=card.getAttribute('data-open')==='1',show=open?list:list.slice(0,3);
+          card.innerHTML='<div class="low-head"><b>⚠️ குறைவான Stock ('+list.length+')</b></div>'+
+            show.map(function(x){return '<button type="button" class="low-row" data-low="'+esc(x.name)+'"><span>'+esc(x.name)+'</span><b>'+esc(m2(x.bal))+'</b><small>min '+esc(m2(x.min))+'</small></button>'}).join('')+
+            (list.length>3?'<button type="button" class="low-more" data-more="1">'+(open?'▲ குறை':'▼ மீதம் '+(list.length-3)+' items')+'</button>':'');
+        }
+      }
+      decorateStock(list);
+    }catch(e){console.warn('low-stock skipped',e)}
+  }
+  function decorateStock(list){
+    var low={};(list||lowList()).forEach(function(x){low[x.name]=x});
+    var sel=document.getElementById('stockItemSelect');
+    if(sel){[].forEach.call(sel.options,function(o){if(o.value&&low[o.value]&&o.text.indexOf('⚠️')!==0)o.text='⚠️ '+o.text})}
+    var cur=sel&&sel.value,box=document.getElementById('stockSummary');
+    if(box&&cur&&low[cur]){
+      var head=box.querySelector('.stock-head');
+      if(head&&!head.parentNode.querySelector('.low-note')){
+        var bal=head.querySelector('.stock-balance');if(bal)bal.style.color='#c62828';
+        var n=document.createElement('div');n.className='low-note';n.textContent='⚠️ குறைவான stock — Min '+m2(low[cur].min);
+        head.parentNode.insertBefore(n,head.nextSibling);
+      }
+    }
+  }
+  var timer=0;
+  function schedule(){clearTimeout(timer);timer=setTimeout(render,200)}
+  /* every save/delete/restore path ends in a localStorage write; watch those instead of observing the DOM */
+  try{
+    var S=Storage.prototype,set=S.setItem,rem=S.removeItem;
+    S.setItem=function(k){var r=set.apply(this,arguments);try{if(this===window.localStorage&&WATCH[k])schedule()}catch(e){}return r};
+    S.removeItem=function(k){var r=rem.apply(this,arguments);try{if(this===window.localStorage&&WATCH[k])schedule()}catch(e){}return r};
+  }catch(e){console.warn('low-stock storage hook skipped',e)}
+  /* Stock page re-renders its <select>; mark low items again after every render */
+  if(typeof window.renderStock==='function'){
+    var orig=window.renderStock;
+    window.renderStock=function(){var r=orig.apply(this,arguments);try{decorateStock()}catch(e){}return r};
+  }
+  document.addEventListener('click',function(e){
+    var more=e.target.closest&&e.target.closest('#lowStockCard [data-more]');
+    if(more){var c=document.getElementById('lowStockCard');c.setAttribute('data-open',c.getAttribute('data-open')==='1'?'0':'1');render();return}
+    var b=e.target.closest&&e.target.closest('#lowStockCard [data-low]');
+    if(!b)return;
+    var box=document.getElementById('homeStockDetails'),btn=document.getElementById('homeStockButton'),sel=document.getElementById('stockItemSelect');
+    if(box&&box.classList.contains('hidden')){box.classList.remove('hidden');box.classList.add('visible');if(btn)btn.textContent='📦 Close Stock'}
+    if(typeof window.renderStock==='function')window.renderStock();
+    if(sel){sel.value=b.getAttribute('data-low');if(typeof window.renderStock==='function')window.renderStock()}
+    if(box&&box.scrollIntoView)box.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(render,600)});
+  else setTimeout(render,600);
+})();
+</script>
+<style id="spb-low-stock-css">
+#lowStockCard{margin:10px 0;padding:10px 12px;border-radius:16px;background:#fff4e5;border:1px solid #f2c680}
+#lowStockCard .low-head{font-size:15px;color:#8a4b00;margin-bottom:6px}
+#lowStockCard .low-row{display:flex;width:100%;align-items:center;gap:8px;padding:9px 10px;margin-top:6px;border:0;border-radius:12px;background:#fff;color:#3b2a10;font-weight:800;font-size:14px;text-align:left;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+#lowStockCard .low-row span{flex:1;overflow:hidden;text-overflow:ellipsis}
+#lowStockCard .low-row b{color:#c62828}
+#lowStockCard .low-row small{color:#8a7a60;font-weight:700}
+#lowStockCard .low-more{width:100%;margin-top:6px;padding:8px;border:0;border-radius:12px;background:#f3e2c4;color:#8a4b00;font-weight:800}
+.low-note{margin:6px 0;padding:7px 10px;border-radius:10px;background:#fdecea;color:#c62828;font-weight:800;font-size:13px}
+</style>
 <script id="v626-mydeen-fix">
 (function(){
   'use strict';
