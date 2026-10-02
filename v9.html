@@ -192,15 +192,21 @@ function saveItem(){
 
 /* ---------- EXPENSE ---------- */
 function vExp(){
-  const a=rd(KEY.exp).sort((x,y)=>String(y.date).localeCompare(String(x.date))).slice(0,100);
-  return `<div class="card"><b>💸 Expense</b><label>Date</label><input type="date" id="xD" value="${today()}">
+  const all=rd(KEY.exp).sort((x,y)=>String(y.date).localeCompare(String(x.date))||N(y.id)-N(x.id));
+  const a=(xSel?all.filter(x=>x.date===xSel):all).slice(0,200),tot=a.reduce((t,x)=>t+N(x.amount),0);
+  const y=new Date();y.setDate(y.getDate()-1);
+  return `<div class="card"><b>📅 தேதி தேர்ந்தெடு</b>
+  <input type="date" id="xF" value="${xSel}" onchange="xSel=this.value;render()">
+  <button class="s" onclick="xSel=today();render()">Today</button> <button class="s" onclick="xSel='${ymd(y)}';render()">நேற்று</button> <button class="s" onclick="xSel='';render()">எல்லாம்</button>
+  <div class="k" style="margin-top:10px">${xSel?fd(xSel)+' • மொத்த Expense':'எல்லா தேதிகள் • மொத்த Expense'}<b class="red">${M(tot)}</b><small>${a.length} பதிவுகள்</small></div></div>
+  <div class="card"><b>💸 Expense சேர்க்க</b><label>Date</label><input type="date" id="xD" value="${xSel||today()}">
   <label>Expense</label><input id="xN"><label>Amount ₹</label><input id="xA" type="number" inputmode="decimal"><button onclick="addExp()">Add</button></div>
-  <div class="card">${a.map(x=>`<div class="row"><div>${E(x.name)}<small>${fd(x.date)}</small></div><div>${M(x.amount)} <button class="d" onclick="delExp(${N(x.id)})">✕</button></div></div>`).join('')||'<small>இல்லை</small>'}</div>`;
+  <div class="card">${a.map(x=>`<div class="row"><div>${E(x.name)}<small>${fd(x.date)}</small></div><div>${M(x.amount)} <button class="d" onclick="delExp(${N(x.id)})">✕</button></div></div>`).join('')||'<small>இந்த தேதியில் Expense இல்லை</small>'}</div>`;
 }
 function addExp(){
   const name=nm($('xN').value),amount=N($('xA').value);
   if(!name||!(amount>0))return alert('Expense & Amount உள்ளிடவும்.');
-  const a=rd(KEY.exp);a.unshift({id:Date.now(),date:$('xD').value||today(),name,amount});wr(KEY.exp,a);render();
+  const d=$('xD').value||today(),a=rd(KEY.exp);a.unshift({id:Date.now(),date:d,name,amount});wr(KEY.exp,a);if(xSel)xSel=d;render();
 }
 function delExp(id){if(!confirm('Delete?'))return;wr(KEY.exp,rd(KEY.exp).filter(x=>N(x.id)!==id));render()}
 
@@ -441,7 +447,7 @@ function applyRestore(s){
 
 
 /* ---------- HOME DASHBOARD / DATE SUMMARY / DUA / INSTALL ---------- */
-let dF=today(),dT=today(),ip=null;
+let dF=today(),dT=today(),ip=null,xSel=today();
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();ip=ev;const b=$('ib');if(b)b.classList.remove('hide')});
 function inst(){if(ip){ip.prompt();ip=null;const b=$('ib');if(b)b.classList.add('hide')}}
