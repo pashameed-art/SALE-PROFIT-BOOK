@@ -13,7 +13,7 @@ input,select{width:100%;padding:10px;border:1px solid #ccd;border-radius:8px;fon
 button{background:var(--g);color:#fff;border:0;border-radius:8px;padding:10px 14px;font-size:15px;font-weight:600;margin-top:8px}
 button.s{background:#e3eceb;color:var(--g)}button.d{background:#fde8e8;color:var(--r);padding:4px 8px;margin:0;font-size:12px}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #ddd}
-nav button{flex:1;background:none;color:#556;border-radius:0;margin:0;padding:12px 2px;font-size:12px}
+nav button{flex:1;background:none;color:#556;border-radius:0;margin:0;padding:12px 1px;font-size:11px}
 nav button.on{color:var(--g);border-top:3px solid var(--g)}
 .row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #eee;align-items:center}
 .row:first-child{border-top:0}small{color:#667;display:block}.g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -35,8 +35,8 @@ const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
 const fd=v=>{const p=String(v||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:v};
-let tab='home',cbKey=null,from='',to='';
-const TABS=[['home','🏠 Home'],['hist','📜 History'],['stock','📦 Stock'],['exp','💸 Expense'],['credit','📒 Credit'],['bak','☁️ Backup']];
+let tab='home',cbKey=null,from='',to='',pw='Mansoor',pEdit=null;
+const TABS=[['home','🏠 Home'],['hist','📜 History'],['stock','📦 Stock'],['exp','💸 Expense'],['credit','📒 Credit'],['party','🤝 Party'],['bak','☁️ Backup']];
 
 function stockOf(item){
   const mv=rd(KEY.stock).filter(x=>x.item===item);
@@ -182,6 +182,51 @@ function renameCus(old){
   cbKey=nn.toLowerCase();render();
 }
 
+
+/* ---------- PARTY: Mansoor / Mydeen / Supplier ---------- */
+const PK={Mansoor:'saleProfitBookMansoorV1',Mydeen:'saleProfitBookMydeenV1',Supplier:'saleProfitBookSupplierV1'},OPEN='spb_mansoor_opening_balance_v731';
+function vParty(){
+  const k=PK[pw],sup=pw==='Supplier',isM=pw==='Mansoor';
+  const a=rd(k).slice().sort((x,y)=>String(y.date).localeCompare(String(x.date))||N(y.id)-N(x.id));
+  const e=pEdit?a.find(x=>N(x.id)===pEdit):null;
+  const tk=a.filter(x=>x.type==='taken').reduce((t,x)=>t+N(x.amount),0),gv=a.filter(x=>x.type==='given').reduce((t,x)=>t+N(x.amount),0);
+  let head;
+  if(sup){
+    const m={};a.forEach(x=>{const n=nm(x.supplier)||'(பெயர் இல்லை)';m[n]=(m[n]||0)+(x.type==='given'?N(x.amount):-N(x.amount))});
+    head=Object.keys(m).sort().map(n=>`<div class="row"><b>${E(n)}</b><span>${M(m[n])}<small>கொடுத்தது − வாங்கியது</small></span></div>`).join('')||'<small>பதிவுகள் இல்லை</small>';
+  }else{
+    const op=isM?N(localStorage.getItem(OPEN)):0,bal=op+tk-gv;
+    head=`<div class="k">தற்போது பெற வேண்டியது<b class="${bal>0?'red':'grn'}">${M(bal)}</b>${isM?`<small>Opening ${M(op)} <a href="#" onclick="setOpen();return false">✏️</a>${localStorage.getItem(OPEN)===null?' <span class="red">⚠️ இன்னும் set செய்யப்படவில்லை</span>':''}</small>`:''}</div>`;
+  }
+  return `<div class="card"><div class="g">${['Mansoor','Mydeen','Supplier'].map(n=>`<button class="${n===pw?'':'s'}" style="margin:0" onclick="pw='${n}';pEdit=null;render()">${n}</button>`).join('')}</div></div>
+  <div class="card">${head}</div>
+  <div class="card"><b>${e?'✏️ Update':'➕ புதிய பதிவு'}</b>
+  ${sup?`<label>Supplier</label><input id="pS" list="psl" autocomplete="off" value="${E(e?e.supplier:'')}"><datalist id="psl">${[...new Set(a.map(x=>nm(x.supplier)).filter(Boolean))].map(n=>`<option value="${E(n)}">`).join('')}</datalist>`:''}
+  <label>வகை</label><select id="pT"><option value="taken"${e&&e.type==='taken'?' selected':''}>பணம் வாங்கியது</option><option value="given"${e&&e.type==='given'?' selected':''}>பணம் தந்தது</option></select>
+  <div class="g"><div><label>தேதி</label><input type="date" id="pDt" value="${e?e.date:today()}"></div><div><label>தொகை ₹</label><input id="pAm" type="number" inputmode="decimal" value="${e?e.amount:''}"></div></div>
+  <label>குறிப்பு</label><input id="pN" value="${E(e?e.note||'':'')}">
+  <button onclick="partySave()">${e?'Update':'Save'}</button>${e?'<button class="s" onclick="pEdit=null;render()">Cancel</button>':''}</div>
+  <div class="card">${a.map(x=>`<div class="row"><div><b class="${x.type==='given'?'red':'grn'}">${x.type==='given'?'பணம் தந்தது':'பணம் வாங்கியது'}</b><small>${fd(x.date)}${sup&&x.supplier?' • '+E(x.supplier):''}${x.note?' • '+E(x.note):''}</small></div><div style="text-align:right"><b>${x.type==='given'?'−':'＋'}${M(x.amount)}</b><br><button class="d" style="background:#e3eceb;color:#0f766e" onclick="pEdit=${N(x.id)};render();scrollTo(0,0)">✏️</button> <button class="d" onclick="partyDel(${N(x.id)})">🗑️</button></div></div>`).join('')||'<small>இதுவரை பதிவு இல்லை</small>'}</div>`;
+}
+function partySave(){
+  const k=PK[pw],sup=pw==='Supplier',type=$('pT').value,date=$('pDt').value||today(),amount=N($('pAm').value),note=nm($('pN').value),supplier=sup?nm($('pS').value):'';
+  if(sup&&!supplier)return alert('Supplier பெயர் உள்ளிடவும்.');
+  if(!(amount>0))return alert('தொகையை உள்ளிடவும்.');
+  const a=rd(k),r={type,date,amount,note};if(sup)r.supplier=supplier;
+  if(pEdit){const i=a.findIndex(x=>N(x.id)===pEdit);if(i>=0)a[i]={...a[i],...r};pEdit=null}
+  else{
+    if(a.some(x=>x.date===date&&x.type===type&&N(x.amount)===amount&&(!sup||nm(x.supplier)===supplier))&&!confirm('இதே தேதி + வகை + தொகைக்கு ஏற்கனவே பதிவு உள்ளது. மீண்டும் Save செய்யவா?'))return;
+    a.push({id:Date.now(),...r});
+  }
+  wr(k,a);render();
+}
+function partyDel(id){if(!confirm('இந்த பதிவை Delete செய்யவா?'))return;wr(PK[pw],rd(PK[pw]).filter(x=>N(x.id)!==id));render()}
+function setOpen(){
+  const v=prompt('Mansoor Opening Balance ₹:',localStorage.getItem(OPEN)||'');
+  if(v===null||v.trim()===''||!isFinite(Number(v)))return;
+  localStorage.setItem(OPEN,String(Number(v)));render();
+}
+
 /* ---------- BACKUP ---------- */
 function snap(){const s={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith('spb')||k.startsWith('saleProfitBook')))s[k]=localStorage.getItem(k)}return {app:'SALE-PROFIT-BOOK',version:'9',createdAt:new Date().toISOString(),storage:s}}
 function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type+';charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
@@ -193,7 +238,7 @@ function vBak(){
   <label>♻️ Restore (JSON file)</label><input type="file" id="rf" accept=".json,application/json">
   <button class="s" onclick="restore()">Restore</button>
   <small style="margin-top:8px">Restore-க்கு முன் தானாகவே தற்போதைய data-வின் backup download ஆகும்.</small></div>
-  <div class="card"><small>Google Drive backup & Mansoor / Mydeen / Supplier ledgers: பழைய app-ல் (index.html) உள்ளன — V9-ல் அடுத்த கட்டத்தில் சேர்க்கப்படும்.</small></div>`;
+  <div class="card"><small>Google Drive backup, Mixed Sale, PDF reports: பழைய app-ல் (index.html) உள்ளன — V9-ல் அடுத்த கட்டத்தில் சேர்க்கப்படும்.</small></div>`;
 }
 function restore(){
   const f=$('rf').files[0];if(!f)return alert('File தேர்ந்தெடுக்கவும்.');
@@ -209,7 +254,7 @@ function restore(){
 
 /* ---------- SHELL ---------- */
 function render(){
-  const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,bak:vBak}[tab];
+  const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,bak:vBak}[tab];
   $('app').innerHTML=v();
   $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;render();scrollTo(0,0)">${t[1]}</button>`).join('');
 }
