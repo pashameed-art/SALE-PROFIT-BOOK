@@ -3,24 +3,37 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f766e"><link rel="manifest" href="./manifest.json"><title>Sale Profit Book V9</title>
 <style>
-:root{--g:#0f766e;--bg:#f3f6f6;--c:#fff;--t:#17202a;--r:#c62828;--ok:#16834b}
-*{box-sizing:border-box}body{margin:0;font:15px system-ui,sans-serif;background:var(--bg);color:var(--t);padding-bottom:70px}
-header{background:var(--g);color:#fff;padding:12px 14px;font-weight:700}
-main{padding:10px;max-width:640px;margin:auto}
-.card{background:var(--c);border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px #0002}
-label{display:block;font-size:12px;margin:8px 0 3px;color:#556}
-input,select{width:100%;padding:10px;border:1px solid #ccd;border-radius:8px;font-size:15px}
-button{background:var(--g);color:#fff;border:0;border-radius:8px;padding:10px 14px;font-size:15px;font-weight:600;margin-top:8px}
-button.s{background:#e3eceb;color:var(--g)}button.d{background:#fde8e8;color:var(--r);padding:4px 8px;margin:0;font-size:12px}
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #ddd}
-nav button{flex:1;background:none;color:#556;border-radius:0;margin:0;padding:12px 1px;font-size:11px}
-nav button.on{color:var(--g);border-top:3px solid var(--g)}
-.row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #eee;align-items:center}
-.row:first-child{border-top:0}small{color:#667;display:block}.g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.k{background:#eef7f6;border-radius:10px;padding:8px}.k b{display:block;font-size:17px}
+:root{--g:#0f766e;--bg:#eef3f3;--c:#fff;--t:#17202a;--m:#64748b;--r:#c62828;--ok:#16834b;--ln:#e3ebeb}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font:15px/1.4 system-ui,-apple-system,"Noto Sans Tamil",sans-serif;background:var(--bg);color:var(--t);padding-bottom:88px}
+header{position:sticky;top:0;z-index:5;background:linear-gradient(135deg,#0f766e,#14a398);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 14px;display:flex;justify-content:space-between;align-items:center;border-radius:0 0 20px 20px;box-shadow:0 4px 14px #0f766e44}
+header b{font-size:18px;letter-spacing:.2px}header small{color:#d3f5f0;font-size:12px}
+.ver{background:#ffffff33;border-radius:10px;padding:3px 10px;font-size:12px;font-weight:700}
+main{padding:12px;max-width:640px;margin:auto}
+.card{background:var(--c);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 2px 10px #0f766e14;border:1px solid var(--ln)}
+.card>b:first-child{display:block;font-size:16px;margin-bottom:2px}
+.card.red{border-color:#f3c4c4;background:#fff7f7}
+label{display:block;font-size:12px;font-weight:600;margin:10px 0 4px;color:var(--m)}
+input,select{width:100%;padding:11px 12px;border:1.5px solid #d5e0e0;border-radius:10px;font-size:15px;background:#fff;color:var(--t);outline:none}
+input:focus,select:focus{border-color:var(--g);box-shadow:0 0 0 3px #0f766e22}
+button{background:linear-gradient(135deg,#0f766e,#14a398);color:#fff;border:0;border-radius:12px;padding:11px 16px;font-size:15px;font-weight:700;margin-top:10px;box-shadow:0 2px 6px #0f766e33;transition:transform .08s}
+button:active{transform:scale(.96)}
+button.s{background:#e3f1ef;color:var(--g);box-shadow:none}
+button.d{background:#fdeaea;color:var(--r);padding:5px 10px;margin:0;font-size:12px;box-shadow:none;border-radius:8px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#fff;border-top:1px solid var(--ln);padding:6px 4px calc(env(safe-area-inset-bottom,0px) + 6px);box-shadow:0 -4px 16px #0000000d;z-index:6}
+nav button{flex:1;background:none;box-shadow:none;color:var(--m);border-radius:12px;margin:0 2px;padding:6px 0;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button .ic{font-size:20px;line-height:1}
+nav button.on{background:#e3f1ef;color:var(--g)}
+.row{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-top:1px solid var(--ln);align-items:center}
+.row:first-child{border-top:0}
+small{color:var(--m);display:block;font-size:12px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.k{background:linear-gradient(135deg,#f3fbfa,#e5f3f1);border-radius:12px;padding:10px 12px;border:1px solid #d6ebe8;font-size:12px;color:var(--m)}
+.k b{display:block;font-size:18px;margin-top:2px}
+.k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header>Sale Profit Book <small style="display:inline;color:#cfe">V9 core</small></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9</span></header>
 <main id="app"></main>
 <nav id="nav"></nav>
 <script>
@@ -33,6 +46,8 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const lastPlace=()=>localStorage.getItem('spb_v9_place')||'Kadayanallur';
+const places=()=>[...new Set(rd(KEY.entries).map(x=>String(x.place||'').trim()).filter(Boolean))];
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
 const fd=v=>{const p=String(v||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:v};
 let tab='home',cbKey=null,from='',to='',pw='Mansoor',pEdit=null,editId=null,mixOpen=false,mx=[];
@@ -62,6 +77,7 @@ function vHome(){
   const ed=editId?rd(KEY.entries).find(x=>N(x.id)===editId):null;
   return `  <div class="card"><b>${ed?'✏️ Entry Edit':'📝 New Entry'}</b>
   <label>Date</label><input type="date" id="eDate" value="${ed?ed.date:t}">
+  <label>Place</label><input id="ePlace" list="plL" autocomplete="off" value="${E(ed?ed.place||'':lastPlace())}"><datalist id="plL">${places().map(n=>`<option value="${E(n)}">`).join('')}</datalist>
   <label>Item</label><select id="eItem" onchange="calc()"><option value="">Select Item</option>${it.map(i=>`<option value="${E(i.name)}"${ed&&ed.item===i.name?' selected':''}>${E(i.name)}</option>`).join('')}</select>
   <small id="eStock"></small>
   <div class="g"><div><label>Meter</label><input id="eMeter" type="number" inputmode="decimal" step="0.01" oninput="calc()" value="${ed?ed.meter:''}"></div>
@@ -88,9 +104,10 @@ function saveEntry(){
   const st=stockOf(item)+(old&&old.item===item?N(old.meter):0);
   if(meter>st&&!confirm(`Stock ${st} m மட்டுமே உள்ளது. ${meter} m விற்கவா? (Stock minus ஆகும்)`))return;
   const rate=old&&old.item===item?N(old.rate)||it.rate:it.rate,purchase=rate*meter;
-  const b={date:$('eDate').value||today(),item,meter,rate,sale,paidBy:paid,purchase,profit:sale-purchase};
+  const place=nm($('ePlace').value)||'Kadayanallur';localStorage.setItem('spb_v9_place',place);
+  const b={date:$('eDate').value||today(),place,item,meter,rate,sale,paidBy:paid,purchase,profit:sale-purchase};
   if(old){const n={...old,...b};if(paid==='Credit')n.customer=cus;else delete n.customer;a[a.indexOf(old)]=n;editId=null}
-  else{const n={id:Date.now(),place:'Kadayanallur',...b,time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})};if(paid==='Credit')n.customer=cus;a.unshift(n)}
+  else{const n={id:Date.now(),...b,time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})};if(paid==='Credit')n.customer=cus;a.unshift(n)}
   wr(KEY.entries,a);render();
 }
 function editEntry(id){editId=id;mixOpen=false;tab='home';render();scrollTo(0,0)}
@@ -100,6 +117,7 @@ function mixHtml(it){
   if(!mixOpen)return `<div class="card"><button class="s" style="margin:0;width:100%" onclick="mixOpen=true;mx=[{},{}];render()">➕ Multiple Items / Mixed Sale</button></div>`;
   return `<div class="card"><b>🧾 Mixed Sale</b><small>ஒவ்வொரு Item-ன் Meter மற்றும் Sale Share உள்ளிடவும்.</small>
   <label>Date</label><input type="date" id="mDt" value="${today()}">
+  <label>Place</label><input id="mPl" list="plL" autocomplete="off" value="${E(lastPlace())}">
   ${mx.map((r,i)=>`<div style="border-top:1px solid #eee;margin-top:8px;padding-top:6px"><select id="mxI${i}" onchange="mxTot()"><option value="">Select Item</option>${it.map(x=>`<option value="${E(x.name)}"${r.item===x.name?' selected':''}>${E(x.name)} (${stockOf(x.name)} m)</option>`).join('')}</select>
   <div class="g"><input id="mxM${i}" type="number" inputmode="decimal" step="0.01" placeholder="Meter" value="${E(r.meter||'')}" oninput="mxTot()"><input id="mxS${i}" type="number" inputmode="decimal" placeholder="Sale ₹" value="${E(r.sale||'')}" oninput="mxTot()"></div>
   ${mx.length>1?`<button class="d" onclick="mxDel(${i})">✕ நீக்கு</button>`:''}</div>`).join('')}
@@ -125,9 +143,10 @@ function saveMixed(){
   const need={};rows.forEach(r=>need[r.item]=(need[r.item]||0)+N(r.meter));
   const short=Object.keys(need).filter(k=>need[k]>stockOf(k));
   if(short.length&&!confirm('Stock போதாது: '+short.map(k=>k+' ('+stockOf(k)+' m)').join(', ')+'. தொடரவா? (Stock minus ஆகும்)'))return;
+  const place=nm($('mPl').value)||'Kadayanallur';localStorage.setItem('spb_v9_place',place);
   const a=rd(KEY.entries),now=Date.now(),date=$('mDt').value||today(),gid='MS'+now,time=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
   rows.forEach((r,i)=>{const it=its.find(x=>x.name===r.item),m=N(r.meter),s=N(r.sale),pu=it.rate*m;
-    const n={id:now+i,date,place:'Kadayanallur',item:r.item,meter:m,rate:it.rate,sale:s,paidBy:paid,purchase:pu,profit:s-pu,time,mixedGroup:gid};
+    const n={id:now+i,date,place,item:r.item,meter:m,rate:it.rate,sale:s,paidBy:paid,purchase:pu,profit:s-pu,time,mixedGroup:gid};
     if(paid==='Credit')n.customer=cus;a.unshift(n)});
   wr(KEY.entries,a);mixOpen=false;mx=[];render();
 }
@@ -139,13 +158,13 @@ function vHist(){
   return `<div class="card"><div class="g"><div><label>From</label><input type="date" id="hF" value="${from}" onchange="from=this.value;render()"></div><div><label>To</label><input type="date" id="hT" value="${to}" onchange="to=this.value;render()"></div></div>
   <div class="g" style="margin-top:8px"><div class="k">Sale<b>${M(s)}</b></div><div class="k">Profit<b>${M(p)}</b></div><div class="k">Purchase<b>${M(pu)}</b></div><div class="k">Meter<b>${m}</b></div></div>
   <button class="s" onclick="csv()">⬇️ CSV</button> <button class="s" onclick="repShare()">📤 WhatsApp</button> <button class="s" onclick="repPdf()">🖨️ PDF</button> <button class="s" onclick="from=to=today();render()">Today</button> <button class="s" onclick="from=to='';render()">All</button></div>
-  <div class="card">${a.slice(0,200).map(x=>`<div class="row"><div><b>${E(x.item)}</b> • ${N(x.meter)} m<small>${fd(x.date)} • ${E(x.paidBy)}${x.customer?' • '+E(x.customer):''}</small></div><div style="text-align:right">${M(x.sale)}<small>${M(x.profit)}</small><button class="d" style="background:#e3eceb;color:#0f766e" onclick="editEntry(${N(x.id)})">✏️</button> <button class="d" onclick="delEntry(${N(x.id)})">Delete</button></div></div>`).join('')||'<small>பதிவுகள் இல்லை</small>'}</div>`;
+  <div class="card">${a.slice(0,200).map(x=>`<div class="row"><div><b>${E(x.item)}</b> • ${N(x.meter)} m<small>${fd(x.date)}${x.place?' • 📍'+E(x.place):''} • ${E(x.paidBy)}${x.customer?' • '+E(x.customer):''}</small></div><div style="text-align:right">${M(x.sale)}<small>${M(x.profit)}</small><button class="d" style="background:#e3eceb;color:#0f766e" onclick="editEntry(${N(x.id)})">✏️</button> <button class="d" onclick="delEntry(${N(x.id)})">Delete</button></div></div>`).join('')||'<small>பதிவுகள் இல்லை</small>'}</div>`;
 }
 function delEntry(id){if(!confirm('இந்த Entry-ஐ delete செய்யவா?'))return;wr(KEY.entries,rd(KEY.entries).filter(x=>N(x.id)!==id));render()}
 function csv(){
   const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
   const a=rd(KEY.entries).filter(x=>(!from||x.date>=from)&&(!to||x.date<=to));
-  const t=[['Date','Item','Meter','Sale','Purchase','Profit','Paid','Customer']].concat(a.map(x=>[x.date,x.item,x.meter,x.sale,x.purchase,x.profit,x.paidBy,x.customer||''])).map(r=>r.map(q).join(',')).join('\n');
+  const t=[['Date','Place','Item','Meter','Sale','Purchase','Profit','Paid','Customer']].concat(a.map(x=>[x.date,x.place||'',x.item,x.meter,x.sale,x.purchase,x.profit,x.paidBy,x.customer||''])).map(r=>r.map(q).join(',')).join('\n');
   dl('Sales-'+today()+'.csv',t,'text/csv');
 }
 
@@ -422,7 +441,7 @@ function applyRestore(s){
 
 
 /* ---------- HOME DASHBOARD / DATE SUMMARY / DUA / INSTALL ---------- */
-let dF='',dT='',ip=null;
+let dF=today(),dT=today(),ip=null;
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();ip=ev;const b=$('ib');if(b)b.classList.remove('hide')});
 function inst(){if(ip){ip.prompt();ip=null;const b=$('ib');if(b)b.classList.add('hide')}}
@@ -436,7 +455,7 @@ function dashHtml(low){
   const t=today(),en=rd(KEY.entries).filter(x=>x.date===t),ex=rd(KEY.exp).filter(x=>x.date===t);
   const s=en.reduce((a,x)=>a+N(x.sale),0),p=en.reduce((a,x)=>a+N(x.profit),0),e=ex.reduce((a,x)=>a+N(x.amount),0),mt=en.reduce((a,x)=>a+N(x.meter),0);
   return `<div class="card"><b>Today Dashboard</b><div class="g" style="margin-top:8px">
-  <div class="k">Net Profit<b class="${p-e<0?'red':'grn'}">${M(p-e)}</b></div><div class="k">Sale<b>${M(s)}</b></div>
+  <div class="k" style="grid-column:1/-1">Net Profit<b class="${p-e<0?'red':'grn'}" style="font-size:26px">${M(p-e)}</b></div><div class="k">Sale<b>${M(s)}</b></div>
   <div class="k">Meter<b>${Math.round(mt*100)/100} m</b></div><div class="k">Expense<b>${M(e)}</b></div></div></div>
   ${low.length?`<div class="card red"><b>⚠️ Low Stock</b>${low.map(i=>`<small>${E(i.name)}: ${stockOf(i.name)} m</small>`).join('')}</div>`:''}
   <div class="card"><b>📅 Date Summary</b><small>தேதி தேர்ந்தெடுக்காவிட்டால் எல்லா தேதிகளும்</small>
@@ -460,8 +479,8 @@ function delAll(kind){
 /* ---------- SHELL ---------- */
 function render(){
   const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,bak:vBak}[tab];
-  $('app').innerHTML=v();if(tab==='home'){calc();if(mixOpen)mxTot()}
-  $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;editId=null;mixOpen=false;render();scrollTo(0,0)">${t[1]}</button>`).join('');
+  $('app').innerHTML=v();try{$('hd').textContent=new Date().toLocaleDateString('ta-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch(e){}if(tab==='home'){calc();if(mixOpen)mxTot()}
+  $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;editId=null;mixOpen=false;render();scrollTo(0,0)"><span class="ic">${t[1].split(' ')[0]}</span><span>${t[1].split(' ').slice(1).join(' ')}</span></button>`).join('');
 }
 render();
 </script></body></html>
