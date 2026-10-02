@@ -35,7 +35,7 @@ const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
 const fd=v=>{const p=String(v||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:v};
-let tab='home',cbKey=null,from='',to='',pw='Mansoor',pEdit=null;
+let tab='home',cbKey=null,from='',to='',pw='Mansoor',pEdit=null,editId=null,mixOpen=false,mx=[];
 const TABS=[['home','🏠 Home'],['hist','📜 History'],['stock','📦 Stock'],['exp','💸 Expense'],['credit','📒 Credit'],['party','🤝 Party'],['bak','☁️ Backup']];
 
 function stockOf(item){
@@ -59,19 +59,21 @@ function vHome(){
   const s=en.reduce((a,x)=>a+N(x.sale),0),p=en.reduce((a,x)=>a+N(x.profit),0),e=ex.reduce((a,x)=>a+N(x.amount),0),mt=en.reduce((a,x)=>a+N(x.meter),0);
   const it=rd(KEY.items).slice().sort((a,b)=>a.name.localeCompare(b.name));
   const low=it.filter(i=>i.min>0&&stockOf(i.name)<=i.min);
+  const ed=editId?rd(KEY.entries).find(x=>N(x.id)===editId):null;
   return `<div class="card"><div class="g">
   <div class="k">Net Profit<b class="${p-e<0?'red':'grn'}">${M(p-e)}</b></div><div class="k">Sale<b>${M(s)}</b></div>
   <div class="k">Meter<b>${mt} m</b></div><div class="k">Expense<b>${M(e)}</b></div></div></div>
   ${low.length?`<div class="card red"><b>⚠️ Low Stock</b>${low.map(i=>`<small>${E(i.name)}: ${stockOf(i.name)} m</small>`).join('')}</div>`:''}
-  <div class="card"><b>📝 New Entry</b>
-  <label>Date</label><input type="date" id="eDate" value="${t}">
-  <label>Item</label><select id="eItem" onchange="calc()"><option value="">Select Item</option>${it.map(i=>`<option value="${E(i.name)}">${E(i.name)}</option>`).join('')}</select>
+  <div class="card"><b>${ed?'✏️ Entry Edit':'📝 New Entry'}</b>
+  <label>Date</label><input type="date" id="eDate" value="${ed?ed.date:t}">
+  <label>Item</label><select id="eItem" onchange="calc()"><option value="">Select Item</option>${it.map(i=>`<option value="${E(i.name)}"${ed&&ed.item===i.name?' selected':''}>${E(i.name)}</option>`).join('')}</select>
   <small id="eStock"></small>
-  <div class="g"><div><label>Meter</label><input id="eMeter" type="number" inputmode="decimal" step="0.01" oninput="calc()"></div>
-  <div><label>Sale ₹</label><input id="eSale" type="number" inputmode="decimal" oninput="calc()"></div></div>
-  <label>Paid By</label><select id="ePay" onchange="$('cbox').classList.toggle('hide',this.value!=='Credit')"><option>GPay</option><option>Cash</option><option value="Credit">Credit (கடன்)</option></select>
-  <div id="cbox" class="hide"><label>Customer பெயர்</label><input id="eCus" list="cl" autocomplete="off"><datalist id="cl">${names().map(n=>`<option value="${E(n)}">`).join('')}</datalist></div>
-  <small id="eCalc"></small><button onclick="saveEntry()">Save Entry</button></div>`;
+  <div class="g"><div><label>Meter</label><input id="eMeter" type="number" inputmode="decimal" step="0.01" oninput="calc()" value="${ed?ed.meter:''}"></div>
+  <div><label>Sale ₹</label><input id="eSale" type="number" inputmode="decimal" oninput="calc()" value="${ed?ed.sale:''}"></div></div>
+  <label>Paid By</label><select id="ePay" onchange="$('cbox').classList.toggle('hide',this.value!=='Credit')"><option${ed&&ed.paidBy==='GPay'?' selected':''}>GPay</option><option${ed&&ed.paidBy==='Cash'?' selected':''}>Cash</option><option value="Credit"${ed&&ed.paidBy==='Credit'?' selected':''}>Credit (கடன்)</option></select>
+  <div id="cbox" class="${ed&&ed.paidBy==='Credit'?'':'hide'}"><label>Customer பெயர்</label><input id="eCus" list="cl" autocomplete="off" value="${E(ed&&ed.customer||'')}"><datalist id="cl">${names().map(n=>`<option value="${E(n)}">`).join('')}</datalist></div>
+  <small id="eCalc"></small><button onclick="saveEntry()">${ed?'Update Entry':'Save Entry'}</button>${ed?'<button class="s" onclick="editId=null;render()">Cancel</button>':''}</div>
+  ${ed?'':mixHtml(it)}`;
 }
 function calc(){
   const it=rd(KEY.items).find(i=>i.name===$('eItem').value),m=N($('eMeter').value),s=N($('eSale').value);
@@ -85,11 +87,52 @@ function saveEntry(){
   if(!(meter>0))return alert('Meter உள்ளிடவும்.');
   if(!(sale>=0)||$('eSale').value==='')return alert('Sale தொகை உள்ளிடவும்.');
   if(paid==='Credit'&&!cus)return alert('Credit-க்கு Customer பெயர் தேவை.');
-  const st=stockOf(item);
+  const a=rd(KEY.entries),old=editId?a.find(x=>N(x.id)===editId):null;
+  const st=stockOf(item)+(old&&old.item===item?N(old.meter):0);
   if(meter>st&&!confirm(`Stock ${st} m மட்டுமே உள்ளது. ${meter} m விற்கவா? (Stock minus ஆகும்)`))return;
-  const purchase=it.rate*meter,e={id:Date.now(),date:$('eDate').value||today(),place:'Kadayanallur',item,meter,rate:it.rate,sale,paidBy:paid,purchase,profit:sale-purchase,time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})};
-  if(paid==='Credit')e.customer=cus;
-  const a=rd(KEY.entries);a.unshift(e);wr(KEY.entries,a);render();
+  const rate=old&&old.item===item?N(old.rate)||it.rate:it.rate,purchase=rate*meter;
+  const b={date:$('eDate').value||today(),item,meter,rate,sale,paidBy:paid,purchase,profit:sale-purchase};
+  if(old){const n={...old,...b};if(paid==='Credit')n.customer=cus;else delete n.customer;a[a.indexOf(old)]=n;editId=null}
+  else{const n={id:Date.now(),place:'Kadayanallur',...b,time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})};if(paid==='Credit')n.customer=cus;a.unshift(n)}
+  wr(KEY.entries,a);render();
+}
+function editEntry(id){editId=id;mixOpen=false;tab='home';render();scrollTo(0,0)}
+
+/* ---------- MIXED SALE ---------- */
+function mixHtml(it){
+  if(!mixOpen)return `<div class="card"><button class="s" style="margin:0;width:100%" onclick="mixOpen=true;mx=[{},{}];render()">➕ Multiple Items / Mixed Sale</button></div>`;
+  return `<div class="card"><b>🧾 Mixed Sale</b><small>ஒவ்வொரு Item-ன் Meter மற்றும் Sale Share உள்ளிடவும்.</small>
+  <label>Date</label><input type="date" id="mDt" value="${today()}">
+  ${mx.map((r,i)=>`<div style="border-top:1px solid #eee;margin-top:8px;padding-top:6px"><select id="mxI${i}" onchange="mxTot()"><option value="">Select Item</option>${it.map(x=>`<option value="${E(x.name)}"${r.item===x.name?' selected':''}>${E(x.name)} (${stockOf(x.name)} m)</option>`).join('')}</select>
+  <div class="g"><input id="mxM${i}" type="number" inputmode="decimal" step="0.01" placeholder="Meter" value="${E(r.meter||'')}" oninput="mxTot()"><input id="mxS${i}" type="number" inputmode="decimal" placeholder="Sale ₹" value="${E(r.sale||'')}" oninput="mxTot()"></div>
+  ${mx.length>1?`<button class="d" onclick="mxDel(${i})">✕ நீக்கு</button>`:''}</div>`).join('')}
+  <button class="s" onclick="mxSync();mx.push({});render()">➕ Add Another Item</button>
+  <label>Paid By</label><select id="mPay" onchange="$('mbox').classList.toggle('hide',this.value!=='Credit')"><option>GPay</option><option>Cash</option><option value="Credit">Credit (கடன்)</option></select>
+  <div id="mbox" class="hide"><label>Customer பெயர்</label><input id="mCus" list="cl" autocomplete="off"></div>
+  <small id="mxT" style="margin-top:8px"></small>
+  <button onclick="saveMixed()">Save Mixed Sale</button> <button class="s" onclick="mixOpen=false;render()">Close</button></div>`;
+}
+function mxSync(){mx=mx.map((_,i)=>({item:$('mxI'+i).value,meter:$('mxM'+i).value,sale:$('mxS'+i).value}))}
+function mxDel(i){mxSync();mx.splice(i,1);render()}
+function mxTot(){
+  const its=rd(KEY.items);let s=0,p=0;
+  mx.forEach((_,i)=>{const it=its.find(x=>x.name===$('mxI'+i).value),m=N($('mxM'+i).value);s+=N($('mxS'+i).value);if(it)p+=it.rate*m});
+  $('mxT').textContent=`Total Sale: ${M(s)} • Purchase: ${M(p)} • Profit: ${M(s-p)}`;
+}
+function saveMixed(){
+  mxSync();const its=rd(KEY.items),paid=$('mPay').value,cus=nm($('mCus').value);
+  const rows=mx.filter(r=>r.item||N(r.meter)||N(r.sale));
+  if(!rows.length)return alert('குறைந்தது ஒரு Item சேர்க்கவும்.');
+  for(const r of rows){if(!its.find(x=>x.name===r.item)||!(N(r.meter)>0)||r.sale===''||N(r.sale)<0)return alert('ஒவ்வொரு வரிக்கும் Item, Meter, Sale உள்ளிடவும்.')}
+  if(paid==='Credit'&&!cus)return alert('Credit-க்கு Customer பெயர் தேவை.');
+  const need={};rows.forEach(r=>need[r.item]=(need[r.item]||0)+N(r.meter));
+  const short=Object.keys(need).filter(k=>need[k]>stockOf(k));
+  if(short.length&&!confirm('Stock போதாது: '+short.map(k=>k+' ('+stockOf(k)+' m)').join(', ')+'. தொடரவா? (Stock minus ஆகும்)'))return;
+  const a=rd(KEY.entries),now=Date.now(),date=$('mDt').value||today(),gid='MS'+now,time=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+  rows.forEach((r,i)=>{const it=its.find(x=>x.name===r.item),m=N(r.meter),s=N(r.sale),pu=it.rate*m;
+    const n={id:now+i,date,place:'Kadayanallur',item:r.item,meter:m,rate:it.rate,sale:s,paidBy:paid,purchase:pu,profit:s-pu,time,mixedGroup:gid};
+    if(paid==='Credit')n.customer=cus;a.unshift(n)});
+  wr(KEY.entries,a);mixOpen=false;mx=[];render();
 }
 
 /* ---------- HISTORY + REPORT ---------- */
@@ -98,8 +141,8 @@ function vHist(){
   const s=a.reduce((t,x)=>t+N(x.sale),0),p=a.reduce((t,x)=>t+N(x.profit),0),pu=a.reduce((t,x)=>t+N(x.purchase),0),m=a.reduce((t,x)=>t+N(x.meter),0);
   return `<div class="card"><div class="g"><div><label>From</label><input type="date" id="hF" value="${from}" onchange="from=this.value;render()"></div><div><label>To</label><input type="date" id="hT" value="${to}" onchange="to=this.value;render()"></div></div>
   <div class="g" style="margin-top:8px"><div class="k">Sale<b>${M(s)}</b></div><div class="k">Profit<b>${M(p)}</b></div><div class="k">Purchase<b>${M(pu)}</b></div><div class="k">Meter<b>${m}</b></div></div>
-  <button class="s" onclick="csv()">⬇️ CSV</button> <button class="s" onclick="from=to=today();render()">Today</button> <button class="s" onclick="from=to='';render()">All</button></div>
-  <div class="card">${a.slice(0,200).map(x=>`<div class="row"><div><b>${E(x.item)}</b> • ${N(x.meter)} m<small>${fd(x.date)} • ${E(x.paidBy)}${x.customer?' • '+E(x.customer):''}</small></div><div style="text-align:right">${M(x.sale)}<small>${M(x.profit)}</small><button class="d" onclick="delEntry(${N(x.id)})">Delete</button></div></div>`).join('')||'<small>பதிவுகள் இல்லை</small>'}</div>`;
+  <button class="s" onclick="csv()">⬇️ CSV</button> <button class="s" onclick="repShare()">📤 WhatsApp</button> <button class="s" onclick="repPdf()">🖨️ PDF</button> <button class="s" onclick="from=to=today();render()">Today</button> <button class="s" onclick="from=to='';render()">All</button></div>
+  <div class="card">${a.slice(0,200).map(x=>`<div class="row"><div><b>${E(x.item)}</b> • ${N(x.meter)} m<small>${fd(x.date)} • ${E(x.paidBy)}${x.customer?' • '+E(x.customer):''}</small></div><div style="text-align:right">${M(x.sale)}<small>${M(x.profit)}</small><button class="d" style="background:#e3eceb;color:#0f766e" onclick="editEntry(${N(x.id)})">✏️</button> <button class="d" onclick="delEntry(${N(x.id)})">Delete</button></div></div>`).join('')||'<small>பதிவுகள் இல்லை</small>'}</div>`;
 }
 function delEntry(id){if(!confirm('இந்த Entry-ஐ delete செய்யவா?'))return;wr(KEY.entries,rd(KEY.entries).filter(x=>N(x.id)!==id));render()}
 function csv(){
@@ -159,7 +202,8 @@ function vCredit(){
     <label>Payment Amount ₹</label><input id="pA" type="number" inputmode="decimal" placeholder="${c.due>0?c.due:''}">
     <div class="g"><div><label>Date</label><input id="pD" type="date" value="${today()}"></div><div><label>Mode</label><select id="pM"><option>GPay</option><option>Cash</option></select></div></div>
     <button onclick="savePay('${E(cbKey).replace(/'/g,"\\'")}')">💰 Payment received</button>
-    <button class="s" onclick="renameCus('${E(c.name).replace(/'/g,"\\'")}')">✏️ பெயர் மாற்று / இணை</button></div>
+    <button class="s" onclick="renameCus('${E(c.name).replace(/'/g,"\\'")}')">✏️ பெயர் மாற்று / இணை</button>
+    <button class="s" onclick="custShare('${E(cbKey).replace(/'/g,"\\'")}')">📤 WhatsApp</button> <button class="s" onclick="custPdf('${E(cbKey).replace(/'/g,"\\'")}')">🖨️ PDF</button> <button class="s" onclick="custMob('${E(cbKey).replace(/'/g,"\\'")}')">📱 Mobile</button></div>
     <div class="card">${tx.map(r=>`<div class="row"><div>${fd(r.d)}<small>${E(r.t)}</small></div><div class="${r.s?'':'grn'}">${r.s?'+':'−'}${M(r.a)}${r.id?` <button class="d" onclick="delPay(${N(r.id)})">✕</button>`:''}</div></div>`).join('')}</div>`;
   }
   const open=all.filter(c=>Math.abs(c.due)>0.004).sort((a,b)=>b.due-a.due),tot=open.reduce((t,c)=>t+Math.max(c.due,0),0);
@@ -199,7 +243,7 @@ function vParty(){
     head=`<div class="k">தற்போது பெற வேண்டியது<b class="${bal>0?'red':'grn'}">${M(bal)}</b>${isM?`<small>Opening ${M(op)} <a href="#" onclick="setOpen();return false">✏️</a>${localStorage.getItem(OPEN)===null?' <span class="red">⚠️ இன்னும் set செய்யப்படவில்லை</span>':''}</small>`:''}</div>`;
   }
   return `<div class="card"><div class="g">${['Mansoor','Mydeen','Supplier'].map(n=>`<button class="${n===pw?'':'s'}" style="margin:0" onclick="pw='${n}';pEdit=null;render()">${n}</button>`).join('')}</div></div>
-  <div class="card">${head}</div>
+  <div class="card">${head}<button class="s" onclick="partyShare()">📤 WhatsApp</button> <button class="s" onclick="partyPdf()">🖨️ PDF</button></div>
   <div class="card"><b>${e?'✏️ Update':'➕ புதிய பதிவு'}</b>
   ${sup?`<label>Supplier</label><input id="pS" list="psl" autocomplete="off" value="${E(e?e.supplier:'')}"><datalist id="psl">${[...new Set(a.map(x=>nm(x.supplier)).filter(Boolean))].map(n=>`<option value="${E(n)}">`).join('')}</datalist>`:''}
   <label>வகை</label><select id="pT"><option value="taken"${e&&e.type==='taken'?' selected':''}>பணம் வாங்கியது</option><option value="given"${e&&e.type==='given'?' selected':''}>பணம் தந்தது</option></select>
@@ -233,30 +277,155 @@ function dl(name,text,type){const a=document.createElement('a');a.href=URL.creat
 function backup(){dl('SALE-PROFIT-BOOK-BACKUP-'+today()+'.json',JSON.stringify(snap(),null,1),'application/json');localStorage.setItem('spb_v9_last_backup',new Date().toISOString());render()}
 function vBak(){
   const lb=localStorage.getItem('spb_v9_last_backup');
-  return `<div class="card"><b>☁️ Backup</b><small>Last: ${lb?new Date(lb).toLocaleString('en-IN'):'இன்னும் இல்லை'}</small>
+  const gl=localStorage.getItem('spb_last_gdrive_backup_at');
+  return `<div class="card"><b>☁️ Google Drive</b><small>Last: ${gl?new Date(gl).toLocaleString('en-IN'):'இன்னும் இல்லை'}</small><small id="gSt"></small>
+  <button onclick="gBackup()">☁️ Backup Now</button> <button class="s" onclick="gShowList()">♻️ Restore</button><div id="gList"></div></div>
+  <div class="card"><b>💾 File Backup</b><small>Last: ${lb?new Date(lb).toLocaleString('en-IN'):'இன்னும் இல்லை'}</small>
   <button onclick="backup()">⬇️ Backup file download</button>
   <label>♻️ Restore (JSON file)</label><input type="file" id="rf" accept=".json,application/json">
   <button class="s" onclick="restore()">Restore</button>
   <small style="margin-top:8px">Restore-க்கு முன் தானாகவே தற்போதைய data-வின் backup download ஆகும்.</small></div>
-  <div class="card"><small>Google Drive backup, Mixed Sale, PDF reports: பழைய app-ல் (index.html) உள்ளன — V9-ல் அடுத்த கட்டத்தில் சேர்க்கப்படும்.</small></div>`;
+  <div class="card"><small>Drive backup பழைய app-ன் அதே Google client மற்றும் file பெயர்களைப் பயன்படுத்துகிறது.</small></div>`;
 }
 function restore(){
   const f=$('rf').files[0];if(!f)return alert('File தேர்ந்தெடுக்கவும்.');
   const r=new FileReader();r.onload=()=>{
     let d;try{d=JSON.parse(r.result)}catch(e){return alert('தவறான file.')}
     const s=d&&d.storage;if(!s||typeof s!=='object')return alert('இது Sale Profit Book backup அல்ல.');
-    if(!confirm('Restore செய்தால் தற்போதைய data மாற்றப்படும். தொடரவா?'))return;
-    dl('SALE-PROFIT-BOOK-BEFORE-RESTORE-'+today()+'.json',JSON.stringify(snap(),null,1),'application/json');
-    Object.keys(s).forEach(k=>{if((k.startsWith('spb')||k.startsWith('saleProfitBook'))&&typeof s[k]==='string')localStorage.setItem(k,s[k])});
-    alert('✅ Restore முடிந்தது.');render();
+    applyRestore(s);
   };r.readAsText(f);
+}
+
+
+/* ---------- SHARE / PDF ---------- */
+function share(text,mob){
+  if(mob){window.open('https://wa.me/91'+mob+'?text='+encodeURIComponent(text),'_blank');return}
+  if(navigator.share){navigator.share({text}).catch(()=>{})}else window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank');
+}
+function pdf(title,html){
+  const f=document.createElement('iframe');f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(f);
+  const d=f.contentWindow.document;d.open();
+  d.write('<!doctype html><meta charset="utf-8"><title>'+E(title)+'</title><style>body{font:13px sans-serif;padding:16px}table{border-collapse:collapse;width:100%;margin-top:8px}td,th{border-bottom:1px solid #ccc;padding:5px;text-align:left}td:last-child,th:last-child{text-align:right}h2{margin:0}</style><h2>'+E(title)+'</h2>'+html);d.close();
+  setTimeout(()=>{f.contentWindow.focus();f.contentWindow.print();setTimeout(()=>f.remove(),3000)},400);
+}
+const tbl=(h,rows)=>'<table><tr>'+h.map(x=>'<th>'+E(x)+'</th>').join('')+'</tr>'+rows.map(r=>'<tr>'+r.map(x=>'<td>'+E(x)+'</td>').join('')+'</tr>').join('')+'</table>';
+const inR=x=>(!from||x.date>=from)&&(!to||x.date<=to);
+const rLbl=()=>(from?fd(from):'ஆரம்பம்')+' – '+(to?fd(to):'இன்று வரை');
+function repData(){
+  const g={},T={m:0,s:0,p:0,f:0};
+  rd(KEY.entries).filter(inR).forEach(x=>{const r=g[x.item]||(g[x.item]={m:0,s:0,p:0,f:0});r.m+=N(x.meter);r.s+=N(x.sale);r.p+=N(x.purchase);r.f+=N(x.profit);T.m+=N(x.meter);T.s+=N(x.sale);T.p+=N(x.purchase);T.f+=N(x.profit)});
+  return {g,T,e:rd(KEY.exp).filter(inR).reduce((t,x)=>t+N(x.amount),0)};
+}
+function repShare(){const {g,T,e}=repData();share(['📊 Sale Profit Book',rLbl(),'',...Object.keys(g).sort().map(k=>k+': '+g[k].m+' m • '+M(g[k].s)+' • Profit '+M(g[k].f)),'','Sale: '+M(T.s),'Purchase: '+M(T.p),'Profit: '+M(T.f),'Expense: '+M(e),'Net Profit: '+M(T.f-e)].join('\n'))}
+function repPdf(){
+  const {g,T,e}=repData();
+  pdf('Sale Profit Report '+rLbl(),tbl(['Item','Meter','Sale','Purchase','Profit'],Object.keys(g).sort().map(k=>[k,g[k].m,M(g[k].s),M(g[k].p),M(g[k].f)]).concat([['TOTAL',T.m,M(T.s),M(T.p),M(T.f)]]))+'<p>Expense: '+M(e)+' &nbsp; <b>Net Profit: '+M(T.f-e)+'</b></p>');
+}
+function partyData(){
+  const sup=pw==='Supplier',a=rd(PK[pw]).slice().sort((x,y)=>String(x.date).localeCompare(String(y.date))||N(x.id)-N(y.id));
+  const rows=a.map(x=>[fd(x.date),(x.type==='given'?'பணம் தந்தது':'பணம் வாங்கியது')+(sup&&x.supplier?' • '+x.supplier:'')+(x.note?' • '+x.note:''),(x.type==='given'?'−':'+')+M(x.amount)]);
+  let sum=[];
+  if(sup){const m={};a.forEach(x=>{const n=nm(x.supplier)||'(பெயர் இல்லை)';m[n]=(m[n]||0)+(x.type==='given'?N(x.amount):-N(x.amount))});sum=Object.keys(m).sort().map(n=>n+' (கொடுத்தது − வாங்கியது): '+M(m[n]))}
+  else{const tk=a.filter(x=>x.type==='taken').reduce((t,x)=>t+N(x.amount),0),gv=a.filter(x=>x.type==='given').reduce((t,x)=>t+N(x.amount),0),op=pw==='Mansoor'?N(localStorage.getItem(OPEN)):0;
+    if(op)sum.push('Opening: '+M(op));sum.push('தற்போது பெற வேண்டியது: '+M(op+tk-gv))}
+  return {rows,sum};
+}
+function partyShare(){const d=partyData();share(['🤝 '+pw+' — '+fd(today()),'',...d.rows.map(r=>r.join(' – ')),'',...d.sum].join('\n'))}
+function partyPdf(){const d=partyData();pdf(pw+' Ledger — '+fd(today()),tbl(['தேதி','விவரம்','தொகை'],d.rows)+'<p><b>'+d.sum.map(E).join('<br>')+'</b></p>')}
+function custData(key){
+  const c=ledger().find(x=>x.name.toLowerCase()===key);if(!c)return null;
+  const tx=[];
+  rd(KEY.entries).filter(x=>x.paidBy==='Credit'&&nm(x.customer).toLowerCase()===key).forEach(x=>tx.push({d:String(x.date),i:N(x.id),s:x.item+' '+x.meter+'m',a:'+'+M(x.sale)}));
+  rd(KEY.pay).filter(p=>nm(p.customer).toLowerCase()===key).forEach(p=>tx.push({d:String(p.date),i:N(p.id),s:'Payment ('+(p.mode||'')+')',a:'−'+M(p.amount)}));
+  tx.sort((a,b)=>a.d.localeCompare(b.d)||a.i-b.i);
+  const cu=rd(KEY.cus).find(x=>x&&x.key===key);
+  return {c,tx,mob:cu&&cu.mobile||''};
+}
+function custShare(key){const d=custData(key);if(!d)return;
+  share(['📒 '+d.c.name+' — Credit Statement ('+fd(today())+')','',...d.tx.map(r=>fd(r.d)+' – '+r.s+': '+r.a),'','Credit: '+M(d.c.sale),'Received: '+M(d.c.paid),'மீதம்: '+M(d.c.due)].join('\n'),d.mob)}
+function custPdf(key){const d=custData(key);if(!d)return;
+  pdf(d.c.name+' — Credit Statement '+fd(today()),tbl(['தேதி','விவரம்','தொகை'],d.tx.map(r=>[fd(r.d),r.s,r.a]))+'<p>Credit: '+M(d.c.sale)+' &nbsp; Received: '+M(d.c.paid)+' &nbsp; <b>மீதம்: '+M(d.c.due)+'</b></p>')}
+function custMob(key){
+  const c=ledger().find(x=>x.name.toLowerCase()===key);if(!c)return;
+  const a=rd(KEY.cus),cu=a.find(x=>x&&x.key===key);
+  const v=prompt('Mobile No — '+c.name+' (10 இலக்கம்; காலியாக விட்டால் நீக்கப்படும்):',cu&&cu.mobile||'');if(v===null)return;
+  const d=v.replace(/[^\d]/g,'').replace(/^91(?=\d{10}$)/,'').replace(/^0(?=\d{10}$)/,'');
+  if(d&&!/^[6-9]\d{9}$/.test(d))return alert('சரியான 10 இலக்க Mobile No உள்ளிடவும்.');
+  const b=a.filter(x=>x&&x.key!==key);if(d)b.push({key,name:c.name,mobile:d});wr(KEY.cus,b);render();
+}
+
+/* ---------- GOOGLE DRIVE ---------- */
+const GCID='123737120474-8sqc1sb4p0i9j7s9nq56j4gkd784lm1n.apps.googleusercontent.com',GPRE='SALE-PROFIT-BOOK-Backup-',GKEEP=10;
+let gTok=null,gExp=0,gCli=null;
+const gs=(m,ok)=>{const s=$('gSt');if(s){s.textContent=m;s.style.color=ok===false?'#c62828':'#126d66'}};
+function gLoad(){return new Promise((ok,no)=>{
+  if(window.google&&google.accounts&&google.accounts.oauth2)return ok();
+  const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=()=>ok();s.onerror=()=>no(new Error('Google library load ஆகவில்லை (Internet?)'));document.head.appendChild(s);
+})}
+async function gToken(){
+  if(gTok&&Date.now()<gExp)return gTok;
+  await gLoad();
+  return new Promise((ok,no)=>{
+    const cb=r=>{if(r&&r.access_token){gTok=r.access_token;gExp=Date.now()+Math.max(60,(Number(r.expires_in)||3600)-120)*1000;ok(gTok)}else no(new Error('Google authorization முடியவில்லை'))};
+    try{if(!gCli)gCli=google.accounts.oauth2.initTokenClient({client_id:GCID,scope:'https://www.googleapis.com/auth/drive.file',callback:cb});else gCli.callback=cb;gCli.requestAccessToken({prompt:''})}catch(e){no(e)}
+  });
+}
+async function gList(tok){
+  const q="trashed = false and mimeType = 'application/json'";let f=[],pt='';
+  do{
+    const r=await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent(q)+'&spaces=drive&pageSize=100&fields='+encodeURIComponent('nextPageToken,files(id,name,createdTime)')+(pt?'&pageToken='+encodeURIComponent(pt):''),{headers:{Authorization:'Bearer '+tok}});
+    if(!r.ok)throw new Error('Drive file பட்டியல் கிடைக்கவில்லை');
+    const d=await r.json();f=f.concat(d.files||[]);pt=d.nextPageToken||'';
+  }while(pt&&f.length<500);
+  return f.filter(x=>/^SALE-PROFIT-BOOK-/i.test(x.name||''));
+}
+async function gBackup(){
+  try{
+    gs('Google Drive-உடன் இணைகிறது…');
+    const tok=await gToken(),now=new Date(),pad=n=>String(n).padStart(2,'0');
+    const name=GPRE+now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+'_'+pad(now.getHours())+'-'+pad(now.getMinutes())+'-'+pad(now.getSeconds())+'.json';
+    const form=new FormData();
+    form.append('metadata',new Blob([JSON.stringify({name,mimeType:'application/json'})],{type:'application/json'}));
+    form.append('file',new Blob([JSON.stringify(snap(),null,1)],{type:'application/json'}));
+    gs('Upload ஆகிறது…');
+    const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name',{method:'POST',headers:{Authorization:'Bearer '+tok},body:form});
+    if(!r.ok)throw new Error('Drive upload தோல்வி');
+    const id=(await r.json().catch(()=>({}))).id;
+    localStorage.setItem('spb_last_gdrive_backup_at',now.toISOString());localStorage.setItem('spb_last_gdrive_backup_name',name);
+    try{const dated=(await gList(tok)).filter(x=>x.name.indexOf(GPRE)===0).sort((a,b)=>a.name<b.name?1:-1);
+      for(const f of dated.slice(GKEEP)){if(f.id===id)continue;await fetch('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(f.id),{method:'PATCH',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({trashed:true})})}}catch(e){}
+    render();gs('✅ Drive Backup முடிந்தது: '+name);
+  }catch(e){gs('❌ '+(e.message||e),false)}
+}
+async function gShowList(){
+  try{
+    gs('Drive backups தேடுகிறது…');
+    const tok=await gToken(),f=(await gList(tok)).sort((a,b)=>String(b.createdTime).localeCompare(String(a.createdTime))).slice(0,10);
+    $('gList').innerHTML=f.length?f.map(x=>`<div class="row"><div>${E(x.name)}<small>${new Date(x.createdTime).toLocaleString('en-IN')}</small></div><button class="s" style="margin:0" onclick="gRestore('${E(x.id)}')">Restore</button></div>`).join(''):'<small>Backup file எதுவும் இல்லை</small>';
+    gs('Restore செய்ய வேண்டிய backup-ஐ தேர்ந்தெடுக்கவும்.');
+  }catch(e){gs('❌ '+(e.message||e),false)}
+}
+async function gRestore(id){
+  try{
+    const tok=await gToken(),r=await fetch('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(id)+'?alt=media',{headers:{Authorization:'Bearer '+tok}});
+    if(!r.ok)throw new Error('File download ஆகவில்லை');
+    const d=await r.json(),s=d&&d.storage;
+    if(!s||typeof s!=='object')throw new Error('இது Sale Profit Book backup அல்ல');
+    applyRestore(s);
+  }catch(e){gs('❌ '+(e.message||e),false)}
+}
+function applyRestore(s){
+  if(!confirm('Restore செய்தால் தற்போதைய data மாற்றப்படும். தொடரவா?'))return;
+  dl('SALE-PROFIT-BOOK-BEFORE-RESTORE-'+today()+'.json',JSON.stringify(snap(),null,1),'application/json');
+  Object.keys(s).forEach(k=>{if((k.startsWith('spb')||k.startsWith('saleProfitBook'))&&typeof s[k]==='string')localStorage.setItem(k,s[k])});
+  alert('✅ Restore முடிந்தது.');render();
 }
 
 /* ---------- SHELL ---------- */
 function render(){
   const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,bak:vBak}[tab];
-  $('app').innerHTML=v();
-  $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;render();scrollTo(0,0)">${t[1]}</button>`).join('');
+  $('app').innerHTML=v();if(tab==='home'){calc();if(mixOpen)mxTot()}
+  $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;editId=null;mixOpen=false;render();scrollTo(0,0)">${t[1]}</button>`).join('');
 }
 render();
 </script></body></html>
