@@ -200,11 +200,12 @@ function vExp(){
   <button class="s" onclick="xSel=today();render()">Today</button> <button class="s" onclick="xSel='${ymd(y)}';render()">நேற்று</button> <button class="s" onclick="xSel='';render()">எல்லாம்</button>
   <div class="k" style="margin-top:10px">${xSel?fd(xSel)+' • மொத்த Expense':'எல்லா தேதிகள் • மொத்த Expense'}<b class="red">${M(tot)}</b><small>${a.length} பதிவுகள்</small></div></div>
   <div class="card"><b>💸 Expense சேர்க்க</b><label>Date</label><input type="date" id="xD" value="${xSel||today()}">
-  <label>Expense</label><input id="xN"><label>Amount ₹</label><input id="xA" type="number" inputmode="decimal"><button onclick="addExp()">Add</button></div>
+  <label>Expense</label><select id="xS" onchange="$('xN').classList.toggle('hide',this.value!=='__o')"><option value="">-- Expense தேர்வு --</option>${EXPN.map(n=>`<option>${n}</option>`).join('')}<option value="__o">✏️ Other (புதிய பெயர்)</option></select>
+  <input id="xN" class="hide" placeholder="Expense பெயர்" style="margin-top:8px"><label>Amount ₹</label><input id="xA" type="number" inputmode="decimal"><button onclick="addExp()">Add</button></div>
   <div class="card">${a.map(x=>`<div class="row"><div>${E(x.name)}<small>${fd(x.date)}</small></div><div>${M(x.amount)} <button class="d" onclick="delExp(${N(x.id)})">✕</button></div></div>`).join('')||'<small>இந்த தேதியில் Expense இல்லை</small>'}</div>`;
 }
 function addExp(){
-  const name=nm($('xN').value),amount=N($('xA').value);
+  const sv=$('xS').value,name=sv==='__o'?nm($('xN').value):sv,amount=N($('xA').value);
   if(!name||!(amount>0))return alert('Expense & Amount உள்ளிடவும்.');
   const d=$('xD').value||today(),a=rd(KEY.exp);a.unshift({id:Date.now(),date:d,name,amount});wr(KEY.exp,a);if(xSel)xSel=d;render();
 }
@@ -448,6 +449,7 @@ function applyRestore(s){
 
 /* ---------- HOME DASHBOARD / DATE SUMMARY / DUA / INSTALL ---------- */
 let dF=today(),dT=today(),ip=null,xSel=today();
+const EXPN=['Breakfast','Car Rent','Cigarette','Dinner','Juice','Lunch','Room Rent','Petrol','Tea','Tollgate','Water'];
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();ip=ev;const b=$('ib');if(b)b.classList.remove('hide')});
 function inst(){if(ip){ip.prompt();ip=null;const b=$('ib');if(b)b.classList.add('hide')}}
