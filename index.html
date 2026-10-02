@@ -33,7 +33,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.3</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.4</span></header>
 <main id="app"></main>
 <nav id="nav"></nav>
 <script>
@@ -46,7 +46,7 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.3';
+const VER='9.4';
 const lastPlace=()=>localStorage.getItem('spb_v9_place')||'Kadayanallur';
 const places=()=>[...new Set(rd(KEY.entries).map(x=>String(x.place||'').trim()).filter(Boolean))];
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
@@ -198,15 +198,16 @@ function vExp(){
   const y=new Date();y.setDate(y.getDate()-1);
   const gm={};a.forEach(x=>{const n=nm(x.name)||'(பெயர் இல்லை)',k=n.toLowerCase(),o=gm[k]||(gm[k]={n,s:0,c:0});o.s+=N(x.amount);o.c++});
   const gl=Object.values(gm).sort((p,q)=>q.s-p.s);
-  const brk=gl.length?`<div style="margin-top:12px"><b style="font-size:14px">📊 பெயர் வாரியாக</b>${gl.map(o=>`<div class="row"><div>${E(o.n)}<small>${o.c} பதிவு</small></div><b>${M(o.s)}</b></div>`).join('')}</div>`:'';
+  const brk=gl.length?`<div class="card"><b style="font-size:16px">📊 பெயர் வாரியாக</b>${gl.map(o=>`<div class="row"><div>${E(o.n)}<small>${o.c} பதிவு</small></div><b>${M(o.s)}</b></div>`).join('')}</div>`:'';
   return `<div class="card"><b>📅 தேதி தேர்ந்தெடு</b>
   <input type="date" id="xF" value="${xSel}" onchange="xSel=this.value;render()">
   <button class="s" onclick="xSel=today();render()">Today</button> <button class="s" onclick="xSel='${ymd(y)}';render()">நேற்று</button> <button class="s" onclick="xSel='';render()">எல்லாம்</button>
-  <div class="k" style="margin-top:10px">${xSel?fd(xSel)+' • மொத்த Expense':'எல்லா தேதிகள் • மொத்த Expense'}<b class="red">${M(tot)}</b><small>${a.length} பதிவுகள்</small></div>${brk}</div>
+  <div class="k" style="margin-top:10px">${xSel?fd(xSel)+' • மொத்த Expense':'எல்லா தேதிகள் • மொத்த Expense'}<b class="red">${M(tot)}</b><small>${a.length} பதிவுகள்</small></div></div>
   <div class="card"><b>💸 Expense சேர்க்க</b><label>Date</label><input type="date" id="xD" value="${xSel||today()}">
   <label>Expense</label><select id="xS" onchange="$('xN').classList.toggle('hide',this.value!=='__o')"><option value="">-- Expense தேர்வு --</option>${EXPN.map(n=>`<option>${n}</option>`).join('')}<option value="__o">✏️ Other (புதிய பெயர்)</option></select>
   <input id="xN" class="hide" placeholder="Expense பெயர்" style="margin-top:8px"><label>Amount ₹</label><input id="xA" type="number" inputmode="decimal"><button onclick="addExp()">Add</button></div>
-  <div class="card">${a.map(x=>`<div class="row"><div>${E(x.name)}<small>${fd(x.date)}</small></div><div>${M(x.amount)} <button class="d" onclick="delExp(${N(x.id)})">✕</button></div></div>`).join('')||'<small>இந்த தேதியில் Expense இல்லை</small>'}</div>`;
+  <div class="card">${a.map(x=>`<div class="row"><div>${E(x.name)}<small>${fd(x.date)}</small></div><div>${M(x.amount)} <button class="d" onclick="delExp(${N(x.id)})">✕</button></div></div>`).join('')||'<small>இந்த தேதியில் Expense இல்லை</small>'}</div>
+  ${brk}`;
 }
 function addExp(){
   const sv=$('xS').value,name=sv==='__o'?nm($('xN').value):sv,amount=N($('xA').value);
