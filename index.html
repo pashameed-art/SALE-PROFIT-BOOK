@@ -33,7 +33,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.4</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.5</span></header>
 <main id="app"></main>
 <nav id="nav"></nav>
 <script>
@@ -46,7 +46,7 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.4';
+const VER='9.5';
 const lastPlace=()=>localStorage.getItem('spb_v9_place')||'Kadayanallur';
 const places=()=>[...new Set(rd(KEY.entries).map(x=>String(x.place||'').trim()).filter(Boolean))];
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
@@ -156,8 +156,9 @@ function saveMixed(){
 function vHist(){
   let a=rd(KEY.entries).filter(x=>(!from||x.date>=from)&&(!to||x.date<=to)).sort((x,y)=>String(y.date).localeCompare(String(x.date))||N(y.id)-N(x.id));
   const s=a.reduce((t,x)=>t+N(x.sale),0),p=a.reduce((t,x)=>t+N(x.profit),0),pu=a.reduce((t,x)=>t+N(x.purchase),0),m=a.reduce((t,x)=>t+N(x.meter),0);
+  const ex=rd(KEY.exp).filter(inR).reduce((t,x)=>t+N(x.amount),0);
   return `<div class="card"><div class="g"><div><label>From</label><input type="date" id="hF" value="${from}" onchange="from=this.value;render()"></div><div><label>To</label><input type="date" id="hT" value="${to}" onchange="to=this.value;render()"></div></div>
-  <div class="g" style="margin-top:8px"><div class="k">Sale<b>${M(s)}</b></div><div class="k">Profit<b>${M(p)}</b></div><div class="k">Purchase<b>${M(pu)}</b></div><div class="k">Meter<b>${m}</b></div></div>
+  <div class="g" style="margin-top:8px"><div class="k">Sale<b>${M(s)}</b></div><div class="k">Profit<b>${M(p)}</b></div><div class="k">Purchase<b>${M(pu)}</b></div><div class="k">Meter<b>${m}</b></div><div class="k">Expense<b>${M(ex)}</b></div><div class="k" style="grid-column:1/-1">Net Profit<b class="${p-ex<0?'red':'grn'}">${M(p-ex)}</b></div></div>
   <button class="s" onclick="csv()">⬇️ CSV</button> <button class="s" onclick="repShare()">📤 WhatsApp</button> <button class="s" onclick="repPdf()">🖨️ PDF</button> <button class="s" onclick="from=to=today();render()">Today</button> <button class="s" onclick="from=to='';render()">All</button></div>
   <div class="card">${a.slice(0,200).map(x=>`<div class="row"><div><b>${E(x.item)}</b> • ${N(x.meter)} m<small>${fd(x.date)}${x.place?' • 📍'+E(x.place):''} • ${E(x.paidBy)}${x.customer?' • '+E(x.customer):''}</small></div><div style="text-align:right">${M(x.sale)}<small>${M(x.profit)}</small><button class="d" style="background:#e3eceb;color:#0f766e" onclick="editEntry(${N(x.id)})">✏️</button> <button class="d" onclick="delEntry(${N(x.id)})">Delete</button></div></div>`).join('')||'<small>பதிவுகள் இல்லை</small>'}</div>`;
 }
@@ -170,15 +171,67 @@ function csv(){
 }
 
 /* ---------- STOCK ---------- */
+const sortedItems=()=>rd(KEY.items).slice().sort((a,b)=>a.name.localeCompare(b.name));
+function stockPanel(){
+  const its=rd(KEY.items);
+  if(iEdit){const it=its.find(x=>x.name===iEdit);if(!it){iEdit=null;return ''}
+    return `<div class="card"><b>✏️ Item Edit</b><label>Item Name</label><input id="ieN" value="${E(it.name)}">
+    <div class="g"><div><label>Purchase / Meter ₹</label><input id="ieR" type="number" inputmode="decimal" value="${N(it.rate)}"></div><div><label>Low stock alert (0 = இல்லை)</label><input id="ieM" type="number" inputmode="decimal" value="${N(it.min)}"></div></div>
+    <small style="margin-top:6px">Rate மாற்றம் இனி வரும் Sales-க்கு மட்டும்; பழைய பதிவுகள் மாறாது. பெயர் மாற்றினால் பழைய Sales மற்றும் Stock பதிவுகளிலும் மாறும்.</small>
+    <button onclick="itemUpdate()">Update</button> <button class="s" onclick="iEdit=null;render()">Cancel</button></div>`}
+  if(sOut){const it=its.find(x=>x.name===sOut);if(!it){sOut=null;return ''}
+    const mv=rd(KEY.stock).filter(x=>x.item===sOut).sort((a,b)=>String(b.date).localeCompare(String(a.date))||N(b.id)-N(a.id)).slice(0,8);
+    return `<div class="card"><b>➖ Stock குறைத்தல் — ${E(sOut)}</b><small>தற்போதைய Stock: ${stockOf(sOut)} m</small>
+    <label>Meter</label><input id="soM" type="number" inputmode="decimal" step="0.01">
+    <div class="g"><div><label>Date</label><input type="date" id="soD" value="${today()}"></div><div><label>காரணம்</label><select id="soR"><option>Damage</option><option>Return</option><option>Adjustment</option><option>Other</option></select></div></div>
+    <button onclick="stockOutSave()">Save</button> <button class="s" onclick="sOut=null;render()">Cancel</button>
+    <div style="margin-top:12px"><b style="font-size:14px">சமீபத்திய Stock பதிவுகள்</b>${mv.map(m=>`<div class="row"><div>${fd(m.date)}<small>${E(m.type==='Stock Out'?'➖ Stock Out'+(m.note?' • '+m.note:''):'➕ Stock In')}</small></div><div>${N(m.meter)} m <button class="d" onclick="smDel(${N(m.id)})">🗑️</button></div></div>`).join('')||'<small>பதிவுகள் இல்லை</small>'}</div></div>`}
+  return '';
+}
 function vStock(){
-  const it=rd(KEY.items).slice().sort((a,b)=>a.name.localeCompare(b.name));
-  return `<div class="card"><b>➕ Item / Stock</b>
+  const it=sortedItems();
+  return `${stockPanel()}<div class="card"><b>➕ Item / Stock</b>
   <label>Item Name (புதியது அல்லது ஏற்கனவே உள்ளது)</label><input id="sName" list="sl" autocomplete="off"><datalist id="sl">${it.map(i=>`<option value="${E(i.name)}">`).join('')}</datalist>
   <div class="g"><div><label>Purchase / Meter ₹</label><input id="sRate" type="number" inputmode="decimal"></div><div><label>Stock In (Meter)</label><input id="sQty" type="number" inputmode="decimal"></div></div>
   <label>Low stock alert (Meter, விருப்பம்)</label><input id="sMin" type="number" inputmode="decimal">
   <button onclick="saveItem()">Save</button></div>
-  <div class="card">${it.map(i=>{const s=stockOf(i.name);return `<div class="row"><div><b>${E(i.name)}</b><small>₹${i.rate}/m${i.min?' • min '+i.min:''}</small></div><div class="${s<=0?'red':''}"><b>${s} m</b></div></div>`}).join('')||'<small>Items இல்லை</small>'}</div>`;
+  <div class="card">${it.map((i,x)=>{const s=stockOf(i.name);return `<div class="row"><div><b>${E(i.name)}</b><small>₹${i.rate}/m${i.min?' • min '+i.min:''}</small></div><div style="text-align:right"><b class="${s<=0?'red':''}">${s} m</b><br><button class="d" style="background:#e3f1ef;color:#0f766e" onclick="iAct('edit',${x})">✏️</button> <button class="d" style="background:#fff4e0;color:#b36b00" onclick="iAct('out',${x})">➖</button> <button class="d" onclick="iAct('del',${x})">🗑️</button></div></div>`}).join('')||'<small>Items இல்லை</small>'}</div>`;
 }
+function iAct(k,idx){
+  const it=sortedItems()[idx];if(!it)return;const n=it.name;
+  if(k==='del')return itemDel(n);
+  if(k==='edit'){iEdit=n;sOut=null}else{sOut=n;iEdit=null}
+  render();scrollTo(0,0);
+}
+function itemUpdate(){
+  const old=iEdit,nn=nm($('ieN').value),rate=N($('ieR').value),min=N($('ieM').value);
+  if(!nn)return alert('Item Name உள்ளிடவும்.');
+  if(!(rate>0))return alert('Purchase / Meter உள்ளிடவும்.');
+  const a=rd(KEY.items),it=a.find(x=>x.name===old);if(!it)return;
+  if(nn!==old&&a.some(x=>x!==it&&x.name.toLowerCase()===nn.toLowerCase()))return alert('இந்த பெயரில் வேறு Item ஏற்கனவே உள்ளது.');
+  it.rate=rate;if(min>0)it.min=min;else delete it.min;
+  if(nn!==old){
+    it.name=nn;
+    const e=rd(KEY.entries);e.forEach(x=>{if(x.item===old)x.item=nn});wr(KEY.entries,e);
+    const s=rd(KEY.stock);s.forEach(x=>{if(x.item===old)x.item=nn});wr(KEY.stock,s);
+  }
+  wr(KEY.items,a);iEdit=null;render();
+}
+function itemDel(n){
+  const ne=rd(KEY.entries).filter(x=>x.item===n).length,sm=rd(KEY.stock).filter(x=>x.item===n).length;
+  if(!confirm('"'+n+'" Item-ஐ Delete செய்யவா?\n\nStock பதிவுகள் ('+sm+') நீக்கப்படும். '+ne+' Sale பதிவுகள் History-ல் அப்படியே இருக்கும்.'))return;
+  wr(KEY.items,rd(KEY.items).filter(x=>x.name!==n));wr(KEY.stock,rd(KEY.stock).filter(x=>x.item!==n));
+  if(iEdit===n)iEdit=null;if(sOut===n)sOut=null;render();
+}
+function stockOutSave(){
+  const n=sOut,m=N($('soM').value);
+  if(!(m>0))return alert('Meter உள்ளிடவும்.');
+  const st=stockOf(n);
+  if(m>st&&!confirm('Stock '+st+' m மட்டுமே உள்ளது. '+m+' m குறைக்கவா? (Stock minus ஆகும்)'))return;
+  const s=rd(KEY.stock);s.unshift({id:Date.now(),date:$('soD').value||today(),item:n,meter:m,type:'Stock Out',note:$('soR').value});wr(KEY.stock,s);
+  sOut=null;render();
+}
+function smDel(id){if(!confirm('இந்த Stock பதிவை Delete செய்யவா?'))return;wr(KEY.stock,rd(KEY.stock).filter(x=>N(x.id)!==id));render()}
 function saveItem(){
   const name=nm($('sName').value),rate=N($('sRate').value),qty=N($('sQty').value),min=N($('sMin').value);
   if(!name)return alert('Item Name உள்ளிடவும்.');
@@ -454,7 +507,7 @@ function applyRestore(s){
 
 
 /* ---------- HOME DASHBOARD / DATE SUMMARY / DUA / INSTALL ---------- */
-let dF=today(),dT=today(),ip=null,xSel=today();
+let dF=today(),dT=today(),ip=null,xSel=today(),iEdit=null,sOut=null;
 const EXPN=['Breakfast','Car Rent','Cigarette','Dinner','Juice','Lunch','Room Rent','Petrol','Tea','Tollgate','Water'];
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();ip=ev;const b=$('ib');if(b)b.classList.remove('hide')});
@@ -499,7 +552,7 @@ async function appRefresh(){
 function render(){
   const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,bak:vBak}[tab];
   $('app').innerHTML=v();try{$('hd').textContent=new Date().toLocaleDateString('ta-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch(e){}if(tab==='home'){calc();if(mixOpen)mxTot()}
-  $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;editId=null;mixOpen=false;render();scrollTo(0,0)"><span class="ic">${t[1].split(' ')[0]}</span><span>${t[1].split(' ').slice(1).join(' ')}</span></button>`).join('');
+  $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;editId=null;mixOpen=false;iEdit=null;sOut=null;render();scrollTo(0,0)"><span class="ic">${t[1].split(' ')[0]}</span><span>${t[1].split(' ').slice(1).join(' ')}</span></button>`).join('');
 }
 render();
 </script><script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('./sw-v9.js').catch(function(){})});</script>
