@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ta"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f766e"><title>Sale Profit Book V9</title>
+<style>
+:root{--g:#0f766e;--bg:#f3f6f6;--c:#fff;--t:#17202a;--r:#c62828;--ok:#16834b}
+*{box-sizing:border-box}body{margin:0;font:15px system-ui,sans-serif;background:var(--bg);color:var(--t);padding-bottom:70px}
+header{background:var(--g);color:#fff;padding:12px 14px;font-weight:700}
+main{padding:10px;max-width:640px;margin:auto}
+.card{background:var(--c);border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px #0002}
+label{display:block;font-size:12px;margin:8px 0 3px;color:#556}
+input,select{width:100%;padding:10px;border:1px solid #ccd;border-radius:8px;font-size:15px}
+button{background:var(--g);color:#fff;border:0;border-radius:8px;padding:10px 14px;font-size:15px;font-weight:600;margin-top:8px}
+button.s{background:#e3eceb;color:var(--g)}button.d{background:#fde8e8;color:var(--r);padding:4px 8px;margin:0;font-size:12px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #ddd}
+nav button{flex:1;background:none;color:#556;border-radius:0;margin:0;padding:12px 2px;font-size:12px}
+nav button.on{color:var(--g);border-top:3px solid var(--g)}
+.row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #eee;align-items:center}
+.row:first-child{border-top:0}small{color:#667;display:block}.g{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.k{background:#eef7f6;border-radius:10px;padding:8px}.k b{display:block;font-size:17px}
+.red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
+</style></head><body>
+<header>Sale Profit Book <small style="display:inline;color:#cfe">V9 core</small></header>
+<main id="app"></main>
+<nav id="nav"></nav>
+<script>
+'use strict';
+const KEY={items:'spb_v4_items',entries:'spb_v4_entries',exp:'spb_v4_expenses',stock:'spb_v4_stock',pay:'spb_credit_payments_v1',cus:'spb_credit_customers_v1'};
+const $=id=>document.getElementById(id);
+const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const N=v=>{v=Number(v);return isFinite(v)?v:0};
+const M=n=>'₹'+N(n).toLocaleString('en-IN',{maximumFractionDigits:2});
+const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
+const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
+const fd=v=>{const p=String(v||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:v};
+let tab='home',cbKey=null,from='',to='';
+const TABS=[['home','🏠 Home'],['hist','📜 History'],['stock','📦 Stock'],['exp','💸 Expense'],['credit','📒 Credit'],['bak','☁️ Backup']];
+
+function stockOf(item){
+  const mv=rd(KEY.stock).filter(x=>x.item===item);
+  const inn=mv.filter(x=>String(x.type||'Stock In')!=='Stock Out').reduce((a,x)=>a+N(x.meter),0);
+  const out=mv.filter(x=>x.type==='Stock Out').reduce((a,x)=>a+N(x.meter),0);
+  const sold=rd(KEY.entries).filter(x=>x.item===item).reduce((a,x)=>a+N(x.meter),0);
+  return Math.round((inn-out-sold)*100)/100;
+}
+function ledger(){
+  const m={};const g=n=>{const k=nm(n).toLowerCase();return m[k]||(m[k]={name:nm(n),sale:0,paid:0,last:''})};
+  rd(KEY.entries).forEach(x=>{if(x.paidBy!=='Credit')return;const c=g(x.customer||'(பெயர் இல்லை)');c.sale+=N(x.sale);if(String(x.date)>=c.last)c.last=String(x.date)});
+  rd(KEY.pay).forEach(p=>{if(nm(p.customer))g(p.customer).paid+=N(p.amount)});
+  return Object.values(m).map(c=>({...c,due:Math.round((c.sale-c.paid)*100)/100}));
+}
+function names(){return ledger().map(c=>c.name).sort()}
+
+/* ---------- HOME ---------- */
+function vHome(){
+  const t=today(),en=rd(KEY.entries).filter(x=>x.date===t),ex=rd(KEY.exp).filter(x=>x.date===t);
+  const s=en.reduce((a,x)=>a+N(x.sale),0),p=en.reduce((a,x)=>a+N(x.profit),0),e=ex.reduce((a,x)=>a+N(x.amount),0),mt=en.reduce((a,x)=>a+N(x.meter),0);
+  const it=rd(KEY.items).slice().sort((a,b)=>a.name.localeCompare(b.name));
+  const low=it.filter(i=>i.min>0&&stockOf(i.name)<=i.min);
+  return `<div class="card"><div class="g">
+  <div class="k">Net Profit<b class="${p-e<0?'red':'grn'}">${M(p-e)}</b></div><div class="k">Sale<b>${M(s)}</b></div>
+  <div class="k">Meter<b>${mt} m</b></div><div class="k">Expense<b>${M(e)}</b></div></div></div>
+  ${low.length?`<div class="card red"><b>⚠️ Low Stock</b>${low.map(i=>`<small>${E(i.name)}: ${stockOf(i.name)} m</small>`).join('')}</div>`:''}
+  <div class="card"><b>📝 New Entry</b>
+  <label>Date</label><input type="date" id="eDate" value="${t}">
+  <label>Item</label><select id="eItem" onchange="calc()"><option value="">Select Item</option>${it.map(i=>`<option value="${E(i.name)}">${E(i.name)}</option>`).join('')}</select>
+  <small id="eStock"></small>
+  <div class="g"><div><label>Meter</label><input id="eMeter" type="number" inputmode="decimal" step="0.01" oninput="calc()"></div>
+  <div><label>Sale ₹</label><input id="eSale" type="number" inputmode="decimal" oninput="calc()"></div></div>
+  <label>Paid By</label><select id="ePay" onchange="$('cbox').classList.toggle('hide',this.value!=='Credit')"><option>GPay</option><option>Cash</option><option value="Credit">Credit (கடன்)</option></select>
+  <div id="cbox" class="hide"><label>Customer பெயர்</label><input id="eCus" list="cl" autocomplete="off"><datalist id="cl">${names().map(n=>`<option value="${E(n)}">`).join('')}</datalist></div>
+  <small id="eCalc"></small><button onclick="saveEntry()">Save Entry</button></div>`;
+}
+function calc(){
+  const it=rd(KEY.items).find(i=>i.name===$('eItem').value),m=N($('eMeter').value),s=N($('eSale').value);
+  $('eStock').textContent=it?'Stock: '+stockOf(it.name)+' m • Rate ₹'+it.rate:'';
+  $('eCalc').textContent=it&&m?`Purchase ${M(it.rate*m)} • Profit ${M(s-it.rate*m)}`:'';
+}
+function saveEntry(){
+  const item=$('eItem').value,meter=N($('eMeter').value),sale=N($('eSale').value),paid=$('ePay').value,cus=nm($('eCus')&&$('eCus').value);
+  const it=rd(KEY.items).find(i=>i.name===item);
+  if(!it)return alert('Item தேர்ந்தெடுக்கவும்.');
+  if(!(meter>0))return alert('Meter உள்ளிடவும்.');
+  if(!(sale>=0)||$('eSale').value==='')return alert('Sale தொகை உள்ளிடவும்.');
+  if(paid==='Credit'&&!cus)return alert('Credit-க்கு Customer பெயர் தேவை.');
+  const st=stockOf(item);
+  if(meter>st&&!confirm(`Stock ${st} m மட்டுமே உள்ளது. ${meter} m விற்கவா? (Stock minus ஆகும்)`))return;
+  const purchase=it.rate*meter,e={id:Date.now(),date:$('eDate').value||today(),place:'Kadayanallur',item,meter,rate:it.rate,sale,paidBy:paid,purchase,profit:sale-purchase,time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})};
+  if(paid==='Credit')e.customer=cus;
+  const a=rd(KEY.entries);a.unshift(e);wr(KEY.entries,a);render();
+}
+
+/* ---------- HISTORY + REPORT ---------- */
+function vHist(){
+  let a=rd(KEY.entries).filter(x=>(!from||x.date>=from)&&(!to||x.date<=to)).sort((x,y)=>String(y.date).localeCompare(String(x.date))||N(y.id)-N(x.id));
+  const s=a.reduce((t,x)=>t+N(x.sale),0),p=a.reduce((t,x)=>t+N(x.profit),0),pu=a.reduce((t,x)=>t+N(x.purchase),0),m=a.reduce((t,x)=>t+N(x.meter),0);
+  return `<div class="card"><div class="g"><div><label>From</label><input type="date" id="hF" value="${from}" onchange="from=this.value;render()"></div><div><label>To</label><input type="date" id="hT" value="${to}" onchange="to=this.value;render()"></div></div>
+  <div class="g" style="margin-top:8px"><div class="k">Sale<b>${M(s)}</b></div><div class="k">Profit<b>${M(p)}</b></div><div class="k">Purchase<b>${M(pu)}</b></div><div class="k">Meter<b>${m}</b></div></div>
+  <button class="s" onclick="csv()">⬇️ CSV</button> <button class="s" onclick="from=to=today();render()">Today</button> <button class="s" onclick="from=to='';render()">All</button></div>
+  <div class="card">${a.slice(0,200).map(x=>`<div class="row"><div><b>${E(x.item)}</b> • ${N(x.meter)} m<small>${fd(x.date)} • ${E(x.paidBy)}${x.customer?' • '+E(x.customer):''}</small></div><div style="text-align:right">${M(x.sale)}<small>${M(x.profit)}</small><button class="d" onclick="delEntry(${N(x.id)})">Delete</button></div></div>`).join('')||'<small>பதிவுகள் இல்லை</small>'}</div>`;
+}
+function delEntry(id){if(!confirm('இந்த Entry-ஐ delete செய்யவா?'))return;wr(KEY.entries,rd(KEY.entries).filter(x=>N(x.id)!==id));render()}
+function csv(){
+  const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
+  const a=rd(KEY.entries).filter(x=>(!from||x.date>=from)&&(!to||x.date<=to));
+  const t=[['Date','Item','Meter','Sale','Purchase','Profit','Paid','Customer']].concat(a.map(x=>[x.date,x.item,x.meter,x.sale,x.purchase,x.profit,x.paidBy,x.customer||''])).map(r=>r.map(q).join(',')).join('\n');
+  dl('Sales-'+today()+'.csv',t,'text/csv');
+}
+
+/* ---------- STOCK ---------- */
+function vStock(){
+  const it=rd(KEY.items).slice().sort((a,b)=>a.name.localeCompare(b.name));
+  return `<div class="card"><b>➕ Item / Stock</b>
+  <label>Item Name (புதியது அல்லது ஏற்கனவே உள்ளது)</label><input id="sName" list="sl" autocomplete="off"><datalist id="sl">${it.map(i=>`<option value="${E(i.name)}">`).join('')}</datalist>
+  <div class="g"><div><label>Purchase / Meter ₹</label><input id="sRate" type="number" inputmode="decimal"></div><div><label>Stock In (Meter)</label><input id="sQty" type="number" inputmode="decimal"></div></div>
+  <label>Low stock alert (Meter, விருப்பம்)</label><input id="sMin" type="number" inputmode="decimal">
+  <button onclick="saveItem()">Save</button></div>
+  <div class="card">${it.map(i=>{const s=stockOf(i.name);return `<div class="row"><div><b>${E(i.name)}</b><small>₹${i.rate}/m${i.min?' • min '+i.min:''}</small></div><div class="${s<=0?'red':''}"><b>${s} m</b></div></div>`}).join('')||'<small>Items இல்லை</small>'}</div>`;
+}
+function saveItem(){
+  const name=nm($('sName').value),rate=N($('sRate').value),qty=N($('sQty').value),min=N($('sMin').value);
+  if(!name)return alert('Item Name உள்ளிடவும்.');
+  const a=rd(KEY.items);let it=a.find(x=>x.name.toLowerCase()===name.toLowerCase());
+  if(!it){if(!(rate>0))return alert('புதிய Item-க்கு Purchase / Meter தேவை.');it={name,rate};a.push(it)}
+  else if(rate>0)it.rate=rate;
+  if(min>0)it.min=min;
+  wr(KEY.items,a);
+  if(qty>0){const s=rd(KEY.stock);s.unshift({id:Date.now(),date:today(),item:it.name,meter:qty,type:'Stock In'});wr(KEY.stock,s)}
+  render();
+}
+
+/* ---------- EXPENSE ---------- */
+function vExp(){
+  const a=rd(KEY.exp).sort((x,y)=>String(y.date).localeCompare(String(x.date))).slice(0,100);
+  return `<div class="card"><b>💸 Expense</b><label>Date</label><input type="date" id="xD" value="${today()}">
+  <label>Expense</label><input id="xN"><label>Amount ₹</label><input id="xA" type="number" inputmode="decimal"><button onclick="addExp()">Add</button></div>
+  <div class="card">${a.map(x=>`<div class="row"><div>${E(x.name)}<small>${fd(x.date)}</small></div><div>${M(x.amount)} <button class="d" onclick="delExp(${N(x.id)})">✕</button></div></div>`).join('')||'<small>இல்லை</small>'}</div>`;
+}
+function addExp(){
+  const name=nm($('xN').value),amount=N($('xA').value);
+  if(!name||!(amount>0))return alert('Expense & Amount உள்ளிடவும்.');
+  const a=rd(KEY.exp);a.unshift({id:Date.now(),date:$('xD').value||today(),name,amount});wr(KEY.exp,a);render();
+}
+function delExp(id){if(!confirm('Delete?'))return;wr(KEY.exp,rd(KEY.exp).filter(x=>N(x.id)!==id));render()}
+
+/* ---------- CREDIT BOOK ---------- */
+function vCredit(){
+  const all=ledger();
+  if(cbKey!==null){
+    const c=all.find(x=>x.name.toLowerCase()===cbKey);if(!c){cbKey=null;return vCredit()}
+    const tx=[];
+    rd(KEY.entries).filter(x=>x.paidBy==='Credit'&&nm(x.customer).toLowerCase()===cbKey).forEach(x=>tx.push({d:String(x.date),s:1,t:x.item+' • '+x.meter+'m',a:N(x.sale)}));
+    rd(KEY.pay).filter(p=>nm(p.customer).toLowerCase()===cbKey).forEach(p=>tx.push({d:String(p.date),s:0,t:'Payment • '+(p.mode||''),a:N(p.amount),id:p.id}));
+    tx.sort((a,b)=>b.d.localeCompare(a.d));
+    return `<div class="card"><button class="s" onclick="cbKey=null;render()">← Back</button>
+    <h3>${E(c.name)}</h3><div class="k">பெற வேண்டியது<b class="${c.due>0?'red':'grn'}">${M(c.due)}</b><small>Credit ${M(c.sale)} • Received ${M(c.paid)}</small></div>
+    <label>Payment Amount ₹</label><input id="pA" type="number" inputmode="decimal" placeholder="${c.due>0?c.due:''}">
+    <div class="g"><div><label>Date</label><input id="pD" type="date" value="${today()}"></div><div><label>Mode</label><select id="pM"><option>GPay</option><option>Cash</option></select></div></div>
+    <button onclick="savePay('${E(cbKey).replace(/'/g,"\\'")}')">💰 Payment received</button>
+    <button class="s" onclick="renameCus('${E(c.name).replace(/'/g,"\\'")}')">✏️ பெயர் மாற்று / இணை</button></div>
+    <div class="card">${tx.map(r=>`<div class="row"><div>${fd(r.d)}<small>${E(r.t)}</small></div><div class="${r.s?'':'grn'}">${r.s?'+':'−'}${M(r.a)}${r.id?` <button class="d" onclick="delPay(${N(r.id)})">✕</button>`:''}</div></div>`).join('')}</div>`;
+  }
+  const open=all.filter(c=>Math.abs(c.due)>0.004).sort((a,b)=>b.due-a.due),tot=open.reduce((t,c)=>t+Math.max(c.due,0),0);
+  return `<div class="card"><div class="k">மொத்தம் பெற வேண்டியது<b class="red">${M(tot)}</b></div></div>
+  <div class="card">${open.map(c=>`<div class="row" onclick="cbKey='${E(c.name.toLowerCase()).replace(/'/g,"\\'")}';render()"><div><b>${E(c.name)}</b><small>கடைசி: ${fd(c.last)}</small></div><b class="${c.due>0?'red':'grn'}">${M(c.due)}</b></div>`).join('')||'<small>நிலுவை இல்லை ✓</small>'}</div>`;
+}
+function savePay(k){
+  const c=ledger().find(x=>x.name.toLowerCase()===k),amt=N($('pA').value);
+  if(!c||!(amt>0))return alert('சரியான Amount உள்ளிடவும்.');
+  if(amt>c.due+0.005&&!confirm('மீதத்தை விட அதிகம். Advance ஆக பதிவாகும். Save செய்யவா?'))return;
+  const a=rd(KEY.pay);a.push({id:Date.now(),date:$('pD').value||today(),customer:c.name,amount:Math.round(amt*100)/100,mode:$('pM').value,note:''});wr(KEY.pay,a);render();
+}
+function delPay(id){if(!confirm('Payment delete செய்யவா?'))return;wr(KEY.pay,rd(KEY.pay).filter(p=>N(p.id)!==id));render()}
+function renameCus(old){
+  const nn=nm(prompt('புதிய / சரியான பெயர் (ஏற்கனவே உள்ள பெயர் கொடுத்தால் இரண்டும் இணையும்):',old)||'');
+  if(!nn||nn===old)return;
+  const ok=old.toLowerCase();
+  const e=rd(KEY.entries);e.forEach(x=>{if(x.paidBy==='Credit'&&nm(x.customer).toLowerCase()===ok)x.customer=nn});wr(KEY.entries,e);
+  const p=rd(KEY.pay);p.forEach(x=>{if(nm(x.customer).toLowerCase()===ok)x.customer=nn});wr(KEY.pay,p);
+  cbKey=nn.toLowerCase();render();
+}
+
+/* ---------- BACKUP ---------- */
+function snap(){const s={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith('spb')||k.startsWith('saleProfitBook')))s[k]=localStorage.getItem(k)}return {app:'SALE-PROFIT-BOOK',version:'9',createdAt:new Date().toISOString(),storage:s}}
+function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type+';charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
+function backup(){dl('SALE-PROFIT-BOOK-BACKUP-'+today()+'.json',JSON.stringify(snap(),null,1),'application/json');localStorage.setItem('spb_v9_last_backup',new Date().toISOString());render()}
+function vBak(){
+  const lb=localStorage.getItem('spb_v9_last_backup');
+  return `<div class="card"><b>☁️ Backup</b><small>Last: ${lb?new Date(lb).toLocaleString('en-IN'):'இன்னும் இல்லை'}</small>
+  <button onclick="backup()">⬇️ Backup file download</button>
+  <label>♻️ Restore (JSON file)</label><input type="file" id="rf" accept=".json,application/json">
+  <button class="s" onclick="restore()">Restore</button>
+  <small style="margin-top:8px">Restore-க்கு முன் தானாகவே தற்போதைய data-வின் backup download ஆகும்.</small></div>
+  <div class="card"><small>Google Drive backup & Mansoor / Mydeen / Supplier ledgers: பழைய app-ல் (index.html) உள்ளன — V9-ல் அடுத்த கட்டத்தில் சேர்க்கப்படும்.</small></div>`;
+}
+function restore(){
+  const f=$('rf').files[0];if(!f)return alert('File தேர்ந்தெடுக்கவும்.');
+  const r=new FileReader();r.onload=()=>{
+    let d;try{d=JSON.parse(r.result)}catch(e){return alert('தவறான file.')}
+    const s=d&&d.storage;if(!s||typeof s!=='object')return alert('இது Sale Profit Book backup அல்ல.');
+    if(!confirm('Restore செய்தால் தற்போதைய data மாற்றப்படும். தொடரவா?'))return;
+    dl('SALE-PROFIT-BOOK-BEFORE-RESTORE-'+today()+'.json',JSON.stringify(snap(),null,1),'application/json');
+    Object.keys(s).forEach(k=>{if((k.startsWith('spb')||k.startsWith('saleProfitBook'))&&typeof s[k]==='string')localStorage.setItem(k,s[k])});
+    alert('✅ Restore முடிந்தது.');render();
+  };r.readAsText(f);
+}
+
+/* ---------- SHELL ---------- */
+function render(){
+  const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,bak:vBak}[tab];
+  $('app').innerHTML=v();
+  $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;render();scrollTo(0,0)">${t[1]}</button>`).join('');
+}
+render();
+</script></body></html>
