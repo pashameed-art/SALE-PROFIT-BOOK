@@ -195,10 +195,13 @@ function vExp(){
   const all=rd(KEY.exp).sort((x,y)=>String(y.date).localeCompare(String(x.date))||N(y.id)-N(x.id));
   const a=(xSel?all.filter(x=>x.date===xSel):all).slice(0,200),tot=a.reduce((t,x)=>t+N(x.amount),0);
   const y=new Date();y.setDate(y.getDate()-1);
+  const gm={};a.forEach(x=>{const n=nm(x.name)||'(பெயர் இல்லை)',k=n.toLowerCase(),o=gm[k]||(gm[k]={n,s:0,c:0});o.s+=N(x.amount);o.c++});
+  const gl=Object.values(gm).sort((p,q)=>q.s-p.s);
+  const brk=gl.length?`<div style="margin-top:12px"><b style="font-size:14px">📊 பெயர் வாரியாக</b>${gl.map(o=>`<div class="row"><div>${E(o.n)}<small>${o.c} பதிவு</small></div><b>${M(o.s)}</b></div>`).join('')}</div>`:'';
   return `<div class="card"><b>📅 தேதி தேர்ந்தெடு</b>
   <input type="date" id="xF" value="${xSel}" onchange="xSel=this.value;render()">
   <button class="s" onclick="xSel=today();render()">Today</button> <button class="s" onclick="xSel='${ymd(y)}';render()">நேற்று</button> <button class="s" onclick="xSel='';render()">எல்லாம்</button>
-  <div class="k" style="margin-top:10px">${xSel?fd(xSel)+' • மொத்த Expense':'எல்லா தேதிகள் • மொத்த Expense'}<b class="red">${M(tot)}</b><small>${a.length} பதிவுகள்</small></div></div>
+  <div class="k" style="margin-top:10px">${xSel?fd(xSel)+' • மொத்த Expense':'எல்லா தேதிகள் • மொத்த Expense'}<b class="red">${M(tot)}</b><small>${a.length} பதிவுகள்</small></div>${brk}</div>
   <div class="card"><b>💸 Expense சேர்க்க</b><label>Date</label><input type="date" id="xD" value="${xSel||today()}">
   <label>Expense</label><select id="xS" onchange="$('xN').classList.toggle('hide',this.value!=='__o')"><option value="">-- Expense தேர்வு --</option>${EXPN.map(n=>`<option>${n}</option>`).join('')}<option value="__o">✏️ Other (புதிய பெயர்)</option></select>
   <input id="xN" class="hide" placeholder="Expense பெயர்" style="margin-top:8px"><label>Amount ₹</label><input id="xA" type="number" inputmode="decimal"><button onclick="addExp()">Add</button></div>
