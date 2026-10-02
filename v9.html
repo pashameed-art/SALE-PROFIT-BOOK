@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ta"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f766e"><title>Sale Profit Book V9</title>
+<meta name="theme-color" content="#0f766e"><link rel="manifest" href="./manifest.json"><title>Sale Profit Book V9</title>
 <style>
 :root{--g:#0f766e;--bg:#f3f6f6;--c:#fff;--t:#17202a;--r:#c62828;--ok:#16834b}
 *{box-sizing:border-box}body{margin:0;font:15px system-ui,sans-serif;background:var(--bg);color:var(--t);padding-bottom:70px}
@@ -29,7 +29,7 @@ const KEY={items:'spb_v4_items',entries:'spb_v4_entries',exp:'spb_v4_expenses',s
 const $=id=>document.getElementById(id);
 const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const N=v=>{v=Number(v);return isFinite(v)?v:0};
-const M=n=>'₹'+N(n).toLocaleString('en-IN',{maximumFractionDigits:2});
+const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximumFractionDigits:2});
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -60,11 +60,7 @@ function vHome(){
   const it=rd(KEY.items).slice().sort((a,b)=>a.name.localeCompare(b.name));
   const low=it.filter(i=>i.min>0&&stockOf(i.name)<=i.min);
   const ed=editId?rd(KEY.entries).find(x=>N(x.id)===editId):null;
-  return `<div class="card"><div class="g">
-  <div class="k">Net Profit<b class="${p-e<0?'red':'grn'}">${M(p-e)}</b></div><div class="k">Sale<b>${M(s)}</b></div>
-  <div class="k">Meter<b>${mt} m</b></div><div class="k">Expense<b>${M(e)}</b></div></div></div>
-  ${low.length?`<div class="card red"><b>⚠️ Low Stock</b>${low.map(i=>`<small>${E(i.name)}: ${stockOf(i.name)} m</small>`).join('')}</div>`:''}
-  <div class="card"><b>${ed?'✏️ Entry Edit':'📝 New Entry'}</b>
+  return `  <div class="card"><b>${ed?'✏️ Entry Edit':'📝 New Entry'}</b>
   <label>Date</label><input type="date" id="eDate" value="${ed?ed.date:t}">
   <label>Item</label><select id="eItem" onchange="calc()"><option value="">Select Item</option>${it.map(i=>`<option value="${E(i.name)}"${ed&&ed.item===i.name?' selected':''}>${E(i.name)}</option>`).join('')}</select>
   <small id="eStock"></small>
@@ -73,7 +69,8 @@ function vHome(){
   <label>Paid By</label><select id="ePay" onchange="$('cbox').classList.toggle('hide',this.value!=='Credit')"><option${ed&&ed.paidBy==='GPay'?' selected':''}>GPay</option><option${ed&&ed.paidBy==='Cash'?' selected':''}>Cash</option><option value="Credit"${ed&&ed.paidBy==='Credit'?' selected':''}>Credit (கடன்)</option></select>
   <div id="cbox" class="${ed&&ed.paidBy==='Credit'?'':'hide'}"><label>Customer பெயர்</label><input id="eCus" list="cl" autocomplete="off" value="${E(ed&&ed.customer||'')}"><datalist id="cl">${names().map(n=>`<option value="${E(n)}">`).join('')}</datalist></div>
   <small id="eCalc"></small><button onclick="saveEntry()">${ed?'Update Entry':'Save Entry'}</button>${ed?'<button class="s" onclick="editId=null;render()">Cancel</button>':''}</div>
-  ${ed?'':mixHtml(it)}`;
+  ${ed?'':mixHtml(it)}
+  ${ed?'':dashHtml(low)}`;
 }
 function calc(){
   const it=rd(KEY.items).find(i=>i.name===$('eItem').value),m=N($('eMeter').value),s=N($('eSale').value);
@@ -285,6 +282,8 @@ function vBak(){
   <label>♻️ Restore (JSON file)</label><input type="file" id="rf" accept=".json,application/json">
   <button class="s" onclick="restore()">Restore</button>
   <small style="margin-top:8px">Restore-க்கு முன் தானாகவே தற்போதைய data-வின் backup download ஆகும்.</small></div>
+  <div class="card"><b>🗑️ Delete Data</b><small>Expenses, Purchase, Stock, Party, Settings மாறாது. Delete-க்கு முன் backup file தானாக download ஆகும்.</small>
+  <button class="d" style="padding:10px 14px;font-size:14px;margin-top:8px" onclick="delAll('sales')">Delete All Sales</button> <button class="d" style="padding:10px 14px;font-size:14px" onclick="delAll('exp')">Delete All Expenses</button></div>
   <div class="card"><small>Drive backup பழைய app-ன் அதே Google client மற்றும் file பெயர்களைப் பயன்படுத்துகிறது.</small></div>`;
 }
 function restore(){
@@ -419,6 +418,43 @@ function applyRestore(s){
   dl('SALE-PROFIT-BOOK-BEFORE-RESTORE-'+today()+'.json',JSON.stringify(snap(),null,1),'application/json');
   Object.keys(s).forEach(k=>{if((k.startsWith('spb')||k.startsWith('saleProfitBook'))&&typeof s[k]==='string')localStorage.setItem(k,s[k])});
   alert('✅ Restore முடிந்தது.');render();
+}
+
+
+/* ---------- HOME DASHBOARD / DATE SUMMARY / DUA / INSTALL ---------- */
+let dF='',dT='',ip=null;
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();ip=ev;const b=$('ib');if(b)b.classList.remove('hide')});
+function inst(){if(ip){ip.prompt();ip=null;const b=$('ib');if(b)b.classList.add('hide')}}
+function dBox(){
+  const a=rd(KEY.entries).filter(x=>(!dF||x.date>=dF)&&(!dT||x.date<=dT));
+  const S=k=>a.reduce((t,x)=>t+N(x[k]),0);
+  return `<div class="g" style="margin-top:8px"><div class="k">📏 Meter<b>${Math.round(S('meter')*100)/100}</b></div><div class="k">💰 Sale<b>${M(S('sale'))}</b></div><div class="k">🧾 Purchase<b>${M(S('purchase'))}</b></div><div class="k">📈 Profit<b>${M(S('profit'))}</b></div></div>`;
+}
+function dSet(f,tt){dF=f;dT=tt;$('dF').value=f;$('dT').value=tt;$('dBox').innerHTML=dBox()}
+function dashHtml(low){
+  const t=today(),en=rd(KEY.entries).filter(x=>x.date===t),ex=rd(KEY.exp).filter(x=>x.date===t);
+  const s=en.reduce((a,x)=>a+N(x.sale),0),p=en.reduce((a,x)=>a+N(x.profit),0),e=ex.reduce((a,x)=>a+N(x.amount),0),mt=en.reduce((a,x)=>a+N(x.meter),0);
+  return `<div class="card"><b>Today Dashboard</b><div class="g" style="margin-top:8px">
+  <div class="k">Net Profit<b class="${p-e<0?'red':'grn'}">${M(p-e)}</b></div><div class="k">Sale<b>${M(s)}</b></div>
+  <div class="k">Meter<b>${Math.round(mt*100)/100} m</b></div><div class="k">Expense<b>${M(e)}</b></div></div></div>
+  ${low.length?`<div class="card red"><b>⚠️ Low Stock</b>${low.map(i=>`<small>${E(i.name)}: ${stockOf(i.name)} m</small>`).join('')}</div>`:''}
+  <div class="card"><b>📅 Date Summary</b><small>தேதி தேர்ந்தெடுக்காவிட்டால் எல்லா தேதிகளும்</small>
+  <div class="g"><div><label>Date From</label><input type="date" id="dF" value="${dF}" onchange="dF=this.value;$('dBox').innerHTML=dBox()"></div><div><label>Date To</label><input type="date" id="dT" value="${dT}" onchange="dT=this.value;$('dBox').innerHTML=dBox()"></div></div>
+  <button class="s" onclick="dSet(today(),today())">Today</button> <button class="s" onclick="const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7);dSet(ymd(d),today())">This Week</button> <button class="s" onclick="dSet(today().slice(0,8)+'01',today())">This Month</button> <button class="s" onclick="dSet('','')">Clear</button>
+  <div id="dBox">${dBox()}</div></div>
+  <div class="card" style="text-align:center"><b style="color:var(--g)">Dua</b><div style="margin-top:8px;line-height:1.55;font-weight:700">யா அல்லாஹ்! எங்கள் வாழ்வில் பரக்கத்தையும், ஹலாலான ரிஸ்க்கையும் வழங்குவாயாக.<br>எங்கள் காரியங்களை எளிதாக்கி, நன்மையைத் தந்து, தீமையிலிருந்து எங்களைப் பாதுகாப்பாயாக.</div></div>
+  <button id="ib" class="${ip?'':'hide'}" style="width:100%" onclick="inst()">📲 Install App</button>`;
+}
+function delAll(kind){
+  const k=kind==='sales'?KEY.entries:KEY.exp,n=rd(k).length,lbl=kind==='sales'?'Sales':'Expense';
+  if(!n)return alert('Delete செய்ய '+lbl+' data இல்லை.');
+  if(!confirm('Delete ALL '+lbl+' data?\n\n'+n+' பதிவுகள் நிரந்தரமாக நீக்கப்படும்.'))return;
+  if(!confirm('இறுதி உறுதி: எல்லா '+lbl+' data-வையும் Delete செய்யவா?\n\n(முன்னதாக தானாகவே backup file download ஆகும்.)'))return;
+  dl('SALE-PROFIT-BOOK-BEFORE-DELETE-'+today()+'.json',JSON.stringify(snap(),null,1),'application/json');
+  wr(k,[]);
+  if(kind==='sales'&&rd(KEY.pay).length&&confirm('Credit payments-ஐயும் Delete செய்யவா?\n\n(இல்லையென்றால் customers "advance" ஆகத் தெரிவார்கள்.)'))wr(KEY.pay,[]);
+  alert('✅ '+lbl+' data Delete செய்யப்பட்டது.');render();
 }
 
 /* ---------- SHELL ---------- */
