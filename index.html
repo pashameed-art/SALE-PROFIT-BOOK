@@ -33,7 +33,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.8</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.10</span></header>
 <main id="app"></main>
 <nav id="nav"></nav>
 <script>
@@ -46,7 +46,7 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.8';
+const VER='9.10';
 const lastPlace=()=>localStorage.getItem('spb_v9_place')||'Kadayanallur';
 const places=()=>[...new Set(rd(KEY.entries).map(x=>String(x.place||'').trim()).filter(Boolean))];
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
