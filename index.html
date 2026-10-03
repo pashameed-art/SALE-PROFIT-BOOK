@@ -33,7 +33,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.6</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.8</span></header>
 <main id="app"></main>
 <nav id="nav"></nav>
 <script>
@@ -46,7 +46,7 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.6';
+const VER='9.8';
 const lastPlace=()=>localStorage.getItem('spb_v9_place')||'Kadayanallur';
 const places=()=>[...new Set(rd(KEY.entries).map(x=>String(x.place||'').trim()).filter(Boolean))];
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
@@ -154,13 +154,25 @@ function saveMixed(){
 
 /* ---------- HISTORY + REPORT ---------- */
 function vHist(){
-  let a=rd(KEY.entries).filter(x=>(!from||x.date>=from)&&(!to||x.date<=to)).sort((x,y)=>String(y.date).localeCompare(String(x.date))||N(y.id)-N(x.id));
+  const q=hq.trim().toLowerCase(),hm=x=>!q||[x.item,x.customer,x.place,x.paidBy,x.date,fd(x.date)].some(v=>String(v||'').toLowerCase().includes(q));
+  let a=rd(KEY.entries).filter(x=>(!from||x.date>=from)&&(!to||x.date<=to)&&hm(x)).sort((x,y)=>String(y.date).localeCompare(String(x.date))||N(y.id)-N(x.id));
   const s=a.reduce((t,x)=>t+N(x.sale),0),p=a.reduce((t,x)=>t+N(x.profit),0),pu=a.reduce((t,x)=>t+N(x.purchase),0),m=a.reduce((t,x)=>t+N(x.meter),0);
   const ex=rd(KEY.exp).filter(inR).reduce((t,x)=>t+N(x.amount),0);
   return `<div class="card"><div class="g"><div><label>From</label><input type="date" id="hF" value="${from}" onchange="from=this.value;render()"></div><div><label>To</label><input type="date" id="hT" value="${to}" onchange="to=this.value;render()"></div></div>
-  <div class="g" style="margin-top:8px"><div class="k">Sale<b>${M(s)}</b></div><div class="k">Profit<b>${M(p)}</b></div><div class="k">Purchase<b>${M(pu)}</b></div><div class="k">Meter<b>${m}</b></div><div class="k">Expense<b>${M(ex)}</b></div><div class="k" style="grid-column:1/-1">Net Profit<b class="${p-ex<0?'red':'grn'}">${M(p-ex)}</b></div></div>
+  <label>🔍 தேடல்</label><input id="hQ" placeholder="Item / Customer / Place / Cash / GPay" value="${E(hq)}" oninput="hq=this.value;_hf=1;render()">
+  <div class="g" style="margin-top:8px"><div class="k">Sale<b>${M(s)}</b></div><div class="k">Profit<b>${M(p)}</b></div><div class="k">Purchase<b>${M(pu)}</b></div><div class="k">Meter<b>${m}</b></div>${q?'':`<div class="k">Expense<b>${M(ex)}</b></div><div class="k" style="grid-column:1/-1">Net Profit<b class="${p-ex<0?'red':'grn'}">${M(p-ex)}</b></div>`}</div>${q?`<small style="margin-top:6px">"${E(hq)}" தேடல் முடிவுகள்: ${a.length} பதிவுகள். Expense / Net Profit தேடலில் காட்டப்படாது; CSV / WhatsApp / PDF தேதி வரம்புக்கானவை.</small>`:''}
   <button class="s" onclick="csv()">⬇️ CSV</button> <button class="s" onclick="repShare()">📤 WhatsApp</button> <button class="s" onclick="repPdf()">🖨️ PDF</button> <button class="s" onclick="from=to=today();render()">Today</button> <button class="s" onclick="from=to='';render()">All</button></div>
-  <div class="card">${a.slice(0,200).map(x=>`<div class="row"><div><b>${E(x.item)}</b> • ${N(x.meter)} m<small>${fd(x.date)}${x.place?' • 📍'+E(x.place):''} • ${E(x.paidBy)}${x.customer?' • '+E(x.customer):''}</small></div><div style="text-align:right">${M(x.sale)}<small>${M(x.profit)}</small><button class="d" style="background:#e3eceb;color:#0f766e" onclick="editEntry(${N(x.id)})">✏️</button> <button class="d" onclick="delEntry(${N(x.id)})">Delete</button></div></div>`).join('')||'<small>பதிவுகள் இல்லை</small>'}</div>`;
+  <div class="card">${a.slice(0,200).map(x=>`<div class="row"><div><b>${E(x.item)}</b> • ${N(x.meter)} m<small>${fd(x.date)}${x.place?' • 📍'+E(x.place):''} • ${E(x.paidBy)}${x.customer?' • '+E(x.customer):''}</small></div><div style="text-align:right">${M(x.sale)}<small>${M(x.profit)}</small><button class="d" style="background:#e3eceb;color:#0f766e" onclick="editEntry(${N(x.id)})">✏️</button> <button class="d" onclick="delEntry(${N(x.id)})">Delete</button></div></div>`).join('')||'<small>பதிவுகள் இல்லை</small>'}</div>
+  ${q?'':monthCard()}`;
+}
+const MN=['ஜனவரி','பிப்ரவரி','மார்ச்','ஏப்ரல்','மே','ஜூன்','ஜூலை','ஆகஸ்ட்','செப்டம்பர்','அக்டோபர்','நவம்பர்','டிசம்பர்'];
+function monthCard(){
+  const m={},g=k=>m[k]||(m[k]={s:0,p:0,mt:0,e:0});
+  rd(KEY.entries).forEach(x=>{const k=String(x.date).slice(0,7);if(k.length!==7)return;const o=g(k);o.s+=N(x.sale);o.p+=N(x.profit);o.mt+=N(x.meter)});
+  rd(KEY.exp).forEach(x=>{const k=String(x.date).slice(0,7);if(k.length!==7)return;g(k).e+=N(x.amount)});
+  const ks=Object.keys(m).sort().reverse().slice(0,12);
+  return `<div class="card"><b>📅 மாத வாரியாக</b><small>மாதத்தைத் தட்டினால் அந்த மாதப் பதிவுகள் மேலே வரும்</small>${ks.map(k=>{const o=m[k],n=o.p-o.e,y=k.slice(0,4),mo=+k.slice(5,7),last=new Date(+y,mo,0).getDate();
+    return `<div class="row" onclick="from='${k}-01';to='${k}-${String(last).padStart(2,'0')}';render();scrollTo(0,0)"><div><b>${MN[mo-1]||k} ${y}</b><small>Sale ${M(o.s)} • ${Math.round(o.mt*100)/100} m</small><small>Profit ${M(o.p)} • Expense ${M(o.e)}</small></div><div style="text-align:right"><b class="${n<0?'red':'grn'}">${M(n)}</b><small>Net Profit</small></div></div>`}).join('')||'<small>பதிவுகள் இல்லை</small>'}</div>`;
 }
 function delEntry(id){if(!confirm('இந்த Entry-ஐ delete செய்யவா?'))return;wr(KEY.entries,rd(KEY.entries).filter(x=>N(x.id)!==id));render()}
 function csv(){
@@ -258,14 +270,15 @@ function vExp(){
   <div class="k" style="margin-top:10px">${xSel?fd(xSel)+' • மொத்த Expense':'எல்லா தேதிகள் • மொத்த Expense'}<b class="red">${M(tot)}</b><small>${a.length} பதிவுகள்</small></div></div>
   <div class="card"><b>💸 Expense சேர்க்க</b><label>Date</label><input type="date" id="xD" value="${xSel||today()}">
   <label>Expense</label><select id="xS" onchange="$('xN').classList.toggle('hide',this.value!=='__o')"><option value="">-- Expense தேர்வு --</option>${EXPN.map(n=>`<option>${n}</option>`).join('')}<option value="__o">✏️ Other (புதிய பெயர்)</option></select>
-  <input id="xN" class="hide" placeholder="Expense பெயர்" style="margin-top:8px"><label>Amount ₹</label><input id="xA" type="number" inputmode="decimal"><button onclick="addExp()">Add</button></div>
-  <div class="card">${a.map(x=>`<div class="row"><div>${E(x.name)}<small>${fd(x.date)}</small></div><div>${M(x.amount)} <button class="d" onclick="delExp(${N(x.id)})">✕</button></div></div>`).join('')||'<small>இந்த தேதியில் Expense இல்லை</small>'}</div>
+  <input id="xN" class="hide" placeholder="Expense பெயர்" style="margin-top:8px"><label>Amount ₹</label><input id="xA" type="number" inputmode="decimal">
+  <label>Paid By</label><select id="xP"><option>Cash</option><option>GPay</option></select><button onclick="addExp()">Add</button></div>
+  <div class="card">${a.map(x=>`<div class="row"><div>${E(x.name)}<small>${fd(x.date)}${x.paidBy?' • '+(x.paidBy==='GPay'?'📱 GPay':'💵 Cash'):''}</small></div><div>${M(x.amount)} <button class="d" onclick="delExp(${N(x.id)})">✕</button></div></div>`).join('')||'<small>இந்த தேதியில் Expense இல்லை</small>'}</div>
   ${brk}`;
 }
 function addExp(){
   const sv=$('xS').value,name=sv==='__o'?nm($('xN').value):sv,amount=N($('xA').value);
   if(!name||!(amount>0))return alert('Expense & Amount உள்ளிடவும்.');
-  const d=$('xD').value||today(),a=rd(KEY.exp);a.unshift({id:Date.now(),date:d,name,amount});wr(KEY.exp,a);if(xSel)xSel=d;render();
+  const d=$('xD').value||today(),a=rd(KEY.exp);a.unshift({id:Date.now(),date:d,name,amount,paidBy:$('xP').value});wr(KEY.exp,a);if(xSel)xSel=d;render();
 }
 function delExp(id){if(!confirm('Delete?'))return;wr(KEY.exp,rd(KEY.exp).filter(x=>N(x.id)!==id));render()}
 
@@ -288,8 +301,19 @@ function vCredit(){
     <div class="card">${tx.map(r=>`<div class="row"><div>${fd(r.d)}<small>${E(r.t)}</small></div><div class="${r.s?'':'grn'}">${r.s?'+':'−'}${M(r.a)}${r.id?` <button class="d" onclick="delPay(${N(r.id)})">✕</button>`:''}</div></div>`).join('')}</div>`;
   }
   const open=all.filter(c=>Math.abs(c.due)>0.004).sort((a,b)=>b.due-a.due),tot=open.reduce((t,c)=>t+Math.max(c.due,0),0);
-  return `<div class="card"><div class="k">மொத்தம் பெற வேண்டியது<b class="red">${M(tot)}</b></div></div>
-  <div class="card">${open.map(c=>`<div class="row" onclick="cbKey='${E(c.name.toLowerCase()).replace(/'/g,"\\'")}';render()"><div><b>${E(c.name)}</b><small>கடைசி: ${fd(c.last)}</small></div><b class="${c.due>0?'red':'grn'}">${M(c.due)}</b></div>`).join('')||'<small>நிலுவை இல்லை ✓</small>'}</div>`;
+  return `<div class="card"><div class="k">மொத்தம் பெற வேண்டியது<b class="red">${M(tot)}</b></div>
+  <button class="s" onclick="duesShare()">📤 எல்லா நிலுவை பட்டியல் (WhatsApp)</button></div>
+  <div class="card">${open.map(c=>{const k=E(c.name.toLowerCase()).replace(/'/g,"\\'");return `<div class="row" onclick="cbKey='${k}';render()"><div><b>${E(c.name)}</b><small>கடைசி: ${fd(c.last)}</small></div><div style="text-align:right"><b class="${c.due>0?'red':'grn'}">${M(c.due)}</b>${c.due>0?`<br><button class="d" style="background:#e3f1ef;color:#0f766e" onclick="event.stopPropagation();custRemind('${k}')">📤 Reminder</button>`:''}</div></div>`}).join('')||'<small>நிலுவை இல்லை ✓</small>'}</div>`;
+}
+function custRemind(key){
+  const d=custData(key);if(!d)return;
+  if(!(d.c.due>0))return alert('இவருக்கு நிலுவை இல்லை.');
+  share('வணக்கம் '+d.c.name+', உங்கள் நிலுவைத் தொகை '+M(d.c.due)+' (கடைசி பரிவர்த்தனை: '+fd(d.c.last)+'). தயவுசெய்து விரைவில் செலுத்தவும். நன்றி. — Mass Uniform Store',d.mob);
+}
+function duesShare(){
+  const o=ledger().filter(c=>c.due>0.004).sort((a,b)=>b.due-a.due);
+  if(!o.length)return alert('நிலுவை இல்லை.');
+  share(['📒 Credit நிலுவை — '+fd(today()),'',...o.map(c=>c.name+': '+M(c.due)),'','மொத்தம்: '+M(o.reduce((t,c)=>t+c.due,0))].join('\n'));
 }
 function savePay(k){
   const c=ledger().find(x=>x.name.toLowerCase()===k),amt=N($('pA').value);
@@ -507,7 +531,7 @@ function applyRestore(s){
 
 
 /* ---------- HOME DASHBOARD / DATE SUMMARY / DUA / INSTALL ---------- */
-let deD=today(),dF=today(),dT=today(),ip=null,xSel=today(),iEdit=null,sOut=null;
+let hq='',_hf=0,deD=today(),dF=today(),dT=today(),ip=null,xSel=today(),iEdit=null,sOut=null;
 const EXPN=['Breakfast','Car Rent','Cigarette','Dinner','Juice','Lunch','Room Rent','Petrol','Tea','Tollgate','Water'];
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();ip=ev;const b=$('ib');if(b)b.classList.remove('hide')});
@@ -557,10 +581,10 @@ async function appRefresh(){
 function dayData(d){
   const lc=s=>String(s||'').toLowerCase(),a=rd(KEY.entries).filter(x=>x.date===d),ex=rd(KEY.exp).filter(x=>x.date===d),py=rd(KEY.pay).filter(x=>x.date===d);
   const S=(arr,k)=>arr.reduce((t,x)=>t+N(x[k]),0),by=m=>S(a.filter(x=>lc(x.paidBy)===m),'sale'),pm=m=>S(py.filter(x=>lc(x.mode)===m),'amount');
-  const sale=S(a,'sale'),cashS=by('cash'),gpayS=by('gpay'),credS=by('credit'),cashP=pm('cash'),gpayP=pm('gpay'),expense=S(ex,'amount'),profit=S(a,'profit');
+  const sale=S(a,'sale'),cashS=by('cash'),gpayS=by('gpay'),credS=by('credit'),cashP=pm('cash'),gpayP=pm('gpay'),expense=S(ex,'amount'),exG=S(ex.filter(x=>lc(x.paidBy)==='gpay'),'amount'),exC=expense-exG,profit=S(a,'profit');
   const eg={};ex.forEach(x=>{const n=nm(x.name)||'(பெயர் இல்லை)';eg[n]=(eg[n]||0)+N(x.amount)});
   return {n:a.length,meter:Math.round(S(a,'meter')*100)/100,sale,cashS,gpayS,credS,otherS:sale-cashS-gpayS-credS,cashP,gpayP,otherP:S(py,'amount')-cashP-gpayP,purchase:S(a,'purchase'),profit,expense,eg,
-    cash:cashS+cashP,gpay:gpayS+gpayP,net:profit-expense,hand:cashS+cashP-expense};
+    cash:cashS+cashP,gpay:gpayS+gpayP,net:profit-expense,exC,exG,hand:cashS+cashP-exC};
 }
 function deBox(){
   const d=dayData(deD),rw=(l,v,c)=>`<div class="row"><span>${l}</span><b class="${c||''}">${M(v)}</b></div>`,sec=h=>`<b style="font-size:14px;display:block;margin-top:10px">${h}</b>`;
@@ -569,21 +593,21 @@ function deBox(){
   ${sec('Sale பிரிவு')}${rw('💵 Cash',d.cashS)}${rw('📱 GPay',d.gpayS)}${rw('📒 Credit (கடன்)',d.credS)}${Math.abs(d.otherS)>0.004?rw('Other',d.otherS):''}
   ${sec('Credit வசூல் (இந்த நாள்)')}${rw('💵 Cash',d.cashP)}${rw('📱 GPay',d.gpayP)}${Math.abs(d.otherP)>0.004?rw('Other',d.otherP):''}
   ${sec('மொத்த வசூல்')}${rw('💵 Cash',d.cash)}${rw('📱 GPay',d.gpay)}
-  ${sec('கணக்கு')}${rw('🧾 Purchase',d.purchase)}${rw('💸 Expense',d.expense,'red')}${egl?`<small>${egl}</small>`:''}${rw('Net Profit',d.net,d.net<0?'red':'grn')}
-  <div class="k" style="margin-top:10px">கையில் Cash (மதிப்பீடு)<b class="${d.hand<0?'red':'grn'}">${M(d.hand)}</b><small>Cash விற்பனை + Cash வசூல் − Expense</small></div>`;
+  ${sec('கணக்கு')}${rw('🧾 Purchase',d.purchase)}${rw('💸 Expense',d.expense,'red')}${d.exG>0?`<small>Cash ${M(d.exC)} • GPay ${M(d.exG)}</small>`:''}${egl?`<small>${egl}</small>`:''}${rw('Net Profit',d.net,d.net<0?'red':'grn')}
+  <div class="k" style="margin-top:10px">கையில் Cash (மதிப்பீடு)<b class="${d.hand<0?'red':'grn'}">${M(d.hand)}</b><small>Cash விற்பனை + Cash வசூல் − Cash Expense</small></div>`;
 }
 function deText(){
   const d=dayData(deD),L=['📋 Day-end Report — '+fd(deD),'',
     'Sale: '+M(d.sale)+' ('+d.n+' பதிவு, '+d.meter+' m)','  Cash: '+M(d.cashS),'  GPay: '+M(d.gpayS),'  Credit: '+M(d.credS)];
   if(Math.abs(d.otherS)>0.004)L.push('  Other: '+M(d.otherS));
-  L.push('','Credit வசூல்: Cash '+M(d.cashP)+' • GPay '+M(d.gpayP),'மொத்த வசூல்: Cash '+M(d.cash)+' • GPay '+M(d.gpay),'','Purchase: '+M(d.purchase),'Profit: '+M(d.profit),'Expense: '+M(d.expense));
+  L.push('','Credit வசூல்: Cash '+M(d.cashP)+' • GPay '+M(d.gpayP),'மொத்த வசூல்: Cash '+M(d.cash)+' • GPay '+M(d.gpay),'','Purchase: '+M(d.purchase),'Profit: '+M(d.profit),'Expense: '+M(d.expense)+(d.exG>0?' (Cash '+M(d.exC)+' • GPay '+M(d.exG)+')':''));
   Object.keys(d.eg).sort((x,y)=>d.eg[y]-d.eg[x]).forEach(n=>L.push('  '+n+': '+M(d.eg[n])));
   L.push('Net Profit: '+M(d.net),'','கையில் Cash (மதிப்பீடு): '+M(d.hand));
   return L.join('\n');
 }
 function deShare(){share(deText())}
 function dePdf(){
-  const d=dayData(deD),r=[['Sale',M(d.sale)],['  Cash',M(d.cashS)],['  GPay',M(d.gpayS)],['  Credit',M(d.credS)],['Credit வசூல் — Cash',M(d.cashP)],['Credit வசூல் — GPay',M(d.gpayP)],['மொத்த வசூல் — Cash',M(d.cash)],['மொத்த வசூல் — GPay',M(d.gpay)],['Purchase',M(d.purchase)],['Profit',M(d.profit)],['Expense',M(d.expense)]];
+  const d=dayData(deD),r=[['Sale',M(d.sale)],['  Cash',M(d.cashS)],['  GPay',M(d.gpayS)],['  Credit',M(d.credS)],['Credit வசூல் — Cash',M(d.cashP)],['Credit வசூல் — GPay',M(d.gpayP)],['மொத்த வசூல் — Cash',M(d.cash)],['மொத்த வசூல் — GPay',M(d.gpay)],['Purchase',M(d.purchase)],['Profit',M(d.profit)],['Expense',M(d.expense)+(d.exG>0?' (Cash '+M(d.exC)+' • GPay '+M(d.exG)+')':'')]];
   Object.keys(d.eg).sort((x,y)=>d.eg[y]-d.eg[x]).forEach(n=>r.push(['  '+n,M(d.eg[n])]));
   r.push(['Net Profit',M(d.net)],['கையில் Cash (மதிப்பீடு)',M(d.hand)]);
   pdf('Day-end Report '+fd(deD),tbl(['விவரம்','தொகை'],r)+'<p>'+d.n+' பதிவு • '+d.meter+' m</p>');
@@ -593,7 +617,8 @@ function dePdf(){
 function render(){
   const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,bak:vBak}[tab];
   $('app').innerHTML=v();try{$('hd').textContent=new Date().toLocaleDateString('ta-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch(e){}if(tab==='home'){calc();if(mixOpen)mxTot()}
-  $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;editId=null;mixOpen=false;iEdit=null;sOut=null;render();scrollTo(0,0)"><span class="ic">${t[1].split(' ')[0]}</span><span>${t[1].split(' ').slice(1).join(' ')}</span></button>`).join('');
+  if(_hf&&tab==='hist'){const i=$('hQ');if(i){i.focus();const l=i.value.length;try{i.setSelectionRange(l,l)}catch(e){}}}_hf=0;
+  $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;editId=null;mixOpen=false;iEdit=null;sOut=null;hq='';render();scrollTo(0,0)"><span class="ic">${t[1].split(' ')[0]}</span><span>${t[1].split(' ').slice(1).join(' ')}</span></button>`).join('');
 }
 render();
 </script><script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('./sw-v9.js').catch(function(){})});</script>
