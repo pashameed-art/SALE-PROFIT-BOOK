@@ -33,7 +33,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.11</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.12</span></header>
 <main id="app"></main>
 <nav id="nav"></nav>
 <script>
@@ -46,7 +46,7 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.11';
+const VER='9.12';
 const lastPlace=()=>localStorage.getItem('spb_v9_place')||'Kadayanallur';
 const places=()=>[...new Set(rd(KEY.entries).map(x=>String(x.place||'').trim()).filter(Boolean))];
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
@@ -273,8 +273,8 @@ function vExp(){
   <div class="card"><b>💸 Expense சேர்க்க</b><label>Date</label><input type="date" id="xD" value="${xSel||today()}">
   <label>Expense</label><select id="xS" onchange="$('xN').classList.toggle('hide',this.value!=='__o')"><option value="">-- Expense தேர்வு --</option>${EXPN.map(n=>`<option>${n}</option>`).join('')}<option value="__o">✏️ Other (புதிய பெயர்)</option></select>
   <input id="xN" class="hide" placeholder="Expense பெயர்" style="margin-top:8px"><label>Amount ₹</label><input id="xA" type="number" inputmode="decimal">
-  <label>Paid By</label><select id="xP"><option>Cash</option><option>GPay</option></select><button onclick="addExp()">Add</button></div>
-  <div class="card">${a.map(x=>`<div class="row"><div>${E(x.name)}<small>${fd(x.date)}${x.paidBy?' • '+(x.paidBy==='GPay'?'📱 GPay':'💵 Cash'):''}</small></div><div>${M(x.amount)} <button class="d" onclick="delExp(${N(x.id)})">✕</button></div></div>`).join('')||'<small>இந்த தேதியில் Expense இல்லை</small>'}</div>
+  <label>Paid By</label><select id="xP"><option>GPay</option><option>Cash</option></select><button onclick="addExp()">Add</button></div>
+  ${colCard('xl','💸 Expense பட்டியல் ('+a.length+')',`${a.map(x=>`<div class="row"><div>${E(x.name)}<small>${fd(x.date)}${x.paidBy?' • '+(x.paidBy==='GPay'?'📱 GPay':'💵 Cash'):''}</small></div><div>${M(x.amount)} <button class="d" onclick="delExp(${N(x.id)})">✕</button></div></div>`).join('')||'<small>இந்த தேதியில் Expense இல்லை</small>'}`)}
   ${brk}`;
 }
 function addExp(){
@@ -305,7 +305,7 @@ function vCredit(){
   const open=all.filter(c=>Math.abs(c.due)>0.004).sort((a,b)=>b.due-a.due),tot=open.reduce((t,c)=>t+Math.max(c.due,0),0);
   return `<div class="card"><div class="k">மொத்தம் பெற வேண்டியது<b class="red">${M(tot)}</b></div>
   <button class="s" onclick="duesShare()">📤 எல்லா நிலுவை பட்டியல் (WhatsApp)</button></div>
-  <div class="card">${open.map(c=>{const k=E(c.name.toLowerCase()).replace(/'/g,"\\'");return `<div class="row" onclick="cbKey='${k}';render()"><div><b>${E(c.name)}</b><small>கடைசி: ${fd(c.last)}</small></div><div style="text-align:right"><b class="${c.due>0?'red':'grn'}">${M(c.due)}</b>${c.due>0?`<br><button class="d" style="background:#e3f1ef;color:#0f766e" onclick="event.stopPropagation();custRemind('${k}')">📤 Reminder</button>`:''}</div></div>`}).join('')||'<small>நிலுவை இல்லை ✓</small>'}</div>`;
+  ${colCard('cl','📒 நிலுவை பட்டியல் ('+open.length+')',`${open.map(c=>{const k=E(c.name.toLowerCase()).replace(/'/g,"\\'");return `<div class="row" onclick="cbKey='${k}';render()"><div><b>${E(c.name)}</b><small>கடைசி: ${fd(c.last)}</small></div><div style="text-align:right"><b class="${c.due>0?'red':'grn'}">${M(c.due)}</b>${c.due>0?`<br><button class="d" style="background:#e3f1ef;color:#0f766e" onclick="event.stopPropagation();custRemind('${k}')">📤 Reminder</button>`:''}</div></div>`}).join('')||'<small>நிலுவை இல்லை ✓</small>'}`)}`;
 }
 function custRemind(key){
   const d=custData(key);if(!d)return;
@@ -357,7 +357,7 @@ function vParty(){
   <div class="g"><div><label>தேதி</label><input type="date" id="pDt" value="${e?e.date:today()}"></div><div><label>தொகை ₹</label><input id="pAm" type="number" inputmode="decimal" value="${e?e.amount:''}"></div></div>
   <label>குறிப்பு</label><input id="pN" value="${E(e?e.note||'':'')}">
   <button onclick="partySave()">${e?'Update':'Save'}</button>${e?'<button class="s" onclick="pEdit=null;render()">Cancel</button>':''}</div>
-  <div class="card">${a.map(x=>`<div class="row"><div><b class="${x.type==='given'?'red':'grn'}">${x.type==='given'?'பணம் தந்தது':'பணம் வாங்கியது'}</b><small>${fd(x.date)}${sup&&x.supplier?' • '+E(x.supplier):''}${x.note?' • '+E(x.note):''}</small></div><div style="text-align:right"><b>${x.type==='given'?'−':'＋'}${M(x.amount)}</b><br><button class="d" style="background:#e3eceb;color:#0f766e" onclick="pEdit=${N(x.id)};render();scrollTo(0,0)">✏️</button> <button class="d" onclick="partyDel(${N(x.id)})">🗑️</button></div></div>`).join('')||'<small>இதுவரை பதிவு இல்லை</small>'}</div>`;
+  ${colCard('pl','🤝 '+pw+' பதிவுகள் ('+a.length+')',`${a.map(x=>`<div class="row"><div><b class="${x.type==='given'?'red':'grn'}">${x.type==='given'?'பணம் தந்தது':'பணம் வாங்கியது'}</b><small>${fd(x.date)}${sup&&x.supplier?' • '+E(x.supplier):''}${x.note?' • '+E(x.note):''}</small></div><div style="text-align:right"><b>${x.type==='given'?'−':'＋'}${M(x.amount)}</b><br><button class="d" style="background:#e3eceb;color:#0f766e" onclick="pEdit=${N(x.id)};render();scrollTo(0,0)">✏️</button> <button class="d" onclick="partyDel(${N(x.id)})">🗑️</button></div></div>`).join('')||'<small>இதுவரை பதிவு இல்லை</small>'}`,!!pEdit)}`;
 }
 function partySave(){
   const k=PK[pw],sup=pw==='Supplier',type=$('pT').value,date=$('pDt').value||today(),amount=N($('pAm').value),note=nm($('pN').value),supplier=sup?nm($('pS').value):'';
@@ -533,6 +533,9 @@ function applyRestore(s){
 
 
 /* ---------- HOME DASHBOARD / DATE SUMMARY / DUA / INSTALL ---------- */
+const OP={};
+const colCard=(id,title,body,force)=>{const o=OP[id]||force;return `<div class="card"><div onclick="colToggle('${id}')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer"><b>${title}</b><span id="${id}Arr" style="color:var(--g);font-weight:700;font-size:13px">${o?'▲ மூடு':'▼ பார்க்க'}</span></div><div id="${id}Body" class="${o?'':'hide'}">${body}</div></div>`};
+function colToggle(id){OP[id]=!OP[id];$(id+'Body').classList.toggle('hide',!OP[id]);$(id+'Arr').textContent=OP[id]?'▲ மூடு':'▼ பார்க்க'}
 let hq='',_hf=0,slOpen=false,hlOpen=false,deOpen=false,deD=today(),dF=today(),dT=today(),ip=null,xSel=today(),iEdit=null,sOut=null;
 const EXPN=['Breakfast','Car Rent','Cigarette','Dinner','Juice','Lunch','Room Rent','Petrol','Tea','Tollgate','Water'];
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
