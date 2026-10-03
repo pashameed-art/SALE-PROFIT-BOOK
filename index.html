@@ -33,7 +33,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.10</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.11</span></header>
 <main id="app"></main>
 <nav id="nav"></nav>
 <script>
@@ -46,7 +46,7 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.10';
+const VER='9.11';
 const lastPlace=()=>localStorage.getItem('spb_v9_place')||'Kadayanallur';
 const places=()=>[...new Set(rd(KEY.entries).map(x=>String(x.place||'').trim()).filter(Boolean))];
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
@@ -208,7 +208,8 @@ function vStock(){
   <div class="g"><div><label>Purchase / Meter ₹</label><input id="sRate" type="number" inputmode="decimal"></div><div><label>Stock In (Meter)</label><input id="sQty" type="number" inputmode="decimal"></div></div>
   <label>Low stock alert (Meter, விருப்பம்)</label><input id="sMin" type="number" inputmode="decimal">
   <button onclick="saveItem()">Save</button></div>
-  <div class="card">${it.map((i,x)=>{const s=stockOf(i.name);return `<div class="row"><div><b>${E(i.name)}</b><small>₹${i.rate}/m${i.min?' • min '+i.min:''}</small></div><div style="text-align:right"><b class="${s<=0?'red':''}">${s} m</b><br><button class="d" style="background:#e3f1ef;color:#0f766e" onclick="iAct('edit',${x})">✏️</button> <button class="d" style="background:#fff4e0;color:#b36b00" onclick="iAct('out',${x})">➖</button> <button class="d" onclick="iAct('del',${x})">🗑️</button></div></div>`}).join('')||'<small>Items இல்லை</small>'}</div>`;
+  <div class="card"><div onclick="slToggle()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer"><b>📦 Stock பட்டியல் (${it.length} Items)</b><span id="slArr" style="color:var(--g);font-weight:700;font-size:13px">${slOpen||iEdit||sOut?'▲ மூடு':'▼ பார்க்க'}</span></div>
+  <div id="slBody" class="${slOpen||iEdit||sOut?'':'hide'}">${it.map((i,x)=>{const s=stockOf(i.name);return `<div class="row"><div><b>${E(i.name)}</b><small>₹${i.rate}/m${i.min?' • min '+i.min:''}</small></div><div style="text-align:right"><b class="${s<=0?'red':''}">${s} m</b><br><button class="d" style="background:#e3f1ef;color:#0f766e" onclick="iAct('edit',${x})">✏️</button> <button class="d" style="background:#fff4e0;color:#b36b00" onclick="iAct('out',${x})">➖</button> <button class="d" onclick="iAct('del',${x})">🗑️</button></div></div>`}).join('')||'<small>Items இல்லை</small>'}</div></div>`;
 }
 function iAct(k,idx){
   const it=sortedItems()[idx];if(!it)return;const n=it.name;
@@ -532,7 +533,7 @@ function applyRestore(s){
 
 
 /* ---------- HOME DASHBOARD / DATE SUMMARY / DUA / INSTALL ---------- */
-let hq='',_hf=0,hlOpen=false,deOpen=false,deD=today(),dF=today(),dT=today(),ip=null,xSel=today(),iEdit=null,sOut=null;
+let hq='',_hf=0,slOpen=false,hlOpen=false,deOpen=false,deD=today(),dF=today(),dT=today(),ip=null,xSel=today(),iEdit=null,sOut=null;
 const EXPN=['Breakfast','Car Rent','Cigarette','Dinner','Juice','Lunch','Room Rent','Petrol','Tea','Tollgate','Water'];
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();ip=ev;const b=$('ib');if(b)b.classList.remove('hide')});
@@ -597,6 +598,9 @@ function deBox(){
   ${sec('மொத்த வசூல்')}${rw('💵 Cash',d.cash)}${rw('📱 GPay',d.gpay)}
   ${sec('கணக்கு')}${rw('🧾 Purchase',d.purchase)}${rw('💸 Expense',d.expense,'red')}${d.exG>0?`<small>Cash ${M(d.exC)} • GPay ${M(d.exG)}</small>`:''}${egl?`<small>${egl}</small>`:''}${rw('Net Profit',d.net,d.net<0?'red':'grn')}
   <div class="k" style="margin-top:10px">கையில் Cash (மதிப்பீடு)<b class="${d.hand<0?'red':'grn'}">${M(d.hand)}</b><small>Cash விற்பனை + Cash வசூல் − Cash Expense</small></div>`;
+}
+function slToggle(){
+  slOpen=!slOpen;$('slBody').classList.toggle('hide',!slOpen);$('slArr').textContent=slOpen?'▲ மூடு':'▼ பார்க்க';
 }
 function hlToggle(){
   hlOpen=!hlOpen;$('hlBody').classList.toggle('hide',!hlOpen);$('hlArr').textContent=hlOpen?'▲ மூடு':'▼ பார்க்க';
