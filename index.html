@@ -33,10 +33,11 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.14</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.15</span></header>
 <main id="app"></main>
 <div id="lgW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">📗 Mass Sales Ledger</b><a href="https://pashameed-art.github.io/mass-sales-ledger/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
+<div id="cmpBox"></div>
 <iframe id="lgF" title="Mass Sales Ledger" style="width:100%;height:calc(100vh - 190px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
 <nav id="nav"></nav>
 <script>
@@ -49,7 +50,7 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.14';
+const VER='9.15';
 const lastPlace=()=>localStorage.getItem('spb_v9_place')||'Kadayanallur';
 const places=()=>[...new Set(rd(KEY.entries).map(x=>String(x.place||'').trim()).filter(Boolean))];
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
@@ -539,7 +540,7 @@ function applyRestore(s){
 const OP={};
 const colCard=(id,title,body,force)=>{const o=OP[id]||force;return `<div class="card"><div onclick="colToggle('${id}')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer"><b>${title}</b><span id="${id}Arr" style="color:var(--g);font-weight:700;font-size:13px">${o?'▲ மூடு':'▼ பார்க்க'}</span></div><div id="${id}Body" class="${o?'':'hide'}">${body}</div></div>`};
 function colToggle(id){OP[id]=!OP[id];$(id+'Body').classList.toggle('hide',!OP[id]);$(id+'Arr').textContent=OP[id]?'▲ மூடு':'▼ பார்க்க'}
-let hq='',_hf=0,slOpen=false,hlOpen=false,deOpen=false,deD=today(),dF=today(),dT=today(),ip=null,xSel=today(),iEdit=null,sOut=null;
+let cF=today().slice(0,8)+'01',cT=today(),cDiff=true,hq='',_hf=0,slOpen=false,hlOpen=false,deOpen=false,deD=today(),dF=today(),dT=today(),ip=null,xSel=today(),iEdit=null,sOut=null;
 const EXPN=['Breakfast','Car Rent','Cigarette','Dinner','Juice','Lunch','Room Rent','Petrol','Tea','Tollgate','Water'];
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();ip=ev;const b=$('ib');if(b)b.classList.remove('hide')});
@@ -632,10 +633,38 @@ function dePdf(){
   pdf('Day-end Report '+fd(deD),tbl(['விவரம்','தொகை'],r)+'<p>'+d.n+' பதிவு • '+d.meter+' m</p>');
 }
 
+
+/* ---------- LEDGER COMPARISON ---------- */
+function ledgerData(){try{const a=JSON.parse(localStorage.getItem('mass_sales_ledger_v1_6')||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+function cmpRows(){
+  const m={},g=d=>m[d]||(m[d]={d,ss:0,sp:0,se:0,ls:0,lp:0,le:0});
+  rd(KEY.entries).forEach(x=>{if(!x.date)return;const o=g(x.date);o.ss+=N(x.sale);o.sp+=N(x.purchase)});
+  rd(KEY.exp).forEach(x=>{if(!x.date)return;g(x.date).se+=N(x.amount)});
+  ledgerData().forEach(x=>{if(!x||!x.date)return;const o=g(String(x.date));o.ls+=N(x.sales);o.lp+=N(x.purchase);o.le+=N(x.expense)});
+  return Object.values(m).filter(r=>(!cF||r.d>=cF)&&(!cT||r.d<=cT)).sort((a,b)=>b.d.localeCompare(a.d));
+}
+function cmpLn(l,a,b){
+  const d=Math.round((a-b)*100)/100,bad=Math.abs(d)>0.5;
+  return `<div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;font-size:12px;padding:1px 0"><span style="min-width:54px;color:var(--m)">${l}</span><span>SPB ${M(a)}</span><span>Ledger ${M(b)}</span><b class="${bad?'red':'grn'}" style="min-width:64px;text-align:right">${bad?(d>0?'+':'')+M(d):'✓'}</b></div>`;
+}
+function cmpBody(){
+  const rows=cmpRows(),bad=r=>Math.abs(r.ss-r.ls)>0.5||Math.abs(r.sp-r.lp)>0.5||Math.abs(r.se-r.le)>0.5;
+  const show=cDiff?rows.filter(bad):rows,T=rows.reduce((o,r)=>{for(const k of ['ss','sp','se','ls','lp','le'])o[k]+=r[k];return o},{ss:0,sp:0,se:0,ls:0,lp:0,le:0});
+  return `<div class="k" style="margin-top:10px"><b style="font-size:14px;color:var(--t)">மொத்தம் (${rows.length} நாட்கள்)</b>${cmpLn('Sale',T.ss,T.ls)}${cmpLn('Purchase',T.sp,T.lp)}${cmpLn('Expense',T.se,T.le)}</div>
+  <small style="margin-top:6px">வேறுபாடு = SPB − Ledger. Sale Profit Book-ன் Purchase = Item rate × Meter; Ledger-ன் Purchase = Mydeen கொள்முதல்.</small>
+  ${show.map(r=>`<div style="border-top:1px solid var(--ln);padding:8px 0"><b>${fd(r.d)}</b>${cmpLn('Sale',r.ss,r.ls)}${cmpLn('Purchase',r.sp,r.lp)}${cmpLn('Expense',r.se,r.le)}</div>`).join('')||`<small style="margin-top:8px">${cDiff?'வேறுபாடு உள்ள நாட்கள் இல்லை ✓':'பதிவுகள் இல்லை'}</small>`}`;
+}
+function cmpControls(){
+  return `<div class="g"><div><label>From</label><input type="date" value="${cF}" onchange="cF=this.value;cmpUpdate()"></div><div><label>To</label><input type="date" value="${cT}" onchange="cT=this.value;cmpUpdate()"></div></div>
+  <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t)"><input type="checkbox" style="width:auto" ${cDiff?'checked':''} onchange="cDiff=this.checked;cmpUpdate()">வேறுபாடு உள்ள நாட்கள் மட்டும்</label>`;
+}
+function cmpUpdate(){const b=$('cmpIn');if(b)b.innerHTML=cmpBody()}
+function cmpHtml(){return colCard('cmp','📊 நாள் வாரியான ஒப்பீடு',cmpControls()+'<div id="cmpIn">'+cmpBody()+'</div>')}
+
 /* ---------- SHELL ---------- */
 function render(){
   const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,ledger:()=>'',bak:vBak}[tab];
-  $('app').innerHTML=v();{const lg=tab==='ledger';$('app').style.display=lg?'none':'';$('lgW').style.display=lg?'block':'none';if(lg&&!$('lgF').getAttribute('src'))$('lgF').setAttribute('src','https://pashameed-art.github.io/mass-sales-ledger/')}try{$('hd').textContent=new Date().toLocaleDateString('ta-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch(e){}if(tab==='home'){calc();if(mixOpen)mxTot()}
+  $('app').innerHTML=v();{const lg=tab==='ledger';$('app').style.display=lg?'none':'';$('lgW').style.display=lg?'block':'none';if(lg)$('cmpBox').innerHTML=cmpHtml();if(lg&&!$('lgF').getAttribute('src'))$('lgF').setAttribute('src','https://pashameed-art.github.io/mass-sales-ledger/')}try{$('hd').textContent=new Date().toLocaleDateString('ta-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch(e){}if(tab==='home'){calc();if(mixOpen)mxTot()}
   if(_hf&&tab==='hist'){const i=$('hQ');if(i){i.focus();const l=i.value.length;try{i.setSelectionRange(l,l)}catch(e){}}}_hf=0;
   $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;editId=null;mixOpen=false;iEdit=null;sOut=null;hq='';render();scrollTo(0,0)"><span class="ic">${t[1].split(' ')[0]}</span><span>${t[1].split(' ').slice(1).join(' ')}</span></button>`).join('');
 }
