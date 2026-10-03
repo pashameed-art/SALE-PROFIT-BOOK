@@ -33,7 +33,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.10</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.9</span></header>
 <main id="app"></main>
 <nav id="nav"></nav>
 <script>
@@ -46,7 +46,7 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.10';
+const VER='9.9';
 const lastPlace=()=>localStorage.getItem('spb_v9_place')||'Kadayanallur';
 const places=()=>[...new Set(rd(KEY.entries).map(x=>String(x.place||'').trim()).filter(Boolean))];
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
@@ -531,7 +531,7 @@ function applyRestore(s){
 
 
 /* ---------- HOME DASHBOARD / DATE SUMMARY / DUA / INSTALL ---------- */
-let hq='',_hf=0,deD=today(),dF=today(),dT=today(),ip=null,xSel=today(),iEdit=null,sOut=null;
+let hq='',_hf=0,deOpen=false,deD=today(),dF=today(),dT=today(),ip=null,xSel=today(),iEdit=null,sOut=null;
 const EXPN=['Breakfast','Car Rent','Cigarette','Dinner','Juice','Lunch','Room Rent','Petrol','Tea','Tollgate','Water'];
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();ip=ev;const b=$('ib');if(b)b.classList.remove('hide')});
@@ -553,10 +553,11 @@ function dashHtml(low){
   <div class="g"><div><label>Date From</label><input type="date" id="dF" value="${dF}" onchange="dF=this.value;$('dBox').innerHTML=dBox()"></div><div><label>Date To</label><input type="date" id="dT" value="${dT}" onchange="dT=this.value;$('dBox').innerHTML=dBox()"></div></div>
   <button class="s" onclick="dSet(today(),today())">Today</button> <button class="s" onclick="const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7);dSet(ymd(d),today())">This Week</button> <button class="s" onclick="dSet(today().slice(0,8)+'01',today())">This Month</button> <button class="s" onclick="dSet('','')">Clear</button>
   <div id="dBox">${dBox()}</div></div>
-  <div class="card"><b>📋 Day-end Report</b>
+  <div class="card"><div onclick="deToggle()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer"><b>📋 Day-end Report</b><span id="deArr" style="color:var(--g);font-weight:700;font-size:13px">${deOpen?'▲ மூடு':'▼ பார்க்க'}</span></div>
+  <div id="deBody" class="${deOpen?'':'hide'}">
   <div class="g"><div><label>தேதி</label><input type="date" id="deIn" value="${deD}" onchange="deD=this.value||today();$('deBox').innerHTML=deBox()"></div><div style="align-self:end"><button class="s" style="margin:0;width:100%" onclick="deD=today();$('deIn').value=deD;$('deBox').innerHTML=deBox()">Today</button></div></div>
-  <div id="deBox">${deBox()}</div>
-  <button class="s" onclick="deShare()">📤 WhatsApp</button> <button class="s" onclick="dePdf()">🖨️ PDF</button></div>
+  <div id="deBox">${deOpen?deBox():''}</div>
+  <button class="s" onclick="deShare()">📤 WhatsApp</button> <button class="s" onclick="dePdf()">🖨️ PDF</button></div></div>
   <div class="card" style="text-align:center"><b style="color:var(--g)">Dua</b><div style="margin-top:8px;line-height:1.55;font-weight:700">யா அல்லாஹ்! எங்கள் வாழ்வில் பரக்கத்தையும், ஹலாலான ரிஸ்க்கையும் வழங்குவாயாக.<br>எங்கள் காரியங்களை எளிதாக்கி, நன்மையைத் தந்து, தீமையிலிருந்து எங்களைப் பாதுகாப்பாயாக.</div></div>
   <button id="ib" class="${ip?'':'hide'}" style="width:100%" onclick="inst()">📲 Install App</button>`;
 }
@@ -595,6 +596,10 @@ function deBox(){
   ${sec('மொத்த வசூல்')}${rw('💵 Cash',d.cash)}${rw('📱 GPay',d.gpay)}
   ${sec('கணக்கு')}${rw('🧾 Purchase',d.purchase)}${rw('💸 Expense',d.expense,'red')}${d.exG>0?`<small>Cash ${M(d.exC)} • GPay ${M(d.exG)}</small>`:''}${egl?`<small>${egl}</small>`:''}${rw('Net Profit',d.net,d.net<0?'red':'grn')}
   <div class="k" style="margin-top:10px">கையில் Cash (மதிப்பீடு)<b class="${d.hand<0?'red':'grn'}">${M(d.hand)}</b><small>Cash விற்பனை + Cash வசூல் − Cash Expense</small></div>`;
+}
+function deToggle(){
+  deOpen=!deOpen;$('deBody').classList.toggle('hide',!deOpen);$('deArr').textContent=deOpen?'▲ மூடு':'▼ பார்க்க';
+  if(deOpen)$('deBox').innerHTML=deBox();
 }
 function deText(){
   const d=dayData(deD),L=['📋 Day-end Report — '+fd(deD),'',
