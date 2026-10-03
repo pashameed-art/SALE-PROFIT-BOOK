@@ -21,8 +21,8 @@ button:active{transform:scale(.96)}
 button.s{background:#e3f1ef;color:var(--g);box-shadow:none}
 button.d{background:#fdeaea;color:var(--r);padding:5px 10px;margin:0;font-size:12px;box-shadow:none;border-radius:8px}
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#fff;border-top:1px solid var(--ln);padding:6px 4px calc(env(safe-area-inset-bottom,0px) + 6px);box-shadow:0 -4px 16px #0000000d;z-index:6}
-nav button{flex:1;background:none;box-shadow:none;color:var(--m);border-radius:12px;margin:0 2px;padding:6px 0;font-size:10.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px}
-nav button .ic{font-size:20px;line-height:1}
+nav button{flex:1;min-width:0;white-space:nowrap;background:none;box-shadow:none;color:var(--m);border-radius:12px;margin:0 1px;padding:6px 0;font-size:10px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button .ic{font-size:19px;line-height:1}
 nav button.on{background:#e3f1ef;color:var(--g)}
 .row{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-top:1px solid var(--ln);align-items:center}
 .row:first-child{border-top:0}
@@ -33,8 +33,11 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.12</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.14</span></header>
 <main id="app"></main>
+<div id="lgW" style="display:none;padding:12px;max-width:640px;margin:auto">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">📗 Mass Sales Ledger</b><a href="https://pashameed-art.github.io/mass-sales-ledger/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
+<iframe id="lgF" title="Mass Sales Ledger" style="width:100%;height:calc(100vh - 190px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
 <nav id="nav"></nav>
 <script>
 'use strict';
@@ -46,13 +49,13 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.12';
+const VER='9.14';
 const lastPlace=()=>localStorage.getItem('spb_v9_place')||'Kadayanallur';
 const places=()=>[...new Set(rd(KEY.entries).map(x=>String(x.place||'').trim()).filter(Boolean))];
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
 const fd=v=>{const p=String(v||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:v};
 let tab='home',cbKey=null,from='',to='',pw='Mansoor',pEdit=null,editId=null,mixOpen=false,mx=[];
-const TABS=[['home','🏠 Home'],['hist','📜 History'],['stock','📦 Stock'],['exp','💸 Expense'],['credit','📒 Credit'],['party','🤝 Party'],['bak','☁️ Backup']];
+const TABS=[['home','🏠 Home'],['hist','📜 History'],['stock','📦 Stock'],['exp','💸 Expense'],['credit','📒 Credit'],['party','🤝 Party'],['ledger','📗 Ledger'],['bak','☁️ Backup']];
 
 function stockOf(item){
   const mv=rd(KEY.stock).filter(x=>x.item===item);
@@ -631,8 +634,8 @@ function dePdf(){
 
 /* ---------- SHELL ---------- */
 function render(){
-  const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,bak:vBak}[tab];
-  $('app').innerHTML=v();try{$('hd').textContent=new Date().toLocaleDateString('ta-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch(e){}if(tab==='home'){calc();if(mixOpen)mxTot()}
+  const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,ledger:()=>'',bak:vBak}[tab];
+  $('app').innerHTML=v();{const lg=tab==='ledger';$('app').style.display=lg?'none':'';$('lgW').style.display=lg?'block':'none';if(lg&&!$('lgF').getAttribute('src'))$('lgF').setAttribute('src','https://pashameed-art.github.io/mass-sales-ledger/')}try{$('hd').textContent=new Date().toLocaleDateString('ta-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch(e){}if(tab==='home'){calc();if(mixOpen)mxTot()}
   if(_hf&&tab==='hist'){const i=$('hQ');if(i){i.focus();const l=i.value.length;try{i.setSelectionRange(l,l)}catch(e){}}}_hf=0;
   $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;editId=null;mixOpen=false;iEdit=null;sOut=null;hq='';render();scrollTo(0,0)"><span class="ic">${t[1].split(' ')[0]}</span><span>${t[1].split(' ').slice(1).join(' ')}</span></button>`).join('');
 }
