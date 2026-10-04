@@ -20,8 +20,9 @@ button{background:linear-gradient(135deg,#0f766e,#14a398);color:#fff;border:0;bo
 button:active{transform:scale(.96)}
 button.s{background:#e3f1ef;color:var(--g);box-shadow:none}
 button.d{background:#fdeaea;color:var(--r);padding:5px 10px;margin:0;font-size:12px;box-shadow:none;border-radius:8px}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:#fff;border-top:1px solid var(--ln);padding:6px 4px calc(env(safe-area-inset-bottom,0px) + 6px);box-shadow:0 -4px 16px #0000000d;z-index:6}
-nav button{flex:1;min-width:0;white-space:nowrap;background:none;box-shadow:none;color:var(--m);border-radius:12px;margin:0 1px;padding:6px 0;font-size:10px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;overflow-x:auto;scrollbar-width:none;background:#fff;border-top:1px solid var(--ln);padding:6px 4px calc(env(safe-area-inset-bottom,0px) + 6px);box-shadow:0 -4px 16px #0000000d;z-index:6}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:1 0 auto;min-width:52px;white-space:nowrap;background:none;box-shadow:none;color:var(--m);border-radius:12px;margin:0 1px;padding:6px 4px;font-size:10px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px}
 nav button .ic{font-size:19px;line-height:1}
 nav button.on{background:#e3f1ef;color:var(--g)}
 .row{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-top:1px solid var(--ln);align-items:center}
@@ -33,12 +34,15 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.18</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.21</span></header>
 <main id="app"></main>
+<div id="bkW" style="display:none;padding:12px;max-width:640px;margin:auto">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">🏍️ Mass Bike</b><a href="https://pashameed-art.github.io/Mass-Bike/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
+<iframe id="bkF" title="Mass Bike" onload="iframeGuard(this)" style="width:100%;height:calc(100vh - 190px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
 <div id="lgW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">📗 Mass Sales Ledger</b><a href="https://pashameed-art.github.io/mass-sales-ledger/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
 <div id="cmpBox"></div>
-<iframe id="lgF" title="Mass Sales Ledger" style="width:100%;height:calc(100vh - 190px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
+<iframe id="lgF" onload="iframeGuard(this)" title="Mass Sales Ledger" style="width:100%;height:calc(100vh - 190px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
 <nav id="nav"></nav>
 <script>
 'use strict';
@@ -50,7 +54,7 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.18';
+const VER='9.21';
 const ek=s=>encodeURIComponent(String(s)).replace(/'/g,'%27');
 const dk=s=>{try{return decodeURIComponent(s)}catch(e){return s}};
 const mobOf=n=>{const k=nm(n).toLowerCase(),c=rd(KEY.cus).find(x=>x&&x.key===k);return c&&c.mobile||''};
@@ -72,7 +76,7 @@ const places=()=>[...new Set(rd(KEY.entries).map(x=>String(x.place||'').trim()).
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
 const fd=v=>{const p=String(v||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:v};
 let tab='home',cbKey=null,from='',to='',pw='Mansoor',pEdit=null,editId=null,mixOpen=false,mx=[];
-const TABS=[['home','🏠 Home'],['hist','📜 History'],['stock','📦 Stock'],['exp','💸 Expense'],['credit','📒 Credit'],['party','🤝 Party'],['ledger','📗 Ledger'],['bak','☁️ Backup']];
+const TABS=[['home','🏠 Home'],['hist','📜 History'],['stock','📦 Stock'],['exp','💸 Expense'],['credit','📒 Credit'],['party','🤝 Party'],['ledger','📗 Ledger'],['bike','🏍️ Bike'],['bak','☁️ Backup']];
 
 function stockOf(item){
   const mv=rd(KEY.stock).filter(x=>x.item===item);
@@ -194,7 +198,7 @@ function vHist(){
   <div class="g" style="margin-top:8px"><div class="k">Sale<b>${M(s)}</b></div><div class="k">Profit<b>${M(p)}</b></div><div class="k">Purchase<b>${M(pu)}</b></div><div class="k">Meter<b>${m}</b></div>${q?'':`<div class="k">Expense<b>${M(ex)}</b></div><div class="k" style="grid-column:1/-1">Net Profit<b class="${p-ex<0?'red':'grn'}">${M(p-ex)}</b></div>`}</div>${q?`<small style="margin-top:6px">"${E(hq)}" தேடல் முடிவுகள்: ${a.length} பதிவுகள். Expense / Net Profit தேடலில் காட்டப்படாது; CSV / WhatsApp / PDF தேதி வரம்புக்கானவை.</small>`:''}
   <button class="s" onclick="csv()">⬇️ CSV</button> <button class="s" onclick="repShare()">📤 WhatsApp</button> <button class="s" onclick="repPdf()">🖨️ PDF</button> <button class="s" onclick="from=to=today();render()">Today</button> <button class="s" onclick="from=to='';render()">All</button></div>
   <div class="card"><div onclick="hlToggle()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer"><b>📜 பதிவுகள் (${a.length})</b><span id="hlArr" style="color:var(--g);font-weight:700;font-size:13px">${hlOpen||q?'▲ மூடு':'▼ பார்க்க'}</span></div>
-  <div id="hlBody" class="${hlOpen||q?'':'hide'}">${a.slice(0,200).map(x=>`<div class="row"><div><b>${E(x.item)}</b> • ${N(x.meter)} m<small>${fd(x.date)}${x.place?' • 📍'+E(x.place):''} • ${E(x.paidBy)}${x.customer?' • '+E(x.customer):''}</small></div><div style="text-align:right">${M(x.sale)}<small>${M(x.profit)}</small><button class="d" style="background:#e3eceb;color:#0f766e" onclick="editEntry(${N(x.id)})">✏️</button> <button class="d" onclick="delEntry(${N(x.id)})">Delete</button></div></div>`).join('')||'<small>பதிவுகள் இல்லை</small>'}</div></div>
+  <div id="hlBody" class="${hlOpen||q?'':'hide'}">${a.slice(0,200).map(x=>`<div class="row"><div><b>${E(x.item)}</b> • ${N(x.meter)} m<small>${fd(x.date)}${x.place?' • 📍'+E(x.place):''} • ${E(x.paidBy)}${x.customer?' • '+E(x.customer):''}</small></div><div style="text-align:right"><b>${M(x.sale)}</b><small>Purchase ${M(x.purchase)}</small><small>Profit ${M(x.profit)}</small><button class="d" style="background:#e3eceb;color:#0f766e" onclick="editEntry(${N(x.id)})">✏️</button> <button class="d" onclick="delEntry(${N(x.id)})">Delete</button></div></div>`).join('')||'<small>பதிவுகள் இல்லை</small>'}</div></div>
   ${q?'':monthCard()}
   ${q?'':itemCard()}`;
 }
@@ -701,12 +705,22 @@ function cmpControls(){
 function cmpUpdate(){const b=$('cmpIn');if(b)b.innerHTML=cmpBody()}
 function cmpHtml(){return colCard('cmp','📊 நாள் வாரியான ஒப்பீடு',cmpControls()+'<div id="cmpIn">'+cmpBody()+'</div>')}
 
+/* Embedded apps share this site's storage; stop any of them from wiping other apps' data with localStorage.clear() */
+function iframeGuard(f){
+  try{
+    const w=f.contentWindow;if(!w||!w.Storage||w.__spbGuard)return;w.__spbGuard=1;
+    const keep=/^(spb|saleProfitBook|mass_sales_ledger|mass_ledger)/;
+    w.Storage.prototype.clear=function(){const ks=[];for(let i=0;i<this.length;i++)ks.push(this.key(i));ks.forEach(n=>{if(!keep.test(n))this.removeItem(n)})};
+  }catch(e){}
+}
+
 /* ---------- SHELL ---------- */
 function render(){
-  const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,ledger:()=>'',bak:vBak}[tab];
-  $('app').innerHTML=v();{const lg=tab==='ledger';$('app').style.display=lg?'none':'';$('lgW').style.display=lg?'block':'none';if(lg)$('cmpBox').innerHTML=cmpHtml();if(lg&&!$('lgF').getAttribute('src'))$('lgF').setAttribute('src','https://pashameed-art.github.io/mass-sales-ledger/')}try{$('hd').textContent=new Date().toLocaleDateString('ta-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch(e){}if(tab==='home'){calc();if(mixOpen)mxTot()}
+  const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,ledger:()=>'',bike:()=>'',bak:vBak}[tab];
+  $('app').innerHTML=v();{const lg=tab==='ledger',bk=tab==='bike';$('app').style.display=(lg||bk)?'none':'';$('lgW').style.display=lg?'block':'none';$('bkW').style.display=bk?'block':'none';if(lg)$('cmpBox').innerHTML=cmpHtml();if(lg&&!$('lgF').getAttribute('src'))$('lgF').setAttribute('src','https://pashameed-art.github.io/mass-sales-ledger/');if(bk&&!$('bkF').getAttribute('src'))$('bkF').setAttribute('src','https://pashameed-art.github.io/Mass-Bike/')}try{$('hd').textContent=new Date().toLocaleDateString('ta-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch(e){}if(tab==='home'){calc();if(mixOpen)mxTot()}
   if(_hf&&tab==='hist'){const i=$('hQ');if(i){i.focus();const l=i.value.length;try{i.setSelectionRange(l,l)}catch(e){}}}_hf=0;
   $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;editId=null;mixOpen=false;iEdit=null;sOut=null;hq='';render();scrollTo(0,0)"><span class="ic">${t[1].split(' ')[0]}</span><span>${t[1].split(' ').slice(1).join(' ')}</span></button>`).join('');
+  try{const on=$('nav').querySelector('.on');if(on)on.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}
 }
 render();
 </script><script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('./sw-v9.js').catch(function(){})});</script>
