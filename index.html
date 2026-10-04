@@ -33,7 +33,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.15</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.17</span></header>
 <main id="app"></main>
 <div id="lgW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">📗 Mass Sales Ledger</b><a href="https://pashameed-art.github.io/mass-sales-ledger/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
@@ -50,7 +50,21 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.15';
+const VER='9.17';
+const mobOf=n=>{const k=nm(n).toLowerCase(),c=rd(KEY.cus).find(x=>x&&x.key===k);return c&&c.mobile||''};
+function saveMob(name,v){
+  const d=String(v||'').replace(/[^\d]/g,'').replace(/^91(?=\d{10}$)/,'').replace(/^0(?=\d{10}$)/,'');
+  if(!d)return true;
+  if(!/^[6-9]\d{9}$/.test(d)){alert('சரியான 10 இலக்க Mobile No உள்ளிடவும்.');return false}
+  const key=nm(name).toLowerCase(),a=rd(KEY.cus).filter(x=>x&&x.key!==key);a.push({key,name:nm(name),mobile:d});wr(KEY.cus,a);return true;
+}
+function backupBanner(){
+  if(!rd(KEY.entries).length)return '';
+  const ts=['spb_last_gdrive_backup_at','spb_v9_last_backup'].map(k=>Date.parse(localStorage.getItem(k)||'')).filter(x=>isFinite(x));
+  const last=ts.length?Math.max(...ts):0,days=last?Math.floor((Date.now()-last)/864e5):-1;
+  if(last&&days<7)return '';
+  return `<div class="card red"><b>⚠️ Backup நினைவூட்டல்</b><small>${last?days+' நாட்களாக Backup எடுக்கவில்லை':'இன்னும் Backup எடுக்கவில்லை'}</small><button onclick="tab='bak';render();scrollTo(0,0)">☁️ இப்போது Backup</button></div>`;
+}
 const lastPlace=()=>localStorage.getItem('spb_v9_place')||'Kadayanallur';
 const places=()=>[...new Set(rd(KEY.entries).map(x=>String(x.place||'').trim()).filter(Boolean))];
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
@@ -74,13 +88,20 @@ function ledger(){
 function names(){return ledger().map(c=>c.name).sort()}
 
 /* ---------- HOME ---------- */
+function bkWarn(){
+  const ts=[localStorage.getItem('spb_last_gdrive_backup_at'),localStorage.getItem('spb_v9_last_backup')].map(x=>Date.parse(x||'')).filter(x=>isFinite(x));
+  const last=ts.length?Math.max(...ts):0,days=last?Math.floor((Date.now()-last)/86400000):null;
+  if(last&&days<7)return '';
+  return `<div class="card red"><b>⚠️ Backup எடுக்கவும்</b><small>${last?'கடைசி backup '+days+' நாட்களுக்கு முன்.':'இன்னும் backup எடுக்கவில்லை.'} உங்கள் data இந்த phone-ல் மட்டுமே உள்ளது.</small><button onclick="tab='bak';render();scrollTo(0,0)">☁️ Backup tab-க்குச் செல்</button></div>`;
+}
 function vHome(){
+  const bb=backupBanner();
   const t=today(),en=rd(KEY.entries).filter(x=>x.date===t),ex=rd(KEY.exp).filter(x=>x.date===t);
   const s=en.reduce((a,x)=>a+N(x.sale),0),p=en.reduce((a,x)=>a+N(x.profit),0),e=ex.reduce((a,x)=>a+N(x.amount),0),mt=en.reduce((a,x)=>a+N(x.meter),0);
   const it=rd(KEY.items).slice().sort((a,b)=>a.name.localeCompare(b.name));
   const low=it.filter(i=>i.min>0&&stockOf(i.name)<=i.min);
   const ed=editId?rd(KEY.entries).find(x=>N(x.id)===editId):null;
-  return `  <div class="card"><b>${ed?'✏️ Entry Edit':'📝 New Entry'}</b>
+  return `${bb}${bkWarn()}  <div class="card"><b>${ed?'✏️ Entry Edit':'📝 New Entry'}</b>
   <label>Date</label><input type="date" id="eDate" value="${ed?ed.date:t}">
   <label>Place</label><input id="ePlace" list="plL" autocomplete="off" value="${E(ed?ed.place||'':lastPlace())}"><datalist id="plL">${places().map(n=>`<option value="${E(n)}">`).join('')}</datalist>
   <label>Item</label><select id="eItem" onchange="calc()"><option value="">Select Item</option>${it.map(i=>`<option value="${E(i.name)}"${ed&&ed.item===i.name?' selected':''}>${E(i.name)}</option>`).join('')}</select>
@@ -88,7 +109,8 @@ function vHome(){
   <div class="g"><div><label>Meter</label><input id="eMeter" type="number" inputmode="decimal" step="0.01" oninput="calc()" value="${ed?ed.meter:''}"></div>
   <div><label>Sale ₹</label><input id="eSale" type="number" inputmode="decimal" oninput="calc()" value="${ed?ed.sale:''}"></div></div>
   <label>Paid By</label><select id="ePay" onchange="$('cbox').classList.toggle('hide',this.value!=='Credit')"><option${ed&&ed.paidBy==='GPay'?' selected':''}>GPay</option><option${ed&&ed.paidBy==='Cash'?' selected':''}>Cash</option><option value="Credit"${ed&&ed.paidBy==='Credit'?' selected':''}>Credit (கடன்)</option></select>
-  <div id="cbox" class="${ed&&ed.paidBy==='Credit'?'':'hide'}"><label>Customer பெயர்</label><input id="eCus" list="cl" autocomplete="off" value="${E(ed&&ed.customer||'')}"><datalist id="cl">${names().map(n=>`<option value="${E(n)}">`).join('')}</datalist></div>
+  <div id="cbox" class="${ed&&ed.paidBy==='Credit'?'':'hide'}"><label>Customer பெயர்</label><input id="eCus" list="cl" autocomplete="off" value="${E(ed&&ed.customer||'')}"><datalist id="cl">${names().map(n=>`<option value="${E(n)}">`).join('')}</datalist>
+  <label>Mobile (விருப்பம்)</label><input id="eMob" type="tel" inputmode="numeric" maxlength="12" placeholder="WhatsApp reminder-க்கு" value="${E(ed&&ed.customer?mobOf(ed.customer):'')}"></div>
   <small id="eCalc"></small><button onclick="saveEntry()">${ed?'Update Entry':'Save Entry'}</button>${ed?'<button class="s" onclick="editId=null;render()">Cancel</button>':''}</div>
   ${ed?'':mixHtml(it)}
   ${ed?'':dashHtml(low)}`;
@@ -105,6 +127,7 @@ function saveEntry(){
   if(!(meter>0))return alert('Meter உள்ளிடவும்.');
   if(!(sale>=0)||$('eSale').value==='')return alert('Sale தொகை உள்ளிடவும்.');
   if(paid==='Credit'&&!cus)return alert('Credit-க்கு Customer பெயர் தேவை.');
+  if(paid==='Credit'&&!saveMob(cus,$('eMob').value))return;
   const a=rd(KEY.entries),old=editId?a.find(x=>N(x.id)===editId):null;
   const st=stockOf(item)+(old&&old.item===item?N(old.meter):0);
   if(meter>st&&!confirm(`Stock ${st} m மட்டுமே உள்ளது. ${meter} m விற்கவா? (Stock minus ஆகும்)`))return;
@@ -128,7 +151,8 @@ function mixHtml(it){
   ${mx.length>1?`<button class="d" onclick="mxDel(${i})">✕ நீக்கு</button>`:''}</div>`).join('')}
   <button class="s" onclick="mxSync();mx.push({});render()">➕ Add Another Item</button>
   <label>Paid By</label><select id="mPay" onchange="$('mbox').classList.toggle('hide',this.value!=='Credit')"><option>GPay</option><option>Cash</option><option value="Credit">Credit (கடன்)</option></select>
-  <div id="mbox" class="hide"><label>Customer பெயர்</label><input id="mCus" list="cl" autocomplete="off"></div>
+  <div id="mbox" class="hide"><label>Customer பெயர்</label><input id="mCus" list="cl" autocomplete="off">
+  <label>Mobile (விருப்பம்)</label><input id="mMob" type="tel" inputmode="numeric" maxlength="12" placeholder="WhatsApp reminder-க்கு"></div>
   <small id="mxT" style="margin-top:8px"></small>
   <button onclick="saveMixed()">Save Mixed Sale</button> <button class="s" onclick="mixOpen=false;render()">Close</button></div>`;
 }
@@ -145,6 +169,7 @@ function saveMixed(){
   if(!rows.length)return alert('குறைந்தது ஒரு Item சேர்க்கவும்.');
   for(const r of rows){if(!its.find(x=>x.name===r.item)||!(N(r.meter)>0)||r.sale===''||N(r.sale)<0)return alert('ஒவ்வொரு வரிக்கும் Item, Meter, Sale உள்ளிடவும்.')}
   if(paid==='Credit'&&!cus)return alert('Credit-க்கு Customer பெயர் தேவை.');
+  if(paid==='Credit'&&!saveMob(cus,$('mMob').value))return;
   const need={};rows.forEach(r=>need[r.item]=(need[r.item]||0)+N(r.meter));
   const short=Object.keys(need).filter(k=>need[k]>stockOf(k));
   if(short.length&&!confirm('Stock போதாது: '+short.map(k=>k+' ('+stockOf(k)+' m)').join(', ')+'. தொடரவா? (Stock minus ஆகும்)'))return;
@@ -168,7 +193,14 @@ function vHist(){
   <button class="s" onclick="csv()">⬇️ CSV</button> <button class="s" onclick="repShare()">📤 WhatsApp</button> <button class="s" onclick="repPdf()">🖨️ PDF</button> <button class="s" onclick="from=to=today();render()">Today</button> <button class="s" onclick="from=to='';render()">All</button></div>
   <div class="card"><div onclick="hlToggle()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer"><b>📜 பதிவுகள் (${a.length})</b><span id="hlArr" style="color:var(--g);font-weight:700;font-size:13px">${hlOpen||q?'▲ மூடு':'▼ பார்க்க'}</span></div>
   <div id="hlBody" class="${hlOpen||q?'':'hide'}">${a.slice(0,200).map(x=>`<div class="row"><div><b>${E(x.item)}</b> • ${N(x.meter)} m<small>${fd(x.date)}${x.place?' • 📍'+E(x.place):''} • ${E(x.paidBy)}${x.customer?' • '+E(x.customer):''}</small></div><div style="text-align:right">${M(x.sale)}<small>${M(x.profit)}</small><button class="d" style="background:#e3eceb;color:#0f766e" onclick="editEntry(${N(x.id)})">✏️</button> <button class="d" onclick="delEntry(${N(x.id)})">Delete</button></div></div>`).join('')||'<small>பதிவுகள் இல்லை</small>'}</div></div>
-  ${q?'':monthCard()}`;
+  ${q?'':monthCard()}
+  ${q?'':itemCard()}`;
+}
+function itemCard(){
+  const m={};
+  rd(KEY.entries).filter(x=>(!from||x.date>=from)&&(!to||x.date<=to)).forEach(x=>{const o=m[x.item]||(m[x.item]={n:0,mt:0,s:0,p:0});o.n++;o.mt+=N(x.meter);o.s+=N(x.sale);o.p+=N(x.profit)});
+  const ks=Object.keys(m).sort((a,b)=>m[b].s-m[a].s).slice(0,20);
+  return colCard('il','📊 Item வாரியாக ('+ks.length+')',`<small>மேலே தேர்ந்த தேதி வரம்புக்கு (தேர்வு இல்லையெனில் எல்லாம்). அதிக Sale மேலே.</small>${ks.map(k=>{const o=m[k];return `<div class="row"><div><b>${E(k)}</b><small>${Math.round(o.mt*100)/100} m • ${o.n} பதிவு</small></div><div style="text-align:right"><b>${M(o.s)}</b><small>Profit ${M(o.p)}</small></div></div>`}).join('')||'<small>பதிவுகள் இல்லை</small>'}`);
 }
 const MN=['ஜனவரி','பிப்ரவரி','மார்ச்','ஏப்ரல்','மே','ஜூன்','ஜூலை','ஆகஸ்ட்','செப்டம்பர்','அக்டோபர்','நவம்பர்','டிசம்பர்'];
 function monthCard(){
@@ -176,8 +208,8 @@ function monthCard(){
   rd(KEY.entries).forEach(x=>{const k=String(x.date).slice(0,7);if(k.length!==7)return;const o=g(k);o.s+=N(x.sale);o.p+=N(x.profit);o.mt+=N(x.meter)});
   rd(KEY.exp).forEach(x=>{const k=String(x.date).slice(0,7);if(k.length!==7)return;g(k).e+=N(x.amount)});
   const ks=Object.keys(m).sort().reverse().slice(0,12);
-  return `<div class="card"><b>📅 மாத வாரியாக</b><small>மாதத்தைத் தட்டினால் அந்த மாதப் பதிவுகள் மேலே வரும்</small>${ks.map(k=>{const o=m[k],n=o.p-o.e,y=k.slice(0,4),mo=+k.slice(5,7),last=new Date(+y,mo,0).getDate();
-    return `<div class="row" onclick="from='${k}-01';to='${k}-${String(last).padStart(2,'0')}';render();scrollTo(0,0)"><div><b>${MN[mo-1]||k} ${y}</b><small>Sale ${M(o.s)} • ${Math.round(o.mt*100)/100} m</small><small>Profit ${M(o.p)} • Expense ${M(o.e)}</small></div><div style="text-align:right"><b class="${n<0?'red':'grn'}">${M(n)}</b><small>Net Profit</small></div></div>`}).join('')||'<small>பதிவுகள் இல்லை</small>'}</div>`;
+  return colCard('ml','📅 மாத வாரியாக',`<small>மாதத்தைத் தட்டினால் அந்த மாதப் பதிவுகள் மேலே வரும்</small>${ks.map(k=>{const o=m[k],n=o.p-o.e,y=k.slice(0,4),mo=+k.slice(5,7),last=new Date(+y,mo,0).getDate();
+    return `<div class="row" onclick="from='${k}-01';to='${k}-${String(last).padStart(2,'0')}';render();scrollTo(0,0)"><div><b>${MN[mo-1]||k} ${y}</b><small>Sale ${M(o.s)} • ${Math.round(o.mt*100)/100} m</small><small>Profit ${M(o.p)} • Expense ${M(o.e)}</small></div><div style="text-align:right"><b class="${n<0?'red':'grn'}">${M(n)}</b><small>Net Profit</small></div></div>`}).join('')||'<small>பதிவுகள் இல்லை</small>'}`);
 }
 function delEntry(id){if(!confirm('இந்த Entry-ஐ delete செய்யவா?'))return;wr(KEY.entries,rd(KEY.entries).filter(x=>N(x.id)!==id));render()}
 function csv(){
