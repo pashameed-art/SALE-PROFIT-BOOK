@@ -34,7 +34,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.28</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.29</span></header>
 <main id="app"></main>
 <div id="hxW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">🏡 Home Expense Ledger</b><a href="https://pashameed-art.github.io/Home-Expense-Ledger/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
@@ -57,7 +57,7 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.28';
+const VER='9.29';
 const ek=s=>encodeURIComponent(String(s)).replace(/'/g,'%27');
 const dk=s=>{try{return decodeURIComponent(s)}catch(e){return s}};
 const mobOf=n=>{const k=nm(n).toLowerCase(),c=rd(KEY.cus).find(x=>x&&x.key===k);return c&&c.mobile||''};
@@ -437,7 +437,7 @@ const EXCL=/(^|[_-])pin([_-]|$)|autobackup|snapshot|protected|lastgdrive|last_gd
 const bkApp=k=>/^(spb|saleProfitBook)/.test(k)?'Sale Profit Book':(/^mass_sales_ledger/.test(k)&&!EXCL.test(k))?'Ledger':(/^massBikeV4_/.test(k)&&!EXCL.test(k))?'Bike':(/^homeExpenseLedger/.test(k)&&!EXCL.test(k))?'Home Expense':null;
 function snap(){const s={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&bkApp(k))s[k]=localStorage.getItem(k)}return {app:'SALE-PROFIT-BOOK',version:'9',kind:'all',createdAt:new Date().toISOString(),storage:s}}
 const cntOf=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a.length:0}catch(e){return 0}};
-const allCounts=()=>'Sale Profit Book '+cntOf(KEY.entries)+' • Ledger '+cntOf('mass_sales_ledger_v1_6')+' • Bike rentals '+cntOf('massBikeV4_rentals')+' • Home Exp '+cntOf('homeExpenseLedgerV1');
+const allCounts=()=>'Sale Profit Book '+cntOf(KEY.entries)+' • Ledger '+cntOf('mass_sales_ledger_v1_6')+' • Bike rentals '+cntOf('massBikeV4_rentals')+' • Home Exp '+cntOf('homeExpenseLedgerV1')+' • Fathima '+cntOf('homeExpenseLedgerFathimaV1');
 function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type+';charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
 function backup(){dl('SALE-PROFIT-BOOK-BACKUP-'+today()+'.json',JSON.stringify(snap(),null,1),'application/json');localStorage.setItem('spb_v9_last_backup',new Date().toISOString());render()}
 function vBak(){
