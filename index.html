@@ -34,7 +34,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.27</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.28</span></header>
 <main id="app"></main>
 <div id="hxW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">🏡 Home Expense Ledger</b><a href="https://pashameed-art.github.io/Home-Expense-Ledger/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
@@ -57,7 +57,7 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.27';
+const VER='9.28';
 const ek=s=>encodeURIComponent(String(s)).replace(/'/g,'%27');
 const dk=s=>{try{return decodeURIComponent(s)}catch(e){return s}};
 const mobOf=n=>{const k=nm(n).toLowerCase(),c=rd(KEY.cus).find(x=>x&&x.key===k);return c&&c.mobile||''};
@@ -735,7 +735,7 @@ let hlN=50,hlSig='',xlN=50,xSig=null;
 /* ---------- SHELL ---------- */
 function render(){
   const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,ledger:()=>'',bike:()=>'',hexp:()=>'',bak:vBak}[tab];
-  $('app').innerHTML=v();{const lg=tab==='ledger',bk=tab==='bike',hx=tab==='hexp';$('app').style.display=(lg||bk||hx)?'none':'';$('lgW').style.display=lg?'block':'none';$('bkW').style.display=bk?'block':'none';$('hxW').style.display=hx?'block':'none';if(hx&&!$('hxF').getAttribute('src'))$('hxF').setAttribute('src','https://pashameed-art.github.io/Home-Expense-Ledger/');if(lg)$('cmpBox').innerHTML=cmpHtml();if(lg&&!$('lgF').getAttribute('src'))$('lgF').setAttribute('src','https://pashameed-art.github.io/mass-sales-ledger/');if(bk&&!$('bkF').getAttribute('src'))$('bkF').setAttribute('src','https://pashameed-art.github.io/Mass-Bike/')}try{$('hd').textContent=new Date().toLocaleDateString('ta-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch(e){}if(tab==='home'){calc();if(mixOpen)mxTot()}
+  $('app').innerHTML=v();{const lg=tab==='ledger',bk=tab==='bike',hx=tab==='hexp';$('app').style.display=(lg||bk||hx)?'none':'';$('lgW').style.display=lg?'block':'none';$('bkW').style.display=bk?'block':'none';$('hxW').style.display=hx?'block':'none';if(hx&&!$('hxF').getAttribute('src'))$('hxF').setAttribute('src','https://pashameed-art.github.io/Home-Expense-Ledger/');if(lg)$('cmpBox').innerHTML=cmpHtml();if(lg&&!$('lgF').getAttribute('src'))$('lgF').setAttribute('src','https://pashameed-art.github.io/mass-sales-ledger/');if(bk&&!$('bkF').getAttribute('src'))$('bkF').setAttribute('src','https://pashameed-art.github.io/Mass-Bike/')}try{const d=new Date();$('hd').textContent=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()]+', '+d.getDate()+' '+['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()]+' '+d.getFullYear()}catch(e){}if(tab==='home'){calc();if(mixOpen)mxTot()}
   if(_hf&&tab==='hist'){const i=$('hQ');if(i){i.focus();const l=i.value.length;try{i.setSelectionRange(l,l)}catch(e){}}}_hf=0;
   $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;editId=null;mixOpen=false;iEdit=null;sOut=null;hq='';render();scrollTo(0,0)"><span class="ic">${t[1].split(' ')[0]}</span><span>${t[1].split(' ').slice(1).join(' ')}</span></button>`).join('');
   try{const on=$('nav').querySelector('.on');if(on)on.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}
