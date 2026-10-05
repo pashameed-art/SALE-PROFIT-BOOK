@@ -34,7 +34,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.24</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.25</span></header>
 <main id="app"></main>
 <div id="bkW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">🏍️ Mass Bike</b><a href="https://pashameed-art.github.io/Mass-Bike/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
@@ -54,7 +54,7 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.24';
+const VER='9.25';
 const ek=s=>encodeURIComponent(String(s)).replace(/'/g,'%27');
 const dk=s=>{try{return decodeURIComponent(s)}catch(e){return s}};
 const mobOf=n=>{const k=nm(n).toLowerCase(),c=rd(KEY.cus).find(x=>x&&x.key===k);return c&&c.mobile||''};
@@ -193,15 +193,17 @@ function vHist(){
   let a=rd(KEY.entries).filter(x=>(!from||x.date>=from)&&(!to||x.date<=to)&&hm(x)).sort((x,y)=>String(y.date).localeCompare(String(x.date))||N(y.id)-N(x.id));
   const s=a.reduce((t,x)=>t+N(x.sale),0),p=a.reduce((t,x)=>t+N(x.profit),0),pu=a.reduce((t,x)=>t+N(x.purchase),0),m=a.reduce((t,x)=>t+N(x.meter),0);
   const ex=rd(KEY.exp).filter(inR).reduce((t,x)=>t+N(x.amount),0);
+  const hs=from+'|'+to+'|'+hq;if(hs!==hlSig){hlN=50;hlSig=hs}
+  const more=a.length>hlN?`<button class="s" style="width:100%" onclick="hlN+=50;render()">மேலும் 50 ▼ (${a.length-hlN} மீதம்)</button>`:'';
   return `<div class="card"><div class="g"><div><label>From</label><input type="date" id="hF" value="${from}" onchange="from=this.value;render()"></div><div><label>To</label><input type="date" id="hT" value="${to}" onchange="to=this.value;render()"></div></div>
   <label>🔍 தேடல்</label><input id="hQ" placeholder="Item / Customer / Place / Cash / GPay" value="${E(hq)}" oninput="hq=this.value;_hf=1;render()">
   <div class="g" style="margin-top:8px"><div class="k">Sale<b>${M(s)}</b></div><div class="k">Profit<b>${M(p)}</b></div><div class="k">Purchase<b>${M(pu)}</b></div><div class="k">Meter<b>${m}</b></div>${q?'':`<div class="k">Expense<b>${M(ex)}</b></div><div class="k" style="grid-column:1/-1">Net Profit<b class="${p-ex<0?'red':'grn'}">${M(p-ex)}</b></div>`}</div>${q?`<small style="margin-top:6px">"${E(hq)}" தேடல் முடிவுகள்: ${a.length} பதிவுகள். Expense / Net Profit தேடலில் காட்டப்படாது; CSV / WhatsApp / PDF தேதி வரம்புக்கானவை.</small>`:''}
   <button class="s" onclick="csv()">⬇️ CSV</button> <button class="s" onclick="repShare()">📤 WhatsApp</button> <button class="s" onclick="repPdf()">🖨️ PDF</button> <button class="s" onclick="from=to=today();render()">Today</button> <button class="s" onclick="from=to='';render()">All</button></div>
   <div class="card"><div onclick="hlToggle()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer"><b>📜 பதிவுகள் (${a.length})</b><span id="hlArr" style="color:var(--g);font-weight:700;font-size:13px">${hlOpen||q?'▲ மூடு':'▼ பார்க்க'}</span></div>
-  <div id="hlBody" class="${hlOpen||q?'':'hide'}">${a.slice(0,200).map(x=>`<div class="row" style="display:block;padding:10px 0">
+  <div id="hlBody" class="${hlOpen||q?'':'hide'}">${a.slice(0,hlN).map(x=>`<div class="row" style="display:block;padding:10px 0">
     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span><b>${E(x.item)}</b> • ${N(x.meter)} m</span><b>${M(x.sale)}</b></div>
     <div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--m)"><span>Purchase ${M(N(x.purchase)||N(x.rate)*N(x.meter))}</span><span class="${N(x.profit)<0?'red':'grn'}">Profit ${M(x.profit)}</span></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:4px"><small>${fd(x.date)}${x.place?' • 📍'+E(x.place):''} • ${E(x.paidBy)}${x.customer?' • '+E(x.customer):''}</small><span style="white-space:nowrap"><button class="d" style="background:#e3eceb;color:#0f766e" onclick="editEntry(${N(x.id)})">✏️</button> <button class="d" onclick="delEntry(${N(x.id)})">Delete</button></span></div></div>`).join('')||'<small>பதிவுகள் இல்லை</small>'}</div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:4px"><small>${fd(x.date)}${x.place?' • 📍'+E(x.place):''} • ${E(x.paidBy)}${x.customer?' • '+E(x.customer):''}</small><span style="white-space:nowrap"><button class="d" style="background:#e3eceb;color:#0f766e" onclick="editEntry(${N(x.id)})">✏️</button> <button class="d" onclick="delEntry(${N(x.id)})">Delete</button></span></div></div>`).join('')||'<small>பதிவுகள் இல்லை</small>'}${more}</div></div>
   ${q?'':monthCard()}
   ${q?'':itemCard()}`;
 }
@@ -306,20 +308,21 @@ function saveItem(){
 /* ---------- EXPENSE ---------- */
 function vExp(){
   const all=rd(KEY.exp).sort((x,y)=>String(y.date).localeCompare(String(x.date))||N(y.id)-N(x.id));
-  const a=(xSel?all.filter(x=>x.date===xSel):all).slice(0,200),tot=a.reduce((t,x)=>t+N(x.amount),0);
+  const af=(xSel?all.filter(x=>x.date===xSel):all);if(xSig!==xSel){xlN=50;xSig=xSel}
+  const a=af.slice(0,xlN),tot=af.reduce((t,x)=>t+N(x.amount),0);
   const y=new Date();y.setDate(y.getDate()-1);
-  const gm={};a.forEach(x=>{const n=nm(x.name)||'(பெயர் இல்லை)',k=n.toLowerCase(),o=gm[k]||(gm[k]={n,s:0,c:0});o.s+=N(x.amount);o.c++});
+  const gm={};af.forEach(x=>{const n=nm(x.name)||'(பெயர் இல்லை)',k=n.toLowerCase(),o=gm[k]||(gm[k]={n,s:0,c:0});o.s+=N(x.amount);o.c++});
   const gl=Object.values(gm).sort((p,q)=>q.s-p.s);
   const brk=gl.length?`<div class="card"><b style="font-size:16px">📊 பெயர் வாரியாக</b>${gl.map(o=>`<div class="row"><div>${E(o.n)}<small>${o.c} பதிவு</small></div><b>${M(o.s)}</b></div>`).join('')}</div>`:'';
   return `<div class="card"><b>📅 தேதி தேர்ந்தெடு</b>
   <input type="date" id="xF" value="${xSel}" onchange="xSel=this.value;render()">
   <button class="s" onclick="xSel=today();render()">Today</button> <button class="s" onclick="xSel='${ymd(y)}';render()">நேற்று</button> <button class="s" onclick="xSel='';render()">எல்லாம்</button>
-  <div class="k" style="margin-top:10px">${xSel?fd(xSel)+' • மொத்த Expense':'எல்லா தேதிகள் • மொத்த Expense'}<b class="red">${M(tot)}</b><small>${a.length} பதிவுகள்</small></div></div>
+  <div class="k" style="margin-top:10px">${xSel?fd(xSel)+' • மொத்த Expense':'எல்லா தேதிகள் • மொத்த Expense'}<b class="red">${M(tot)}</b><small>${af.length} பதிவுகள்</small></div></div>
   <div class="card"><b>💸 Expense சேர்க்க</b><label>Date</label><input type="date" id="xD" value="${xSel||today()}">
   <label>Expense</label><select id="xS" onchange="$('xN').classList.toggle('hide',this.value!=='__o')"><option value="">-- Expense தேர்வு --</option>${EXPN.map(n=>`<option>${n}</option>`).join('')}<option value="__o">✏️ Other (புதிய பெயர்)</option></select>
   <input id="xN" class="hide" placeholder="Expense பெயர்" style="margin-top:8px"><label>Amount ₹</label><input id="xA" type="number" inputmode="decimal">
   <label>Paid By</label><select id="xP"><option>GPay</option><option>Cash</option></select><button onclick="addExp()">Add</button></div>
-  ${colCard('xl','💸 Expense பட்டியல் ('+a.length+')',`${a.map(x=>`<div class="row"><div>${E(x.name)}<small>${fd(x.date)}${x.paidBy?' • '+(x.paidBy==='GPay'?'📱 GPay':'💵 Cash'):''}</small></div><div>${M(x.amount)} <button class="d" onclick="delExp(${N(x.id)})">✕</button></div></div>`).join('')||'<small>இந்த தேதியில் Expense இல்லை</small>'}`)}
+  ${colCard('xl','💸 Expense பட்டியல் ('+af.length+')',`${a.map(x=>`<div class="row"><div>${E(x.name)}<small>${fd(x.date)}${x.paidBy?' • '+(x.paidBy==='GPay'?'📱 GPay':'💵 Cash'):''}</small></div><div>${M(x.amount)} <button class="d" onclick="delExp(${N(x.id)})">✕</button></div></div>`).join('')||'<small>இந்த தேதியில் Expense இல்லை</small>'}${af.length>xlN?`<button class="s" style="width:100%" onclick="xlN+=50;render()">மேலும் 50 ▼ (${af.length-xlN} மீதம்)</button>`:''}`)}
   ${brk}`;
 }
 function addExp(){
@@ -716,6 +719,8 @@ function iframeGuard(f){
     w.Storage.prototype.clear=function(){const ks=[];for(let i=0;i<this.length;i++)ks.push(this.key(i));ks.forEach(n=>{if(!keep.test(n))this.removeItem(n)})};
   }catch(e){}
 }
+
+let hlN=50,hlSig='',xlN=50,xSig=null;
 
 /* ---------- SHELL ---------- */
 function render(){
