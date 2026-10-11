@@ -5,7 +5,7 @@
 <style>
 :root{--g:#0f766e;--bg:#eef3f3;--c:#fff;--t:#17202a;--m:#64748b;--r:#c62828;--ok:#16834b;--ln:#e3ebeb}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;font:15px/1.4 system-ui,-apple-system,"Noto Sans Tamil",sans-serif;background:var(--bg);color:var(--t);padding-bottom:88px}
+body{margin:0;font:15px/1.4 system-ui,-apple-system,"Noto Sans Tamil",sans-serif;background:var(--bg);color:var(--t);padding-bottom:calc(128px + env(safe-area-inset-bottom,0px))}
 header{position:sticky;top:0;z-index:5;background:linear-gradient(135deg,#0f766e,#14a398);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 14px;display:flex;justify-content:space-between;align-items:center;border-radius:0 0 20px 20px;box-shadow:0 4px 14px #0f766e44}
 header b{font-size:18px;letter-spacing:.2px}header small{color:#d3f5f0;font-size:12px}
 .ver{background:#ffffff33;border-radius:10px;padding:3px 10px;font-size:12px;font-weight:700}
@@ -20,11 +20,16 @@ button{background:linear-gradient(135deg,#0f766e,#14a398);color:#fff;border:0;bo
 button:active{transform:scale(.96)}
 button.s{background:#e3f1ef;color:var(--g);box-shadow:none}
 button.d{background:#fdeaea;color:var(--r);padding:5px 10px;margin:0;font-size:12px;box-shadow:none;border-radius:8px}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;overflow-x:auto;scrollbar-width:none;background:#fff;border-top:1px solid var(--ln);padding:6px 4px calc(env(safe-area-inset-bottom,0px) + 6px);box-shadow:0 -4px 16px #0000000d;z-index:6}
-nav::-webkit-scrollbar{display:none}
-nav button{flex:1 0 auto;min-width:52px;white-space:nowrap;background:none;box-shadow:none;color:var(--m);border-radius:12px;margin:0 1px;padding:6px 4px;font-size:10px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px}
-nav button .ic{font-size:19px;line-height:1}
-nav button.on{background:#e3f1ef;color:var(--g)}
+nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--ln);padding:6px 4px calc(env(safe-area-inset-bottom,0px) + 6px);box-shadow:0 -4px 16px #0000000d;z-index:6}
+nav .nr{display:flex}
+nav .nr button{flex:1;min-width:0;white-space:nowrap;background:none;box-shadow:none;color:var(--m);border-radius:12px;margin:0 1px;padding:5px 0;font-size:10px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav .nr button .ic{font-size:19px;line-height:1}
+nav .nr button.on{background:#e3f1ef;color:var(--g)}
+nav .apps{border-top:1px solid var(--ln);margin-top:5px;padding-top:5px;align-items:center;gap:6px}
+nav .apps .lbl{font-size:10px;color:var(--m);width:34px;text-align:center;font-weight:600}
+nav .apps button{flex-direction:row;justify-content:center;gap:5px;background:#f1efe8;color:#444441;padding:8px 0;font-size:12px;margin:0}
+nav .apps button .ic{font-size:16px}
+nav .apps button.on{background:#e3f1ef;color:var(--g)}
 .row{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-top:1px solid var(--ln);align-items:center}
 .row:first-child{border-top:0}
 small{color:var(--m);display:block;font-size:12px}
@@ -34,7 +39,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.35</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.36</span></header>
 <div id="lock" style="display:none;position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#0f766e,#14a398);color:#fff;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center">
 <div style="font-size:44px">🔒</div><div style="font-size:20px;font-weight:700;margin:6px 0 16px">Sale Profit Book</div>
 <input id="lockPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="PIN" style="max-width:220px;text-align:center;font-size:24px;letter-spacing:6px" onkeydown="if(event.key==='Enter')unlock()">
@@ -44,14 +49,14 @@ small{color:var(--m);display:block;font-size:12px}
 <main id="app"></main>
 <div id="hxW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">🏡 Home Expense Ledger</b><a href="https://pashameed-art.github.io/Home-Expense-Ledger/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
-<iframe id="hxF" title="Home Expense Ledger" onload="iframeGuard(this)" style="width:100%;height:calc(100vh - 190px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
+<iframe id="hxF" title="Home Expense Ledger" onload="iframeGuard(this)" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
 <div id="bkW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">🏍️ Mass Bike</b><a href="https://pashameed-art.github.io/Mass-Bike/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
-<iframe id="bkF" title="Mass Bike" onload="iframeGuard(this)" style="width:100%;height:calc(100vh - 190px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
+<iframe id="bkF" title="Mass Bike" onload="iframeGuard(this)" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
 <div id="lgW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">📗 Mass Sales Ledger</b><a href="https://pashameed-art.github.io/mass-sales-ledger/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
 <div id="cmpBox"></div>
-<iframe id="lgF" onload="iframeGuard(this)" title="Mass Sales Ledger" style="width:100%;height:calc(100vh - 190px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
+<iframe id="lgF" onload="iframeGuard(this)" title="Mass Sales Ledger" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
 <nav id="nav"></nav>
 <script>
 'use strict';
@@ -63,7 +68,7 @@ const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximu
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.35';
+const VER='9.36';
 const ek=s=>encodeURIComponent(String(s)).replace(/'/g,'%27');
 const dk=s=>{try{return decodeURIComponent(s)}catch(e){return s}};
 const mobOf=n=>{const k=nm(n).toLowerCase(),c=rd(KEY.cus).find(x=>x&&x.key===k);return c&&c.mobile||''};
@@ -821,8 +826,9 @@ function render(){
   const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,ledger:()=>'',bike:()=>'',hexp:()=>'',bak:vBak}[tab];
   $('app').innerHTML=v();{const lg=tab==='ledger',bk=tab==='bike',hx=tab==='hexp';$('app').style.display=(lg||bk||hx)?'none':'';$('lgW').style.display=lg?'block':'none';$('bkW').style.display=bk?'block':'none';$('hxW').style.display=hx?'block':'none';if(hx&&!$('hxF').getAttribute('src'))$('hxF').setAttribute('src','https://pashameed-art.github.io/Home-Expense-Ledger/');if(lg)$('cmpBox').innerHTML=cmpHtml();if(lg&&!$('lgF').getAttribute('src'))$('lgF').setAttribute('src','https://pashameed-art.github.io/mass-sales-ledger/');if(bk&&!$('bkF').getAttribute('src'))$('bkF').setAttribute('src','https://pashameed-art.github.io/Mass-Bike/')}try{const d=new Date();$('hd').textContent=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()]+', '+d.getDate()+' '+['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()]+' '+d.getFullYear()}catch(e){}if(tab==='home'){calc();if(mixOpen)mxTot()}
   if(_hf&&tab==='hist'){const i=$('hQ');if(i){i.focus();const l=i.value.length;try{i.setSelectionRange(l,l)}catch(e){}}}_hf=0;
-  $('nav').innerHTML=TABS.map(t=>`<button class="${t[0]===tab?'on':''}" onclick="tab='${t[0]}';cbKey=null;editId=null;mixOpen=false;iEdit=null;sOut=null;hq='';render();scrollTo(0,0)"><span class="ic">${t[1].split(' ')[0]}</span><span>${t[1].split(' ').slice(1).join(' ')}</span></button>`).join('');
-  try{const on=$('nav').querySelector('.on');if(on)on.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}
+  const go=k=>`tab='${k}';cbKey=null;editId=null;mixOpen=false;iEdit=null;sOut=null;hq='';render();scrollTo(0,0)`;
+  const nb=k=>{const x=TABS.find(v=>v[0]===k),p=x[1].split(' ');return `<button class="${k===tab?'on':''}" onclick="${go(k)}"><span class="ic">${p[0]}</span><span>${p.slice(1).join(' ')}</span></button>`};
+  $('nav').innerHTML=`<div class="nr">${['home','hist','stock','exp','credit','party','bak'].map(nb).join('')}</div><div class="nr apps"><span class="lbl">Apps</span>${['ledger','bike','hexp'].map(nb).join('')}</div>`;
 }
 render();lockIfNeeded();
 </script><script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('./sw-v9.js').catch(function(){})});</script>
