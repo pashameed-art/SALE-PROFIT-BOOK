@@ -39,7 +39,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.37</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.41</span></header>
 <div id="lock" style="display:none;position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#0f766e,#14a398);color:#fff;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center">
 <div style="font-size:44px">🔒</div><div style="font-size:20px;font-weight:700;margin:6px 0 16px">Sale Profit Book</div>
 <input id="lockPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="PIN" style="max-width:220px;text-align:center;font-size:24px;letter-spacing:6px" onkeydown="if(event.key==='Enter')unlock()">
@@ -60,15 +60,31 @@ small{color:var(--m);display:block;font-size:12px}
 <nav id="nav"></nav>
 <script>
 'use strict';
+/* If the browser storage is full, tell the user instead of silently losing the entry. */
+(function(){
+  const orig=Storage.prototype.setItem;let last=0;
+  Storage.prototype.setItem=function(k,v){
+    try{return orig.call(this,k,v)}
+    catch(e){
+      if(Date.now()-last>3000){last=Date.now();
+        try{alert('⚠️ Phone-ன் சேமிப்பிடம் நிரம்பிவிட்டது!\n\nஇந்தப் பதிவு சேமிக்கப்படவில்லை.\n\nBackup tab-ல் Backup All எடுத்து, தேவையற்ற பழைய data-வை நீக்கவும்.\nStorage full — this entry was NOT saved.')}catch(x){}}
+      throw e;
+    }
+  };
+})();
 const KEY={items:'spb_v4_items',entries:'spb_v4_entries',exp:'spb_v4_expenses',stock:'spb_v4_stock',pay:'spb_credit_payments_v1',cus:'spb_credit_customers_v1'};
 const $=id=>document.getElementById(id);
 const E=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const N=v=>{v=Number(v);return isFinite(v)?v:0};
 const M=n=>(N(n)<0?'−':'')+'₹'+Math.abs(N(n)).toLocaleString('en-IN',{maximumFractionDigits:2});
 const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
-const wr=(k,a)=>localStorage.setItem(k,JSON.stringify(a));
+let _quotaAt=0;
+function quotaFail(){const n=Date.now();if(n-_quotaAt<4000)return;_quotaAt=n;alert('⚠️ சேமிப்பிடம் நிரம்பிவிட்டது! இந்த மாற்றம் சேமிக்கப்படவில்லை.\n\nBackup All எடுத்து, தேவையற்ற பழைய பதிவுகளை நீக்கிய பிறகு மீண்டும் முயற்சிக்கவும்.\n\nStorage is full — this change was NOT saved.')}
+const wr=(k,a)=>{try{const o=localStorage.getItem(k);if(o){try{JSON.parse(o)}catch(e){try{localStorage.setItem('spb_corrupt_'+k+'_'+Date.now(),o)}catch(e2){}}}}catch(e){}
+  try{localStorage.setItem(k,JSON.stringify(a));return true}catch(e){quotaFail();return false}};
+const sset=(k,v)=>{try{localStorage.setItem(k,v);return true}catch(e){return false}};
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.37';
+const VER='9.41';
 const ek=s=>encodeURIComponent(String(s)).replace(/'/g,'%27');
 const dk=s=>{try{return decodeURIComponent(s)}catch(e){return s}};
 const mobOf=n=>{const k=nm(n).toLowerCase(),c=rd(KEY.cus).find(x=>x&&x.key===k);return c&&c.mobile||''};
@@ -77,6 +93,27 @@ function saveMob(name,v){
   if(!d)return true;
   if(!/^[6-9]\d{9}$/.test(d)){alert('சரியான 10 இலக்க Mobile No உள்ளிடவும்.');return false}
   const key=nm(name).toLowerCase(),a=rd(KEY.cus).filter(x=>x&&x.key!==key);a.push({key,name:nm(name),mobile:d});wr(KEY.cus,a);return true;
+}
+const LS_LIMIT=5*1024*1024; // about 5 million characters per site in most phone browsers
+function storageUse(){
+  const g={'Sale Profit Book':0,'Ledger':0,'Bike':0,'Home Expense':0,'Other':0};let tot=0;
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k)continue;
+    const n=k.length+String(localStorage.getItem(k)||'').length;tot+=n;
+    const a=/^(spb|saleProfitBook)/.test(k)?'Sale Profit Book':/^mass_(sales_)?ledger/.test(k)?'Ledger':/^massBikeV4_/.test(k)?'Bike':/^homeExpenseLedger/.test(k)?'Home Expense':'Other';
+    g[a]+=n}
+  return {g,tot,pct:Math.min(100,Math.round(tot/LS_LIMIT*100))};
+}
+const fmtKB=n=>n>=1048576?(n/1048576).toFixed(2)+' MB':Math.round(n/1024)+' KB';
+function storageCard(){
+  const u=storageUse(),col=u.pct>=85?'#c62828':u.pct>=60?'#e08a00':'#16834b';
+  return `<div class="card"><b>💽 சேமிப்பிடம்</b><small>சுமார் ${u.pct}% (${fmtKB(u.tot)} / 5 MB) — நான்கு app-களும் இதைப் பகிர்கின்றன</small>
+  <div style="height:10px;border-radius:5px;background:#e3ebeb;overflow:hidden;margin:8px 0"><div style="width:${u.pct}%;height:100%;background:${col}"></div></div>
+  ${Object.keys(u.g).filter(k=>u.g[k]>0).map(k=>`<div class="row" style="padding:6px 0"><span>${k}</span><b>${fmtKB(u.g[k])}</b></div>`).join('')}
+  ${u.pct>=80?`<small class="red" style="margin-top:6px">⚠️ நிரம்பும் நிலையில் உள்ளது. Backup All எடுத்து, தேவையற்ற பழைய பதிவுகளை நீக்குங்கள்.</small>`:'<small style="margin-top:6px">80%-ஐத் தாண்டினால் Home-ல் எச்சரிக்கை வரும்.</small>'}</div>`;
+}
+function storageBanner(){
+  const u=storageUse();if(u.pct<80)return '';
+  return `<div class="card red"><b>⚠️ சேமிப்பிடம் ${u.pct}% நிரம்பிவிட்டது</b><small>முழுதாக நிரம்பினால் புதிய பதிவுகள் சேமிக்கப்படாது.</small><button onclick="tab='bak';render();scrollTo(0,0)">💽 பார்க்க / Backup</button></div>`;
 }
 function backupBanner(){
   if(!rd(KEY.entries).length)return '';
@@ -122,7 +159,7 @@ function bkWarn(){
   return `<div class="card red"><b>⚠️ Backup எடுக்கவும்</b><small>${last?'கடைசி backup '+days+' நாட்களுக்கு முன்.':'இன்னும் backup எடுக்கவில்லை.'} உங்கள் data இந்த phone-ல் மட்டுமே உள்ளது.</small><button onclick="tab='bak';render();scrollTo(0,0)">☁️ Backup tab-க்குச் செல்</button></div>`;
 }
 function vHome(){
-  const bb=backupBanner();
+  const bb=backupBanner()+storageBanner();
   const t=today(),en=rd(KEY.entries).filter(x=>x.date===t),ex=rd(KEY.exp).filter(x=>x.date===t);
   const s=en.reduce((a,x)=>a+N(x.sale),0),p=en.reduce((a,x)=>a+N(x.profit),0),e=ex.reduce((a,x)=>a+N(x.amount),0),mt=en.reduce((a,x)=>a+N(x.meter),0);
   const it=rd(KEY.items).slice().sort((a,b)=>a.name.localeCompare(b.name));
@@ -160,7 +197,7 @@ function saveEntry(){
   const st=stockOf(item)+(old&&old.item===item?N(old.meter):0);
   if(meter>st&&!confirm(`Stock ${st} m மட்டுமே உள்ளது. ${meter} m விற்கவா? (Stock minus ஆகும்)`))return;
   const rate=old&&old.item===item?N(old.rate)||it.rate:it.rate,purchase=rate*meter;
-  const place=nm($('ePlace').value)||'Kadayanallur';localStorage.setItem('spb_v9_place',place);
+  const place=nm($('ePlace').value)||'Kadayanallur';sset('spb_v9_place',place);
   const b={date:$('eDate').value||today(),place,item,meter,rate,sale,paidBy:paid,purchase,profit:sale-purchase};
   if(old){const n={...old,...b};if(paid==='Credit')n.customer=cus;else delete n.customer;a[a.indexOf(old)]=n;editId=null}
   else{const n={id:Date.now(),...b,time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true})};if(paid==='Credit')n.customer=cus;a.unshift(n)}
@@ -202,7 +239,7 @@ function saveMixed(){
   const need={};rows.forEach(r=>need[r.item]=(need[r.item]||0)+N(r.meter));
   const short=Object.keys(need).filter(k=>need[k]>stockOf(k));
   if(short.length&&!confirm('Stock போதாது: '+short.map(k=>k+' ('+stockOf(k)+' m)').join(', ')+'. தொடரவா? (Stock minus ஆகும்)'))return;
-  const place=nm($('mPl').value)||'Kadayanallur';localStorage.setItem('spb_v9_place',place);
+  const place=nm($('mPl').value)||'Kadayanallur';sset('spb_v9_place',place);
   const a=rd(KEY.entries),now=Date.now(),date=$('mDt').value||today(),gid='MS'+now,time=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
   rows.forEach((r,i)=>{const it=its.find(x=>x.name===r.item),m=N(r.meter),s=N(r.sale),pu=it.rate*m;
     const n={id:now+i,date,place,item:r.item,meter:m,rate:it.rate,sale:s,paidBy:paid,purchase:pu,profit:s-pu,time,mixedGroup:gid};
@@ -250,7 +287,7 @@ function csv(){
   const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
   const a=rd(KEY.entries).filter(x=>(!from||x.date>=from)&&(!to||x.date<=to));
   const t=[['Date','Place','Item','Meter','Sale','Purchase','Profit','Paid','Customer']].concat(a.map(x=>[x.date,x.place||'',x.item,x.meter,x.sale,x.purchase,x.profit,x.paidBy,x.customer||''])).map(r=>r.map(q).join(',')).join('\n');
-  dl('Sales-'+today()+'.csv',t,'text/csv');
+  dl('Sales-'+today()+'.csv','\ufeff'+t,'text/csv');
 }
 
 /* ---------- STOCK ---------- */
@@ -404,7 +441,10 @@ function renameCus(old){
   const ok=old.toLowerCase();
   const e=rd(KEY.entries);e.forEach(x=>{if(x.paidBy==='Credit'&&nm(x.customer).toLowerCase()===ok)x.customer=nn});wr(KEY.entries,e);
   const p=rd(KEY.pay);p.forEach(x=>{if(nm(x.customer).toLowerCase()===ok)x.customer=nn});wr(KEY.pay,p);
-  cbKey=nn.toLowerCase();render();
+  const nk=nn.toLowerCase(),cs=rd(KEY.cus),oc=cs.find(x=>x&&x.key===ok),nc=cs.find(x=>x&&x.key===nk);
+  if(oc){const rest=cs.filter(x=>x&&x.key!==ok&&x.key!==nk);rest.push({key:nk,name:nn,mobile:(nc&&nc.mobile)||oc.mobile});wr(KEY.cus,rest)}
+  else if(nc){nc.name=nn;wr(KEY.cus,cs)}
+  cbKey=nk;render();
 }
 
 
@@ -449,7 +489,7 @@ function partyDel(id){id=dk(id);if(!confirm('இந்த பதிவை Delete
 function setOpen(){
   const v=prompt('Mansoor Opening Balance ₹:',localStorage.getItem(OPEN)||'');
   if(v===null||v.trim()===''||!isFinite(Number(v)))return;
-  localStorage.setItem(OPEN,String(Number(v)));render();
+  if(!sset(OPEN,String(Number(v)))){quotaFail();return}render();
 }
 
 /* ---------- BACKUP ---------- */
@@ -459,7 +499,7 @@ function snap(){const s={};for(let i=0;i<localStorage.length;i++){const k=localS
 const cntOf=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a.length:0}catch(e){return 0}};
 const allCounts=()=>'Sale Profit Book '+cntOf(KEY.entries)+' • Ledger '+cntOf('mass_sales_ledger_v1_6')+' • Bike rentals '+cntOf('massBikeV4_rentals')+' • Home Exp '+cntOf('homeExpenseLedgerV1')+' • Fathima '+cntOf('homeExpenseLedgerFathimaV1');
 function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:type+';charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
-function backup(){dl('SALE-PROFIT-BOOK-BACKUP-'+today()+'.json',JSON.stringify(snap(),null,1),'application/json');localStorage.setItem('spb_v9_last_backup',new Date().toISOString());render()}
+function backup(){dl('SALE-PROFIT-BOOK-BACKUP-'+today()+'.json',JSON.stringify(snap(),null,1),'application/json');sset('spb_v9_last_backup',new Date().toISOString());render()}
 function vBak(){
   const lb=localStorage.getItem('spb_v9_last_backup');
   const gl=localStorage.getItem('spb_last_gdrive_backup_at');
@@ -471,7 +511,7 @@ function vBak(){
   <button class="s" onclick="restore()">Restore</button>
   <small style="margin-top:8px">Restore-க்கு முன் தானாகவே தற்போதைய data-வின் backup download ஆகும்.</small></div>
   <div class="card"><small>Backup All சேர்ப்பவை: Sale Profit Book, 📗 Ledger, 🏍️ Bike, 🏡 Home Expense. Ledger PIN சேர்க்கப்படாது. Restore-ல் backup-ல் உள்ள app-களின் data மட்டும் மாறும். Mass Bike மற்றும் Ledger-ன் சொந்த Backup பொத்தான்களும் தனியாகத் தொடர்ந்து வேலை செய்யும்.</small></div><div class="card"><b>🔄 App Update</b><small>தற்போதைய Version: V${VER}</small><button class="s" onclick="appRefresh()">Update / Refresh App</button><small style="margin-top:6px">Cache மட்டும் அழியும்; உங்கள் data அழியாது.</small></div>
-  <div class="card"><b>🗑️ Delete Data</b><small>Expenses, Purchase, Stock, Party, Settings மாறாது. Delete-க்கு முன் backup file தானாக download ஆகும்.</small>
+  ${storageCard()}<div class="card"><b>🗑️ Delete Data</b><small>Expenses, Purchase, Stock, Party, Settings மாறாது. Delete-க்கு முன் backup file தானாக download ஆகும்.</small>
   <button class="d" style="padding:10px 14px;font-size:14px;margin-top:8px" onclick="delAll('sales')">Delete All Sales</button> <button class="d" style="padding:10px 14px;font-size:14px" onclick="delAll('exp')">Delete All Expenses</button></div>
   ${pinCard()}`;
 }
@@ -582,7 +622,7 @@ async function gBackup(){
     const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name',{method:'POST',headers:{Authorization:'Bearer '+tok},body:form});
     if(!r.ok)throw new Error('Drive upload தோல்வி');
     const id=(await r.json().catch(()=>({}))).id;
-    localStorage.setItem('spb_last_gdrive_backup_at',now.toISOString());localStorage.setItem('spb_last_gdrive_backup_name',name);
+    sset('spb_last_gdrive_backup_at',now.toISOString());sset('spb_last_gdrive_backup_name',name);
     try{const dated=(await gList(tok)).filter(x=>x.name.indexOf(GPRE)===0).sort((a,b)=>a.name<b.name?1:-1);
       for(const f of dated.slice(GKEEP)){if(f.id===id)continue;await fetch('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(f.id),{method:'PATCH',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({trashed:true})})}}catch(e){}
     render();gs('✅ Drive Backup முடிந்தது: '+name);
@@ -606,12 +646,17 @@ async function gRestore(id){
   }catch(e){gs('❌ '+(e.message||e),false)}
 }
 function applyRestore(s){
-  const ok=Object.keys(s).filter(k=>typeof s[k]==='string'&&bkApp(k));
+  const ARR=/^(spb_v4_|spb_credit_|mass_sales_ledger_v1_6$|massBikeV4_(bikes|rentals|expenses|maintenance|challans)$|homeExpenseLedger(V1|FathimaV1)$|saleProfitBook(Mansoor|Mydeen|Supplier)V1$)/;
+  const good=k=>{if(!ARR.test(k))return true;try{return Array.isArray(JSON.parse(s[k]))}catch(e){return false}};
+  const skipped=Object.keys(s).filter(k=>typeof s[k]==='string'&&bkApp(k)&&!good(k));
+  const ok=Object.keys(s).filter(k=>typeof s[k]==='string'&&bkApp(k)&&good(k));
+  if(skipped.length)alert('⚠️ சேதமடைந்த பகுதிகள் தவிர்க்கப்பட்டன (தற்போதைய data அப்படியே இருக்கும்): '+skipped.join(', '));
   if(!ok.length){alert('இந்த file-ல் மீட்கக்கூடிய data இல்லை.');return}
   const apps=[...new Set(ok.map(bkApp))];
   if(!confirm('இந்த backup-ல் உள்ளவை: '+apps.join(', ')+'.\n\nRestore செய்தால் இந்த app-களின் தற்போதைய data மாற்றப்படும்; backup-ல் இல்லாத app-களின் data மாறாது.\n\nதொடரவா? (முன்னதாக தற்போதைய எல்லா data-வின் backup file தானாக download ஆகும்.)'))return;
   dl('SALE-PROFIT-BOOK-BEFORE-RESTORE-'+today()+'.json',JSON.stringify(snap(),null,1),'application/json');
-  ok.forEach(k=>localStorage.setItem(k,s[k]));
+  let failed=0;ok.forEach(k=>{try{localStorage.setItem(k,s[k])}catch(e){failed++}});
+  if(failed){alert('⚠️ சேமிப்பிடம் போதவில்லை: '+failed+' பகுதிகள் மீட்கப்படவில்லை. முன்பு download ஆன backup file-ஐப் பத்திரமாக வைத்திருங்கள்.');}
   alert('✅ Restore முடிந்தது: '+apps.join(', ')+'.\n\nApp இப்போது மீண்டும் load ஆகும்.');
   location.reload();
 }
@@ -809,7 +854,7 @@ async function pinSave(){
     if(!/^\d{4,6}$/.test(a)){alert('PIN 4 முதல் 6 இலக்கங்களாக இருக்க வேண்டும்.');return}
     if(a!==b){alert('இரண்டு PIN-ம் ஒத்துப்போகவில்லை.');return}
     const first=!pinOn();
-    localStorage.setItem(PIN_KEY,await pinMake(a));sessionStorage.setItem('spb_unlocked','1');
+    if(!sset(PIN_KEY,await pinMake(a))){quotaFail();return}sessionStorage.setItem('spb_unlocked','1');
     if(first)backup();
     alert('✅ PIN அமைக்கப்பட்டது.'+(first?'\n\n⚠️ PIN மறந்தால் மீட்க முடியாது. இப்போது download ஆன backup file-ஐப் பத்திரமாக வைத்திருங்கள்.':''));render();
   }catch(e){alert('இந்த browser-ல் PIN அமைக்க முடியவில்லை (HTTPS தேவை).')}
