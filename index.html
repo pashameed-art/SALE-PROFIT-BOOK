@@ -19,6 +19,8 @@ input:focus,select:focus{border-color:var(--g);box-shadow:0 0 0 3px #0f766e22}
 button{background:linear-gradient(135deg,#0f766e,#14a398);color:#fff;border:0;border-radius:12px;padding:11px 16px;font-size:15px;font-weight:700;margin-top:10px;box-shadow:0 2px 6px #0f766e33;transition:transform .08s}
 button:active{transform:scale(.96)}
 button.s{background:#e3f1ef;color:var(--g);box-shadow:none}
+.xc{margin:0;padding:8px 12px;font-size:13px;background:#e3f1ef;color:var(--g);box-shadow:none}
+.xc.on{background:linear-gradient(135deg,#0f766e,#14a398);color:#fff}
 button.d{background:#fdeaea;color:var(--r);padding:5px 10px;margin:0;font-size:12px;box-shadow:none;border-radius:8px}
 nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--ln);padding:6px 4px calc(env(safe-area-inset-bottom,0px) + 6px);box-shadow:0 -4px 16px #0000000d;z-index:6}
 nav .nr{display:flex}
@@ -39,7 +41,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.41</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.43</span></header>
 <div id="lock" style="display:none;position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#0f766e,#14a398);color:#fff;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center">
 <div style="font-size:44px">🔒</div><div style="font-size:20px;font-weight:700;margin:6px 0 16px">Sale Profit Book</div>
 <input id="lockPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="PIN" style="max-width:220px;text-align:center;font-size:24px;letter-spacing:6px" onkeydown="if(event.key==='Enter')unlock()">
@@ -84,7 +86,7 @@ const wr=(k,a)=>{try{const o=localStorage.getItem(k);if(o){try{JSON.parse(o)}cat
   try{localStorage.setItem(k,JSON.stringify(a));return true}catch(e){quotaFail();return false}};
 const sset=(k,v)=>{try{localStorage.setItem(k,v);return true}catch(e){return false}};
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-const VER='9.41';
+const VER='9.43';
 const ek=s=>encodeURIComponent(String(s)).replace(/'/g,'%27');
 const dk=s=>{try{return decodeURIComponent(s)}catch(e){return s}};
 const mobOf=n=>{const k=nm(n).toLowerCase(),c=rd(KEY.cus).find(x=>x&&x.key===k);return c&&c.mobile||''};
@@ -379,16 +381,18 @@ function vExp(){
   <button class="s" onclick="xSel=today();render()">Today</button> <button class="s" onclick="xSel='${ymd(y)}';render()">நேற்று</button> <button class="s" onclick="xSel='';render()">எல்லாம்</button>
   <div class="k" style="margin-top:10px">${xSel?fd(xSel)+' • மொத்த Expense':'எல்லா தேதிகள் • மொத்த Expense'}<b class="red">${M(tot)}</b><small>${af.length} பதிவுகள்</small></div></div>
   <div class="card"><b>💸 Expense சேர்க்க</b><label>Date</label><input type="date" id="xD" value="${xSel||today()}">
-  <label>Expense</label><select id="xS" onchange="$('xN').classList.toggle('hide',this.value!=='__o')"><option value="">-- Expense தேர்வு --</option>${EXPN.map(n=>`<option>${n}</option>`).join('')}<option value="__o">✏️ Other (புதிய பெயர்)</option></select>
-  <input id="xN" class="hide" placeholder="Expense பெயர்" style="margin-top:8px"><label>Amount ₹</label><input id="xA" type="number" inputmode="decimal">
+  <label>Expense (ஒன்று அல்லது அதற்கு மேல் தேர்ந்தெடுக்கவும்)</label>
+  <div style="display:flex;gap:6px;flex-wrap:wrap">${EXPN.map(n=>`<button type="button" class="xc${xPick.includes(n)?' on':''}" data-n="${E(n)}" onclick="xTog(this)">${E(n)}</button>`).join('')}<button type="button" class="xc${xOther?' on':''}" onclick="xOth(this)">✏️ Other</button></div>
+  <small id="xPicked">${xPick.length?'தேர்ந்தது: '+E(xPick.join(', ')):''}</small>
+  <input id="xN" class="${xOther?'':'hide'}" placeholder="புதிய Expense பெயர்" style="margin-top:8px"><label>Amount ₹</label><input id="xA" type="number" inputmode="decimal">
   <label>Paid By</label><select id="xP"><option>GPay</option><option>Cash</option></select><button onclick="addExp()">Add</button></div>
   ${colCard('xl','💸 Expense பட்டியல் ('+af.length+')',`${a.map(x=>`<div class="row"><div>${E(x.name)}<small>${fd(x.date)}${x.paidBy?' • '+(x.paidBy==='GPay'?'📱 GPay':'💵 Cash'):''}</small></div><div>${M(x.amount)} <button class="d" onclick="delExp('${ek(x.id)}')">✕</button></div></div>`).join('')||'<small>இந்த தேதியில் Expense இல்லை</small>'}${af.length>xlN?`<button class="s" style="width:100%" onclick="xlN+=50;render()">மேலும் 50 ▼ (${af.length-xlN} மீதம்)</button>`:''}`)}
   ${brk}`;
 }
 function addExp(){
-  const sv=$('xS').value,name=sv==='__o'?nm($('xN').value):sv,amount=N($('xA').value);
+  const other=xOther?nm($('xN').value):'',name=xPick.slice().sort((p,q)=>EXPN.indexOf(p)-EXPN.indexOf(q)).concat(other?[other]:[]).join(', '),amount=N($('xA').value);
   if(!name||!(amount>0))return alert('Expense & Amount உள்ளிடவும்.');
-  const d=$('xD').value||today(),a=rd(KEY.exp);a.unshift({id:Date.now(),date:d,name,amount,paidBy:$('xP').value});wr(KEY.exp,a);if(xSel)xSel=d;render();
+  const d=$('xD').value||today(),a=rd(KEY.exp);a.unshift({id:Date.now(),date:d,name,amount,paidBy:$('xP').value});if(!wr(KEY.exp,a))return;xPick=[];xOther=false;if(xSel)xSel=d;render();
 }
 function delExp(id){id=dk(id);if(!confirm('Delete?'))return;wr(KEY.exp,rd(KEY.exp).filter(x=>String(x.id)!==id));render()}
 
@@ -865,6 +869,10 @@ async function pinRemove(){
     localStorage.removeItem(PIN_KEY);sessionStorage.removeItem('spb_unlocked');alert('PIN நீக்கப்பட்டது.');render();
   }catch(e){alert('PIN-ஐ நீக்க முடியவில்லை.')}
 }
+
+let xPick=[],xOther=false;
+function xTog(b){const n=b.dataset.n,i=xPick.indexOf(n);if(i>=0)xPick.splice(i,1);else xPick.push(n);b.classList.toggle('on',i<0);const s=$('xPicked');if(s)s.textContent=xPick.length?'தேர்ந்தது: '+xPick.join(', '):''}
+function xOth(b){xOther=!xOther;b.classList.toggle('on',xOther);$('xN').classList.toggle('hide',!xOther);if(xOther)$('xN').focus()}
 
 /* ---------- SHELL ---------- */
 function render(){
