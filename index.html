@@ -839,12 +839,13 @@ function lockIfNeeded(){if(pinOn()&&sessionStorage.getItem('spb_unlocked')!=='1'
 async function unlock(){
   if(Date.now()<lockUntil){$('lockMsg').textContent='சில வினாடிகள் கழித்து முயற்சிக்கவும்.';return}
   let ok=false;try{ok=await pinCheck($('lockPin').value)}catch(e){$('lockMsg').textContent='இந்த browser-ல் PIN சரிபார்க்க முடியவில்லை.';return}
-  if(ok){lockTries=0;sessionStorage.setItem('spb_unlocked','1');$('lock').style.display='none';$('lockPin').value=''}
+  if(ok){lockTries=0;sessionStorage.setItem('spb_unlocked','1');$('lock').style.display='none';$('lockPin').value='';setTimeout(carAsk,300)}
   else{lockTries++;$('lockPin').value='';if(lockTries>=5){lockUntil=Date.now()+30000;lockTries=0;$('lockMsg').textContent='5 முறை தவறு. 30 வினாடி காத்திருக்கவும்.'}else $('lockMsg').textContent='தவறான PIN ('+lockTries+'/5)'}
 }
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){hiddenAt=Date.now()}
   else if(pinOn()&&hiddenAt&&Date.now()-hiddenAt>5*60*1000){sessionStorage.removeItem('spb_unlocked');lockShow()}
+  else setTimeout(carAsk,300);
 });
 function pinCard(){
   const on=pinOn(),f=(id,l)=>`<label>${l}</label><input id="${id}" type="password" inputmode="numeric" maxlength="6" autocomplete="off">`;
@@ -876,6 +877,22 @@ let xPick=[],xOther=false;
 function xTog(b){const n=b.dataset.n,i=xPick.indexOf(n);if(i>=0)xPick.splice(i,1);else xPick.push(n);b.classList.toggle('on',i<0);const s=$('xPicked');if(s)s.textContent=xPick.length?'தேர்ந்தது: '+xPick.join(', '):''}
 function xOth(b){xOther=!xOther;b.classList.toggle('on',xOther);$('xN').classList.toggle('hide',!xOther);if(xOther)$('xN').focus()}
 
+/* ---------- DAILY CAR RENT PROMPT ---------- */
+const CAR_RENT=600;
+function carAsk(){
+  try{
+    if(pinOn()&&sessionStorage.getItem('spb_unlocked')!=='1')return;
+    const t=today();
+    if(localStorage.getItem('spb_carrent_asked')===t)return;
+    const a=rd(KEY.exp);
+    if(a.some(x=>x.date===t&&String(x.name||'').toLowerCase().includes('car rent'))){localStorage.setItem('spb_carrent_asked',t);return}
+    localStorage.setItem('spb_carrent_asked',t);
+    if(!confirm('இன்றைய Car Rent ₹'+CAR_RENT+' Expense-ல் Add செய்யவா?'))return;
+    a.unshift({id:Date.now(),date:t,name:'Car Rent',amount:CAR_RENT,paidBy:'GPay'});
+    if(wr(KEY.exp,a))render();
+  }catch(e){}
+}
+
 /* ---------- SHELL ---------- */
 function render(){
   const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,ledger:()=>'',bike:()=>'',hexp:()=>'',bak:vBak}[tab];
@@ -885,6 +902,6 @@ function render(){
   const nb=k=>{const x=TABS.find(v=>v[0]===k),p=x[1].split(' ');return `<button class="${k===tab?'on':''}" onclick="${go(k)}"><span class="ic">${p[0]}</span><span>${p.slice(1).join(' ')}</span></button>`};
   $('nav').innerHTML=`<div class="nr">${['home','hist','stock','exp','credit','party','bak'].map(nb).join('')}</div><div class="nr apps"><span class="lbl">Apps</span>${['ledger','bike','hexp'].map(nb).join('')}</div>`;
 }
-render();lockIfNeeded();
+render();lockIfNeeded();setTimeout(carAsk,600);
 </script><script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('./sw-v9.js').catch(function(){})});</script>
 </body></html>
