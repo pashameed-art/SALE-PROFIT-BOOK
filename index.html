@@ -672,7 +672,7 @@ const OP={};
 const colCard=(id,title,body,force)=>{const o=OP[id]||force;return `<div class="card"><div onclick="colToggle('${id}')" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer"><b>${title}</b><span id="${id}Arr" style="color:var(--g);font-weight:700;font-size:13px">${o?'▲ மூடு':'▼ பார்க்க'}</span></div><div id="${id}Body" class="${o?'':'hide'}">${body}</div></div>`};
 function colToggle(id){OP[id]=!OP[id];$(id+'Body').classList.toggle('hide',!OP[id]);$(id+'Arr').textContent=OP[id]?'▲ மூடு':'▼ பார்க்க'}
 let cF=today().slice(0,8)+'01',cT=today(),cDiff=true,cCred=true,cRun=false,hq='',_hf=0,slOpen=false,hlOpen=false,deOpen=false,deD=today(),dF=today(),dT=today(),ip=null,xSel=today(),iEdit=null,sOut=null;
-const EXPN=['Breakfast','Car Rent','Cigarette','Dinner','Juice','Lunch','Room Rent','Petrol','Tea','Tollgate','Water'];
+const EXPN=['Breakfast','Car Rent','Cigarette','Dinner','Juice','Lunch','Mansoor','Room Rent','Petrol','Snacks','Tea','Tollgate','Water'];
 const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 addEventListener('beforeinstallprompt',ev=>{ev.preventDefault();ip=ev;const b=$('ib');if(b)b.classList.remove('hide')});
 function inst(){if(ip){ip.prompt();ip=null;const b=$('ib');if(b)b.classList.add('hide')}}
