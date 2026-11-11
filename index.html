@@ -86,6 +86,7 @@ const wr=(k,a)=>{try{const o=localStorage.getItem(k);if(o){try{JSON.parse(o)}cat
   try{localStorage.setItem(k,JSON.stringify(a));return true}catch(e){quotaFail();return false}};
 const sset=(k,v)=>{try{localStorage.setItem(k,v);return true}catch(e){return false}};
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const ydy=()=>{const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const VER='9.43';
 const ek=s=>encodeURIComponent(String(s)).replace(/'/g,'%27');
 const dk=s=>{try{return decodeURIComponent(s)}catch(e){return s}};
@@ -259,8 +260,9 @@ function vHist(){
   const more=a.length>hlN?`<button class="s" style="width:100%" onclick="hlN+=50;render()">மேலும் 50 ▼ (${a.length-hlN} மீதம்)</button>`:'';
   return `<div class="card"><div class="g"><div><label>From</label><input type="date" id="hF" value="${from}" onchange="from=this.value;render()"></div><div><label>To</label><input type="date" id="hT" value="${to}" onchange="to=this.value;render()"></div></div>
   <label>🔍 தேடல்</label><input id="hQ" placeholder="Item / Customer / Place / Cash / GPay" value="${E(hq)}" oninput="hq=this.value;_hf=1;render()">
+  <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px">${[['Today',today()],['நேற்று',ydy()]].map(c=>`<button class="s" style="${from===c[1]&&to===c[1]?'background:var(--g);color:#fff':''}" onclick="from=to='${c[1]}';render()">${c[0]}</button>`).join('')}<input type="date" id="hD" title="Date Select" value="${from&&from===to&&from!==today()&&from!==ydy()?from:''}" onchange="if(this.value){from=to=this.value;render()}" style="width:auto;flex:1;min-width:140px"><button class="s" style="${!from&&!to?'background:var(--g);color:#fff':''}" onclick="from=to='';render()">All</button></div>
   <div class="g" style="margin-top:8px"><div class="k">Sale<b>${M(s)}</b></div><div class="k">Profit<b>${M(p)}</b></div><div class="k">Purchase<b>${M(pu)}</b></div><div class="k">Meter<b>${m}</b></div>${q?'':`<div class="k">Expense<b>${M(ex)}</b></div><div class="k" style="grid-column:1/-1">Net Profit<b class="${p-ex<0?'red':'grn'}">${M(p-ex)}</b></div>`}</div>${q?`<small style="margin-top:6px">"${E(hq)}" தேடல் முடிவுகள்: ${a.length} பதிவுகள். Expense / Net Profit தேடலில் காட்டப்படாது; CSV / WhatsApp / PDF தேதி வரம்புக்கானவை.</small>`:''}
-  <button class="s" onclick="csv()">⬇️ CSV</button> <button class="s" onclick="repShare()">📤 WhatsApp</button> <button class="s" onclick="repPdf()">🖨️ PDF</button> <button class="s" onclick="from=to=today();render()">Today</button> <button class="s" onclick="from=to='';render()">All</button></div>
+  <button class="s" onclick="csv()">⬇️ CSV</button> <button class="s" onclick="repShare()">📤 WhatsApp</button> <button class="s" onclick="repPdf()">🖨️ PDF</button></div>
   <div class="card"><div onclick="hlToggle()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer"><b>📜 பதிவுகள் (${a.length})</b><span id="hlArr" style="color:var(--g);font-weight:700;font-size:13px">${hlOpen||q?'▲ மூடு':'▼ பார்க்க'}</span></div>
   <div id="hlBody" class="${hlOpen||q?'':'hide'}">${a.slice(0,hlN).map(x=>`<div class="row" style="display:block;padding:10px 0">
     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span><b>${E(x.item)}</b> • ${N(x.meter)} m</span><b>${M(x.sale)}</b></div>
