@@ -469,7 +469,7 @@ function vParty(){
     const op=isM?N(localStorage.getItem(OPEN)):0,bal=op+tk-gv;
     head=`<div class="k">தற்போது பெற வேண்டியது<b class="${bal>0?'red':'grn'}">${M(bal)}</b>${isM?`<small>Opening ${M(op)} <a href="#" onclick="setOpen();return false">✏️</a>${localStorage.getItem(OPEN)===null?' <span class="red">⚠️ இன்னும் set செய்யப்படவில்லை</span>':''}</small>`:''}</div>`;
   }
-  return `<div class="card"><div class="g">${['Mansoor','Mydeen','Supplier'].map(n=>`<button class="${n===pw?'':'s'}" style="margin:0" onclick="pw='${n}';pEdit=null;render()">${n}</button>`).join('')}</div></div>
+  return `<div class="card"><div class="g">${['Mansoor','Mydeen','Supplier'].map(n=>`<button class="${n===pw?'':'s'}" style="margin:0" onclick="pw='${n}';pEdit=null;pAll=false;render()">${n}</button>`).join('')}</div></div>
   <div class="card">${head}<button class="s" onclick="partyShare()">📤 WhatsApp</button> <button class="s" onclick="partyPdf()">🖨️ PDF</button></div>
   <div class="card"><b>${e?'✏️ Update':'➕ புதிய பதிவு'}</b>
   ${sup?`<label>Supplier</label><input id="pS" list="psl" autocomplete="off" value="${E(e?e.supplier:'')}"><datalist id="psl">${[...new Set(a.map(x=>nm(x.supplier)).filter(Boolean))].map(n=>`<option value="${E(n)}">`).join('')}</datalist>`:''}
@@ -477,7 +477,7 @@ function vParty(){
   <div class="g"><div><label>தேதி</label><input type="date" id="pDt" value="${e?e.date:today()}"></div><div><label>தொகை ₹</label><input id="pAm" type="number" inputmode="decimal" value="${e?e.amount:''}"></div></div>
   <label>குறிப்பு</label><input id="pN" value="${E(e?e.note||'':'')}">
   <button onclick="partySave()">${e?'Update':'Save'}</button>${e?'<button class="s" onclick="pEdit=null;render()">Cancel</button>':''}</div>
-  ${colCard('pl','🤝 '+pw+' பதிவுகள் ('+a.length+')',`${a.map(x=>`<div class="row"><div><b class="${x.type==='given'?'red':'grn'}">${x.type==='given'?'பணம் தந்தது':'பணம் வாங்கியது'}</b><small>${fd(x.date)}${sup&&x.supplier?' • '+E(x.supplier):''}${x.note?' • '+E(x.note):''}</small></div><div style="text-align:right"><b>${x.type==='given'?'−':'＋'}${M(x.amount)}</b><br><button class="d" style="background:#e3eceb;color:#0f766e" onclick="pEdit=dk('${ek(x.id)}');render();scrollTo(0,0)">✏️</button> <button class="d" onclick="partyDel('${ek(x.id)}')">🗑️</button></div></div>`).join('')||'<small>இதுவரை பதிவு இல்லை</small>'}`,!!pEdit)}`;
+  ${colCard('pl','🤝 '+pw+' பதிவுகள் ('+(pAll||a.length<=10?a.length:'Latest 10 / '+a.length)+')',`${(pAll?a:a.slice(0,10)).map(x=>`<div class="row"><div><b class="${x.type==='given'?'red':'grn'}">${x.type==='given'?'பணம் தந்தது':'பணம் வாங்கியது'}</b><small>${fd(x.date)}${sup&&x.supplier?' • '+E(x.supplier):''}${x.note?' • '+E(x.note):''}</small></div><div style="text-align:right"><b>${x.type==='given'?'−':'＋'}${M(x.amount)}</b><br><button class="d" style="background:#e3eceb;color:#0f766e" onclick="pEdit=dk('${ek(x.id)}');render();scrollTo(0,0)">✏️</button> <button class="d" onclick="partyDel('${ek(x.id)}')">🗑️</button></div></div>`).join('')||'<small>இதுவரை பதிவு இல்லை</small>'}${a.length>10?(pAll?`<button class="s" style="width:100%" onclick="pAll=false;render()">▲ Latest 10 மட்டும்</button>`:`<button class="s" style="width:100%" onclick="pAll=true;render()">📋 All Entries (${a.length}) ▼</button>`):''}`,!!pEdit)}`;
 }
 function partySave(){
   const k=PK[pw],sup=pw==='Supplier',type=$('pT').value,date=$('pDt').value||today(),amount=N($('pAm').value),note=nm($('pN').value),supplier=sup?nm($('pS').value):'';
@@ -873,7 +873,7 @@ async function pinRemove(){
   }catch(e){alert('PIN-ஐ நீக்க முடியவில்லை.')}
 }
 
-let xPick=[],xOther=false;
+let xPick=[],xOther=false,pAll=false;
 function xTog(b){const n=b.dataset.n,i=xPick.indexOf(n);if(i>=0)xPick.splice(i,1);else xPick.push(n);b.classList.toggle('on',i<0);const s=$('xPicked');if(s)s.textContent=xPick.length?'தேர்ந்தது: '+xPick.join(', '):''}
 function xOth(b){xOther=!xOther;b.classList.toggle('on',xOther);$('xN').classList.toggle('hide',!xOther);if(xOther)$('xN').focus()}
 
