@@ -295,7 +295,7 @@ function csv(){
 }
 
 /* ---------- STOCK ---------- */
-const sortedItems=()=>rd(KEY.items).slice().sort((a,b)=>a.name.localeCompare(b.name));
+const sortedItems=()=>{const m={};const l=rd(KEY.items).slice();l.forEach(i=>{m[i.name]=stockOf(i.name)>0?0:1});return l.sort((a,b)=>m[a.name]-m[b.name]||a.name.localeCompare(b.name))};
 function stockPanel(){
   const its=rd(KEY.items);
   if(iEdit){const it=its.find(x=>x.name===iEdit);if(!it){iEdit=null;return ''}
@@ -382,6 +382,7 @@ function vExp(){
   <input type="date" id="xF" value="${xSel}" onchange="xSel=this.value;render()">
   <button class="s" onclick="xSel=today();render()">Today</button> <button class="s" onclick="xSel='${ymd(y)}';render()">நேற்று</button> <button class="s" onclick="xSel='';render()">எல்லாம்</button>
   <div class="k" style="margin-top:10px">${xSel?fd(xSel)+' • மொத்த Expense':'எல்லா தேதிகள் • மொத்த Expense'}<b class="red">${M(tot)}</b><small>${af.length} பதிவுகள்</small></div></div>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>🚗 தினசரி Car Rent: <b>${carAmt()>0?M(carAmt()):'Off'}</b></span><button class="s" onclick="carSet()">✏️ மாற்று</button></div></div>
   <div class="card"><b>💸 Expense சேர்க்க</b><label>Date</label><input type="date" id="xD" value="${xSel||today()}">
   <label>Expense (ஒன்று அல்லது அதற்கு மேல் தேர்ந்தெடுக்கவும்)</label>
   <div style="display:flex;gap:6px;flex-wrap:wrap">${EXPN.map(n=>`<button type="button" class="xc${xPick.includes(n)?' on':''}" data-n="${E(n)}" onclick="xTog(this)">${E(n)}</button>`).join('')}<button type="button" class="xc${xOther?' on':''}" onclick="xOth(this)">✏️ Other</button></div>
@@ -878,17 +879,26 @@ function xTog(b){const n=b.dataset.n,i=xPick.indexOf(n);if(i>=0)xPick.splice(i,1
 function xOth(b){xOther=!xOther;b.classList.toggle('on',xOther);$('xN').classList.toggle('hide',!xOther);if(xOther)$('xN').focus()}
 
 /* ---------- DAILY CAR RENT PROMPT ---------- */
-const CAR_RENT=600;
+const CAR_KEY='spb_carrent_amt';
+const carAmt=()=>{const v=localStorage.getItem(CAR_KEY);return v===null?600:N(v)};
+function carSet(){
+  const v=prompt('தினசரி Car Rent தொகை ₹ (0 = கேட்க வேண்டாம்)',carAmt());
+  if(v===null)return;
+  const n=N(v);
+  if(!(n>=0))return alert('சரியான தொகை உள்ளிடவும்.');
+  localStorage.setItem(CAR_KEY,String(n));render();
+}
 function carAsk(){
   try{
     if(pinOn()&&sessionStorage.getItem('spb_unlocked')!=='1')return;
     const t=today();
+    const amt=carAmt();if(!(amt>0))return;
     if(localStorage.getItem('spb_carrent_asked')===t)return;
     const a=rd(KEY.exp);
     if(a.some(x=>x.date===t&&String(x.name||'').toLowerCase().includes('car rent'))){localStorage.setItem('spb_carrent_asked',t);return}
     localStorage.setItem('spb_carrent_asked',t);
-    if(!confirm('இன்றைய Car Rent ₹'+CAR_RENT+' Expense-ல் Add செய்யவா?'))return;
-    a.unshift({id:Date.now(),date:t,name:'Car Rent',amount:CAR_RENT,paidBy:'GPay'});
+    if(!confirm('இன்றைய Car Rent ₹'+amt+' Expense-ல் Add செய்யவா?'))return;
+    a.unshift({id:Date.now(),date:t,name:'Car Rent',amount:amt,paidBy:'GPay'});
     if(wr(KEY.exp,a))render();
   }catch(e){}
 }
