@@ -915,19 +915,20 @@ function xTog(b){const n=b.dataset.n,i=xPick.indexOf(n);if(i>=0)xPick.splice(i,1
 function xOth(b){xOther=!xOther;b.classList.toggle('on',xOther);$('xN').classList.toggle('hide',!xOther);if(xOther)$('xN').focus()}
 
 /* ---------- POLICE STATION FINDER ---------- */
-let polState='',polDist='',polRes=null,polShow=25,polBusy=false,polMsg='';
+let polState='',polDist='',polArea='',polRes=null,polShow=25,polBusy=false,polMsg='';
 const polKm=(a,b,c,d)=>{const r=x=>x*Math.PI/180,R=6371,dl=r(c-a),dn=r(d-b),h=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
 async function polGet(url,opt,ms){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||25000);try{const r=await fetch(url,Object.assign({signal:c.signal},opt||{}));if(!r.ok)throw new Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(t)}}
 async function polSearch(){
-  const st=polState.trim(),di=polDist.trim();
-  if(!di){alert('District உள்ளிடவும்.');return}
+  const st=polState.trim(),di=polDist.trim(),ar=polArea.trim();
+  if(!di&&!ar){alert('District அல்லது Place உள்ளிடவும்.');return}
   if(polBusy)return;
   polBusy=true;polRes=null;polShow=25;polMsg='🔎 இடம் தேடுகிறது…';render();
   try{
-    const q=encodeURIComponent([di,st,'India'].filter(Boolean).join(', '));
-    const g=await polGet('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=in&q='+q,{headers:{'Accept':'application/json'}},15000);
-    if(!g.length){polMsg='❌ "'+di+(st?', '+st:'')+'" கிடைக்கவில்லை. எழுத்துப்பிழை பார்க்கவும்.';polBusy=false;render();return}
-    const lat=+g[0].lat,lon=+g[0].lon,place=g[0].display_name;
+    const geo=p=>polGet('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=in&q='+encodeURIComponent(p.filter(Boolean).join(', ')),{headers:{'Accept':'application/json'}},15000);
+    let g=await geo([ar,di,st,'India']),usedArea=!!ar;
+    if(!g.length&&ar){g=await geo([di,st,'India']);usedArea=false;if(g.length)polMsg='⚠️ "'+ar+'" கிடைக்கவில்லை; District மையத்திலிருந்து தேடுகிறது…'}
+    if(!g.length){polMsg='❌ "'+[ar,di,st].filter(Boolean).join(', ')+'" கிடைக்கவில்லை. எழுத்துப்பிழை பார்க்கவும்.';polBusy=false;render();return}
+    const lat=+g[0].lat,lon=+g[0].lon,place=(usedArea?ar+' — ':'')+g[0].display_name;
     polMsg='🚓 50 km சுற்றளவில் Police Station தேடுகிறது…';render();
     const ql='[out:json][timeout:25];(node["amenity"="police"](around:50000,'+lat+','+lon+');way["amenity"="police"](around:50000,'+lat+','+lon+'););out center tags;';
     let j=null,err=null;
@@ -952,14 +953,15 @@ function vPolice(){
   const E2=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   let out=`<div class="card"><b>🚓 Police Station Finder</b>
   <label>State</label><input id="pS" value="${E2(polState)}" placeholder="Kerala" oninput="polState=this.value">
-  <label>District</label><input id="pD" value="${E2(polDist)}" placeholder="Kochi" oninput="polDist=this.value" onkeydown="if(event.key==='Enter')polSearch()">
+  <label>District</label><input id="pD" value="${E2(polDist)}" placeholder="Kochi" oninput="polDist=this.value">
+  <label>Place / Area (விருப்பம்)</label><input id="pA" value="${E2(polArea)}" placeholder="Eloor" oninput="polArea=this.value" onkeydown="if(event.key==='Enter')polSearch()">
   <button onclick="polSearch()" ${polBusy?'disabled':''}>🔎 தேடு</button>
-  <small>District மையத்திலிருந்து 50 km சுற்றளவில் உள்ள Police Station-கள் (OpenStreetMap தரவு; நேர்கோட்டு தூரம்; இணையம் தேவை).</small></div>`;
+  <small>Place கொடுத்தால் அந்த இடத்திலிருந்து, இல்லையெனில் District மையத்திலிருந்து 50 km சுற்றளவில் உள்ள Police Station-கள் (OpenStreetMap தரவு; நேர்கோட்டு தூரம்; இணையம் தேவை).</small></div>`;
   if(polMsg)out+=`<div class="card"><small>${polMsg}</small></div>`;
   if(polRes){
     const L=polRes.list;
-    out+=`<div class="card"><b>📍 ${E2(polRes.place.split(',').slice(0,3).join(','))}</b><small>${L.length} Police Station கிடைத்தன — அருகில் உள்ளவை முதலில்</small>`;
-    out+=L.slice(0,polShow).map(x=>`<div class="row"><div><b>${E2(x.name)}</b>${x.addr?`<small>${E2(x.addr)}</small>`:''}${x.phone?`<small>📞 <a href="tel:${E2(x.phone.split(';')[0].replace(/\s/g,''))}">${E2(x.phone)}</a></small>`:''}<small><a href="https://www.google.com/maps/dir/?api=1&destination=${x.la},${x.lo}" target="_blank" rel="noopener">🧭 Map / வழி</a></small></div><b>${x.km<10?x.km.toFixed(1):Math.round(x.km)} km</b></div>`).join('')||'<small>50 km சுற்றளவில் தரவு இல்லை.</small>';
+    out+=`<div class="card"><b>📍 ${E2(polRes.place.split(',').slice(0,3).join(','))}</b><small>${L.length} Police Station கிடைத்தன — அருகில் உள்ளவை முதலில் (தூரம் இந்த இடத்திலிருந்து)</small>`;
+    out+=L.slice(0,polShow).map((x,i)=>`<div class="row"><div><b>${E2(x.name)}</b>${i===0?'<small>⭐ மிக அருகில் உள்ளது</small>':''}${x.addr?`<small>${E2(x.addr)}</small>`:''}${x.phone?`<small>📞 <a href="tel:${E2(x.phone.split(';')[0].replace(/\s/g,''))}">${E2(x.phone)}</a></small>`:''}<small><a href="https://www.google.com/maps/dir/?api=1&destination=${x.la},${x.lo}" target="_blank" rel="noopener">🧭 Map / வழி</a></small></div><b>${x.km<10?x.km.toFixed(1):Math.round(x.km)} km</b></div>`).join('')||'<small>50 km சுற்றளவில் தரவு இல்லை.</small>';
     if(L.length>polShow)out+=`<button class="s" style="width:100%;margin-top:8px" onclick="polShow+=25;render()">மேலும் காட்டு (${L.length-polShow} மீதம்) ▼</button>`;
     out+='</div>';
   }
