@@ -46,6 +46,7 @@ small{color:var(--m);display:block;font-size:12px}
 <div style="font-size:44px">🔒</div><div style="font-size:20px;font-weight:700;margin:6px 0 16px">Sale Profit Book</div>
 <input id="lockPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="PIN" style="max-width:220px;text-align:center;font-size:24px;letter-spacing:6px" onkeydown="if(event.key==='Enter')unlock()">
 <button onclick="unlock()" style="background:#fff;color:#0f766e;margin-top:16px;min-width:170px">Unlock</button>
+<button id="lockFp" onclick="fpUnlock()" style="display:none;background:transparent;color:#fff;border:1.5px solid #fff;margin-top:10px;min-width:170px">🔐 Fingerprint</button>
 <div id="lockMsg" style="margin-top:12px;min-height:22px;font-size:14px"></div></div>
 <script>try{if(localStorage.getItem('spb_pin_v1')&&sessionStorage.getItem('spb_unlocked')!=='1')document.getElementById('lock').style.display='flex'}catch(e){}</script>
 <main id="app"></main>
@@ -836,12 +837,45 @@ async function pinHash(pin,salt){
 async function pinMake(pin){const salt=hex(crypto.getRandomValues(new Uint8Array(8)).buffer);return salt+':'+await pinHash(pin,salt)}
 async function pinCheck(pin){const s=localStorage.getItem(PIN_KEY);if(!s)return true;const i=s.indexOf(':');return (await pinHash(pin,s.slice(0,i)))===s.slice(i+1)}
 let lockTries=0,lockUntil=0,hiddenAt=0;
-function lockShow(){const l=$('lock');l.style.display='flex';$('lockPin').value='';$('lockMsg').textContent='';try{$('lockPin').focus()}catch(e){}}
+function lockShow(){const l=$('lock');l.style.display='flex';$('lockPin').value='';$('lockMsg').textContent='';$('lockFp').style.display=fpOn()?'inline-block':'none';if(fpOn())setTimeout(fpUnlock,350);else{try{$('lockPin').focus()}catch(e){}}}
 function lockIfNeeded(){if(pinOn()&&sessionStorage.getItem('spb_unlocked')!=='1')lockShow()}
+function lockOk(){lockTries=0;sessionStorage.setItem('spb_unlocked','1');$('lock').style.display='none';$('lockPin').value='';setTimeout(carAsk,300);setTimeout(autoBak,2500)}
+/* ---------- FINGERPRINT (WebAuthn) ---------- */
+const FP_KEY='spb_fp_cred';
+const b64=b=>btoa(String.fromCharCode(...new Uint8Array(b)));
+const unb64=t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0));
+const fpOn=()=>!!localStorage.getItem(FP_KEY);
+async function fpEnable(){
+  try{
+    if(!pinOn()){alert('முதலில் PIN அமைக்கவும்.');return}
+    if(!window.PublicKeyCredential||!(await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable())){alert('இந்த phone / browser-ல் Fingerprint வசதி கிடைக்கவில்லை.');return}
+    const cred=await navigator.credentials.create({publicKey:{
+      challenge:crypto.getRandomValues(new Uint8Array(32)),
+      rp:{name:'Sale Profit Book'},
+      user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'spb-user',displayName:'Sale Profit Book'},
+      pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+      authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required',residentKey:'discouraged'},
+      timeout:60000,attestation:'none'}});
+    if(!cred)throw new Error('no cred');
+    localStorage.setItem(FP_KEY,b64(cred.rawId));
+    alert('✅ Fingerprint இயக்கப்பட்டது. அடுத்தமுறை app திறக்கும்போது Fingerprint கேட்கும். PIN எப்போதும் மாற்று வழியாக இருக்கும்.');render();
+  }catch(e){alert('Fingerprint இயக்க முடியவில்லை (நீங்கள் ரத்து செய்திருக்கலாம்).')}
+}
+function fpDisable(){localStorage.removeItem(FP_KEY);alert('Fingerprint நிறுத்தப்பட்டது. PIN மட்டும் தொடரும்.');render()}
+async function fpUnlock(){
+  try{
+    const id=localStorage.getItem(FP_KEY);if(!id)return;
+    const a=await navigator.credentials.get({publicKey:{
+      challenge:crypto.getRandomValues(new Uint8Array(32)),
+      allowCredentials:[{type:'public-key',id:unb64(id)}],
+      userVerification:'required',timeout:60000}});
+    if(a)lockOk();
+  }catch(e){$('lockMsg').textContent='Fingerprint வேலை செய்யவில்லை. PIN உள்ளிடவும்.'}
+}
 async function unlock(){
   if(Date.now()<lockUntil){$('lockMsg').textContent='சில வினாடிகள் கழித்து முயற்சிக்கவும்.';return}
   let ok=false;try{ok=await pinCheck($('lockPin').value)}catch(e){$('lockMsg').textContent='இந்த browser-ல் PIN சரிபார்க்க முடியவில்லை.';return}
-  if(ok){lockTries=0;sessionStorage.setItem('spb_unlocked','1');$('lock').style.display='none';$('lockPin').value='';setTimeout(carAsk,300);setTimeout(autoBak,2500)}
+  if(ok)lockOk();
   else{lockTries++;$('lockPin').value='';if(lockTries>=5){lockUntil=Date.now()+30000;lockTries=0;$('lockMsg').textContent='5 முறை தவறு. 30 வினாடி காத்திருக்கவும்.'}else $('lockMsg').textContent='தவறான PIN ('+lockTries+'/5)'}
 }
 document.addEventListener('visibilitychange',()=>{
@@ -854,6 +888,7 @@ function pinCard(){
   return `<div class="card"><b>🔒 App PIN</b><small>${on?'PIN ON — Sale Profit Book திறக்கும்போது PIN கேட்கும் (5 நிமிடத்துக்கு மேல் விலகினாலும் மீண்டும் பூட்டும்)':'PIN OFF'}</small>
   ${on?f('pnC','தற்போதைய PIN'):''}${f('pnA',on?'புதிய PIN (4–6 இலக்கம்)':'PIN (4–6 இலக்கம்)')}${f('pnB','PIN மீண்டும்')}
   <button onclick="pinSave()">${on?'PIN மாற்று':'PIN அமை'}</button>${on?' <button class="d" style="padding:10px 14px;font-size:14px" onclick="pinRemove()">PIN நீக்கு</button>':''}
+  ${on?`<div style="margin-top:12px"><b>🔐 Fingerprint</b><small>${fpOn()?'ON — app திறக்கும்போது Fingerprint கேட்கும்':'OFF'}</small>${fpOn()?'<button class="s" onclick="fpDisable()">Fingerprint நிறுத்து</button>':'<button onclick="fpEnable()">🔐 Fingerprint இயக்கு</button>'}</div>`:''}
   <small style="margin-top:8px">⚠️ PIN மறந்தால் மீட்க முடியாது; PIN அமைக்கும்போது backup file தானாக download ஆகும். இந்த PIN Sale Profit Book-ஐத் திறப்பதற்கு மட்டும். Ledger, Bike, Home Expense ஆகியவை அவற்றின் சொந்த முகவரியில் PIN இல்லாமல் திறக்கும்.</small></div>`;
 }
 async function pinSave(){
@@ -871,7 +906,7 @@ async function pinSave(){
 async function pinRemove(){
   try{
     if(!(await pinCheck($('pnC').value))){alert('தற்போதைய PIN தவறு.');return}
-    localStorage.removeItem(PIN_KEY);sessionStorage.removeItem('spb_unlocked');alert('PIN நீக்கப்பட்டது.');render();
+    localStorage.removeItem(PIN_KEY);localStorage.removeItem(FP_KEY);sessionStorage.removeItem('spb_unlocked');alert('PIN நீக்கப்பட்டது.');render();
   }catch(e){alert('PIN-ஐ நீக்க முடியவில்லை.')}
 }
 
