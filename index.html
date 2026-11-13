@@ -29,8 +29,8 @@ nav .nr button .ic{font-size:19px;line-height:1}
 nav .nr button.on{background:#e3f1ef;color:var(--g)}
 nav .apps{border-top:1px solid var(--ln);margin-top:5px;padding-top:5px;align-items:center;gap:6px}
 nav .apps .lbl{font-size:10px;color:var(--m);width:34px;text-align:center;font-weight:600}
-nav .apps button{flex-direction:row;justify-content:center;gap:5px;background:#f1efe8;color:#444441;padding:8px 0;font-size:12px;margin:0}
-nav .apps button .ic{font-size:16px}
+nav .apps button{flex-direction:row;justify-content:center;gap:3px;background:#f1efe8;color:#444441;padding:8px 0;font-size:11px;margin:0}
+nav .apps button .ic{font-size:15px}
 nav .apps button.on{background:#e3f1ef;color:var(--g)}
 .row{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-top:1px solid var(--ln);align-items:center}
 .row:first-child{border-top:0}
@@ -138,7 +138,7 @@ const places=()=>[...new Set(rd(KEY.entries).map(x=>String(x.place||'').trim()).
 const nm=s=>String(s||'').replace(/\s+/g,' ').trim();
 const fd=v=>{const p=String(v||'').split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:v};
 let tab='home',cbKey=null,from=today(),to=today(),pw='Mansoor',pEdit=null,editId=null,mixOpen=false,mx=[];
-const TABS=[['home','🏠 Home'],['hist','📜 History'],['stock','📦 Stock'],['exp','💸 Expense'],['credit','📒 Credit'],['party','🤝 Party'],['ledger','📗 Ledger'],['bike','🏍️ Bike'],['hexp','🏡 Home Exp'],['bak','☁️ Backup']];
+const TABS=[['home','🏠 Home'],['hist','📜 History'],['stock','📦 Stock'],['exp','💸 Expense'],['credit','📒 Credit'],['party','🤝 Party'],['ledger','📗 Ledger'],['bike','🏍️ Bike'],['hexp','🏡 Home Exp'],['police','🚓 Police'],['bak','☁️ Backup']];
 
 function stockOf(item){
   const mv=rd(KEY.stock).filter(x=>x.item===item);
@@ -914,6 +914,58 @@ let xPick=[],xOther=false,pAll=false;
 function xTog(b){const n=b.dataset.n,i=xPick.indexOf(n);if(i>=0)xPick.splice(i,1);else xPick.push(n);b.classList.toggle('on',i<0);const s=$('xPicked');if(s)s.textContent=xPick.length?'தேர்ந்தது: '+xPick.join(', '):''}
 function xOth(b){xOther=!xOther;b.classList.toggle('on',xOther);$('xN').classList.toggle('hide',!xOther);if(xOther)$('xN').focus()}
 
+/* ---------- POLICE STATION FINDER ---------- */
+let polState='',polDist='',polRes=null,polShow=25,polBusy=false,polMsg='';
+const polKm=(a,b,c,d)=>{const r=x=>x*Math.PI/180,R=6371,dl=r(c-a),dn=r(d-b),h=Math.sin(dl/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+async function polGet(url,opt,ms){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||25000);try{const r=await fetch(url,Object.assign({signal:c.signal},opt||{}));if(!r.ok)throw new Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(t)}}
+async function polSearch(){
+  const st=polState.trim(),di=polDist.trim();
+  if(!di){alert('District உள்ளிடவும்.');return}
+  if(polBusy)return;
+  polBusy=true;polRes=null;polShow=25;polMsg='🔎 இடம் தேடுகிறது…';render();
+  try{
+    const q=encodeURIComponent([di,st,'India'].filter(Boolean).join(', '));
+    const g=await polGet('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=in&q='+q,{headers:{'Accept':'application/json'}},15000);
+    if(!g.length){polMsg='❌ "'+di+(st?', '+st:'')+'" கிடைக்கவில்லை. எழுத்துப்பிழை பார்க்கவும்.';polBusy=false;render();return}
+    const lat=+g[0].lat,lon=+g[0].lon,place=g[0].display_name;
+    polMsg='🚓 50 km சுற்றளவில் Police Station தேடுகிறது…';render();
+    const ql='[out:json][timeout:25];(node["amenity"="police"](around:50000,'+lat+','+lon+');way["amenity"="police"](around:50000,'+lat+','+lon+'););out center tags;';
+    let j=null,err=null;
+    for(const ep of ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter']){
+      try{j=await polGet(ep,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(ql)},30000);break}catch(e){err=e}
+    }
+    if(!j)throw err||new Error('no data');
+    const seen={};
+    const list=(j.elements||[]).map(e=>{
+      const la=e.lat!=null?e.lat:(e.center&&e.center.lat),lo=e.lon!=null?e.lon:(e.center&&e.center.lon);
+      if(la==null||lo==null)return null;
+      const t=e.tags||{};
+      const name=t['name:en']||t.name||'Police Station (பெயர் இல்லை)';
+      const addr=[t['addr:housename'],t['addr:street'],t['addr:suburb']||t['addr:place'],t['addr:city']||t['addr:district']].filter(Boolean).join(', ');
+      return{name,addr,phone:t.phone||t['contact:phone']||'',la,lo,km:polKm(lat,lon,la,lo)};
+    }).filter(x=>{if(!x)return false;const k=x.name+'|'+x.la.toFixed(3)+'|'+x.lo.toFixed(3);if(seen[k])return false;seen[k]=1;return true}).sort((a,b)=>a.km-b.km);
+    polRes={place,list};polMsg='';
+  }catch(e){polMsg='❌ தேட முடியவில்லை. இணைய இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.'}
+  polBusy=false;render();
+}
+function vPolice(){
+  const E2=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  let out=`<div class="card"><b>🚓 Police Station Finder</b>
+  <label>State</label><input id="pS" value="${E2(polState)}" placeholder="Kerala" oninput="polState=this.value">
+  <label>District</label><input id="pD" value="${E2(polDist)}" placeholder="Kochi" oninput="polDist=this.value" onkeydown="if(event.key==='Enter')polSearch()">
+  <button onclick="polSearch()" ${polBusy?'disabled':''}>🔎 தேடு</button>
+  <small>District மையத்திலிருந்து 50 km சுற்றளவில் உள்ள Police Station-கள் (OpenStreetMap தரவு; நேர்கோட்டு தூரம்; இணையம் தேவை).</small></div>`;
+  if(polMsg)out+=`<div class="card"><small>${polMsg}</small></div>`;
+  if(polRes){
+    const L=polRes.list;
+    out+=`<div class="card"><b>📍 ${E2(polRes.place.split(',').slice(0,3).join(','))}</b><small>${L.length} Police Station கிடைத்தன — அருகில் உள்ளவை முதலில்</small>`;
+    out+=L.slice(0,polShow).map(x=>`<div class="row"><div><b>${E2(x.name)}</b>${x.addr?`<small>${E2(x.addr)}</small>`:''}${x.phone?`<small>📞 <a href="tel:${E2(x.phone.split(';')[0].replace(/\s/g,''))}">${E2(x.phone)}</a></small>`:''}<small><a href="https://www.google.com/maps/dir/?api=1&destination=${x.la},${x.lo}" target="_blank" rel="noopener">🧭 Map / வழி</a></small></div><b>${x.km<10?x.km.toFixed(1):Math.round(x.km)} km</b></div>`).join('')||'<small>50 km சுற்றளவில் தரவு இல்லை.</small>';
+    if(L.length>polShow)out+=`<button class="s" style="width:100%;margin-top:8px" onclick="polShow+=25;render()">மேலும் காட்டு (${L.length-polShow} மீதம்) ▼</button>`;
+    out+='</div>';
+  }
+  return out;
+}
+
 /* ---------- AUTO DAILY DRIVE BACKUP ---------- */
 const AUTOBAK_KEY='spb_auto_gbak';
 const autoBakOn=()=>localStorage.getItem(AUTOBAK_KEY)!=='0';
@@ -976,12 +1028,12 @@ function carAsk(){
 
 /* ---------- SHELL ---------- */
 function render(){
-  const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,ledger:()=>'',bike:()=>'',hexp:()=>'',bak:vBak}[tab];
+  const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,ledger:()=>'',bike:()=>'',hexp:()=>'',police:vPolice,bak:vBak}[tab];
   $('app').innerHTML=v();{const lg=tab==='ledger',bk=tab==='bike',hx=tab==='hexp';$('app').style.display=(lg||bk||hx)?'none':'';$('lgW').style.display=lg?'block':'none';$('bkW').style.display=bk?'block':'none';$('hxW').style.display=hx?'block':'none';if(hx&&!$('hxF').getAttribute('src'))$('hxF').setAttribute('src','https://pashameed-art.github.io/Home-Expense-Ledger/');if(lg)$('cmpBox').innerHTML=cmpHtml();if(lg&&!$('lgF').getAttribute('src'))$('lgF').setAttribute('src','https://pashameed-art.github.io/mass-sales-ledger/');if(bk&&!$('bkF').getAttribute('src'))$('bkF').setAttribute('src','https://pashameed-art.github.io/Mass-Bike/')}try{const d=new Date();$('hd').textContent=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()]+', '+d.getDate()+' '+['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()]+' '+d.getFullYear()}catch(e){}if(tab==='home'){calc();if(mixOpen)mxTot()}
   if(_hf&&tab==='hist'){const i=$('hQ');if(i){i.focus();const l=i.value.length;try{i.setSelectionRange(l,l)}catch(e){}}}_hf=0;
   const go=k=>`tab='${k}';cbKey=null;editId=null;mixOpen=false;iEdit=null;sOut=null;hq='';render();scrollTo(0,0)`;
   const nb=k=>{const x=TABS.find(v=>v[0]===k),p=x[1].split(' ');return `<button class="${k===tab?'on':''}" onclick="${go(k)}"><span class="ic">${p[0]}</span><span>${p.slice(1).join(' ')}</span></button>`};
-  $('nav').innerHTML=`<div class="nr">${['home','hist','stock','exp','credit','party','bak'].map(nb).join('')}</div><div class="nr apps"><span class="lbl">Apps</span>${['ledger','bike','hexp'].map(nb).join('')}</div>`;
+  $('nav').innerHTML=`<div class="nr">${['home','hist','stock','exp','credit','party','bak'].map(nb).join('')}</div><div class="nr apps"><span class="lbl">Apps</span>${['ledger','bike','hexp','police'].map(nb).join('')}</div>`;
 }
 render();lockIfNeeded();setTimeout(carAsk,600);setTimeout(autoBak,3000);
 </script><script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('./sw-v9.js').catch(function(){})});</script>
