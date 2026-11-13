@@ -510,7 +510,8 @@ function vBak(){
   const lb=localStorage.getItem('spb_v9_last_backup');
   const gl=localStorage.getItem('spb_last_gdrive_backup_at');
   return `<div class="card"><b>☁️ Backup All — Google Drive</b><small>${allCounts()}</small><small>Last: ${gl?new Date(gl).toLocaleString('en-IN'):'இன்னும் இல்லை'}</small><small id="gSt"></small>
-  <button onclick="gBackup()">☁️ Backup Now</button> <button class="s" onclick="gShowList()">♻️ Restore</button><div id="gList"></div></div>
+  <button onclick="gBackup()">☁️ Backup Now</button> <button class="s" onclick="gShowList()">♻️ Restore</button>
+  <div style="margin-top:10px"><button class="s" onclick="autoBakTog()">🔄 தினசரி Auto Backup: ${autoBakOn()?'ON ✅':'OFF'}</button><small>App திறக்கும்போது இன்றைய Backup இல்லையென்றால் தானாக எடுக்கும். App மூடியிருந்தால் எடுக்காது.</small></div><div id="gList"></div></div>
   <div class="card"><b>💾 Backup All — File</b><small>${allCounts()}</small><small>Last: ${lb?new Date(lb).toLocaleString('en-IN'):'இன்னும் இல்லை'}</small>
   <button onclick="backup()">⬇️ Backup file download</button>
   <label>♻️ Restore (JSON file)</label><input type="file" id="rf" accept=".json,application/json">
@@ -593,7 +594,7 @@ function custMob(key){
 
 /* ---------- GOOGLE DRIVE ---------- */
 const GCID='123737120474-8sqc1sb4p0i9j7s9nq56j4gkd784lm1n.apps.googleusercontent.com',GPRE='SALE-PROFIT-BOOK-Backup-',GKEEP=10;
-let gTok=null,gExp=0,gCli=null;
+let gTok=null,gExp=0,gCli=null,gRej=null;
 const gs=(m,ok)=>{const s=$('gSt');if(s){s.textContent=m;s.style.color=ok===false?'#c62828':'#126d66'}};
 function gLoad(){return new Promise((ok,no)=>{
   if(window.google&&google.accounts&&google.accounts.oauth2)return ok();
@@ -604,7 +605,7 @@ async function gToken(){
   await gLoad();
   return new Promise((ok,no)=>{
     const cb=r=>{if(r&&r.access_token){gTok=r.access_token;gExp=Date.now()+Math.max(60,(Number(r.expires_in)||3600)-120)*1000;ok(gTok)}else no(new Error('Google authorization முடியவில்லை'))};
-    try{if(!gCli)gCli=google.accounts.oauth2.initTokenClient({client_id:GCID,scope:'https://www.googleapis.com/auth/drive.file',callback:cb});else gCli.callback=cb;gCli.requestAccessToken({prompt:''})}catch(e){no(e)}
+    gRej=no;try{if(!gCli)gCli=google.accounts.oauth2.initTokenClient({client_id:GCID,scope:'https://www.googleapis.com/auth/drive.file',callback:cb,error_callback:()=>{if(gRej)gRej(new Error('Google authorization முடியவில்லை'))}});else gCli.callback=cb;gCli.requestAccessToken({prompt:''})}catch(e){no(e)}
   });
 }
 async function gList(tok){
@@ -616,7 +617,7 @@ async function gList(tok){
   }while(pt&&f.length<500);
   return f.filter(x=>/^SALE-PROFIT-BOOK-/i.test(x.name||''));
 }
-async function gBackup(){
+async function gBackup(auto){
   try{
     gs('Google Drive-உடன் இணைகிறது…');
     const tok=await gToken(),now=new Date(),pad=n=>String(n).padStart(2,'0');
@@ -631,8 +632,9 @@ async function gBackup(){
     sset('spb_last_gdrive_backup_at',now.toISOString());sset('spb_last_gdrive_backup_name',name);
     try{const dated=(await gList(tok)).filter(x=>x.name.indexOf(GPRE)===0).sort((a,b)=>a.name<b.name?1:-1);
       for(const f of dated.slice(GKEEP)){if(f.id===id)continue;await fetch('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(f.id),{method:'PATCH',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify({trashed:true})})}}catch(e){}
-    render();gs('✅ Drive Backup முடிந்தது: '+name);
-  }catch(e){gs('❌ '+(e.message||e),false)}
+    if(!auto||tab==='bak')render();gs('✅ Drive Backup முடிந்தது: '+name);
+    return true;
+  }catch(e){gs('❌ '+(e.message||e),false);return false}
 }
 async function gShowList(){
   try{
@@ -839,13 +841,13 @@ function lockIfNeeded(){if(pinOn()&&sessionStorage.getItem('spb_unlocked')!=='1'
 async function unlock(){
   if(Date.now()<lockUntil){$('lockMsg').textContent='சில வினாடிகள் கழித்து முயற்சிக்கவும்.';return}
   let ok=false;try{ok=await pinCheck($('lockPin').value)}catch(e){$('lockMsg').textContent='இந்த browser-ல் PIN சரிபார்க்க முடியவில்லை.';return}
-  if(ok){lockTries=0;sessionStorage.setItem('spb_unlocked','1');$('lock').style.display='none';$('lockPin').value='';setTimeout(carAsk,300)}
+  if(ok){lockTries=0;sessionStorage.setItem('spb_unlocked','1');$('lock').style.display='none';$('lockPin').value='';setTimeout(carAsk,300);setTimeout(autoBak,2500)}
   else{lockTries++;$('lockPin').value='';if(lockTries>=5){lockUntil=Date.now()+30000;lockTries=0;$('lockMsg').textContent='5 முறை தவறு. 30 வினாடி காத்திருக்கவும்.'}else $('lockMsg').textContent='தவறான PIN ('+lockTries+'/5)'}
 }
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){hiddenAt=Date.now()}
   else if(pinOn()&&hiddenAt&&Date.now()-hiddenAt>5*60*1000){sessionStorage.removeItem('spb_unlocked');lockShow()}
-  else setTimeout(carAsk,300);
+  else{setTimeout(carAsk,300);setTimeout(autoBak,2500)}
 });
 function pinCard(){
   const on=pinOn(),f=(id,l)=>`<label>${l}</label><input id="${id}" type="password" inputmode="numeric" maxlength="6" autocomplete="off">`;
@@ -876,6 +878,41 @@ async function pinRemove(){
 let xPick=[],xOther=false,pAll=false;
 function xTog(b){const n=b.dataset.n,i=xPick.indexOf(n);if(i>=0)xPick.splice(i,1);else xPick.push(n);b.classList.toggle('on',i<0);const s=$('xPicked');if(s)s.textContent=xPick.length?'தேர்ந்தது: '+xPick.join(', '):''}
 function xOth(b){xOther=!xOther;b.classList.toggle('on',xOther);$('xN').classList.toggle('hide',!xOther);if(xOther)$('xN').focus()}
+
+/* ---------- AUTO DAILY DRIVE BACKUP ---------- */
+const AUTOBAK_KEY='spb_auto_gbak';
+const autoBakOn=()=>localStorage.getItem(AUTOBAK_KEY)!=='0';
+function autoBakTog(){localStorage.setItem(AUTOBAK_KEY,autoBakOn()?'0':'1');render()}
+let autoBakBusy=false,autoBakTried='';
+function abBar(msg,btn){
+  let b=document.getElementById('abBar');
+  if(!msg){if(b)b.remove();return}
+  if(!b){b=document.createElement('div');b.id='abBar';b.style.cssText='position:fixed;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 150px);z-index:50;background:#fff;border:1px solid #14a398;border-radius:14px;padding:10px 12px;box-shadow:0 4px 16px #0003;display:flex;align-items:center;gap:8px;justify-content:space-between;font-size:14px';document.body.appendChild(b)}
+  b.innerHTML='';const t=document.createElement('span');t.textContent=msg;b.appendChild(t);
+  const w=document.createElement('span');w.style.cssText='display:flex;gap:6px';
+  if(btn){const x=document.createElement('button');x.className='s';x.textContent=btn;x.onclick=async()=>{abBar('☁️ Backup ஆகிறது…');const ok=await gBackup(true);if(ok){abBar('✅ Drive Backup முடிந்தது');setTimeout(()=>abBar(''),2500)}else abBar('❌ Backup தோல்வி. Backup tab-ல் முயற்சிக்கவும்.','மூடு')};w.appendChild(x)}
+  const c=document.createElement('button');c.className='s';c.textContent='✕';c.onclick=()=>abBar('');w.appendChild(c);
+  b.appendChild(w);
+}
+async function autoBak(){
+  try{
+    if(!autoBakOn()||autoBakBusy)return;
+    if(pinOn()&&sessionStorage.getItem('spb_unlocked')!=='1')return;
+    if(!navigator.onLine)return;
+    if(!rd(KEY.entries).length&&!rd(KEY.exp).length)return;
+    const t=today();
+    const gl=localStorage.getItem('spb_last_gdrive_backup_at');
+    const d=new Date(gl||0);
+    if(gl&&ymd(d)===t)return;
+    if(autoBakTried===t)return;
+    autoBakTried=t;autoBakBusy=true;
+    // முதலில் அமைதியாக முயற்சி (முன்பு அனுமதி கொடுத்திருந்தால் வேலை செய்யும்)
+    let ok=false;
+    try{await Promise.race([gToken(),new Promise((_,no)=>setTimeout(()=>no(new Error('timeout')),10000))]);ok=await gBackup(true)}catch(e){ok=false}
+    if(ok){abBar('✅ இன்றைய Drive Backup தானாக முடிந்தது');setTimeout(()=>abBar(''),2500)}
+    else abBar('☁️ இன்றைய Drive Backup எடுக்கவில்லை','Backup');
+  }catch(e){}finally{autoBakBusy=false}
+}
 
 /* ---------- DAILY CAR RENT PROMPT ---------- */
 const CAR_KEY='spb_carrent_amt';
@@ -911,6 +948,6 @@ function render(){
   const nb=k=>{const x=TABS.find(v=>v[0]===k),p=x[1].split(' ');return `<button class="${k===tab?'on':''}" onclick="${go(k)}"><span class="ic">${p[0]}</span><span>${p.slice(1).join(' ')}</span></button>`};
   $('nav').innerHTML=`<div class="nr">${['home','hist','stock','exp','credit','party','bak'].map(nb).join('')}</div><div class="nr apps"><span class="lbl">Apps</span>${['ledger','bike','hexp'].map(nb).join('')}</div>`;
 }
-render();lockIfNeeded();setTimeout(carAsk,600);
+render();lockIfNeeded();setTimeout(carAsk,600);setTimeout(autoBak,3000);
 </script><script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('./sw-v9.js').catch(function(){})});</script>
 </body></html>
