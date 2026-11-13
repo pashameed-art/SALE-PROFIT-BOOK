@@ -920,14 +920,13 @@ const polKm=(a,b,c,d)=>{const r=x=>x*Math.PI/180,R=6371,dl=r(c-a),dn=r(d-b),h=Ma
 async function polGet(url,opt,ms){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||25000);try{const r=await fetch(url,Object.assign({signal:c.signal},opt||{}));if(!r.ok)throw new Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(t)}}
 async function polSearch(){
   const st=polState.trim(),di=polDist.trim(),ar=polArea.trim();
-  if(!di&&!ar){alert('District அல்லது Place உள்ளிடவும்.');return}
+  if(!ar){alert('Place / Area உள்ளிடவும் (எ.கா. Eloor).');return}
   if(polBusy)return;
   polBusy=true;polRes=null;polShow=25;polMsg='🔎 இடம் தேடுகிறது…';render();
   try{
     const geo=p=>polGet('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=in&q='+encodeURIComponent(p.filter(Boolean).join(', ')),{headers:{'Accept':'application/json'}},15000);
-    let g=await geo([ar,di,st,'India']),usedArea=!!ar;
-    if(!g.length&&ar){g=await geo([di,st,'India']);usedArea=false;if(g.length)polMsg='⚠️ "'+ar+'" கிடைக்கவில்லை; District மையத்திலிருந்து தேடுகிறது…'}
-    if(!g.length){polMsg='❌ "'+[ar,di,st].filter(Boolean).join(', ')+'" கிடைக்கவில்லை. எழுத்துப்பிழை பார்க்கவும்.';polBusy=false;render();return}
+    const g=await geo([ar,di,st,'India']),usedArea=true;
+    if(!g.length){polMsg='❌ "'+[ar,di,st].filter(Boolean).join(', ')+'" என்ற இடம் கிடைக்கவில்லை. எழுத்துப்பிழை பார்க்கவும் அல்லது District சேர்க்கவும்.';polBusy=false;render();return}
     const lat=+g[0].lat,lon=+g[0].lon,place=(usedArea?ar+' — ':'')+g[0].display_name;
     polMsg='🚓 50 km சுற்றளவில் Police Station தேடுகிறது…';render();
     const ql='[out:json][timeout:25];(node["amenity"="police"](around:50000,'+lat+','+lon+');way["amenity"="police"](around:50000,'+lat+','+lon+'););out center tags;';
@@ -952,11 +951,11 @@ async function polSearch(){
 function vPolice(){
   const E2=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   let out=`<div class="card"><b>🚓 Police Station Finder</b>
-  <label>State</label><input id="pS" value="${E2(polState)}" placeholder="Kerala" oninput="polState=this.value">
-  <label>District</label><input id="pD" value="${E2(polDist)}" placeholder="Kochi" oninput="polDist=this.value">
-  <label>Place / Area (விருப்பம்)</label><input id="pA" value="${E2(polArea)}" placeholder="Eloor" oninput="polArea=this.value" onkeydown="if(event.key==='Enter')polSearch()">
+  <label>Place / Area</label><input id="pA" value="${E2(polArea)}" placeholder="Eloor" oninput="polArea=this.value" onkeydown="if(event.key==='Enter')polSearch()">
+  <label>District (விருப்பம்)</label><input id="pD" value="${E2(polDist)}" placeholder="Kochi" oninput="polDist=this.value">
+  <label>State (விருப்பம்)</label><input id="pS" value="${E2(polState)}" placeholder="Kerala" oninput="polState=this.value">
   <button onclick="polSearch()" ${polBusy?'disabled':''}>🔎 தேடு</button>
-  <small>Place கொடுத்தால் அந்த இடத்திலிருந்து, இல்லையெனில் District மையத்திலிருந்து 50 km சுற்றளவில் உள்ள Police Station-கள் (OpenStreetMap தரவு; நேர்கோட்டு தூரம்; இணையம் தேவை).</small></div>`;
+  <small>Place / Area உள்ளிடவும். அந்த இடத்தைச் சுற்றி 50 km-க்குள் உள்ள Police Station-கள் அருகில் உள்ளவை முதலில் காட்டப்படும். District, State ஒரே பெயர் உள்ள வேறு ஊரைத் தவிர்க்க மட்டுமே (OpenStreetMap தரவு; நேர்கோட்டு தூரம்; இணையம் தேவை).</small></div>`;
   if(polMsg)out+=`<div class="card"><small>${polMsg}</small></div>`;
   if(polRes){
     const L=polRes.list;
