@@ -943,7 +943,7 @@ function monBody(){
   <div style="display:flex;gap:8px;margin-top:10px"><button class="s" onclick="monShare()">📤 Share</button><button class="s" onclick="monPdf()">📄 PDF</button></div>`;
 }
 function monSet(v){hMon=v||'';const b=$('mRepB');if(b)b.innerHTML=monBody()}
-function monHtml(){return `<div class="card"><b>📅 மாதாந்திர Report</b><label>மாதம்</label><input type="month" value="${hMon||monNow()}" onchange="monSet(this.value)"><div id="mRepB">${monBody()}</div></div>`}
+function monHtml(){return colCard('mon','📅 மாதாந்திர Report • 🏆 Top 5','<label>மாதம்</label><input type="month" value="'+(hMon||monNow())+'" onchange="monSet(this.value)"><div id="mRepB">'+monBody()+'</div>')}
 function monShare(){
   const m=hMon||monNow(),{g,T,e,top}=monData(m);
   if(!top.length){alert('இந்த மாதம் Sale பதிவு இல்லை.');return}
