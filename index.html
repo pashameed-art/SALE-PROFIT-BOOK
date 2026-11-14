@@ -380,7 +380,7 @@ function vExp(){
   const gm={};af.forEach(x=>{const n=nm(x.name)||'(பெயர் இல்லை)',k=n.toLowerCase(),o=gm[k]||(gm[k]={n,s:0,c:0});o.s+=N(x.amount);o.c++});
   const gl=Object.values(gm).sort((p,q)=>q.s-p.s);
   const brk=gl.length?`<div class="card"><b style="font-size:16px">📊 பெயர் வாரியாக</b>${gl.map(o=>`<div class="row"><div>${E(o.n)}<small>${o.c} பதிவு</small></div><b>${M(o.s)}</b></div>`).join('')}</div>`:'';
-  return `<div class="card"><b>📅 தேதி தேர்ந்தெடு</b>
+  return `${stayHtml()}<div class="card"><b>📅 தேதி தேர்ந்தெடு</b>
   <input type="date" id="xF" value="${xSel}" onchange="xSel=this.value;render()">
   <button class="s" onclick="xSel=today();render()">Today</button> <button class="s" onclick="xSel='${ymd(y)}';render()">நேற்று</button> <button class="s" onclick="xSel='';render()">எல்லாம்</button>
   <div class="k" style="margin-top:10px">${xSel?fd(xSel)+' • மொத்த Expense':'எல்லா தேதிகள் • மொத்த Expense'}<b class="red">${M(tot)}</b><small>${af.length} பதிவுகள்</small></div></div>
@@ -914,6 +914,51 @@ async function pinRemove(){
 let xPick=[],xOther=false,pAll=false;
 function xTog(b){const n=b.dataset.n,i=xPick.indexOf(n);if(i>=0)xPick.splice(i,1);else xPick.push(n);b.classList.toggle('on',i<0);const s=$('xPicked');if(s)s.textContent=xPick.length?'தேர்ந்தது: '+xPick.join(', '):''}
 function xOth(b){xOther=!xOther;b.classList.toggle('on',xOther);$('xN').classList.toggle('hide',!xOther);if(xOther)$('xN').focus()}
+
+/* ---------- தங்கும் இடங்கள் (Hotel / Stay) ---------- */
+const STAYK='spb_v4_stays';
+let stayQ='',stayEd=null;
+function stayRows(a){
+  if(!a.length)return '<small>பதிவு இல்லை.</small>';
+  return a.map(x=>`<div class="row"><div><b>📍 ${E(x.place)} — 🏨 ${E(x.hotel)}</b><small>${x.date?'📅 '+fd(x.date):''}${N(x.rent)>0?' • Room '+M(x.rent)+'/நாள்':''}</small>${x.note?`<small>📝 ${E(x.note)}</small>`:''}<small>${x.phone?`<a href="tel:${E(String(x.phone).replace(/\s/g,''))}">📞 ${E(x.phone)}</a> • `:''}<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.hotel+' '+x.place)}" target="_blank" rel="noopener">🧭 Map</a></small></div><div style="display:flex;flex-direction:column;gap:6px"><button class="s" onclick="stayEditStart('${x.id}')">✏️</button><button class="s" onclick="stayDel('${x.id}')">🗑️</button></div></div>`).join('');
+}
+function stayAll(){return stays().slice().sort((x,y)=>String(y.date||'').localeCompare(String(x.date||''))||N(y.id)-N(x.id))}
+const stays=()=>rd(STAYK);
+function stayFiltered(){const q=stayQ.trim().toLowerCase(),all=stayAll();return q?all.filter(x=>(x.place+' '+x.hotel).toLowerCase().includes(q)):all}
+function stayFilt(){const b=$('stayL');if(b)b.innerHTML=stayRows(stayFiltered())}
+function stayBody(){
+  const ed=stayEd!==null?stays().find(x=>String(x.id)===String(stayEd)):null;
+  return `<label>Place (ஊர்)</label><input id="sPl" value="${E(ed?ed.place:'')}" placeholder="Adimaly">
+  <label>Hotel பெயர்</label><input id="sHo" value="${E(ed?ed.hotel:'')}" placeholder="Elenza Residency">
+  <label>Phone (விருப்பம்)</label><input id="sPh" type="tel" inputmode="tel" value="${E(ed&&ed.phone||'')}">
+  <label>Room Rent ₹ / நாள் (விருப்பம்)</label><input id="sRt" type="number" inputmode="decimal" value="${ed&&ed.rent?E(ed.rent):''}">
+  <label>குறிப்பு (விருப்பம்)</label><input id="sNt" value="${E(ed&&ed.note||'')}" placeholder="Parking, AC, ...">
+  <label>தங்கிய தேதி</label><input id="sDt" type="date" value="${ed&&ed.date?ed.date:today()}">
+  <button onclick="saveStay()">${ed?'Update':'Save'}</button>${ed?'<button class="s" onclick="stayEd=null;OP.stay=true;render()">Cancel</button>':''}
+  <input id="sQ" placeholder="🔎 Place / Hotel தேடு" value="${E(stayQ)}" oninput="stayQ=this.value;stayFilt()" style="margin-top:14px">
+  <div id="stayL">${stayRows(stayFiltered())}</div>`;
+}
+function stayHtml(){return colCard('stay','🏨 தங்கும் இடங்கள் ('+stays().length+')',stayBody())}
+function saveStay(){
+  const place=nm($('sPl').value),hotel=nm($('sHo').value);
+  if(!place||!hotel){alert('Place மற்றும் Hotel பெயர் உள்ளிடவும்.');return}
+  const rec={place,hotel,phone:nm($('sPh').value),rent:N($('sRt').value),note:nm($('sNt').value),date:$('sDt').value||today()};
+  let a=stays();
+  if(stayEd!==null){a=a.map(x=>String(x.id)===String(stayEd)?Object.assign({},x,rec):x)}
+  else{
+    const d=a.find(x=>x.place.toLowerCase()===place.toLowerCase()&&x.hotel.toLowerCase()===hotel.toLowerCase());
+    if(d)a=a.map(x=>x===d?Object.assign({},x,rec):x);else a.unshift(Object.assign({id:Date.now()},rec));
+  }
+  if(!wr(STAYK,a))return;
+  stayEd=null;OP.stay=true;render();
+}
+function stayEditStart(id){stayEd=id;OP.stay=true;render()}
+function stayDel(id){
+  const x=stays().find(v=>String(v.id)===String(id));if(!x)return;
+  if(!confirm('"'+x.hotel+' — '+x.place+'" Delete செய்யவா?'))return;
+  if(!wr(STAYK,stays().filter(v=>String(v.id)!==String(id))))return;
+  OP.stay=true;render();
+}
 
 /* ---------- MONTHLY REPORT + TOP 5 ---------- */
 let hMon='';
