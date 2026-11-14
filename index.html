@@ -181,7 +181,8 @@ function vHome(){
   <label>Mobile (விருப்பம்)</label><input id="eMob" type="tel" inputmode="numeric" maxlength="12" placeholder="WhatsApp reminder-க்கு" value="${E(ed&&ed.customer?mobOf(ed.customer):'')}">${chipBox(recentCust(5).map(n=>chip("pickCust(this.dataset.n,'e')",n)).join(''))}</div>
   <small id="eCalc"></small><button onclick="saveEntry()">${ed?'Update Entry':'Save Entry'}</button>${ed?'<button class="s" onclick="editId=null;render()">Cancel</button>':''}</div>
   ${ed?'':mixHtml(it)}
-  ${ed?'':dashHtml(low)}`;
+  ${ed?'':dashHtml(low)}
+  ${ed?'':monHtml()}`;
 }
 function calc(){
   const it=itemByName($('eItem').value),m=N($('eMeter').value),s=N($('eSale').value);
@@ -913,6 +914,46 @@ async function pinRemove(){
 let xPick=[],xOther=false,pAll=false;
 function xTog(b){const n=b.dataset.n,i=xPick.indexOf(n);if(i>=0)xPick.splice(i,1);else xPick.push(n);b.classList.toggle('on',i<0);const s=$('xPicked');if(s)s.textContent=xPick.length?'தேர்ந்தது: '+xPick.join(', '):''}
 function xOth(b){xOther=!xOther;b.classList.toggle('on',xOther);$('xN').classList.toggle('hide',!xOther);if(xOther)$('xN').focus()}
+
+/* ---------- MONTHLY REPORT + TOP 5 ---------- */
+let hMon='';
+const monNow=()=>today().slice(0,7);
+const monLbl=m=>{const p=String(m).split('-');return p.length===2?p[1]+'/'+p[0]:m};
+function monData(m){
+  const g={},T={m:0,s:0,p:0,f:0};
+  rd(KEY.entries).filter(x=>String(x.date||'').startsWith(m)).forEach(x=>{
+    const r=g[x.item]||(g[x.item]={m:0,s:0,p:0,f:0});
+    r.m+=N(x.meter);r.s+=N(x.sale);r.p+=N(x.purchase);r.f+=N(x.profit);
+    T.m+=N(x.meter);T.s+=N(x.sale);T.p+=N(x.purchase);T.f+=N(x.profit);
+  });
+  const e=rd(KEY.exp).filter(x=>String(x.date||'').startsWith(m)).reduce((t,x)=>t+N(x.amount),0);
+  const top=Object.keys(g).map(k=>Object.assign({k},g[k])).sort((a,b)=>b.s-a.s);
+  return{g,T,e,top};
+}
+function monBody(){
+  const m=hMon||monNow(),d=monData(m);
+  if(!d.top.length)return '<small>இந்த மாதம் Sale பதிவு இல்லை.</small>';
+  const med=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  return `<div class="row"><div><b>Sale</b></div><b>${M(d.T.s)}</b></div>
+  <div class="row"><div><b>Profit</b></div><b class="grn">${M(d.T.f)}</b></div>
+  <div class="row"><div><b>Expense</b></div><b class="red">${M(d.e)}</b></div>
+  <div class="row"><div><b>Net Profit</b></div><b>${M(d.T.f-d.e)}</b></div>
+  <b style="display:block;margin-top:12px">🏆 Top 5 அதிகம் விற்ற Items</b>
+  ${d.top.slice(0,5).map((x,i)=>`<div class="row"><div><b>${med[i]} ${E(x.k)}</b><small>${+x.m.toFixed(2)} m • Profit ${M(x.f)}</small></div><b>${M(x.s)}</b></div>`).join('')}
+  <div style="display:flex;gap:8px;margin-top:10px"><button class="s" onclick="monShare()">📤 Share</button><button class="s" onclick="monPdf()">📄 PDF</button></div>`;
+}
+function monSet(v){hMon=v||'';const b=$('mRepB');if(b)b.innerHTML=monBody()}
+function monHtml(){return `<div class="card"><b>📅 மாதாந்திர Report</b><label>மாதம்</label><input type="month" value="${hMon||monNow()}" onchange="monSet(this.value)"><div id="mRepB">${monBody()}</div></div>`}
+function monShare(){
+  const m=hMon||monNow(),{g,T,e,top}=monData(m);
+  if(!top.length){alert('இந்த மாதம் Sale பதிவு இல்லை.');return}
+  share(['📊 Sale Profit Book — '+monLbl(m),'',...top.map(x=>x.k+': '+(+x.m.toFixed(2))+' m • '+M(x.s)+' • Profit '+M(x.f)),'','Sale: '+M(T.s),'Purchase: '+M(T.p),'Profit: '+M(T.f),'Expense: '+M(e),'Net Profit: '+M(T.f-e),'','🏆 Top 5: '+top.slice(0,5).map(x=>x.k).join(', ')].join('\n'));
+}
+function monPdf(){
+  const m=hMon||monNow(),{T,e,top}=monData(m);
+  if(!top.length){alert('இந்த மாதம் Sale பதிவு இல்லை.');return}
+  pdf('Sale Profit Report '+monLbl(m),tbl(['Item','Meter','Sale','Purchase','Profit'],top.map(x=>[x.k,+x.m.toFixed(2),M(x.s),M(x.p),M(x.f)]).concat([['TOTAL',+T.m.toFixed(2),M(T.s),M(T.p),M(T.f)]]))+'<p>Expense: '+M(e)+' &nbsp; <b>Net Profit: '+M(T.f-e)+'</b></p>');
+}
 
 /* ---------- POLICE STATION FINDER ---------- */
 let polState='',polDist='',polArea='',polRes=null,polShow=25,polBusy=false,polMsg='';
