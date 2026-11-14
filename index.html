@@ -41,7 +41,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.43</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.50</span></header>
 <div id="lock" style="display:none;position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#0f766e,#14a398);color:#fff;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center">
 <div style="font-size:44px">🔒</div><div style="font-size:20px;font-weight:700;margin:6px 0 16px">Sale Profit Book</div>
 <input id="lockPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="PIN" style="max-width:220px;text-align:center;font-size:24px;letter-spacing:6px" onkeydown="if(event.key==='Enter')unlock()">
@@ -52,14 +52,14 @@ small{color:var(--m);display:block;font-size:12px}
 <main id="app"></main>
 <div id="hxW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">🏡 Home Expense Ledger</b><a href="https://pashameed-art.github.io/Home-Expense-Ledger/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
-<iframe id="hxF" title="Home Expense Ledger" onload="iframeGuard(this)" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
+<iframe id="hxF" title="Home Expense Ledger" onload="window.iframeGuard&&iframeGuard(this)" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
 <div id="bkW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">🏍️ Mass Bike</b><a href="https://pashameed-art.github.io/Mass-Bike/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
-<iframe id="bkF" title="Mass Bike" onload="iframeGuard(this)" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
+<iframe id="bkF" title="Mass Bike" onload="window.iframeGuard&&iframeGuard(this)" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
 <div id="lgW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">📗 Mass Sales Ledger</b><a href="https://pashameed-art.github.io/mass-sales-ledger/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
 <div id="cmpBox"></div>
-<iframe id="lgF" onload="iframeGuard(this)" title="Mass Sales Ledger" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
+<iframe id="lgF" onload="window.iframeGuard&&iframeGuard(this)" title="Mass Sales Ledger" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
 <nav id="nav"></nav>
 <script>
 'use strict';
@@ -502,7 +502,7 @@ function setOpen(){
 
 /* ---------- BACKUP ---------- */
 const EXCL=/(^|[_-])pin([_-]|$)|autobackup|snapshot|protected|lastgdrive|last_gdrive|pre_restore/i;
-const bkApp=k=>(/^(spb|saleProfitBook)/.test(k)&&!/(^|[_-])pin([_-]|$)/i.test(k))?'Sale Profit Book':(/^mass_sales_ledger/.test(k)&&!EXCL.test(k))?'Ledger':(/^massBikeV4_/.test(k)&&!EXCL.test(k))?'Bike':(/^homeExpenseLedger/.test(k)&&!EXCL.test(k))?'Home Expense':null;
+const bkApp=k=>(/^(spb|saleProfitBook)/.test(k)&&!/(^|[_-])(pin|fp)([_-]|$)/i.test(k)&&!/carrent_asked/.test(k))?'Sale Profit Book':(/^mass_sales_ledger/.test(k)&&!EXCL.test(k))?'Ledger':(/^massBikeV4_/.test(k)&&!EXCL.test(k))?'Bike':(/^homeExpenseLedger/.test(k)&&!EXCL.test(k))?'Home Expense':null;
 function snap(){const s={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&bkApp(k))s[k]=localStorage.getItem(k)}return {app:'SALE-PROFIT-BOOK',version:'9',kind:'all',createdAt:new Date().toISOString(),storage:s}}
 const cntOf=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a.length:0}catch(e){return 0}};
 const allCounts=()=>'Sale Profit Book '+cntOf(KEY.entries)+' • Ledger '+cntOf('mass_sales_ledger_v1_6')+' • Bike rentals '+cntOf('massBikeV4_rentals')+' • Home Exp '+cntOf('homeExpenseLedgerV1')+' • Fathima '+cntOf('homeExpenseLedgerFathimaV1');
