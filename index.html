@@ -927,10 +927,18 @@ const stays=()=>rd(STAYK);
 function stayFiltered(){const q=stayQ.trim().toLowerCase(),all=stayAll();return q?all.filter(x=>((x.place||'')+' '+(x.hotel||'')+' '+(x.note||'')).toLowerCase().includes(q)):all}
 function stayFilt(){const b=$('stayL');if(b)b.innerHTML=stayRows(stayFiltered())}
 function stayPrev(ed){
-  const src=stayImgDel?'':(stayImg!==null?stayImg:(ed&&ed.photo||''));
-  return src?`<img src="${src}" alt="Visiting card" style="max-width:100%;max-height:160px;border-radius:8px;border:1px solid var(--ln);margin-top:6px"><br><button type="button" class="s" onclick="stayOcr()">🔍 Card-ல் இருந்து தானாக நிரப்பு</button> <button type="button" class="s" onclick="stayImgClear()">🗑️ நீக்கு</button>`:'';
+  const old=(ed&&ed.photo&&!stayImgDel)?ed.photo:'';
+  if(stayImg){
+    return `<img src="${stayImg}" alt="Card" style="max-width:100%;max-height:160px;border-radius:8px;border:1px solid var(--ln);margin-top:6px"><br><button type="button" class="s" onclick="stayOcr()">🔍 Card-ல் இருந்து தானாக நிரப்பு</button> <button type="button" class="s" onclick="stayScanClear()">✖ நீக்கு</button><br><small>Save செய்யும்போது படம் சேமிக்கப்படாது; எழுத்து மட்டும் சேமிக்கப்படும்.</small>`;
+  }
+  if(old){
+    return `<img src="${old}" alt="Card" style="max-width:100%;max-height:160px;border-radius:8px;border:1px solid var(--ln);margin-top:6px"><br><button type="button" class="s" onclick="stayOcr()">🔍 படித்து நிரப்பு</button> <button type="button" class="s" onclick="stayLegacyDel()">🗑️ சேமித்த படத்தை நீக்கு</button>`;
+  }
+  return '';
 }
-function stayImgClear(){stayImg='';stayImgDel=true;const f=$('sImg');if(f)f.value='';const p=$('sImgP');if(p)p.innerHTML=''}
+function stayRefreshPrev(){const ed=stayEd!==null?stays().find(x=>String(x.id)===String(stayEd)):null;const p=$('sImgP');if(p)p.innerHTML=stayPrev(ed)}
+function stayScanClear(){stayImg=null;const f=$('sImg');if(f)f.value='';const t=$('sOcrS');if(t)t.textContent='';stayRefreshPrev()}
+function stayLegacyDel(){stayImgDel=true;stayRefreshPrev()}
 function stayPick(inp){
   const f=inp.files&&inp.files[0];if(!f)return;
   const rd2=new FileReader();
@@ -940,9 +948,8 @@ function stayPick(inp){
       const mx=900,k=Math.min(1,mx/Math.max(im.width,im.height)),c=document.createElement('canvas');
       c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
       c.getContext('2d').drawImage(im,0,0,c.width,c.height);
-      stayImg=c.toDataURL('image/jpeg',0.72);stayImgDel=false;
-      const ed=stayEd!==null?stays().find(x=>String(x.id)===String(stayEd)):null;
-      const p=$('sImgP');if(p)p.innerHTML=stayPrev(ed);
+      stayImg=c.toDataURL('image/jpeg',0.72);
+      stayRefreshPrev();
     };
     im.onerror=()=>alert('இந்தப் படத்தைத் திறக்க முடியவில்லை.');
     im.src=rd2.result;
@@ -987,8 +994,8 @@ function stayParse(text){
 async function stayOcr(){
   const st=$('sOcrS');if(!st)return;
   const ed=stayEd!==null?stays().find(x=>String(x.id)===String(stayEd)):null;
-  const src=stayImgDel?'':(stayImg!==null?stayImg:(ed&&ed.photo||''));
-  if(!src){st.textContent='முதலில் போட்டோ தேர்ந்தெடுக்கவும்.';return}
+  const src=stayImg||((ed&&ed.photo&&!stayImgDel)?ed.photo:'');
+  if(!src){st.textContent='முதலில் Card போட்டோ தேர்ந்தெடுக்கவும்.';return}
   if(!navigator.onLine){st.textContent='❌ இணையம் தேவை.';return}
   try{
     st.textContent='⏳ OCR ஏற்றுகிறது… (முதல்முறை சிறிது நேரம் ஆகும்)';
@@ -1021,7 +1028,7 @@ function stayBody(){
   <label>Room Rent ₹ / நாள் (விருப்பம்)</label><input id="sRt" type="number" inputmode="decimal" value="${ed&&ed.rent?E(ed.rent):''}">
   <label>குறிப்பு (விருப்பம்)</label><input id="sNt" value="${E(ed&&ed.note||'')}" placeholder="Parking, AC, ...">
   <label>தங்கிய தேதி</label><input id="sDt" type="date" value="${ed&&ed.date?ed.date:today()}">
-  <label>🖼️ Visiting Card போட்டோ (விருப்பம்)</label>
+  <label>📷 Visiting Card Scan (விருப்பம்) <small>— படம் சேமிக்கப்படாது</small></label>
   <input id="sImg" type="file" accept="image/*" onchange="stayPick(this)">
   <div id="sImgP">${stayPrev(ed)}</div>
   <small id="sOcrS"></small>
@@ -1032,10 +1039,9 @@ function stayBody(){
 function stayHtml(){return colCard('stay','🏨 தங்கும் இடங்கள் ('+stays().length+')',stayBody())}
 function saveStay(){
   const place=nm($('sPl').value),hotel=nm($('sHo').value);
-  const hasPhoto=stayImg!==null?!!stayImg:!!((stayEd!==null?stays().find(x=>String(x.id)===String(stayEd)):null)||{}).photo;
-  if(!hasPhoto&&(!place||!hotel)){alert('Place மற்றும் Hotel பெயர் உள்ளிடவும் (அல்லது Visiting Card போட்டோ சேர்க்கவும்).');return}
+  if(!place||!hotel){alert('Place மற்றும் Hotel பெயர் உள்ளிடவும்.');return}
   const rec={place,hotel,phone:nm($('sPh').value),rent:N($('sRt').value),note:nm($('sNt').value),date:$('sDt').value||today()};
-  if(stayImg!==null)rec.photo=stayImg;
+  if(stayImgDel)rec.photo='';
   let a=stays();
   if(stayEd!==null){a=a.map(x=>String(x.id)===String(stayEd)?Object.assign({},x,rec):x)}
   else{
