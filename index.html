@@ -920,11 +920,11 @@ const STAYK='spb_v4_stays';
 let stayQ='',stayEd=null,stayImg=null,stayImgDel=false;
 function stayRows(a){
   if(!a.length)return '<small>பதிவு இல்லை.</small>';
-  return a.map(x=>`<div class="row"><div>${x.photo?`<img src="${x.photo}" alt="Visiting card" onclick="stayView('${x.id}')" style="width:96px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--ln);float:right;margin:0 0 6px 8px;cursor:pointer">`:''}<b>📍 ${E(x.place)} — 🏨 ${E(x.hotel)}</b><small>${x.date?'📅 '+fd(x.date):''}${N(x.rent)>0?' • Room '+M(x.rent)+'/நாள்':''}</small>${x.note?`<small>📝 ${E(x.note)}</small>`:''}<small>${x.phone?`<a href="tel:${E(String(x.phone).replace(/\s/g,''))}">📞 ${E(x.phone)}</a> • `:''}<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.hotel+' '+x.place)}" target="_blank" rel="noopener">🧭 Map</a></small></div><div style="display:flex;flex-direction:column;gap:6px"><button class="s" onclick="stayEditStart('${x.id}')">✏️</button><button class="s" onclick="stayDel('${x.id}')">🗑️</button></div></div>`).join('');
+  return a.map(x=>`<div class="row"><div>${x.photo?`<img src="${x.photo}" alt="Visiting card" onclick="stayView('${x.id}')" style="width:96px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--ln);float:right;margin:0 0 6px 8px;cursor:pointer">`:''}<b>${E([x.place?'📍 '+x.place:'',x.hotel?'🏨 '+x.hotel:''].filter(Boolean).join(' — ')||'🖼️ Visiting Card')}</b><small>${x.date?'📅 '+fd(x.date):''}${N(x.rent)>0?' • Room '+M(x.rent)+'/நாள்':''}</small>${x.note?`<small>📝 ${E(x.note)}</small>`:''}<small>${x.phone?`<a href="tel:${E(String(x.phone).replace(/\s/g,''))}">📞 ${E(x.phone)}</a> • `:''}<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(x.hotel+' '+x.place)}" target="_blank" rel="noopener">🧭 Map</a></small></div><div style="display:flex;flex-direction:column;gap:6px"><button class="s" onclick="stayEditStart('${x.id}')">✏️</button><button class="s" onclick="stayDel('${x.id}')">🗑️</button></div></div>`).join('');
 }
 function stayAll(){return stays().slice().sort((x,y)=>String(y.date||'').localeCompare(String(x.date||''))||N(y.id)-N(x.id))}
 const stays=()=>rd(STAYK);
-function stayFiltered(){const q=stayQ.trim().toLowerCase(),all=stayAll();return q?all.filter(x=>(x.place+' '+x.hotel).toLowerCase().includes(q)):all}
+function stayFiltered(){const q=stayQ.trim().toLowerCase(),all=stayAll();return q?all.filter(x=>((x.place||'')+' '+(x.hotel||'')+' '+(x.note||'')).toLowerCase().includes(q)):all}
 function stayFilt(){const b=$('stayL');if(b)b.innerHTML=stayRows(stayFiltered())}
 function stayPrev(ed){
   const src=stayImgDel?'':(stayImg!==null?stayImg:(ed&&ed.photo||''));
@@ -959,8 +959,8 @@ function stayView(id){
 }
 function stayBody(){
   const ed=stayEd!==null?stays().find(x=>String(x.id)===String(stayEd)):null;
-  return `<label>Place (ஊர்)</label><input id="sPl" value="${E(ed?ed.place:'')}" placeholder="Adimaly">
-  <label>Hotel பெயர்</label><input id="sHo" value="${E(ed?ed.hotel:'')}" placeholder="Elenza Residency">
+  return `<label>Place (ஊர்) <small>— போட்டோ இருந்தால் விருப்பம்</small></label><input id="sPl" value="${E(ed?ed.place:'')}" placeholder="Adimaly">
+  <label>Hotel பெயர் <small>— போட்டோ இருந்தால் விருப்பம்</small></label><input id="sHo" value="${E(ed?ed.hotel:'')}" placeholder="Elenza Residency">
   <label>Phone (விருப்பம்)</label><input id="sPh" type="tel" inputmode="tel" value="${E(ed&&ed.phone||'')}">
   <label>Room Rent ₹ / நாள் (விருப்பம்)</label><input id="sRt" type="number" inputmode="decimal" value="${ed&&ed.rent?E(ed.rent):''}">
   <label>குறிப்பு (விருப்பம்)</label><input id="sNt" value="${E(ed&&ed.note||'')}" placeholder="Parking, AC, ...">
@@ -975,13 +975,14 @@ function stayBody(){
 function stayHtml(){return colCard('stay','🏨 தங்கும் இடங்கள் ('+stays().length+')',stayBody())}
 function saveStay(){
   const place=nm($('sPl').value),hotel=nm($('sHo').value);
-  if(!place||!hotel){alert('Place மற்றும் Hotel பெயர் உள்ளிடவும்.');return}
+  const hasPhoto=stayImg!==null?!!stayImg:!!((stayEd!==null?stays().find(x=>String(x.id)===String(stayEd)):null)||{}).photo;
+  if(!hasPhoto&&(!place||!hotel)){alert('Place மற்றும் Hotel பெயர் உள்ளிடவும் (அல்லது Visiting Card போட்டோ சேர்க்கவும்).');return}
   const rec={place,hotel,phone:nm($('sPh').value),rent:N($('sRt').value),note:nm($('sNt').value),date:$('sDt').value||today()};
   if(stayImg!==null)rec.photo=stayImg;
   let a=stays();
   if(stayEd!==null){a=a.map(x=>String(x.id)===String(stayEd)?Object.assign({},x,rec):x)}
   else{
-    const d=a.find(x=>x.place.toLowerCase()===place.toLowerCase()&&x.hotel.toLowerCase()===hotel.toLowerCase());
+    const d=(place&&hotel)?a.find(x=>(x.place||'').toLowerCase()===place.toLowerCase()&&(x.hotel||'').toLowerCase()===hotel.toLowerCase()):null;
     if(d)a=a.map(x=>x===d?Object.assign({},x,rec):x);else a.unshift(Object.assign({id:Date.now()},rec));
   }
   if(!wr(STAYK,a))return;
