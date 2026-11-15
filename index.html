@@ -928,7 +928,7 @@ function stayFiltered(){const q=stayQ.trim().toLowerCase(),all=stayAll();return 
 function stayFilt(){const b=$('stayL');if(b)b.innerHTML=stayRows(stayFiltered())}
 function stayPrev(ed){
   const src=stayImgDel?'':(stayImg!==null?stayImg:(ed&&ed.photo||''));
-  return src?`<img src="${src}" alt="Visiting card" style="max-width:100%;max-height:160px;border-radius:8px;border:1px solid var(--ln);margin-top:6px"><br><button type="button" class="s" onclick="stayImgClear()">🗑️ போட்டோவை நீக்கு</button>`:'';
+  return src?`<img src="${src}" alt="Visiting card" style="max-width:100%;max-height:160px;border-radius:8px;border:1px solid var(--ln);margin-top:6px"><br><button type="button" class="s" onclick="stayOcr()">🔍 Card-ல் இருந்து தானாக நிரப்பு</button> <button type="button" class="s" onclick="stayImgClear()">🗑️ நீக்கு</button>`:'';
 }
 function stayImgClear(){stayImg='';stayImgDel=true;const f=$('sImg');if(f)f.value='';const p=$('sImgP');if(p)p.innerHTML=''}
 function stayPick(inp){
@@ -949,6 +949,62 @@ function stayPick(inp){
   };
   rd2.readAsDataURL(f);
 }
+const OCR_URL='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+function stayOcrLoad(){
+  if(window.Tesseract)return Promise.resolve();
+  return new Promise((ok,no)=>{const t=document.createElement('script');t.src=OCR_URL;t.onload=ok;t.onerror=()=>no(new Error('load'));document.head.appendChild(t)});
+}
+function stayParse(text){
+  const lines=String(text||'').split(/\r?\n/).map(l=>l.replace(/[|_~^*=<>{}\[\]\\]/g,' ').replace(/\s+/g,' ').trim()).filter(l=>l.length>2);
+  // phones
+  const ph=[];
+  const rx=/(?:\+?91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}|0\d{2,4}[\s-]?\d{6,8}/g;
+  lines.forEach(l=>{(l.replace(/(\d)[\s.](?=\d)/g,'$1').match(rx)||[]).forEach(n=>{n=n.replace(/[\s-]/g,'').replace(/^\+?91(?=[6-9]\d{9}$)/,'');if(!ph.includes(n))ph.push(n)})});
+  ph.sort((a,b)=>(/^[6-9]\d{9}$/.test(b)?1:0)-(/^[6-9]\d{9}$/.test(a)?1:0));
+  // hotel
+  const kw=/hotel|residen|resedenc|lodge|\binn\b|resort|homestay|home stay|tourist|rooms|suites|palace|plaza|tower|regency|international|park|stay/i;
+  let hotel='';
+  const cand=lines.filter(l=>kw.test(l)&&/[A-Za-z]{4}/.test(l)&&!/\d{6,}/.test(l));
+  if(cand.length)hotel=cand[0];
+  else{const up=lines.filter(l=>/^[A-Z0-9 .&'-]{5,}$/.test(l)&&!/\d{5,}/.test(l));if(up.length)hotel=up.sort((a,b)=>b.length-a.length)[0]}
+  hotel=hotel.replace(/[^A-Za-z0-9 .&'-]/g,'').trim();
+  // address / place
+  let place='',addr='';
+  const ai=lines.findIndex(l=>/\bdist|kerala|tamil\s*nadu|\b[5-7]\d{5}\b/i.test(l));
+  if(ai>=0){
+    const parts=lines[ai].split(',').map(x=>x.trim()).filter(Boolean);
+    const p0=(parts[0]||'').replace(/[^A-Za-z .'-]/g,'').trim();
+    if(/dist|kerala|nadu/i.test(p0)&&ai>0){
+      const pv=lines[ai-1].split(',').map(x=>x.replace(/[^A-Za-z .'-]/g,'').trim()).filter(Boolean).pop()||'';
+      if(pv.length>3&&!/^ph|^mob|^tel|road|near|hospital/i.test(pv))place=pv;else place=p0.replace(/\bdist\.?/i,'').trim();
+    }
+    else if(p0.length>3&&!/road|near|hospital|street|\brd\b|bypass|junction/i.test(p0))place=p0;
+    else if(parts[1]){const p1=parts[1].replace(/[^A-Za-z .'-]/g,'').trim();if(p1.length>3&&!/dist|kerala|nadu/i.test(p1))place=p1}
+    addr=lines.slice(Math.max(0,ai-1),ai+1).join(', ');
+  }
+  return{hotel,place,phone:ph[0]||'',others:ph.slice(1),addr:addr.slice(0,200)};
+}
+async function stayOcr(){
+  const st=$('sOcrS');if(!st)return;
+  const ed=stayEd!==null?stays().find(x=>String(x.id)===String(stayEd)):null;
+  const src=stayImgDel?'':(stayImg!==null?stayImg:(ed&&ed.photo||''));
+  if(!src){st.textContent='முதலில் போட்டோ தேர்ந்தெடுக்கவும்.';return}
+  if(!navigator.onLine){st.textContent='❌ இணையம் தேவை.';return}
+  try{
+    st.textContent='⏳ OCR ஏற்றுகிறது… (முதல்முறை சிறிது நேரம் ஆகும்)';
+    await stayOcrLoad();
+    const r=await Tesseract.recognize(src,'eng',{logger:m=>{if(m&&m.status==='recognizing text'&&$('sOcrS'))$('sOcrS').textContent='🔍 படிக்கிறது… '+Math.round((m.progress||0)*100)+'%'}});
+    const d=stayParse(r&&r.data&&r.data.text);
+    const put=(id,v)=>{const e=$(id);if(e&&v&&!String(e.value||'').trim()){e.value=v;return true}return false};
+    const got=[];
+    if(put('sHo',d.hotel))got.push('Hotel');
+    if(put('sPl',d.place))got.push('Place');
+    if(put('sPh',d.phone))got.push('Phone');
+    const extra=[d.others.length?'Other: '+d.others.join(', '):'',d.addr].filter(Boolean).join(' | ');
+    if(extra&&put('sNt',extra))got.push('குறிப்பு');
+    st.textContent=got.length?'✅ நிரப்பப்பட்டது: '+got.join(', ')+'. சரிபார்த்துத் திருத்தி Save செய்யவும்.':'⚠️ எழுத்துகளைத் தெளிவாகப் படிக்க முடியவில்லை. கைமுறையாக உள்ளிடவும்.';
+  }catch(e){st.textContent='❌ OCR வேலை செய்யவில்லை (இணையம் / ஏற்றம்). கைமுறையாக உள்ளிடவும்.'}
+}
 function stayView(id){
   const x=stays().find(v=>String(v.id)===String(id));if(!x||!x.photo)return;
   const o=document.createElement('div');
@@ -968,6 +1024,7 @@ function stayBody(){
   <label>🖼️ Visiting Card போட்டோ (விருப்பம்)</label>
   <input id="sImg" type="file" accept="image/*" onchange="stayPick(this)">
   <div id="sImgP">${stayPrev(ed)}</div>
+  <small id="sOcrS"></small>
   <button onclick="saveStay()">${ed?'Update':'Save'}</button>${ed?'<button class="s" onclick="stayEd=null;stayImg=null;stayImgDel=false;OP.stay=true;render()">Cancel</button>':''}
   <input id="sQ" placeholder="🔎 Place / Hotel தேடு" value="${E(stayQ)}" oninput="stayQ=this.value;stayFilt()" style="margin-top:14px">
   <div id="stayL">${stayRows(stayFiltered())}</div>`;
