@@ -912,7 +912,8 @@ async function pinRemove(){
 }
 
 let xPick=[],xOther=false,pAll=false;
-function xTog(b){const n=b.dataset.n,i=xPick.indexOf(n);if(i>=0)xPick.splice(i,1);else xPick.push(n);b.classList.toggle('on',i<0);const s=$('xPicked');if(s)s.textContent=xPick.length?'தேர்ந்தது: '+xPick.join(', '):''}
+function xTog(b){const n=b.dataset.n,i=xPick.indexOf(n);
+  if(vLearn&&xOther&&i<0){vAliasSet(vLearn,n);const lw=vLearn;vLearn=null;xOther=false;const ob=document.querySelector('.xc:not([data-n])');if(ob)ob.classList.remove('on');const xn=$('xN');if(xn){xn.classList.add('hide');xn.value=''}const st=$('vxS');if(st)st.textContent='✅ இனி "'+lw+'" என்றால் '+n+' என்று நினைவில் வைத்துக்கொள்கிறேன்.'}if(i>=0)xPick.splice(i,1);else xPick.push(n);b.classList.toggle('on',i<0);const s=$('xPicked');if(s)s.textContent=xPick.length?'தேர்ந்தது: '+xPick.join(', '):''}
 function xOth(b){xOther=!xOther;b.classList.toggle('on',xOther);$('xN').classList.toggle('hide',!xOther);if(xOther)$('xN').focus()}
 
 /* ---------- தங்கும் இடங்கள் (Hotel / Stay) ---------- */
@@ -1084,7 +1085,7 @@ const NW={'ஒன்று':1,'இரண்டு':2,'ரெண்டு':2,'ம
  'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12,'thirteen':13,'fourteen':14,'fifteen':15,'sixteen':16,'seventeen':17,'eighteen':18,'nineteen':19,'twenty':20,'thirty':30,'forty':40,'fifty':50,'sixty':60,'seventy':70,'eighty':80,'ninety':90,'hundred':100};
 const NK={'ஆயிரம்':1000,'ஆயிரத்து':1000,'thousand':1000};
 function vTokens(t){
-  t=String(t||'').toLowerCase().replace(/[௦-௯]/g,c=>TD[c]).replace(/(\d),(?=\d{3})/g,'$1').replace(/[₹]/g,' ₹ ').replace(/[.,;:!?"()]/g,m=>m==='.'?'.':' ');
+  t=String(t||'').normalize('NFC').replace(/[\u200b-\u200d\u2060\ufeff\u00ad]/g,'').toLowerCase().replace(/[௦-௯]/g,c=>TD[c]).replace(/(\d),(?=\d{3})/g,'$1').replace(/[₹]/g,' ₹ ').replace(/([^\d\s.])\.(?=\d)/g,'$1 ').replace(/[.,;:!?"()]/g,m=>m==='.'?'.':' ');
   return t.split(/\s+/).filter(Boolean).map(w=>w.replace(/\.$/,''));
 }
 /* tokens -> [{type:'num',v,i0,i1}] */
@@ -1119,32 +1120,42 @@ const VEXP=[
  ['Mansoor',['mansoor','mansur','மன்சூர்']],
  ['Petrol',['petrol','பெட்ரோல்']],
  ['Snacks',['snacks','snack','ஸ்நாக்ஸ்','ஸ்னாக்ஸ்','பலகாரம்','தின்பண்டம்']],
- ['Tea',['tea','டீ','தேநீர்']],
+ ['Tea',['tea','டீ','தேநீர்','தேனீர்','தே நீர்','தேனீ','chai','சாய்']],
  ['Tollgate',['tollgate','toll gate','toll','டோல் கேட்','டோல்கேட்','டோல்']],
  ['Water',['water','வாட்டர்','தண்ணீர்','தண்ணி']]
 ];
 const VSKIP=new Set(['ரூபாய்','ரூபா','ரூபாய்க்கு','ரூ','rs','rupees','rupee','rupay','₹','செலவு','expense','add','சேர்','போடு','போட்டு','ஆச்சு','ஆனது']);
+const vF=w=>String(w).replace(/\u0BC0/g,'\u0BBF').replace(/\u0BC2/g,'\u0BC1').replace(/\u0BC7/g,'\u0BC6').replace(/\u0BCB/g,'\u0BCA');
+const vSuf=/^(க்கு|க்கும்|யும்|யை|யா|ய|யில்|ல்|யே|உம்|ம்)?$/;
+let vLearn=null;
+const vAliasGet=()=>{try{return JSON.parse(localStorage.getItem('spb_vexp_alias')||'{}')||{}}catch(e){return {}}};
+function vAliasSet(w,n){const a=vAliasGet();a[vF(w)]=n;try{localStorage.setItem('spb_vexp_alias',JSON.stringify(a))}catch(e){}}
 function vParseExp(text){
-  const tk=vTokens(text),used=new Array(tk.length).fill(false),joined=tk.join(' ');
+  const tk=vTokens(text),ftk=tk.map(vF),used=new Array(tk.length).fill(false);
   const names=[];
   VEXP.forEach(([n,kws])=>{
     for(const kw of kws){
       const multi=kw.indexOf(' ')>=0;let hit=false;
       if(multi){
-        const kt=kw.split(' ');
+        const kt=kw.split(' ').map(vF);
         for(let i=0;i+kt.length<=tk.length;i++){
-          if(kt.every((k,j)=>tk[i+j].startsWith(k)&&!used[i+j])){for(let j=0;j<kt.length;j++)used[i+j]=true;hit=true;break}
+          if(kt.every((k,j)=>ftk[i+j].startsWith(k)&&!used[i+j])){for(let j=0;j<kt.length;j++)used[i+j]=true;hit=true;break}
         }
       }else{
         const ta=/^[a-z]+$/.test(kw);
         for(let i=0;i<tk.length;i++){
           if(used[i])continue;
-          if(ta?tk[i]===kw:tk[i].startsWith(kw)){used[i]=true;hit=true;break}
+          const fk=vF(kw);
+          const ok=ta?tk[i]===kw:(fk.length<=2?(ftk[i].startsWith(fk)&&vSuf.test(ftk[i].slice(fk.length))):ftk[i].startsWith(fk));
+          if(ok){used[i]=true;hit=true;break}
         }
       }
       if(hit){if(!names.includes(n))names.push(n);break}
     }
   });
+  // நீங்கள் கற்றுக்கொடுத்த சொற்கள்
+  const al=vAliasGet();
+  ftk.forEach((w,i)=>{if(!used[i]&&al[w]&&EXPN.includes(al[w])){used[i]=true;if(!names.includes(al[w]))names.push(al[w])}});
   const nums=vNums(tk);nums.forEach(x=>{for(let i=x.i0;i<=x.i1;i++)used[i]=true});
   const amount=nums.reduce((a,x)=>a+x.v,0);
   let other='';
@@ -1164,8 +1175,9 @@ function voiceExp(){
     const xn=$('xN');if(xn){xn.classList.toggle('hide',!xOther);if(xOther)xn.value=r.other}
     if(r.amount)$('xA').value=r.amount;
     const pk=$('xPicked');if(pk)pk.textContent=xPick.length?'தேர்ந்தது: '+xPick.join(', '):'';
+    vLearn=r.other||null;
     const nm2=[...r.names,r.other].filter(Boolean).join(', ');
-    $('vxS').textContent=(nm2||r.amount)?'🎤 "'+t+'" → '+(nm2||'?')+(r.amount?' • ₹'+r.amount:'')+'. சரிபார்த்து Add தட்டவும்.':'⚠️ புரியவில்லை: "'+t+'". மீண்டும் முயற்சிக்கவும்.';
+    $('vxS').textContent=(nm2||r.amount)?'🎤 "'+t+'" → '+(nm2||'?')+(r.other?' (பட்டியலில் இல்லாத பெயர். சரியான பட்டனைத் தட்டினால் அடுத்த முறை நினைவில் வைத்துக்கொள்ளும்)':'')+(r.amount?' • ₹'+r.amount:'')+'. சரிபார்த்து Add தட்டவும்.':'⚠️ புரியவில்லை: "'+t+'". மீண்டும் முயற்சிக்கவும்.';
   });
 }
 /* Sale Entry */
