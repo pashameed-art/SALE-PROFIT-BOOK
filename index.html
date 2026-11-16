@@ -169,7 +169,7 @@ function vHome(){
   const it=rd(KEY.items).slice().sort((a,b)=>a.name.localeCompare(b.name));
   const low=it.filter(i=>i.min>0&&stockOf(i.name)<=i.min);
   const ed=editId!==null?rd(KEY.entries).find(x=>String(x.id)===editId):null;
-  return `${bb}${bkWarn()}  <div class="card"><b>${ed?'✏️ Entry Edit':'📝 New Entry'}</b>
+  return `${bb}${bkWarn()}  <div class="card"><b>${ed?'✏️ Entry Edit':'📝 New Entry'}</b>${vBar('e','voiceSale')}
   <label>Date</label><input type="date" id="eDate" value="${ed?ed.date:t}">
   <label>Place</label><input id="ePlace" list="plL" autocomplete="off" value="${E(ed?ed.place||'':lastPlace())}"><datalist id="plL">${places().map(n=>`<option value="${E(n)}">`).join('')}</datalist>
   <label>Item</label><input id="eItem" list="itemL" autocomplete="off" placeholder="Item தேடு / தேர்ந்தெடு" value="${E(ed?ed.item:'')}" onfocus="this.select()" oninput="calc()" onchange="calc()"><datalist id="itemL">${it.map(i=>`<option value="${E(i.name)}" label="${stockOf(i.name)} m">`).join('')}</datalist>${ed?'':chipBox(recentItems(6).map(n=>chip('pickItem(this.dataset.n)',n)).join(''))}
@@ -384,7 +384,7 @@ function vExp(){
   <input type="date" id="xF" value="${xSel}" onchange="xSel=this.value;render()">
   <button class="s" onclick="xSel=today();render()">Today</button> <button class="s" onclick="xSel='${ymd(y)}';render()">நேற்று</button> <button class="s" onclick="xSel='';render()">எல்லாம்</button>
   <div class="k" style="margin-top:10px">${xSel?fd(xSel)+' • மொத்த Expense':'எல்லா தேதிகள் • மொத்த Expense'}<b class="red">${M(tot)}</b><small>${af.length} பதிவுகள்</small></div></div>
-  <div class="card"><b>💸 Expense சேர்க்க</b><label>Date</label><input type="date" id="xD" value="${xSel||today()}">
+  <div class="card"><b>💸 Expense சேர்க்க</b>${vBar('x','voiceExp')}<label>Date</label><input type="date" id="xD" value="${xSel||today()}">
   <label>Expense (ஒன்று அல்லது அதற்கு மேல் தேர்ந்தெடுக்கவும்)</label>
   <div style="display:flex;gap:6px;flex-wrap:wrap">${EXPN.map(n=>`<button type="button" class="xc${xPick.includes(n)?' on':''}" data-n="${E(n)}" onclick="xTog(this)">${E(n)}</button>`).join('')}<button type="button" class="xc${xOther?' on':''}" onclick="xOth(this)">✏️ Other</button></div>
   <small id="xPicked">${xPick.length?'தேர்ந்தது: '+E(xPick.join(', ')):''}</small>
@@ -1057,6 +1057,166 @@ function stayDel(id){
   if(!confirm('"'+x.hotel+' — '+x.place+'" Delete செய்யவா?'))return;
   if(!wr(STAYK,stays().filter(v=>String(v.id)!==String(id))))return;
   OP.stay=true;render();
+}
+
+/* ---------- 🎤 VOICE INPUT ---------- */
+const SRC=window.SpeechRecognition||window.webkitSpeechRecognition;
+let vRec=null;
+const vLangGet=k=>localStorage.getItem('spb_vlang_'+k)||(k==='x'?'ta-IN':'en-IN');
+function vLangTog(k){const n=vLangGet(k)==='ta-IN'?'en-IN':'ta-IN';localStorage.setItem('spb_vlang_'+k,n);const b=$('v'+k+'L');if(b)b.textContent=vLangLbl(k)}
+const vLangLbl=k=>'🌐 '+(vLangGet(k)==='ta-IN'?'தமிழ்':'English');
+function vBar(k,fn){return `<div style="display:flex;gap:6px;align-items:center;margin:6px 0"><button type="button" class="s" onclick="${fn}()">🎤 சொல்லுங்கள்</button><button type="button" class="s" id="v${k}L" onclick="vLangTog('${k}')">${vLangLbl(k)}</button></div><small id="v${k}S"></small>`}
+function vListen(k,cb){
+  const st=$('v'+k+'S');
+  if(!SRC){if(st)st.textContent='❌ இந்த browser-ல் குரல் வசதி இல்லை (Chrome தேவை).';return}
+  try{if(vRec)vRec.abort()}catch(e){}
+  const r=new SRC();vRec=r;r.lang=vLangGet(k);r.interimResults=false;r.maxAlternatives=1;
+  let got=false;
+  r.onstart=()=>{if(st)st.textContent='🎤 கேட்கிறது… பேசுங்கள்'};
+  r.onresult=e=>{got=true;const t=(e.results[0]&&e.results[0][0]&&e.results[0][0].transcript)||'';try{cb(t)}catch(x){if(st)st.textContent='❌ புரிந்துகொள்ள முடியவில்லை: '+t}};
+  r.onerror=e=>{const m={'not-allowed':'மைக் அனுமதி தேவை (Browser அமைப்பில் அனுமதிக்கவும்).','service-not-allowed':'மைக் அனுமதி தேவை.','no-speech':'எதுவும் கேட்கவில்லை. மீண்டும் முயற்சிக்கவும்.','network':'இணையம் தேவை.','audio-capture':'மைக் கிடைக்கவில்லை.'};if(st)st.textContent='❌ '+(m[e.error]||('குரல் பிழை: '+e.error))};
+  r.onend=()=>{if(!got&&st&&/கேட்கிறது/.test(st.textContent))st.textContent='எதுவும் கேட்கவில்லை. மீண்டும் முயற்சிக்கவும்.'};
+  try{r.start()}catch(e){if(st)st.textContent='❌ குரலைத் தொடங்க முடியவில்லை.'}
+}
+/* எண்கள் */
+const TD={'௦':0,'௧':1,'௨':2,'௩':3,'௪':4,'௫':5,'௬':6,'௭':7,'௮':8,'௯':9};
+const NW={'ஒன்று':1,'இரண்டு':2,'ரெண்டு':2,'மூன்று':3,'மூணு':3,'நான்கு':4,'நாலு':4,'ஐந்து':5,'அஞ்சு':5,'ஆறு':6,'ஏழு':7,'எட்டு':8,'ஒன்பது':9,'ஒம்போது':9,'பத்து':10,'பதினொன்று':11,'பன்னிரண்டு':12,'பதிமூன்று':13,'பதினான்கு':14,'பதினைந்து':15,'பதினஞ்சு':15,'பதினாறு':16,'பதினேழு':17,'பதினெட்டு':18,'பத்தொன்பது':19,'இருபது':20,'இருவது':20,'முப்பது':30,'நாற்பது':40,'நாப்பது':40,'ஐம்பது':50,'அம்பது':50,'அறுபது':60,'எழுபது':70,'எண்பது':80,'தொண்ணூறு':90,'நூறு':100,'நூற்று':100,'இருநூறு':200,'முந்நூறு':300,'நானூறு':400,'ஐநூறு':500,'அறுநூறு':600,'எழுநூறு':700,'எண்ணூறு':800,'தொள்ளாயிரம்':900,'இருநூற்று':200,'முந்நூற்று':300,'நானூற்று':400,'ஐநூற்று':500,
+ 'one':1,'two':2,'three':3,'four':4,'five':5,'six':6,'seven':7,'eight':8,'nine':9,'ten':10,'eleven':11,'twelve':12,'thirteen':13,'fourteen':14,'fifteen':15,'sixteen':16,'seventeen':17,'eighteen':18,'nineteen':19,'twenty':20,'thirty':30,'forty':40,'fifty':50,'sixty':60,'seventy':70,'eighty':80,'ninety':90,'hundred':100};
+const NK={'ஆயிரம்':1000,'ஆயிரத்து':1000,'thousand':1000};
+function vTokens(t){
+  t=String(t||'').toLowerCase().replace(/[௦-௯]/g,c=>TD[c]).replace(/(\d),(?=\d{3})/g,'$1').replace(/[₹]/g,' ₹ ').replace(/[.,;:!?"()]/g,m=>m==='.'?'.':' ');
+  return t.split(/\s+/).filter(Boolean).map(w=>w.replace(/\.$/,''));
+}
+/* tokens -> [{type:'num',v,i0,i1}] */
+function vNums(tk){
+  const out=[];let i=0;
+  while(i<tk.length){
+    const w=tk[i];
+    if(/^\d+(\.\d+)?$/.test(w)){out.push({v:parseFloat(w),i0:i,i1:i});i++;continue}
+    if(w in NW||w in NK){
+      let j=i,tot=0,cur=0;
+      while(j<tk.length&&(tk[j] in NW||tk[j] in NK)){
+        const x=tk[j];
+        if(x in NK){cur=(cur||1)*NK[x];tot+=cur;cur=0}else cur+=NW[x];
+        j++;
+      }
+      tot+=cur;out.push({v:tot,i0:i,i1:j-1});i=j;continue;
+    }
+    i++;
+  }
+  return out;
+}
+/* Expense */
+const VEXP=[
+ ['Yesterday Dinner',['yesterday dinner','நேற்று டின்னர்','நேற்றைய டின்னர்','நேற்று இரவு சாப்பாடு','நேற்று இரவு உணவு','நேத்து டின்னர்']],
+ ['Room Rent',['room rent','ரூம் வாடகை','ரூம் ரெண்ட்','ரூம் rent','ரூம்']],
+ ['Car Rent',['car rent','கார் வாடகை','கார் ரெண்ட்','கார்']],
+ ['Breakfast',['breakfast','டிபன்','காலை உணவு','காலை சாப்பாடு','பிரேக்ஃபாஸ்ட்','பிரேக்பாஸ்ட்','பிரேக்பாஸ்']],
+ ['Cigarette',['cigarette','சிகரெட்','சிகரட்','சிகரெட்டு','சிகெரெட்']],
+ ['Dinner',['dinner','டின்னர்','இரவு சாப்பாடு','இரவு உணவு']],
+ ['Juice',['juice','ஜூஸ்','ஜூஸ']],
+ ['Lunch',['lunch','லஞ்ச்','மதிய சாப்பாடு','மதிய உணவு','மதியம்']],
+ ['Mansoor',['mansoor','mansur','மன்சூர்']],
+ ['Petrol',['petrol','பெட்ரோல்']],
+ ['Snacks',['snacks','snack','ஸ்நாக்ஸ்','ஸ்னாக்ஸ்','பலகாரம்','தின்பண்டம்']],
+ ['Tea',['tea','டீ','தேநீர்']],
+ ['Tollgate',['tollgate','toll gate','toll','டோல் கேட்','டோல்கேட்','டோல்']],
+ ['Water',['water','வாட்டர்','தண்ணீர்','தண்ணி']]
+];
+const VSKIP=new Set(['ரூபாய்','ரூபா','ரூபாய்க்கு','ரூ','rs','rupees','rupee','rupay','₹','செலவு','expense','add','சேர்','போடு','போட்டு','ஆச்சு','ஆனது']);
+function vParseExp(text){
+  const tk=vTokens(text),used=new Array(tk.length).fill(false),joined=tk.join(' ');
+  const names=[];
+  VEXP.forEach(([n,kws])=>{
+    for(const kw of kws){
+      const multi=kw.indexOf(' ')>=0;let hit=false;
+      if(multi){
+        const kt=kw.split(' ');
+        for(let i=0;i+kt.length<=tk.length;i++){
+          if(kt.every((k,j)=>tk[i+j].startsWith(k)&&!used[i+j])){for(let j=0;j<kt.length;j++)used[i+j]=true;hit=true;break}
+        }
+      }else{
+        const ta=/^[a-z]+$/.test(kw);
+        for(let i=0;i<tk.length;i++){
+          if(used[i])continue;
+          if(ta?tk[i]===kw:tk[i].startsWith(kw)){used[i]=true;hit=true;break}
+        }
+      }
+      if(hit){if(!names.includes(n))names.push(n);break}
+    }
+  });
+  const nums=vNums(tk);nums.forEach(x=>{for(let i=x.i0;i<=x.i1;i++)used[i]=true});
+  const amount=nums.reduce((a,x)=>a+x.v,0);
+  let other='';
+  if(!names.length){
+    other=tk.filter((w,i)=>!used[i]&&!VSKIP.has(w)&&w.length>1).join(' ').trim();
+    if(other.length<2)other='';
+  }
+  names.sort((a,b)=>EXPN.indexOf(a)-EXPN.indexOf(b));
+  return{names,other,amount,text:tk.join(' ')};
+}
+function voiceExp(){
+  vListen('x',t=>{
+    const r=vParseExp(t);
+    xPick=r.names.slice();xOther=!!r.other;
+    document.querySelectorAll('.xc[data-n]').forEach(b=>b.classList.toggle('on',xPick.includes(b.dataset.n)));
+    const ob=document.querySelector('.xc:not([data-n])');if(ob)ob.classList.toggle('on',xOther);
+    const xn=$('xN');if(xn){xn.classList.toggle('hide',!xOther);if(xOther)xn.value=r.other}
+    if(r.amount)$('xA').value=r.amount;
+    const pk=$('xPicked');if(pk)pk.textContent=xPick.length?'தேர்ந்தது: '+xPick.join(', '):'';
+    const nm2=[...r.names,r.other].filter(Boolean).join(', ');
+    $('vxS').textContent=(nm2||r.amount)?'🎤 "'+t+'" → '+(nm2||'?')+(r.amount?' • ₹'+r.amount:'')+'. சரிபார்த்து Add தட்டவும்.':'⚠️ புரியவில்லை: "'+t+'". மீண்டும் முயற்சிக்கவும்.';
+  });
+}
+/* Sale Entry */
+function vEd(a,b){a=String(a);b=String(b);if(Math.abs(a.length-b.length)>1)return 9;const m=[];for(let i=0;i<=a.length;i++){m[i]=[i];}for(let j=0;j<=b.length;j++)m[0][j]=j;for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)m[i][j]=Math.min(m[i-1][j]+1,m[i][j-1]+1,m[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return m[a.length][b.length]}
+function vItem(tk,items){
+  const bag=tk.filter(w=>/[a-z0-9]/.test(w));
+  const sc=items.map(it=>{
+    const parts=String(it.name).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+    let hit=0;
+    parts.forEach(p=>{if(bag.some(w=>w===p||(p.length>=5&&w.length>=5&&vEd(w,p)<=1)))hit++});
+    return{name:it.name,hit,cov:parts.length?hit/parts.length:0,len:parts.length};
+  }).filter(x=>x.hit>0).sort((a,b)=>b.hit-a.hit||b.cov-a.cov||a.len-b.len);
+  if(!sc.length)return{item:'',cands:[]};
+  const top=sc[0],sec=sc[1];
+  const amb=sec&&sec.hit===top.hit&&!(top.cov===1&&sec.cov<1);
+  return{item:amb?'':top.name,cands:sc.slice(0,3).map(x=>x.name)};
+}
+function vParseSale(text,items){
+  const tk=vTokens(text),it=vItem(tk,items);
+  let nums=vNums(tk);
+  // Item பெயரில் உள்ள எண் (எ.கா. IPS 100) அளவு/தொகை அல்ல
+  const nameDig=(it.item?String(it.item).match(/\d+/g)||[]:[]).map(Number);
+  nameDig.forEach(d=>{const k=nums.findIndex(n=>n.v===d);if(k>=0)nums.splice(k,1)});
+  const MU=/^(meter|meters|metre|metres|mtr|m|மீட்டர்|மீட்டருக்கு|மீ)$/,RU=/^(rupees|rupee|rs|₹|ரூபாய்|ரூபா|ரூ|ரூபாய்க்கு)$/;
+  let meter=0,sale=0;const rest=[];
+  nums.forEach(n=>{
+    const nx=tk[n.i1+1]||'',pv=tk[n.i0-1]||'';
+    if(MU.test(nx)&&!meter)meter=n.v;
+    else if((RU.test(nx)||pv==='₹')&&!sale)sale=n.v;
+    else rest.push(n);
+  });
+  if(!meter&&!sale){if(rest.length>=2){meter=rest[0].v;sale=rest[rest.length-1].v}else if(rest.length===1)meter=rest[0].v}
+  else if(meter&&!sale){if(rest.length)sale=rest[rest.length-1].v}
+  else if(sale&&!meter){if(rest.length)meter=rest[0].v}
+  let pay='';const j=' '+tk.join(' ')+' ';
+  if(/ (gpay|g pay|google pay|ஜிபே|கூகுள் பே|ஜீபே) /.test(j))pay='GPay';
+  else if(/ (cash|கேஷ்|ரொக்கம்|காசு) /.test(j))pay='Cash';
+  else if(/ (credit|கடன்|கிரெடிட்|கடனுக்கு) /.test(j))pay='Credit';
+  return{item:it.item,cands:it.cands,meter,sale,pay,text:tk.join(' ')};
+}
+function voiceSale(){
+  vListen('e',t=>{
+    const r=vParseSale(t,rd(KEY.items));
+    if(r.item){$('eItem').value=r.item}
+    if(r.meter)$('eMeter').value=r.meter;
+    if(r.sale)$('eSale').value=r.sale;
+    if(r.pay){const p=$('ePay');if(p){p.value=r.pay;p.onchange&&p.onchange()}}
+    try{calc()}catch(e){}
+    const bits=[r.item||(r.cands.length?'Item?':''),r.meter?r.meter+' m':'',r.sale?'₹'+r.sale:'',r.pay].filter(Boolean).join(' • ');
+    $('veS').textContent=bits?('🎤 "'+t+'" → '+bits+(!r.item&&r.cands.length?' (பொருந்தியவை: '+r.cands.join(', ')+' — ஒன்றைத் தேர்ந்தெடுக்கவும்)':'')+'. சரிபார்த்து Save செய்யவும்.'):'⚠️ புரியவில்லை: "'+t+'". மீண்டும் முயற்சிக்கவும்.';
+  });
 }
 
 /* ---------- MONTHLY REPORT + TOP 5 ---------- */
