@@ -522,6 +522,7 @@ function vBak(){
   <div class="card"><small>Backup All சேர்ப்பவை: Sale Profit Book, 📗 Ledger, 🏍️ Bike, 🏡 Home Expense. Ledger PIN சேர்க்கப்படாது. Restore-ல் backup-ல் உள்ள app-களின் data மட்டும் மாறும். Mass Bike மற்றும் Ledger-ன் சொந்த Backup பொத்தான்களும் தனியாகத் தொடர்ந்து வேலை செய்யும்.</small></div><div class="card"><b>🔄 App Update</b><small>தற்போதைய Version: V${VER}</small><button class="s" onclick="appRefresh()">Update / Refresh App</button><small style="margin-top:6px">Cache மட்டும் அழியும்; உங்கள் data அழியாது.</small></div>
   ${storageCard()}<div class="card"><b>🗑️ Delete Data</b><small>Expenses, Purchase, Stock, Party, Settings மாறாது. Delete-க்கு முன் backup file தானாக download ஆகும்.</small>
   <button class="d" style="padding:10px 14px;font-size:14px;margin-top:8px" onclick="delAll('sales')">Delete All Sales</button> <button class="d" style="padding:10px 14px;font-size:14px" onclick="delAll('exp')">Delete All Expenses</button></div>
+  ${testCard()}
   ${pinCard()}`;
 }
 function restore(){
@@ -960,7 +961,7 @@ function stayPick(inp){
 const OCR_URL='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
 function stayOcrLoad(){
   if(window.Tesseract)return Promise.resolve();
-  return new Promise((ok,no)=>{const t=document.createElement('script');t.src=OCR_URL;t.onload=ok;t.onerror=()=>no(new Error('load'));document.head.appendChild(t)});
+  return new Promise((ok,no)=>{const t=document.createElement('script');t.src=OCR_URL;t.onload=ok;t.onerror=()=>no(new Error('OCR நூலகம் ஏற்ற முடியவில்லை (இணையம்?)'));document.head.appendChild(t)});
 }
 function stayParse(text){
   const lines=String(text||'').split(/\r?\n/).map(l=>l.replace(/[|_~^*=<>{}\[\]\\]/g,' ').replace(/\s+/g,' ').trim()).filter(l=>l.length>2);
@@ -1231,6 +1232,75 @@ function voiceSale(){
   });
 }
 
+/* ---------- 🔧 வசதிகள் சோதனை ---------- */
+function testCard(){return `<div class="card"><b>🔧 வசதிகள் சோதனை</b><small>Drive Backup, 🚓 Police Finder, 🎤 குரல், Card OCR ஆகியவை இந்த phone-ல் வேலை செய்கிறதா என்று பார்க்கும். இணையம் தேவை. எதுவும் மாறாது, Backup எதுவும் எடுக்காது.</small><button onclick="selfTest()">▶ சோதனை தொடங்கு</button><div id="stBody"></div></div>`}
+async function selfTest(){
+  const box=$('stBody');if(!box)return;
+  box.innerHTML='';
+  const add=(name)=>{const d=document.createElement('div');d.className='row';d.innerHTML='<div><b></b><small></small></div><b></b>';d.children[0].children[0].textContent=name;d.children[1].textContent='⏳';box.appendChild(d);return d};
+  const set=(d,ok,msg)=>{d.children[1].textContent=ok?'✅':'❌';d.children[0].children[1].textContent=msg||''};
+  const tout=(p,ms)=>Promise.race([p,new Promise((_,no)=>setTimeout(()=>no(new Error('நேரம் முடிந்தது')),ms))]);
+  // 1. Drive (முதலில் - Google அனுமதி popup-க்கு)
+  let d=add('☁️ Google Drive');
+  try{
+    await tout(gToken(),60000);
+    const q=encodeURIComponent("name contains '"+GPRE+"'");
+    const r=await tout(fetch('https://www.googleapis.com/drive/v3/files?pageSize=3&orderBy=modifiedTime%20desc&fields=files(name,modifiedTime)&q='+q,{headers:{Authorization:'Bearer '+gTok}}),20000);
+    if(!r.ok)throw new Error('Drive பதில் '+r.status);
+    const j=await r.json();const f=(j.files||[])[0];
+    set(d,true,f?'கடைசி Backup: '+f.name:'இணைப்பு சரி. இன்னும் Backup file இல்லை — Backup Now தட்டவும்.');
+  }catch(e){set(d,false,String(e.message||e))}
+  // 2. இணையம்
+  d=add('🌐 இணையம்');
+  try{if(!navigator.onLine)throw new Error('Offline');await tout(fetch('https://www.gstatic.com/generate_204',{mode:'no-cors',cache:'no-store'}),10000);set(d,true,'இணைப்பு உள்ளது')}catch(e){set(d,false,String(e.message||e))}
+  // 3. Police: இடம் தேடல்
+  d=add('🚓 இடம் தேடல் (Nominatim)');
+  try{
+    const g=await polGet('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=in&q='+encodeURIComponent('Kochi, Kerala, India'),{headers:{Accept:'application/json'}},15000);
+    if(!g.length)throw new Error('முடிவு இல்லை');set(d,true,'Kochi கிடைத்தது');
+  }catch(e){set(d,false,String(e.message||e))}
+  // 4. Police: Station தரவு
+  d=add('🚓 Police Station தரவு (Overpass)');
+  try{
+    const ql='[out:json][timeout:15];node["amenity"="police"](around:3000,9.9312,76.2673);out 5;';
+    let j=null,er=null;
+    for(const ep of ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter']){
+      try{j=await polGet(ep,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(ql)},20000);break}catch(e){er=e}
+    }
+    if(!j)throw er||new Error('பதில் இல்லை');
+    set(d,true,(j.elements||[]).length+' station கிடைத்தன (சோதனைப் பகுதி)');
+  }catch(e){set(d,false,String(e.message||e)+' — மீண்டும் முயற்சிக்கவும் (சர்வர் பிஸியாக இருக்கலாம்).')}
+  // 5. குரல்
+  d=add('🎤 குரல்');
+  try{
+    if(!SRC)throw new Error('இந்த browser-ல் குரல் வசதி இல்லை (Chrome தேவை)');
+    let pm='தெரியவில்லை';
+    try{const st=await navigator.permissions.query({name:'microphone'});pm=({granted:'அனுமதிக்கப்பட்டது',prompt:'முதல்முறை கேட்கும்',denied:'தடுக்கப்பட்டுள்ளது'})[st.state]||st.state;if(st.state==='denied'){set(d,false,'மைக் தடுக்கப்பட்டுள்ளது — Chrome அமைப்பில் அனுமதிக்கவும்');}else set(d,true,'குரல் வசதி உள்ளது • மைக்: '+pm)}catch(e){set(d,true,'குரல் வசதி உள்ளது • மைக் நிலை தெரியவில்லை')}
+  }catch(e){set(d,false,String(e.message||e))}
+  // 6. OCR
+  d=add('🔍 Card OCR');
+  try{
+    await tout(stayOcrLoad(),30000);
+    if(!window.Tesseract)throw new Error('OCR நூலகம் ஏற்றப்படவில்லை');
+    await tout(fetch('https://tessdata.projectnaptha.com/4.0.0/eng.traineddata.gz',{method:'HEAD',mode:'no-cors'}),15000);
+    set(d,true,'OCR நூலகமும் மொழித் தரவும் கிடைக்கின்றன');
+  }catch(e){set(d,false,String(e.message||e))}
+  // 7. Fingerprint
+  d=add('🔐 Fingerprint');
+  try{
+    if(!window.PublicKeyCredential)throw new Error('வசதி இல்லை');
+    const ok=await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    set(d,ok,ok?(fpOn()?'இயக்கப்பட்டுள்ளது':'கிடைக்கிறது (இயக்கப்படவில்லை)'):'இந்த phone-ல் கிடைக்கவில்லை');
+  }catch(e){set(d,false,String(e.message||e))}
+  // 8. இடம்
+  d=add('💾 சேமிப்பு இடம்');
+  try{
+    let n=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);n+=k.length+(localStorage.getItem(k)||'').length}
+    const kb=Math.round(n/1024);set(d,kb<3500,kb+' KB பயன்பாடு (வரம்பு சுமார் 5000 KB)');
+  }catch(e){set(d,false,String(e.message||e))}
+  const end=document.createElement('small');end.textContent='சோதனை முடிந்தது. ❌ இருந்தால் இந்தத் திரையின் screenshot-ஐ எனக்கு அனுப்புங்கள்.';box.appendChild(end);
+}
+
 /* ---------- MONTHLY REPORT + TOP 5 ---------- */
 let hMon='';
 const monNow=()=>today().slice(0,7);
@@ -1369,18 +1439,36 @@ function carSet(){
   if(!(n>=0))return alert('சரியான தொகை உள்ளிடவும்.');
   localStorage.setItem(CAR_KEY,String(n));render();
 }
+const isCarRent=x=>String(x.name||'').toLowerCase().includes('car rent');
+function carModalClose(){const o=document.getElementById('carModal');if(o)o.remove()}
+function carModal(t,amt){
+  carModalClose();
+  const o=document.createElement('div');o.id='carModal';
+  o.style.cssText='position:fixed;inset:0;z-index:80;background:#0008;display:flex;align-items:center;justify-content:center;padding:16px';
+  o.innerHTML='<div style="background:#fff;border-radius:16px;padding:18px;width:100%;max-width:360px;box-shadow:0 8px 30px #0005"><b style="font-size:17px">🚗 Car Rent '+M(amt)+' Add செய்யவா?</b><label style="display:block;margin-top:12px">தேதி தேர்ந்தெடு</label><input type="date" id="cDt" value="'+t+'" style="width:100%"><small style="display:block;margin:6px 0 12px">Working days: மாதத்தின் 01–20 தேதிகள் • GPay</small><div style="display:flex;gap:8px"><button onclick="carSave('+amt+')" style="flex:1">✅ Add</button><button class="s" onclick="carModalClose()" style="flex:1">இன்று வேண்டாம்</button></div></div>';
+  document.body.appendChild(o);
+}
+function carSave(amt){
+  const d=($('cDt')||{}).value;
+  if(!d){alert('தேதி தேர்ந்தெடுக்கவும்.');return}
+  const day=+d.slice(8,10);
+  if((day<1||day>20)&&!confirm('இது மாதத்தின் 01–20 தேதிக்கு வெளியே உள்ளது. அப்படியும் சேர்க்கவா?'))return;
+  const a=rd(KEY.exp);
+  if(a.some(x=>x.date===d&&isCarRent(x))&&!confirm('அந்தத் தேதியில் Car Rent ஏற்கெனவே உள்ளது. மீண்டும் சேர்க்கவா?'))return;
+  a.unshift({id:Date.now(),date:d,name:'Car Rent',amount:amt,paidBy:'GPay'});
+  if(wr(KEY.exp,a)){carModalClose();render()}
+}
 function carAsk(){
   try{
     if(pinOn()&&sessionStorage.getItem('spb_unlocked')!=='1')return;
-    const t=today();
+    if(document.getElementById('carModal'))return;
+    const t=today(),day=+t.slice(8,10);
+    if(day<1||day>20)return;           // Working days: 01–20 மட்டும்
     const amt=carAmt();if(!(amt>0))return;
     if(localStorage.getItem('spb_carrent_asked')===t)return;
-    const a=rd(KEY.exp);
-    if(a.some(x=>x.date===t&&String(x.name||'').toLowerCase().includes('car rent'))){localStorage.setItem('spb_carrent_asked',t);return}
     localStorage.setItem('spb_carrent_asked',t);
-    if(!confirm('இன்றைய Car Rent ₹'+amt+' Expense-ல் Add செய்யவா?'))return;
-    a.unshift({id:Date.now(),date:t,name:'Car Rent',amount:amt,paidBy:'GPay'});
-    if(wr(KEY.exp,a))render();
+    if(rd(KEY.exp).some(x=>x.date===t&&isCarRent(x)))return;
+    carModal(t,amt);
   }catch(e){}
 }
 
