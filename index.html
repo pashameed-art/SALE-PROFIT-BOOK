@@ -84,7 +84,8 @@ const rd=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.
 let _quotaAt=0;
 function quotaFail(){const n=Date.now();if(n-_quotaAt<4000)return;_quotaAt=n;alert('⚠️ சேமிப்பிடம் நிரம்பிவிட்டது! இந்த மாற்றம் சேமிக்கப்படவில்லை.\n\nBackup All எடுத்து, தேவையற்ற பழைய பதிவுகளை நீக்கிய பிறகு மீண்டும் முயற்சிக்கவும்.\n\nStorage is full — this change was NOT saved.')}
 const wr=(k,a)=>{try{const o=localStorage.getItem(k);if(o){try{JSON.parse(o)}catch(e){try{localStorage.setItem('spb_corrupt_'+k+'_'+Date.now(),o)}catch(e2){}}}}catch(e){}
-  try{localStorage.setItem(k,JSON.stringify(a));return true}catch(e){quotaFail();return false}};
+  let tid=null;try{tid=trashHook(k,a)}catch(e){}
+  try{localStorage.setItem(k,JSON.stringify(a));if(tid)setTimeout(()=>{try{trashToast(tid)}catch(e){}},0);return true}catch(e){quotaFail();return false}};
 const sset=(k,v)=>{try{localStorage.setItem(k,v);return true}catch(e){return false}};
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const ydy=()=>{const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -124,7 +125,7 @@ function backupBanner(){
   const ts=['spb_last_gdrive_backup_at','spb_v9_last_backup'].map(k=>Date.parse(localStorage.getItem(k)||'')).filter(x=>isFinite(x));
   const last=ts.length?Math.max(...ts):0,days=last?Math.floor((Date.now()-last)/864e5):-1;
   if(last&&days<7)return '';
-  return `<div class="card red"><b>⚠️ Backup நினைவூட்டல்</b><small>${last?days+' நாட்களாக Backup எடுக்கவில்லை':'இன்னும் Backup எடுக்கவில்லை'}</small><button onclick="tab='bak';render();scrollTo(0,0)">☁️ இப்போது Backup</button></div>`;
+  return `<div class="card red"><b>⚠️ Backup நினைவூட்டல்</b><small>${last?days+' நாட்களாக Backup எடுக்கவில்லை.':'இன்னும் Backup எடுக்கவில்லை.'} உங்கள் data இந்த phone-ல் மட்டுமே உள்ளது.</small><button onclick="tab='bak';render();scrollTo(0,0)">☁️ இப்போது Backup</button></div>`;
 }
 const itemByName=n=>{const q=nm(n).toLowerCase(),a=rd(KEY.items);return a.find(i=>i.name===n)||a.find(i=>i.name.toLowerCase()===q)||null};
 function recentItems(k){const seen=new Set(),o=[];rd(KEY.entries).slice().sort((a,b)=>N(b.id)-N(a.id)).forEach(x=>{const n=x.item;if(n&&!seen.has(n)&&itemByName(n)&&o.length<k){seen.add(n);o.push(itemByName(n).name)}});return o}
@@ -169,7 +170,7 @@ function vHome(){
   const it=rd(KEY.items).slice().sort((a,b)=>a.name.localeCompare(b.name));
   const low=it.filter(i=>i.min>0&&stockOf(i.name)<=i.min);
   const ed=editId!==null?rd(KEY.entries).find(x=>String(x.id)===editId):null;
-  return `${bb}${bkWarn()}  <div class="card"><b>${ed?'✏️ Entry Edit':'📝 New Entry'}</b>${vBar('e','voiceSale')}
+  return `${bb}  <div class="card"><b>${ed?'✏️ Entry Edit':'📝 New Entry'}</b>${vBar('e','voiceSale')}
   <label>Date</label><input type="date" id="eDate" value="${ed?ed.date:t}">
   <label>Place</label><input id="ePlace" list="plL" autocomplete="off" value="${E(ed?ed.place||'':lastPlace())}"><datalist id="plL">${places().map(n=>`<option value="${E(n)}">`).join('')}</datalist>
   <label>Item</label><input id="eItem" list="itemL" autocomplete="off" placeholder="Item தேடு / தேர்ந்தெடு" value="${E(ed?ed.item:'')}" onfocus="this.select()" oninput="calc()" onchange="calc()"><datalist id="itemL">${it.map(i=>`<option value="${E(i.name)}" label="${stockOf(i.name)} m">`).join('')}</datalist>${ed?'':chipBox(recentItems(6).map(n=>chip('pickItem(this.dataset.n)',n)).join(''))}
@@ -182,7 +183,9 @@ function vHome(){
   <small id="eCalc"></small><button onclick="saveEntry()">${ed?'Update Entry':'Save Entry'}</button>${ed?'<button class="s" onclick="editId=null;render()">Cancel</button>':''}</div>
   ${ed?'':mixHtml(it)}
   ${ed?'':dashHtml(low)}
-  ${ed?'':monHtml()}`;
+  ${ed?'':credDueHtml()}
+  ${ed?'':monHtml()}
+  ${ed?'':insHtml()}`;
 }
 function calc(){
   const it=itemByName($('eItem').value),m=N($('eMeter').value),s=N($('eSale').value);
@@ -502,7 +505,7 @@ function setOpen(){
 
 /* ---------- BACKUP ---------- */
 const EXCL=/(^|[_-])pin([_-]|$)|autobackup|snapshot|protected|lastgdrive|last_gdrive|pre_restore/i;
-const bkApp=k=>(/^(spb|saleProfitBook)/.test(k)&&!/(^|[_-])(pin|fp)([_-]|$)/i.test(k)&&!/carrent_asked/.test(k))?'Sale Profit Book':(/^mass_sales_ledger/.test(k)&&!EXCL.test(k))?'Ledger':(/^massBikeV4_/.test(k)&&!EXCL.test(k))?'Bike':(/^homeExpenseLedger/.test(k)&&!EXCL.test(k))?'Home Expense':null;
+const bkApp=k=>(/^(spb|saleProfitBook)/.test(k)&&!/(^|[_-])(pin|fp)([_-]|$)/i.test(k)&&!/carrent_asked|trash/.test(k))?'Sale Profit Book':(/^mass_sales_ledger/.test(k)&&!EXCL.test(k))?'Ledger':(/^massBikeV4_/.test(k)&&!EXCL.test(k))?'Bike':(/^homeExpenseLedger/.test(k)&&!EXCL.test(k))?'Home Expense':null;
 function snap(){const s={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&bkApp(k))s[k]=localStorage.getItem(k)}return {app:'SALE-PROFIT-BOOK',version:'9',kind:'all',createdAt:new Date().toISOString(),storage:s}}
 const cntOf=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a.length:0}catch(e){return 0}};
 const allCounts=()=>'Sale Profit Book '+cntOf(KEY.entries)+' • Ledger '+cntOf('mass_sales_ledger_v1_6')+' • Bike rentals '+cntOf('massBikeV4_rentals')+' • Home Exp '+cntOf('homeExpenseLedgerV1')+' • Fathima '+cntOf('homeExpenseLedgerFathimaV1');
@@ -522,6 +525,7 @@ function vBak(){
   <div class="card"><small>Backup All சேர்ப்பவை: Sale Profit Book, 📗 Ledger, 🏍️ Bike, 🏡 Home Expense. Ledger PIN சேர்க்கப்படாது. Restore-ல் backup-ல் உள்ள app-களின் data மட்டும் மாறும். Mass Bike மற்றும் Ledger-ன் சொந்த Backup பொத்தான்களும் தனியாகத் தொடர்ந்து வேலை செய்யும்.</small></div><div class="card"><b>🔄 App Update</b><small>தற்போதைய Version: V${VER}</small><button class="s" onclick="appRefresh()">Update / Refresh App</button><small style="margin-top:6px">Cache மட்டும் அழியும்; உங்கள் data அழியாது.</small></div>
   ${storageCard()}<div class="card"><b>🗑️ Delete Data</b><small>Expenses, Purchase, Stock, Party, Settings மாறாது. Delete-க்கு முன் backup file தானாக download ஆகும்.</small>
   <button class="d" style="padding:10px 14px;font-size:14px;margin-top:8px" onclick="delAll('sales')">Delete All Sales</button> <button class="d" style="padding:10px 14px;font-size:14px" onclick="delAll('exp')">Delete All Expenses</button></div>
+  ${trashCard()}
   ${testCard()}
   ${pinCard()}`;
 }
@@ -1230,6 +1234,116 @@ function voiceSale(){
     const bits=[r.item||(r.cands.length?'Item?':''),r.meter?r.meter+' m':'',r.sale?'₹'+r.sale:'',r.pay].filter(Boolean).join(' • ');
     $('veS').textContent=bits?('🎤 "'+t+'" → '+bits+(!r.item&&r.cands.length?' (பொருந்தியவை: '+r.cands.join(', ')+' — ஒன்றைத் தேர்ந்தெடுக்கவும்)':'')+'. சரிபார்த்து Save செய்யவும்.'):'⚠️ புரியவில்லை: "'+t+'". மீண்டும் முயற்சிக்கவும்.';
   });
+}
+
+/* ---------- 📈 INSIGHTS ---------- */
+const SLOW_DAYS=30;
+function insData(){
+  const t=new Date(today()+'T00:00:00'),dow=(t.getDay()+6)%7;           // Monday=0
+  const ds=d=>ymd(d),add=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+  const ws=add(t,-dow),lws=add(ws,-7),lwe=add(lws,dow);                 // இந்த வாரம்: திங்கள்–இன்று; கடந்த வாரம்: அதே நாட்கள்
+  const E1=rd(KEY.entries),sum=(a,b)=>E1.filter(x=>String(x.date)>=a&&String(x.date)<=b).reduce((r,x)=>{r.s+=N(x.sale);r.p+=N(x.profit);r.m+=N(x.meter);return r},{s:0,p:0,m:0});
+  const cur=sum(ds(ws),ds(t)),prev=sum(ds(lws),ds(lwe));
+  // சிறந்த நாள்: கடந்த 8 வாரம், வாரநாள் வாரியான சராசரி Sale
+  const from=ds(add(t,-56)),wd=[0,0,0,0,0,0,0],days=[new Set(),new Set(),new Set(),new Set(),new Set(),new Set(),new Set()];
+  E1.filter(x=>String(x.date)>=from&&String(x.date)<=ds(t)).forEach(x=>{const d=new Date(String(x.date)+'T00:00:00'),k=(d.getDay()+6)%7;wd[k]+=N(x.sale);days[k].add(String(x.date))});
+  const avg=wd.map((v,i)=>days[i].size?v/days[i].size:0),bi=avg.indexOf(Math.max(...avg));
+  // மெதுவாக விற்கும் Items
+  const last={};E1.forEach(x=>{if(String(x.date)>(last[x.item]||''))last[x.item]=String(x.date)});
+  const slow=rd(KEY.items).map(i=>{const st=stockOf(i.name),la=last[i.name]||'',d=la?Math.floor((t-new Date(la+'T00:00:00'))/864e5):9999;return{name:i.name,st,la,d}}).filter(x=>x.st>0&&x.d>=SLOW_DAYS).sort((a,b)=>b.st-a.st);
+  return{cur,prev,avg,bi,slow,dow};
+}
+function insBody(){
+  const d=insData(),W=['திங்கள்','செவ்வாய்','புதன்','வியாழன்','வெள்ளி','சனி','ஞாயிறு'];
+  const chg=(c,p)=>p>0?(c>=p?'▲ ':'▼ ')+Math.abs(Math.round((c-p)/p*100))+'%':(c>0?'▲ புதிது':'—');
+  const col=(c,p)=>c>=p?'grn':'red';
+  const rows=`<small>இந்த வாரம் (திங்கள் முதல் இன்று) vs கடந்த வாரம் (அதே நாட்கள்)</small>
+  <div class="row"><div><b>Sale</b><small>கடந்த வாரம் ${M(d.prev.s)}</small></div><div style="text-align:right"><b>${M(d.cur.s)}</b><br><small class="${col(d.cur.s,d.prev.s)}">${chg(d.cur.s,d.prev.s)}</small></div></div>
+  <div class="row"><div><b>Profit</b><small>கடந்த வாரம் ${M(d.prev.p)}</small></div><div style="text-align:right"><b>${M(d.cur.p)}</b><br><small class="${col(d.cur.p,d.prev.p)}">${chg(d.cur.p,d.prev.p)}</small></div></div>
+  <div class="row"><div><b>Meter</b><small>கடந்த வாரம் ${+d.prev.m.toFixed(1)} m</small></div><div style="text-align:right"><b>${+d.cur.m.toFixed(1)} m</b><br><small class="${col(d.cur.m,d.prev.m)}">${chg(d.cur.m,d.prev.m)}</small></div></div>`;
+  const best=Math.max(...d.avg)>0?`<div class="row"><div><b>⭐ சிறந்த நாள்</b><small>கடந்த 8 வாரச் சராசரி</small></div><div style="text-align:right"><b>${W[d.bi]}</b><br><small>${M(d.avg[d.bi])}</small></div></div>`:'';
+  const slow=d.slow.length?`<b style="display:block;margin-top:12px">🐢 மெதுவாக விற்கும் Items (${SLOW_DAYS}+ நாள்)</b>`+d.slow.slice(0,8).map(x=>`<div class="row"><div><b>${E(x.name)}</b><small>${x.d>=9999?'இதுவரை விற்கவில்லை':x.d+' நாள் விற்கவில்லை'}</small></div><b>${+x.st.toFixed(1)} m</b></div>`).join('')+(d.slow.length>8?`<small>மேலும் ${d.slow.length-8} Items…</small>`:''):'<small style="display:block;margin-top:10px">🐢 மெதுவாக விற்கும் Items இல்லை 👍</small>';
+  return rows+best+slow;
+}
+function insHtml(){return colCard('ins','📈 Insights • இந்த வாரம் vs கடந்த வாரம்',insBody())}
+
+/* ---------- ⏰ கடன் நினைவூட்டல் (Credit overdue) ---------- */
+const credDays=()=>{const v=+localStorage.getItem('spb_cred_days');return v>0?v:30};
+function credOver(){
+  const days=credDays(),now=new Date(today()+'T00:00:00'),lp={};
+  rd(KEY.pay).forEach(p=>{const k=nm(p.customer).toLowerCase();if(k&&String(p.date)>(lp[k]||''))lp[k]=String(p.date)});
+  return ledger().filter(c=>c.due>0.5&&c.name&&c.name!=='(பெயர் இல்லை)').map(c=>{
+    const k=c.name.toLowerCase(),la=[c.last||'',lp[k]||''].sort().pop();
+    const d=la?Math.floor((now-new Date(la+'T00:00:00'))/864e5):9999;
+    return Object.assign({},c,{key:k,days:d,la});
+  }).filter(c=>c.days>=days).sort((a,b)=>b.due-a.due);
+}
+function credDaysSet(){
+  const v=prompt('எத்தனை நாள் கடந்த பாக்கியை நினைவூட்ட வேண்டும்?',credDays());if(v===null)return;
+  const n=Math.round(+v);if(!(n>=1&&n<=365))return alert('1 முதல் 365 வரை உள்ளிடவும்.');
+  try{localStorage.setItem('spb_cred_days',String(n))}catch(e){}render();
+}
+function credRemind(key){
+  key=dk(key);const c=ledger().find(x=>x.name.toLowerCase()===key);if(!c)return;
+  share(['வணக்கம் '+c.name+',','Mass Uniform Store-ல் உங்கள் பாக்கித் தொகை '+M(c.due)+'.','தயவுசெய்து விரைவில் செலுத்தவும். நன்றி 🙏'].join('\n'),mobOf(c.name));
+}
+function credOpen(key){cbKey=dk(key);tab='credit';render()}
+function credDueHtml(){
+  const a=credOver();if(!a.length)return '';
+  const tot=a.reduce((t,c)=>t+c.due,0);
+  return `<div class="card red"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>⏰ கடன் நினைவூட்டல் (${a.length}) • ${M(tot)}</b><button class="s" onclick="credDaysSet()">⚙️ ${credDays()} நாள்</button></div><small>${credDays()} நாளுக்கு மேல் பதிவு / Payment இல்லாத பாக்கி</small>
+  ${a.slice(0,5).map(c=>{const mb=mobOf(c.name);return `<div class="row"><div><b>${E(c.name)}</b><small>${c.days>=9999?'':c.days+' நாள் • '}கடைசி: ${c.la?fd(c.la):'-'}</small><small><a href="javascript:void(0)" onclick="credOpen('${ek(c.key)}')">📒 திற</a>${mb?` • <a href="tel:${E(mb)}">📞 ${E(mb)}</a>`:''}</small></div><div style="text-align:right"><b class="red">${M(c.due)}</b><br><button class="s" onclick="credRemind('${ek(c.key)}')">📲 Remind</button></div></div>`}).join('')}
+  ${a.length>5?`<small>மேலும் ${a.length-5} பேர் — Credit tab-ல் பார்க்கவும்.</small>`:''}</div>`;
+}
+
+/* ---------- 🗑️ குப்பைத் தொட்டி (Undo) ---------- */
+const TRASH_KEY='spb_trash_v1';
+const TR_LBL={spb_v4_items:'Item',spb_v4_entries:'Sale',spb_v4_expenses:'Expense',spb_v4_stock:'Stock',spb_credit_payments_v1:'Credit Payment',spb_credit_customers_v1:'Credit Customer',spb_v4_stays:'தங்கும் இடம்',saleProfitBookMansoorV1:'Mansoor',saleProfitBookMydeenV1:'Mydeen',saleProfitBookSupplierV1:'Supplier'};
+const trGet=()=>{try{const a=JSON.parse(localStorage.getItem(TRASH_KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
+const trSet=a=>{try{localStorage.setItem(TRASH_KEY,JSON.stringify(a));return true}catch(e){return false}};
+const trSame=(x,y)=>(x&&y&&x.id!==undefined&&y.id!==undefined)?String(x.id)===String(y.id):JSON.stringify(x)===JSON.stringify(y);
+function trashHook(k,a){
+  if(!Array.isArray(a)||!/^(spb|saleProfitBook)/.test(k)||/trash|corrupt/.test(k))return null;
+  const old=rd(k);
+  if(a.length>=old.length)return null;
+  const removed=old.filter(o=>!a.some(n=>trSame(o,n)));
+  if(!removed.length||removed.length>20)return null;   // பெரிய நீக்கல் (Delete All) — Backup பயன்படுத்தவும்
+  const now=Date.now(),lim=now-30*864e5;
+  let t=trGet().filter(x=>x.at>lim);
+  let last=null;
+  removed.forEach((r,i)=>{const rec=Object.assign({},r);if(rec.photo)delete rec.photo;last='t'+now+'_'+i;t.unshift({tid:last,key:k,rec,at:now})});
+  trSet(t.slice(0,60));
+  return last;
+}
+function trDesc(x){
+  const r=x.rec||{};
+  const nm=r.item||r.name||r.hotel||r.title||r.customer||r.note||'';
+  const amt=r.sale!==undefined?r.sale:(r.amount!==undefined?r.amount:'');
+  return [(TR_LBL[x.key]||x.key),r.date?fd(r.date):'',nm,amt!==''?M(amt):''].filter(Boolean).join(' • ');
+}
+function trashRestore(tid){
+  const t=trGet(),x=t.find(v=>v.tid===tid);if(!x)return;
+  const arr=rd(x.key);
+  if(!arr.some(o=>trSame(o,x.rec))){arr.unshift(x.rec);if(!wr(x.key,arr))return}
+  trSet(t.filter(v=>v.tid!==tid));
+  const b=document.getElementById('trBar');if(b)b.remove();
+  render();
+}
+function trashClear(){if(!trGet().length)return;if(!confirm('குப்பைத் தொட்டியை முழுவதும் காலி செய்யவா? (மீட்க முடியாது)'))return;trSet([]);render()}
+function trashToast(tid){
+  const x=trGet().find(v=>v.tid===tid);if(!x)return;
+  let b=document.getElementById('trBar');if(b)b.remove();
+  b=document.createElement('div');b.id='trBar';
+  b.style.cssText='position:fixed;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 150px);z-index:60;background:#222;color:#fff;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:8px;justify-content:space-between;font-size:14px;box-shadow:0 4px 16px #0005';
+  const sp=document.createElement('span');sp.textContent='🗑️ நீக்கப்பட்டது: '+trDesc(x);
+  const bt=document.createElement('button');bt.className='s';bt.textContent='↩️ Undo';bt.onclick=()=>trashRestore(tid);
+  b.appendChild(sp);b.appendChild(bt);document.body.appendChild(b);
+  setTimeout(()=>{const e=document.getElementById('trBar');if(e&&e===b)e.remove()},8000);
+}
+function trashCard(){
+  const t=trGet(),lim=Date.now()-30*864e5,a=t.filter(x=>x.at>lim);
+  const body=a.length?a.map(x=>{const d=new Date(x.at);return `<div class="row"><div><b>${E(trDesc(x))}</b><small>நீக்கியது: ${fd(ymd(d))} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}</small></div><button class="s" onclick="trashRestore('${x.tid}')">↩️ மீட்டெடு</button></div>`}).join('')+`<button class="s" style="margin-top:8px" onclick="trashClear()">🧹 காலி செய்</button><small>கடந்த 30 நாள் நீக்கங்கள் (அதிகபட்சம் 60). ஒரே முறையில் 20-க்கு மேல் நீக்கினால் (Delete All) இங்கே வராது — Backup பயன்படுத்தவும்.</small>`:'<small>நீக்கிய பதிவுகள் எதுவும் இல்லை.</small>';
+  return colCard('trash','🗑️ குப்பைத் தொட்டி ('+a.length+')',body);
 }
 
 /* ---------- 🔧 வசதிகள் சோதனை ---------- */
