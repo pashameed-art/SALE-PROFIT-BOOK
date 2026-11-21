@@ -384,7 +384,7 @@ function vExp(){
   <input type="date" id="xF" value="${xSel}" onchange="xSel=this.value;render()">
   <button class="s" onclick="xSel=today();render()">Today</button> <button class="s" onclick="xSel='${ymd(y)}';render()">நேற்று</button> <button class="s" onclick="xSel='';render()">எல்லாம்</button>
   <div class="k" style="margin-top:10px">${xSel?fd(xSel)+' • மொத்த Expense':'எல்லா தேதிகள் • மொத்த Expense'}<b class="red">${M(tot)}</b><small>${af.length} பதிவுகள்</small></div></div>
-  <div class="card"><b>💸 Expense சேர்க்க</b>${vBar('x','voiceExp')}<label>Date</label><input type="date" id="xD" value="${xSel||today()}">
+  <div class="card"><b>💸 Expense சேர்க்க</b>${vBar('x','voiceExp')}<button type="button" class="s" onclick="carModal(today(),carAmt()||600)">🚗 Car Rent சேர்</button><label>Date</label><input type="date" id="xD" value="${xSel||today()}">
   <label>Expense (ஒன்று அல்லது அதற்கு மேல் தேர்ந்தெடுக்கவும்)</label>
   <div style="display:flex;gap:6px;flex-wrap:wrap">${EXPN.map(n=>`<button type="button" class="xc${xPick.includes(n)?' on':''}" data-n="${E(n)}" onclick="xTog(this)">${E(n)}</button>`).join('')}<button type="button" class="xc${xOther?' on':''}" onclick="xOth(this)">✏️ Other</button></div>
   <small id="xPicked">${xPick.length?'தேர்ந்தது: '+E(xPick.join(', ')):''}</small>
@@ -1440,19 +1440,49 @@ function carSet(){
   localStorage.setItem(CAR_KEY,String(n));render();
 }
 const isCarRent=x=>String(x.name||'').toLowerCase().includes('car rent');
+/* வேலை நாட்கள் சுழற்சி: தொடக்கம்–முடிவு (எ.கா. 01-20, 30-19) */
+const CAR_CYC_KEY='spb_car_cycle';
+const carCyc=()=>{const p=String(localStorage.getItem(CAR_CYC_KEY)||'01-20').split('-').map(Number);return{s:p[0]>=1&&p[0]<=31?p[0]:1,e:p[1]>=1&&p[1]<=31?p[1]:20}};
+const carIn=ds=>{const d=+String(ds).slice(8,10),c=carCyc();return c.s<=c.e?(d>=c.s&&d<=c.e):(d>=c.s||d<=c.e)};
+const carP2=n=>String(n).padStart(2,'0');
+const carCycLbl=()=>{const c=carCyc();return carP2(c.s)+' – '+carP2(c.e)};
+const CAR_PRE=['01-20','01-19','30-19','29-19'];
 function carModalClose(){const o=document.getElementById('carModal');if(o)o.remove()}
+function carNote(){
+  const n=$('cNote'),d=($('cDt')||{}).value;if(!n)return;
+  n.textContent=d?(carIn(d)?'✅ இந்தத் தேதி வேலை நாட்களுக்குள் ('+carCycLbl()+') உள்ளது':'⚠️ இந்தத் தேதி வேலை நாட்களுக்கு ('+carCycLbl()+') வெளியே உள்ளது'):'';
+}
+function carCycSel(v){
+  const cu=$('cCus');
+  if(v==='custom'){if(cu)cu.style.display='flex';return}
+  if(cu)cu.style.display='none';
+  try{localStorage.setItem(CAR_CYC_KEY,v)}catch(e){}
+  carNote();
+}
+function carCycCus(){
+  const a=Math.round(+($('cS')||{}).value),b=Math.round(+($('cE')||{}).value);
+  if(!(a>=1&&a<=31&&b>=1&&b<=31))return;
+  try{localStorage.setItem(CAR_CYC_KEY,carP2(a)+'-'+carP2(b))}catch(e){}
+  carNote();
+}
 function carModal(t,amt){
   carModalClose();
+  const c=carCyc(),cur=carP2(c.s)+'-'+carP2(c.e),isPre=CAR_PRE.includes(cur);
+  const opts=CAR_PRE.map(v=>'<option value="'+v+'"'+(v===cur?' selected':'')+'>'+v.replace('-',' – ')+'</option>').join('')+'<option value="custom"'+(isPre?'':' selected')+'>மற்றவை…</option>';
   const o=document.createElement('div');o.id='carModal';
-  o.style.cssText='position:fixed;inset:0;z-index:80;background:#0008;display:flex;align-items:center;justify-content:center;padding:16px';
-  o.innerHTML='<div style="background:#fff;border-radius:16px;padding:18px;width:100%;max-width:360px;box-shadow:0 8px 30px #0005"><b style="font-size:17px">🚗 Car Rent '+M(amt)+' Add செய்யவா?</b><label style="display:block;margin-top:12px">தேதி தேர்ந்தெடு</label><input type="date" id="cDt" value="'+t+'" style="width:100%"><small style="display:block;margin:6px 0 12px">Working days: மாதத்தின் 01–20 தேதிகள் • GPay</small><div style="display:flex;gap:8px"><button onclick="carSave('+amt+')" style="flex:1">✅ Add</button><button class="s" onclick="carModalClose()" style="flex:1">இன்று வேண்டாம்</button></div></div>';
-  document.body.appendChild(o);
+  o.style.cssText='position:fixed;inset:0;z-index:80;background:#0008;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto';
+  o.innerHTML='<div style="background:#fff;border-radius:16px;padding:18px;width:100%;max-width:360px;box-shadow:0 8px 30px #0005"><b style="font-size:17px">🚗 Car Rent '+M(amt)+' Add செய்யவா?</b>'
+   +'<label style="display:block;margin-top:12px">தேதி தேர்ந்தெடு</label><input type="date" id="cDt" value="'+t+'" oninput="carNote()" style="width:100%">'
+   +'<label style="display:block;margin-top:10px">வேலை நாட்கள் (மாதச் சுழற்சி)</label><select id="cCyc" onchange="carCycSel(this.value)" style="width:100%">'+opts+'</select>'
+   +'<div id="cCus" style="display:'+(isPre?'none':'flex')+';gap:8px;margin-top:8px"><input type="number" id="cS" min="1" max="31" value="'+c.s+'" oninput="carCycCus()" style="flex:1" placeholder="தொடக்கம்"><input type="number" id="cE" min="1" max="31" value="'+c.e+'" oninput="carCycCus()" style="flex:1" placeholder="முடிவு"></div>'
+   +'<small id="cNote" style="display:block;margin:8px 0 12px"></small>'
+   +'<div style="display:flex;gap:8px"><button onclick="carSave('+amt+')" style="flex:1">✅ Add</button><button class="s" onclick="carModalClose()" style="flex:1">இன்று வேண்டாம்</button></div><small style="display:block;margin-top:8px">GPay • 30–19 என்றால் 30-ம் தேதி முதல் அடுத்த மாதம் 19 வரை</small></div>';
+  document.body.appendChild(o);carNote();
 }
 function carSave(amt){
   const d=($('cDt')||{}).value;
   if(!d){alert('தேதி தேர்ந்தெடுக்கவும்.');return}
-  const day=+d.slice(8,10);
-  if((day<1||day>20)&&!confirm('இது மாதத்தின் 01–20 தேதிக்கு வெளியே உள்ளது. அப்படியும் சேர்க்கவா?'))return;
+  if(!carIn(d)&&!confirm('இந்தத் தேதி வேலை நாட்களுக்கு ('+carCycLbl()+') வெளியே உள்ளது. அப்படியும் சேர்க்கவா?'))return;
   const a=rd(KEY.exp);
   if(a.some(x=>x.date===d&&isCarRent(x))&&!confirm('அந்தத் தேதியில் Car Rent ஏற்கெனவே உள்ளது. மீண்டும் சேர்க்கவா?'))return;
   a.unshift({id:Date.now(),date:d,name:'Car Rent',amount:amt,paidBy:'GPay'});
@@ -1462,8 +1492,8 @@ function carAsk(){
   try{
     if(pinOn()&&sessionStorage.getItem('spb_unlocked')!=='1')return;
     if(document.getElementById('carModal'))return;
-    const t=today(),day=+t.slice(8,10);
-    if(day<1||day>20)return;           // Working days: 01–20 மட்டும்
+    const t=today();
+    if(!carIn(t))return;               // வேலை நாட்கள் சுழற்சிக்குள் மட்டும்
     const amt=carAmt();if(!(amt>0))return;
     if(localStorage.getItem('spb_carrent_asked')===t)return;
     localStorage.setItem('spb_carrent_asked',t);
