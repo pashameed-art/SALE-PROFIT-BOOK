@@ -1247,7 +1247,7 @@ const remDays=r=>Math.round((new Date(r.due+'T00:00:00')-new Date(today()+'T00:0
 function remLbl(r){const d=remDays(r);return d<0?(-d)+' நாள் கடந்தது':d===0?'இன்று':d===1?'நாளை':d+' நாளில்'}
 function remRow(r,showBtns){
   const d=remDays(r),late=d<0,soon=d>=0&&d<=(r.before||3);
-  return `<div class="row"><div><b>${E(r.title)}</b><small>${r.amount>0?M(r.amount)+' • ':''}Due: ${fd(r.due)}${r.repeat==='m'?' • 🔁 மாதந்தோறும்':r.repeat==='y'?' • 🔁 ஆண்டுதோறும்':''}</small>${r.note?`<small>📝 ${E(r.note)}</small>`:''}<small class="${late?'red':soon?'red':'grn'}"><b>${remLbl(r)}</b></small></div><div style="display:flex;flex-direction:column;gap:6px"><button class="s" onclick="remPaid('${r.id}')">✅ Paid</button>${showBtns?`<button class="s" onclick="remEditStart('${r.id}')">✏️</button><button class="s" onclick="remDel('${r.id}')">🗑️</button>`:''}</div></div>`;
+  return `<div class="row"><div><b>${E(r.title)}</b><small>${r.amount>0?M(r.amount)+' • ':''}Due: ${fd(r.due)}${r.repeat==='m'?' • 🔁 மாதந்தோறும்':r.repeat==='y'?' • 🔁 ஆண்டுதோறும்':''}</small>${r.note?`<small>📝 ${E(r.note)}</small>`:''}<small class="${late?'red':soon?'red':'grn'}"><b>${remLbl(r)}</b></small></div><div style="display:flex;flex-direction:column;gap:6px"><button class="s" onclick="remPaid('${r.id}')">✅ Paid</button><button class="s" onclick="remCal('${r.id}')">📲 Phone Alert</button>${showBtns?`<button class="s" onclick="remEditStart('${r.id}')">✏️</button><button class="s" onclick="remDel('${r.id}')">🗑️</button>`:''}</div></div>`;
 }
 const remActive=()=>rems().filter(r=>!r.done).sort((a,b)=>String(a.due).localeCompare(String(b.due)));
 function remAlertHtml(){
@@ -1265,6 +1265,7 @@ function remBody(){
   <label>திரும்ப வருமா?</label><select id="rRp"><option value=""${sel(ed&&ed.repeat||'','')}>ஒருமுறை மட்டும்</option><option value="m"${sel(ed&&ed.repeat,'m')}>🔁 மாதந்தோறும்</option><option value="y"${sel(ed&&ed.repeat,'y')}>🔁 ஆண்டுதோறும்</option></select>
   <label>எத்தனை நாள் முன்பு நினைவூட்டவும்?</label><select id="rBf"><option value="1"${sel(String(ed&&ed.before||3),'1')}>1 நாள்</option><option value="3"${sel(String(ed&&ed.before||3),'3')}>3 நாள்</option><option value="7"${sel(String(ed&&ed.before||3),'7')}>7 நாள்</option><option value="15"${sel(String(ed&&ed.before||3),'15')}>15 நாள்</option></select>
   <label>குறிப்பு (விருப்பம்)</label><input id="rNt" value="${E(ed&&ed.note||'')}" placeholder="Consumer No ...">
+  <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="rCal" style="width:auto"> 📲 Phone Alert-உம் சேர் (Google Calendar)</label>
   <button onclick="remSave()">${ed?'Update':'➕ Reminder சேர்'}</button>${ed?'<button class="s" onclick="remEd=null;OP.rem=true;render()">Cancel</button>':''}
   <div style="margin-top:12px">${act.length?act.map(r=>remRow(r,true)).join(''):'<small>நினைவூட்டல் எதுவும் இல்லை.</small>'}</div>
   <small>App திறக்கும்போது Home-ல் காட்டும். App மூடியிருக்கும்போது phone notification வராது.</small>`;
@@ -1279,7 +1280,10 @@ function remSave(){
   // 90 நாளுக்கு மேல் முடிந்தவை நீக்கு
   const lim=ymd(new Date(Date.now()-90*864e5));a=a.filter(x=>!(x.done&&String(x.doneAt||'')<lim));
   if(!wr(REMK,a))return;
+  const wantCal=!!($('rCal')&&$('rCal').checked);
+  const saved=remEd!==null?a.find(x=>String(x.id)===String(remEd)):a[0];
   remEd=null;OP.rem=true;render();
+  if(wantCal&&saved)remCal(saved.id);
 }
 function remEditStart(id){remEd=id;OP.rem=true;render()}
 function remDel(id){
@@ -1287,6 +1291,17 @@ function remDel(id){
   if(!confirm('"'+x.title+'" Reminder-ஐ Delete செய்யவா?'))return;
   if(!wr(REMK,rems().filter(v=>String(v.id)!==String(id))))return;
   OP.rem=true;render();
+}
+function remCalUrl(r){
+  const p=n=>String(n).padStart(2,'0'),ds=String(r.due).replace(/-/g,'');
+  const text=encodeURIComponent('🔔 '+r.title+(r.amount>0?' ₹'+r.amount:'')+' — Due '+fd(r.due));
+  const det=encodeURIComponent(['Sale Profit Book நினைவூட்டல்',r.amount>0?'தொகை: ₹'+r.amount:'',r.note||''].filter(Boolean).join('\n'));
+  const rec=r.repeat==='m'?'&recur='+encodeURIComponent('RRULE:FREQ=MONTHLY'):r.repeat==='y'?'&recur='+encodeURIComponent('RRULE:FREQ=YEARLY'):'';
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+text+'&dates='+ds+'T090000/'+ds+'T093000&ctz=Asia%2FKolkata&details='+det+rec;
+}
+function remCal(id){
+  const r=rems().find(v=>String(v.id)===String(id));if(!r)return;
+  window.open(remCalUrl(r),'_blank');
 }
 function remPaid(id){
   const a=rems(),x=a.find(v=>String(v.id)===String(id));if(!x)return;
