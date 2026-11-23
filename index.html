@@ -41,7 +41,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span class="ver">V9.50</span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span style="display:flex;align-items:center;gap:8px"><span id="bell" onclick="remOpen()" title="நினைவூட்டல்கள்" style="position:relative;background:#ffffff33;border-radius:10px;padding:3px 9px;font-size:16px;cursor:pointer">🔔<span id="bellN" style="display:none;position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:10px;min-width:18px;height:18px;line-height:18px;text-align:center;font-size:11px;font-weight:800;padding:0 4px"></span></span><span class="ver">V9.51</span></span></header>
 <div id="lock" style="display:none;position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#0f766e,#14a398);color:#fff;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center">
 <div style="font-size:44px">🔒</div><div style="font-size:20px;font-weight:700;margin:6px 0 16px">Sale Profit Book</div>
 <input id="lockPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="PIN" style="max-width:220px;text-align:center;font-size:24px;letter-spacing:6px" onkeydown="if(event.key==='Enter')unlock()">
@@ -183,9 +183,11 @@ function vHome(){
   <small id="eCalc"></small><button onclick="saveEntry()">${ed?'Update Entry':'Save Entry'}</button>${ed?'<button class="s" onclick="editId=null;render()">Cancel</button>':''}</div>
   ${ed?'':mixHtml(it)}
   ${ed?'':dashHtml(low)}
+  ${ed?'':remAlertHtml()}
   ${ed?'':credDueHtml()}
   ${ed?'':monHtml()}
-  ${ed?'':insHtml()}`;
+  ${ed?'':insHtml()}
+  ${ed?'':remHtml()}`;
 }
 function calc(){
   const it=itemByName($('eItem').value),m=N($('eMeter').value),s=N($('eSale').value);
@@ -1236,6 +1238,78 @@ function voiceSale(){
   });
 }
 
+/* ---------- 🔔 நினைவூட்டல்கள் (Reminders) ---------- */
+const REMK='spb_v4_reminders';
+let remEd=null;
+const rems=()=>rd(REMK);
+const dtAdd=(ds,n,unit)=>{const [y,m,d]=ds.split('-').map(Number);let Y=y,M2=m-1+(unit==='y'?n*12:n),D=d;Y+=Math.floor(M2/12);M2=((M2%12)+12)%12;const last=new Date(Y,M2+1,0).getDate();return Y+'-'+String(M2+1).padStart(2,'0')+'-'+String(Math.min(D,last)).padStart(2,'0')};
+const remDays=r=>Math.round((new Date(r.due+'T00:00:00')-new Date(today()+'T00:00:00'))/864e5);
+function remLbl(r){const d=remDays(r);return d<0?(-d)+' நாள் கடந்தது':d===0?'இன்று':d===1?'நாளை':d+' நாளில்'}
+function remRow(r,showBtns){
+  const d=remDays(r),late=d<0,soon=d>=0&&d<=(r.before||3);
+  return `<div class="row"><div><b>${E(r.title)}</b><small>${r.amount>0?M(r.amount)+' • ':''}Due: ${fd(r.due)}${r.repeat==='m'?' • 🔁 மாதந்தோறும்':r.repeat==='y'?' • 🔁 ஆண்டுதோறும்':''}</small>${r.note?`<small>📝 ${E(r.note)}</small>`:''}<small class="${late?'red':soon?'red':'grn'}"><b>${remLbl(r)}</b></small></div><div style="display:flex;flex-direction:column;gap:6px"><button class="s" onclick="remPaid('${r.id}')">✅ Paid</button>${showBtns?`<button class="s" onclick="remEditStart('${r.id}')">✏️</button><button class="s" onclick="remDel('${r.id}')">🗑️</button>`:''}</div></div>`;
+}
+const remActive=()=>rems().filter(r=>!r.done).sort((a,b)=>String(a.due).localeCompare(String(b.due)));
+function remAlertHtml(){
+  const a=remActive().filter(r=>remDays(r)<=(r.before||3));
+  if(!a.length)return '';
+  return `<div class="card red"><b>🔔 நினைவூட்டல் (${a.length})</b>${a.map(r=>remRow(r,false)).join('')}</div>`;
+}
+function remBody(){
+  const ed=remEd!==null?rems().find(x=>String(x.id)===String(remEd)):null;
+  const sel=(v,c)=>v===c?' selected':'';
+  const act=remActive();
+  return `<label>என்ன? (Title)</label><input id="rTt" value="${E(ed?ed.title:'')}" placeholder="Electricity">
+  <label>தொகை ₹ (விருப்பம்)</label><input id="rAm" type="number" inputmode="decimal" value="${ed&&ed.amount?E(ed.amount):''}" placeholder="1110">
+  <label>Due Date</label><input id="rDu" type="date" value="${ed?ed.due:''}">
+  <label>திரும்ப வருமா?</label><select id="rRp"><option value=""${sel(ed&&ed.repeat||'','')}>ஒருமுறை மட்டும்</option><option value="m"${sel(ed&&ed.repeat,'m')}>🔁 மாதந்தோறும்</option><option value="y"${sel(ed&&ed.repeat,'y')}>🔁 ஆண்டுதோறும்</option></select>
+  <label>எத்தனை நாள் முன்பு நினைவூட்டவும்?</label><select id="rBf"><option value="1"${sel(String(ed&&ed.before||3),'1')}>1 நாள்</option><option value="3"${sel(String(ed&&ed.before||3),'3')}>3 நாள்</option><option value="7"${sel(String(ed&&ed.before||3),'7')}>7 நாள்</option><option value="15"${sel(String(ed&&ed.before||3),'15')}>15 நாள்</option></select>
+  <label>குறிப்பு (விருப்பம்)</label><input id="rNt" value="${E(ed&&ed.note||'')}" placeholder="Consumer No ...">
+  <button onclick="remSave()">${ed?'Update':'➕ Reminder சேர்'}</button>${ed?'<button class="s" onclick="remEd=null;OP.rem=true;render()">Cancel</button>':''}
+  <div style="margin-top:12px">${act.length?act.map(r=>remRow(r,true)).join(''):'<small>நினைவூட்டல் எதுவும் இல்லை.</small>'}</div>
+  <small>App திறக்கும்போது Home-ல் காட்டும். App மூடியிருக்கும்போது phone notification வராது.</small>`;
+}
+function remHtml(){return colCard('rem','🔔 நினைவூட்டல்கள் ('+remActive().length+')',remBody())}
+function remSave(){
+  const title=nm($('rTt').value),due=$('rDu').value;
+  if(!title||!due){alert('Title மற்றும் Due Date உள்ளிடவும்.');return}
+  const rec={title,amount:N($('rAm').value),due,repeat:$('rRp').value,before:+$('rBf').value||3,note:nm($('rNt').value),done:false};
+  let a=rems();
+  if(remEd!==null)a=a.map(x=>String(x.id)===String(remEd)?Object.assign({},x,rec):x);else a.unshift(Object.assign({id:'r'+Date.now()+Math.random().toString(36).slice(2,6)},rec));
+  // 90 நாளுக்கு மேல் முடிந்தவை நீக்கு
+  const lim=ymd(new Date(Date.now()-90*864e5));a=a.filter(x=>!(x.done&&String(x.doneAt||'')<lim));
+  if(!wr(REMK,a))return;
+  remEd=null;OP.rem=true;render();
+}
+function remEditStart(id){remEd=id;OP.rem=true;render()}
+function remDel(id){
+  const x=rems().find(v=>String(v.id)===String(id));if(!x)return;
+  if(!confirm('"'+x.title+'" Reminder-ஐ Delete செய்யவா?'))return;
+  if(!wr(REMK,rems().filter(v=>String(v.id)!==String(id))))return;
+  OP.rem=true;render();
+}
+function remPaid(id){
+  const a=rems(),x=a.find(v=>String(v.id)===String(id));if(!x)return;
+  if(x.amount>0&&confirm('"'+x.title+'" '+M(x.amount)+' — Expense-ல் (GPay) சேர்க்கவா?\n\nOK = சேர், Cancel = சேர்க்காமல் Paid என்று மட்டும் குறி')){
+    const e=rd(KEY.exp);e.unshift({id:Date.now(),date:today(),name:x.title,amount:x.amount,paidBy:'GPay'});wr(KEY.exp,e);
+  }
+  const n=a.map(v=>{
+    if(String(v.id)!==String(id))return v;
+    if(v.repeat==='m'||v.repeat==='y')return Object.assign({},v,{due:dtAdd(v.due,1,v.repeat)});   // அடுத்த தேதிக்கு நகரும்
+    return Object.assign({},v,{done:true,doneAt:today()});
+  });
+  if(!wr(REMK,n))return;
+  OP.rem=true;render();
+}
+
+function bellUpd(){
+  const n=remActive().filter(r=>remDays(r)<=(r.before||3)).length,b=$('bellN');
+  if(!b)return;b.textContent=n>9?'9+':n;b.style.display=n>0?'block':'none';
+}
+function remOpen(){
+  tab='home';cbKey=null;editId=null;remEd=null;OP.rem=true;render();
+  setTimeout(()=>{const e=$('remBody');if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},60);
+}
 /* ---------- 📈 INSIGHTS ---------- */
 const SLOW_DAYS=30;
 function insData(){
@@ -1623,7 +1697,7 @@ function render(){
   if(_hf&&tab==='hist'){const i=$('hQ');if(i){i.focus();const l=i.value.length;try{i.setSelectionRange(l,l)}catch(e){}}}_hf=0;
   const go=k=>`tab='${k}';cbKey=null;editId=null;mixOpen=false;iEdit=null;sOut=null;hq='';render();scrollTo(0,0)`;
   const nb=k=>{const x=TABS.find(v=>v[0]===k),p=x[1].split(' ');return `<button class="${k===tab?'on':''}" onclick="${go(k)}"><span class="ic">${p[0]}</span><span>${p.slice(1).join(' ')}</span></button>`};
-  $('nav').innerHTML=`<div class="nr">${['home','hist','stock','exp','credit','party','bak'].map(nb).join('')}</div><div class="nr apps"><span class="lbl">Apps</span>${['ledger','bike','hexp','police'].map(nb).join('')}</div>`;
+  $('nav').innerHTML=`<div class="nr">${['home','hist','stock','exp','credit','party','bak'].map(nb).join('')}</div><div class="nr apps"><span class="lbl">Apps</span>${['ledger','bike','hexp','police'].map(nb).join('')}</div>`;  try{bellUpd()}catch(e){}
 }
 render();lockIfNeeded();setTimeout(carAsk,600);setTimeout(autoBak,3000);
 </script><script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('./sw-v9.js').catch(function(){})});</script>
