@@ -41,7 +41,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span style="display:flex;align-items:center;gap:8px"><span id="bell" onclick="remOpen()" title="நினைவூட்டல்கள்" style="position:relative;background:#ffffff33;border-radius:10px;padding:3px 9px;font-size:16px;cursor:pointer">🔔<span id="bellN" style="display:none;position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:10px;min-width:18px;height:18px;line-height:18px;text-align:center;font-size:11px;font-weight:800;padding:0 4px"></span></span><span class="ver">V9.51</span></span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span style="display:flex;align-items:center;gap:8px"><span id="bell" onclick="remOpen()" title="நினைவூட்டல்கள்" style="position:relative;background:#ffffff33;border-radius:10px;padding:3px 9px;font-size:16px;cursor:pointer">🔔<span id="bellN" style="display:none;position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:10px;min-width:18px;height:18px;line-height:18px;text-align:center;font-size:11px;font-weight:800;padding:0 4px"></span></span><span class="ver">V9.52</span></span></header>
 <div id="lock" style="display:none;position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#0f766e,#14a398);color:#fff;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center">
 <div style="font-size:44px">🔒</div><div style="font-size:20px;font-weight:700;margin:6px 0 16px">Sale Profit Book</div>
 <input id="lockPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="PIN" style="max-width:220px;text-align:center;font-size:24px;letter-spacing:6px" onkeydown="if(event.key==='Enter')unlock()">
@@ -1247,7 +1247,7 @@ const remDays=r=>Math.round((new Date(r.due+'T00:00:00')-new Date(today()+'T00:0
 function remLbl(r){const d=remDays(r);return d<0?(-d)+' நாள் கடந்தது':d===0?'இன்று':d===1?'நாளை':d+' நாளில்'}
 function remRow(r,showBtns){
   const d=remDays(r),late=d<0,soon=d>=0&&d<=(r.before||3);
-  return `<div class="row"><div><b>${E(r.title)}</b><small>${r.amount>0?M(r.amount)+' • ':''}Due: ${fd(r.due)}${r.repeat==='m'?' • 🔁 மாதந்தோறும்':r.repeat==='y'?' • 🔁 ஆண்டுதோறும்':''}</small>${r.note?`<small>📝 ${E(r.note)}</small>`:''}<small class="${late?'red':soon?'red':'grn'}"><b>${remLbl(r)}</b></small></div><div style="display:flex;flex-direction:column;gap:6px"><button class="s" onclick="remPaid('${r.id}')">✅ Paid</button><button class="s" onclick="remCal('${r.id}')">${r.calId?'✅ Calendar-ல் உள்ளது':'📲 Phone Alert'}</button>${showBtns?`<button class="s" onclick="remEditStart('${r.id}')">✏️</button><button class="s" onclick="remDel('${r.id}')">🗑️</button>`:''}</div></div>`;
+  return `<div class="row"><div><b>${E(r.title)}</b><small>${r.amount>0?M(r.amount)+' • ':''}Due: ${fd(r.due)}${r.repeat==='m'?' • 🔁 மாதந்தோறும்':r.repeat==='y'?' • 🔁 ஆண்டுதோறும்':''}</small>${r.note?`<small>📝 ${E(r.note)}</small>`:''}<small class="${late?'red':soon?'red':'grn'}"><b>${remLbl(r)}</b></small></div><div style="display:flex;flex-direction:column;gap:6px;min-width:128px"><button class="s" style="width:100%" onclick="remPaid('${r.id}')">✅ Paid</button><button class="s" style="width:100%;font-size:12px" onclick="remCal('${r.id}')">${r.calId?'📅 Calendar ✔':'📲 Phone Alert'}</button>${showBtns?`<div style="display:flex;gap:6px"><button class="s" style="flex:1;padding:6px 0" onclick="remEditStart('${r.id}')">✏️</button><button class="s" style="flex:1;padding:6px 0" onclick="remDel('${r.id}')">🗑️</button></div>`:''}</div></div>`;
 }
 const remActive=()=>rems().filter(r=>!r.done).sort((a,b)=>String(a.due).localeCompare(String(b.due)));
 function remAlertHtml(){
@@ -1268,7 +1268,7 @@ function remBody(){
   <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="rCal" style="width:auto"${localStorage.getItem('spb_rem_cal')==='0'?'':' checked'}> 📲 Google Calendar-ல் தானாக சேர் (Phone Notification)</label>
   <button onclick="remSave()">${ed?'Update':'➕ Reminder சேர்'}</button>${ed?'<button class="s" onclick="remEd=null;OP.rem=true;render()">Cancel</button>':''}
   <div style="margin-top:12px">${act.length?act.map(r=>remRow(r,true)).join(''):'<small>நினைவூட்டல் எதுவும் இல்லை.</small>'}</div>
-  <small>App திறக்கும்போது Home-ல் காட்டும். App மூடியிருக்கும்போது phone notification வராது.</small>`;
+  <small>App திறக்கும்போது Home-ல் 🔔 காட்டும். 📅 Calendar ✔ உள்ளவற்றுக்கு, App மூடியிருந்தாலும் phone-ல் Google Calendar notification வரும் (Due-க்கு முன்பும், Due நாள் காலை 9:00 மணிக்கும்).</small>`;
 }
 function remHtml(){return colCard('rem','🔔 நினைவூட்டல்கள் ('+remActive().length+')',remBody())}
 function remSave(){
