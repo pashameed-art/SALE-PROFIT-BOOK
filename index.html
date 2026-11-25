@@ -55,11 +55,15 @@ small{color:var(--m);display:block;font-size:12px}
 <iframe id="hxF" title="Home Expense Ledger" onload="window.iframeGuard&&iframeGuard(this)" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
 <div id="bkW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">🏍️ Mass Bike</b><a href="https://pashameed-art.github.io/Mass-Bike/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
+<button onclick="coOpen()" style="width:100%;margin:0 0 10px;padding:12px 16px">👥 Customer-wise Outstanding</button>
 <iframe id="bkF" title="Mass Bike" onload="window.iframeGuard&&iframeGuard(this)" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
 <div id="lgW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">📗 Mass Sales Ledger</b><a href="https://pashameed-art.github.io/mass-sales-ledger/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
 <div id="cmpBox"></div>
 <iframe id="lgF" onload="window.iframeGuard&&iframeGuard(this)" title="Mass Sales Ledger" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
+<div id="coOv" style="display:none;position:fixed;inset:0;z-index:50;background:var(--bg);overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 12px) 12px calc(env(safe-area-inset-bottom,0px) + 24px)">
+<div style="max-width:640px;margin:auto"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b style="font-size:16px">👥 Customer-wise Outstanding</b><button class="s" onclick="coClose()" style="margin:0;padding:8px 14px">✕ மூடு</button></div>
+<div id="coBody"></div></div></div>
 <nav id="nav"></nav>
 <script>
 'use strict';
@@ -1780,5 +1784,53 @@ function render(){
   $('nav').innerHTML=`<div class="nr">${['home','hist','stock','exp','credit','party','bak'].map(nb).join('')}</div><div class="nr apps"><span class="lbl">Apps</span>${['ledger','bike','hexp','police'].map(nb).join('')}</div>`;  try{bellUpd()}catch(e){}
 }
 render();lockIfNeeded();setTimeout(carAsk,600);setTimeout(autoBak,3000);
-</script><script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('./sw-v9.js').catch(function(){})});</script>
+</script><script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('./sw-v9.js').catch(function(){})});
+/* ---- Mass Bike: Customer-wise Outstanding (reads Bike app data from shared storage) ---- */
+function coIST(){return new Date(Date.now()+19800000).toISOString().slice(0,10)}
+function coDays(a,b){const d=Math.round((new Date(b)-new Date(a))/86400000);return d<1?1:d}
+function coDMY(x){if(!x)return '-';const p=String(x).split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:x}
+function coWa(p){const d=String(p||'').replace(/\D/g,'');return d.length===10?'91'+d:d}
+function coData(){
+  const rentals=rd('massBikeV4_rentals'),bikes=rd('massBikeV4_bikes'),t=coIST(),m={};
+  rentals.forEach(r=>{
+    if(!r)return;
+    const name=String(r.customerName||'').trim()||'Unknown Customer',phone=String(r.customerPhone||'').replace(/\D/g,''),key=name.toLowerCase()+'|'+phone;
+    let due=0;
+    if(r.status==='active'){const paid=N(r.advance)+(r.payments||[]).reduce((s,x)=>s+N(x&&x.amount),0);due=Math.max(0,coDays(r.startDate,t)*N(r.rate)-paid)}
+    else due=Math.max(0,N(r.balance));
+    due=Math.round(due*100)/100;
+    if(due<=0)return;
+    const bk=bikes.find(b=>b&&b.id===r.bikeId);
+    if(!m[key])m[key]={name:name,phone:phone,due:0,items:[]};
+    m[key].due+=due;
+    m[key].items.push({bike:(r.bikeName||'Bike')+(bk&&bk.plate?' ('+bk.plate+')':''),start:r.startDate,status:r.status});
+  });
+  return Object.values(m).sort((a,b)=>b.due-a.due);
+}
+function coOpen(){
+  const rows=coData();window.__coRows=rows;
+  const tot=rows.reduce((s,c)=>s+c.due,0);
+  $('coBody').innerHTML=rows.length
+    ?'<div class="card"><div class="row"><span><b>மொத்த பாக்கி</b><small>'+rows.length+' customer(s)</small></span><b class="red" style="font-size:18px">'+M(tot)+'</b></div></div>'
+      +rows.map((c,i)=>'<div class="card"><div class="row"><span><b>'+E(c.name)+'</b><small>'+E(c.phone||'Phone இல்லை')+' · '+c.items.length+' rental(s)</small></span><b class="red">'+M(c.due)+'</b></div>'
+        +c.items.map(it=>'<div style="font-size:12.5px;color:var(--m);padding:3px 0">'+E(it.bike)+' · '+coDMY(it.start)+' · '+(it.status==='active'?'Active (ஓடுது)':'Returned')+'</div>').join('')
+        +'<div style="display:flex;gap:8px"><button onclick="coWhats('+i+')" style="flex:1;margin-top:10px">📲 WhatsApp</button><button class="s" onclick="coCall('+i+')" style="flex:1;margin-top:10px">📞 Call</button></div></div>').join('')
+    :'<div class="card" style="text-align:center">✅ பாக்கி எதுவும் இல்லை</div>';
+  $('coOv').style.display='block';$('coOv').scrollTop=0;
+}
+function coClose(){$('coOv').style.display='none'}
+function coWhats(i){
+  const c=(window.__coRows||[])[i];if(!c)return;
+  if(!c.phone){alert('Phone number இல்லை / No phone number saved');return}
+  let t='வணக்கம் '+c.name+',\nMASS BIKE-ல உங்களுக்கு மொத்த பாக்கி ₹'+Math.round(c.due*100)/100+'.\n\n';
+  c.items.forEach(it=>{t+='• '+it.bike+' — '+coDMY(it.start)+' ('+(it.status==='active'?'Active':'Returned')+')\n'});
+  t+='\nதயவுசெய்து விரைவில் செலுத்தவும். நன்றி!\n\nHello '+c.name+', please settle your pending balance with MASS BIKE at your earliest. Thank you!';
+  window.open('https://wa.me/'+coWa(c.phone)+'?text='+encodeURIComponent(t),'_blank');
+}
+function coCall(i){
+  const c=(window.__coRows||[])[i];
+  if(!c||!c.phone){alert('Phone number இல்லை / No phone number saved');return}
+  window.location.href='tel:'+c.phone;
+}
+</script>
 </body></html>
