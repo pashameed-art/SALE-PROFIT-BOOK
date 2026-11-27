@@ -41,7 +41,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span style="display:flex;align-items:center;gap:8px"><span id="bell" onclick="remOpen()" title="நினைவூட்டல்கள்" style="position:relative;background:#ffffff33;border-radius:10px;padding:3px 9px;font-size:16px;cursor:pointer">🔔<span id="bellN" style="display:none;position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:10px;min-width:18px;height:18px;line-height:18px;text-align:center;font-size:11px;font-weight:800;padding:0 4px"></span></span><span class="ver">V9.52</span></span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span style="display:flex;align-items:center;gap:8px"><span id="carBtn" onclick="carxOpen()" title="Car Expense" style="background:#ffffff33;border-radius:10px;padding:3px 9px;font-size:16px;cursor:pointer">🚗</span><span id="bell" onclick="remOpen()" title="நினைவூட்டல்கள்" style="position:relative;background:#ffffff33;border-radius:10px;padding:3px 9px;font-size:16px;cursor:pointer">🔔<span id="bellN" style="display:none;position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:10px;min-width:18px;height:18px;line-height:18px;text-align:center;font-size:11px;font-weight:800;padding:0 4px"></span></span><span class="ver">V9.53</span></span></header>
 <div id="lock" style="display:none;position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#0f766e,#14a398);color:#fff;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center">
 <div style="font-size:44px">🔒</div><div style="font-size:20px;font-weight:700;margin:6px 0 16px">Sale Profit Book</div>
 <input id="lockPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="PIN" style="max-width:220px;text-align:center;font-size:24px;letter-spacing:6px" onkeydown="if(event.key==='Enter')unlock()">
@@ -55,15 +55,11 @@ small{color:var(--m);display:block;font-size:12px}
 <iframe id="hxF" title="Home Expense Ledger" onload="window.iframeGuard&&iframeGuard(this)" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
 <div id="bkW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">🏍️ Mass Bike</b><a href="https://pashameed-art.github.io/Mass-Bike/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
-<button onclick="coOpen()" style="width:100%;margin:0 0 10px;padding:12px 16px">👥 Customer-wise Outstanding</button>
 <iframe id="bkF" title="Mass Bike" onload="window.iframeGuard&&iframeGuard(this)" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
 <div id="lgW" style="display:none;padding:12px;max-width:640px;margin:auto">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:15px">📗 Mass Sales Ledger</b><a href="https://pashameed-art.github.io/mass-sales-ledger/" target="_blank" rel="noopener" style="color:var(--g);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap">புதிய tab ↗</a></div>
 <div id="cmpBox"></div>
 <iframe id="lgF" onload="window.iframeGuard&&iframeGuard(this)" title="Mass Sales Ledger" style="width:100%;height:calc(100vh - 245px);min-height:420px;border:1px solid var(--ln);border-radius:12px;background:#fff"></iframe></div>
-<div id="coOv" style="display:none;position:fixed;inset:0;z-index:50;background:var(--bg);overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 12px) 12px calc(env(safe-area-inset-bottom,0px) + 24px)">
-<div style="max-width:640px;margin:auto"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b style="font-size:16px">👥 Customer-wise Outstanding</b><button class="s" onclick="coClose()" style="margin:0;padding:8px 14px">✕ மூடு</button></div>
-<div id="coBody"></div></div></div>
 <nav id="nav"></nav>
 <script>
 'use strict';
@@ -1394,6 +1390,75 @@ function remOpen(){
   tab='home';cbKey=null;editId=null;remEd=null;OP.rem=true;render();
   setTimeout(()=>{const e=$('remBody');if(e)e.scrollIntoView({behavior:'smooth',block:'start'})},60);
 }
+/* ---------- 🚗 CAR EXPENSE (தனி — Sale Profit Book Expense-ல் சேராது) ---------- */
+const CARK='spb_v4_car';
+const CAR_NAME='Wagon R (2016)';
+const CAR_TYPES=[['Oil Change','🛢️'],['Air Filter','🌬️'],['AC Filter','❄️'],['Brake Pad','🛑'],['Tyre','🛞'],['Other','✏️']];
+let carEd=null,carType='Oil Change';
+const carList=()=>rd(CARK);
+const carIcon=t=>(CAR_TYPES.find(x=>x[0]===t)||['','🔧'])[1];
+const carOil=()=>{const v=+localStorage.getItem('spb_car_oil_km');return v>0?v:5000};
+function carxOpen(){tab='car';carEd=null;carType='Oil Change';render();window.scrollTo(0,0)}
+function carLabel(x){return x.type==='Other'?(x.name||'Other'):x.type}
+function carSummary(){
+  const a=carList(),sum=l=>l.reduce((t,x)=>t+N(x.amount),0),yr=today().slice(0,4);
+  const kms=a.map(x=>N(x.km)).filter(v=>v>0),cur=kms.length?Math.max(...kms):0;
+  const oils=a.filter(x=>x.type==='Oil Change'&&N(x.km)>0).sort((p,q)=>N(q.km)-N(p.km)),lo=oils[0];
+  return{all:sum(a),year:sum(a.filter(x=>String(x.date).startsWith(yr))),cur,lo,n:a.length};
+}
+function vCar(){
+  const ed=carEd!==null?carList().find(x=>String(x.id)===String(carEd)):null;
+  if(ed&&carType!==ed.type&&!window.__carPicked)carType=ed.type;
+  const sm=carSummary(),oil=carOil();
+  const next=sm.lo?N(sm.lo.km)+oil:0,left=next&&sm.cur?next-sm.cur:null;
+  const chips=CAR_TYPES.map(([n,ic])=>`<button type="button" class="xc${carType===n?' on':''}" data-t="${E(n)}" onclick="carxPick(this)">${ic} ${E(n)}</button>`).join('');
+  const rows=carList().slice().sort((p,q)=>String(q.date).localeCompare(String(p.date))||N(q.id)-N(p.id)).map(x=>`<div class="row"><div><b>${carIcon(x.type)} ${E(carLabel(x))}</b><small>📅 ${fd(x.date)}${N(x.km)>0?' • '+Math.round(N(x.km)).toLocaleString('en-IN')+' km':''}</small>${x.note?`<small>📝 ${E(x.note)}</small>`:''}</div><div style="text-align:right"><b>${N(x.amount)>0?M(x.amount):'—'}</b><br><button class="s" style="padding:4px 10px" onclick="carxEdit('${x.id}')">✏️</button> <button class="s" style="padding:4px 10px" onclick="carxDel('${x.id}')">🗑️</button></div></div>`).join('')||'<small>பதிவு எதுவும் இல்லை.</small>';
+  return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">🚗 ${CAR_NAME}</b><button class="s" onclick="tab='home';render()">← Home</button></div>
+  <small>Car செலவுகள் தனியாகச் சேமிக்கப்படும். Sale Profit Book Expense-ல் சேராது.</small>
+  <div class="row"><div><b>மொத்தச் செலவு</b><small>இந்த ஆண்டு ${M(sm.year)}</small></div><b>${M(sm.all)}</b></div>
+  ${sm.lo?`<div class="row"><div><b>🛢️ கடைசி Oil Change</b><small>${fd(sm.lo.date)} • ${Math.round(N(sm.lo.km)).toLocaleString('en-IN')} km</small></div><div style="text-align:right"><b>அடுத்து ${next.toLocaleString('en-IN')} km</b>${left!==null?`<br><small class="${left<=500?'red':'grn'}">${left>=0?'இன்னும் '+left.toLocaleString('en-IN')+' km':Math.abs(left).toLocaleString('en-IN')+' km கடந்தது'}</small>`:''}</div></div>`:''}
+  ${sm.cur?`<small>தற்போதைய KM (கடைசிப் பதிவு): ${Math.round(sm.cur).toLocaleString('en-IN')} km</small><br>`:''}
+  <button class="s" onclick="carxOilSet()">⚙️ Oil Change இடைவெளி: ${oil.toLocaleString('en-IN')} km</button></div>
+  <div class="card"><b>${ed?'✏️ திருத்து':'➕ புதிய Car செலவு'}</b>
+  <label>வகை</label><div style="display:flex;gap:6px;flex-wrap:wrap">${chips}</div>
+  <div id="cxOW" style="display:${carType==='Other'?'block':'none'}"><label>என்ன செலவு? (Other)</label><input id="cxO" value="${E(ed&&ed.type==='Other'?ed.name||'':'')}" placeholder="Battery, Wiper, Service ..."></div>
+  <label>தேதி</label><input id="cxD" type="date" value="${ed?ed.date:today()}">
+  <label id="cxKL">${carType==='Oil Change'?'Start Kilometres (Oil Change செய்தபோது Odometer) *':'Odometer KM (விருப்பம்)'}</label><input id="cxK" type="number" inputmode="numeric" value="${ed&&ed.km?E(ed.km):''}" placeholder="45000">
+  <label>தொகை ₹</label><input id="cxA" type="number" inputmode="decimal" value="${ed&&ed.amount?E(ed.amount):''}">
+  <label>குறிப்பு (விருப்பம்)</label><input id="cxN" value="${E(ed&&ed.note||'')}" placeholder="Garage, Brand ...">
+  <button onclick="carxSave()">${ed?'Update':'Save'}</button>${ed?'<button class="s" onclick="carEd=null;render()">Cancel</button>':''}</div>
+  <div class="card"><b>📋 பதிவுகள் (${sm.n})</b>${rows}</div>`;
+}
+function carxPick(b){
+  carType=b.dataset.t;window.__carPicked=true;
+  document.querySelectorAll('.xc[data-t]').forEach(x=>x.classList.toggle('on',x.dataset.t===carType));
+  const ow=$('cxOW');if(ow)ow.style.display=carType==='Other'?'block':'none';
+  const kl=$('cxKL');if(kl)kl.textContent=carType==='Oil Change'?'Start Kilometres (Oil Change செய்தபோது Odometer) *':'Odometer KM (விருப்பம்)';
+}
+function carxSave(){
+  const type=carType,name=nm(($('cxO')||{}).value||''),km=N($('cxK').value),amount=N($('cxA').value),date=$('cxD').value||today();
+  if(type==='Other'&&!name){alert('என்ன செலவு என்று உள்ளிடவும்.');return}
+  if(type==='Oil Change'&&!(km>0)){alert('Oil Change-க்கு Start Kilometres உள்ளிடவும்.');return}
+  if(!(amount>0)&&!confirm('தொகை உள்ளிடவில்லை. அப்படியே சேமிக்கவா?'))return;
+  const rec={type,name:type==='Other'?name:'',date,km:km>0?km:0,amount:amount>0?amount:0,note:nm($('cxN').value)};
+  let a=carList();
+  if(carEd!==null)a=a.map(x=>String(x.id)===String(carEd)?Object.assign({},x,rec):x);else a.unshift(Object.assign({id:'c'+Date.now()+Math.random().toString(36).slice(2,6)},rec));
+  if(!wr(CARK,a))return;
+  carEd=null;window.__carPicked=false;carType='Oil Change';render();
+}
+function carxEdit(id){const x=carList().find(v=>String(v.id)===String(id));if(!x)return;carEd=id;carType=x.type;window.__carPicked=false;render();window.scrollTo(0,0)}
+function carxDel(id){
+  const x=carList().find(v=>String(v.id)===String(id));if(!x)return;
+  if(!confirm('"'+carLabel(x)+'" ('+fd(x.date)+') Delete செய்யவா?'))return;
+  if(!wr(CARK,carList().filter(v=>String(v.id)!==String(id))))return;
+  render();
+}
+function carxOilSet(){
+  const v=prompt('Oil Change இடைவெளி (km):',carOil());if(v===null)return;
+  const n=Math.round(+v);if(!(n>=500&&n<=50000))return alert('500 முதல் 50000 வரை உள்ளிடவும்.');
+  try{localStorage.setItem('spb_car_oil_km',String(n))}catch(e){}render();
+}
+
 /* ---------- 📈 INSIGHTS ---------- */
 const SLOW_DAYS=30;
 function insData(){
@@ -1456,7 +1521,7 @@ function credDueHtml(){
 
 /* ---------- 🗑️ குப்பைத் தொட்டி (Undo) ---------- */
 const TRASH_KEY='spb_trash_v1';
-const TR_LBL={spb_v4_items:'Item',spb_v4_entries:'Sale',spb_v4_expenses:'Expense',spb_v4_stock:'Stock',spb_credit_payments_v1:'Credit Payment',spb_credit_customers_v1:'Credit Customer',spb_v4_stays:'தங்கும் இடம்',saleProfitBookMansoorV1:'Mansoor',saleProfitBookMydeenV1:'Mydeen',saleProfitBookSupplierV1:'Supplier'};
+const TR_LBL={spb_v4_items:'Item',spb_v4_entries:'Sale',spb_v4_expenses:'Expense',spb_v4_stock:'Stock',spb_credit_payments_v1:'Credit Payment',spb_credit_customers_v1:'Credit Customer',spb_v4_stays:'தங்கும் இடம்',spb_v4_car:'Car செலவு',saleProfitBookMansoorV1:'Mansoor',saleProfitBookMydeenV1:'Mydeen',saleProfitBookSupplierV1:'Supplier'};
 const trGet=()=>{try{const a=JSON.parse(localStorage.getItem(TRASH_KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
 const trSet=a=>{try{localStorage.setItem(TRASH_KEY,JSON.stringify(a));return true}catch(e){return false}};
 const trSame=(x,y)=>(x&&y&&x.id!==undefined&&y.id!==undefined)?String(x.id)===String(y.id):JSON.stringify(x)===JSON.stringify(y);
@@ -1776,7 +1841,7 @@ function carAsk(){
 
 /* ---------- SHELL ---------- */
 function render(){
-  const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,ledger:()=>'',bike:()=>'',hexp:()=>'',police:vPolice,bak:vBak}[tab];
+  const v={home:vHome,hist:vHist,stock:vStock,exp:vExp,credit:vCredit,party:vParty,ledger:()=>'',bike:()=>'',hexp:()=>'',police:vPolice,car:vCar,bak:vBak}[tab];
   $('app').innerHTML=v();{const lg=tab==='ledger',bk=tab==='bike',hx=tab==='hexp';$('app').style.display=(lg||bk||hx)?'none':'';$('lgW').style.display=lg?'block':'none';$('bkW').style.display=bk?'block':'none';$('hxW').style.display=hx?'block':'none';if(hx&&!$('hxF').getAttribute('src'))$('hxF').setAttribute('src','https://pashameed-art.github.io/Home-Expense-Ledger/');if(lg)$('cmpBox').innerHTML=cmpHtml();if(lg&&!$('lgF').getAttribute('src'))$('lgF').setAttribute('src','https://pashameed-art.github.io/mass-sales-ledger/');if(bk&&!$('bkF').getAttribute('src'))$('bkF').setAttribute('src','https://pashameed-art.github.io/Mass-Bike/')}try{const d=new Date();$('hd').textContent=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()]+', '+d.getDate()+' '+['January','February','March','April','May','June','July','August','September','October','November','December'][d.getMonth()]+' '+d.getFullYear()}catch(e){}if(tab==='home'){calc();if(mixOpen)mxTot()}
   if(_hf&&tab==='hist'){const i=$('hQ');if(i){i.focus();const l=i.value.length;try{i.setSelectionRange(l,l)}catch(e){}}}_hf=0;
   const go=k=>`tab='${k}';cbKey=null;editId=null;mixOpen=false;iEdit=null;sOut=null;hq='';render();scrollTo(0,0)`;
@@ -1784,53 +1849,5 @@ function render(){
   $('nav').innerHTML=`<div class="nr">${['home','hist','stock','exp','credit','party','bak'].map(nb).join('')}</div><div class="nr apps"><span class="lbl">Apps</span>${['ledger','bike','hexp','police'].map(nb).join('')}</div>`;  try{bellUpd()}catch(e){}
 }
 render();lockIfNeeded();setTimeout(carAsk,600);setTimeout(autoBak,3000);
-</script><script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('./sw-v9.js').catch(function(){})});
-/* ---- Mass Bike: Customer-wise Outstanding (reads Bike app data from shared storage) ---- */
-function coIST(){return new Date(Date.now()+19800000).toISOString().slice(0,10)}
-function coDays(a,b){const d=Math.round((new Date(b)-new Date(a))/86400000);return d<1?1:d}
-function coDMY(x){if(!x)return '-';const p=String(x).split('-');return p.length===3?p[2]+'.'+p[1]+'.'+p[0]:x}
-function coWa(p){const d=String(p||'').replace(/\D/g,'');return d.length===10?'91'+d:d}
-function coData(){
-  const rentals=rd('massBikeV4_rentals'),bikes=rd('massBikeV4_bikes'),t=coIST(),m={};
-  rentals.forEach(r=>{
-    if(!r)return;
-    const name=String(r.customerName||'').trim()||'Unknown Customer',phone=String(r.customerPhone||'').replace(/\D/g,''),key=name.toLowerCase()+'|'+phone;
-    let due=0;
-    if(r.status==='active'){const paid=N(r.advance)+(r.payments||[]).reduce((s,x)=>s+N(x&&x.amount),0);due=Math.max(0,coDays(r.startDate,t)*N(r.rate)-paid)}
-    else due=Math.max(0,N(r.balance));
-    due=Math.round(due*100)/100;
-    if(due<=0)return;
-    const bk=bikes.find(b=>b&&b.id===r.bikeId);
-    if(!m[key])m[key]={name:name,phone:phone,due:0,items:[]};
-    m[key].due+=due;
-    m[key].items.push({bike:(r.bikeName||'Bike')+(bk&&bk.plate?' ('+bk.plate+')':''),start:r.startDate,status:r.status});
-  });
-  return Object.values(m).sort((a,b)=>b.due-a.due);
-}
-function coOpen(){
-  const rows=coData();window.__coRows=rows;
-  const tot=rows.reduce((s,c)=>s+c.due,0);
-  $('coBody').innerHTML=rows.length
-    ?'<div class="card"><div class="row"><span><b>மொத்த பாக்கி</b><small>'+rows.length+' customer(s)</small></span><b class="red" style="font-size:18px">'+M(tot)+'</b></div></div>'
-      +rows.map((c,i)=>'<div class="card"><div class="row"><span><b>'+E(c.name)+'</b><small>'+E(c.phone||'Phone இல்லை')+' · '+c.items.length+' rental(s)</small></span><b class="red">'+M(c.due)+'</b></div>'
-        +c.items.map(it=>'<div style="font-size:12.5px;color:var(--m);padding:3px 0">'+E(it.bike)+' · '+coDMY(it.start)+' · '+(it.status==='active'?'Active (ஓடுது)':'Returned')+'</div>').join('')
-        +'<div style="display:flex;gap:8px"><button onclick="coWhats('+i+')" style="flex:1;margin-top:10px">📲 WhatsApp</button><button class="s" onclick="coCall('+i+')" style="flex:1;margin-top:10px">📞 Call</button></div></div>').join('')
-    :'<div class="card" style="text-align:center">✅ பாக்கி எதுவும் இல்லை</div>';
-  $('coOv').style.display='block';$('coOv').scrollTop=0;
-}
-function coClose(){$('coOv').style.display='none'}
-function coWhats(i){
-  const c=(window.__coRows||[])[i];if(!c)return;
-  if(!c.phone){alert('Phone number இல்லை / No phone number saved');return}
-  let t='வணக்கம் '+c.name+',\nMASS BIKE-ல உங்களுக்கு மொத்த பாக்கி ₹'+Math.round(c.due*100)/100+'.\n\n';
-  c.items.forEach(it=>{t+='• '+it.bike+' — '+coDMY(it.start)+' ('+(it.status==='active'?'Active':'Returned')+')\n'});
-  t+='\nதயவுசெய்து விரைவில் செலுத்தவும். நன்றி!\n\nHello '+c.name+', please settle your pending balance with MASS BIKE at your earliest. Thank you!';
-  window.open('https://wa.me/'+coWa(c.phone)+'?text='+encodeURIComponent(t),'_blank');
-}
-function coCall(i){
-  const c=(window.__coRows||[])[i];
-  if(!c||!c.phone){alert('Phone number இல்லை / No phone number saved');return}
-  window.location.href='tel:'+c.phone;
-}
-</script>
+</script><script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('./sw-v9.js').catch(function(){})});</script>
 </body></html>
