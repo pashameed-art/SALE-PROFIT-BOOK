@@ -41,7 +41,7 @@ small{color:var(--m);display:block;font-size:12px}
 .k b:not(.red):not(.grn){color:var(--t)}
 .red{color:var(--r)}.grn{color:var(--ok)}.hide{display:none}
 </style></head><body>
-<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span style="display:flex;align-items:center;gap:8px"><span id="carBtn" onclick="carxOpen()" title="Car Expense" style="background:#ffffff33;border-radius:10px;padding:3px 9px;font-size:16px;cursor:pointer">🚗</span><span id="bell" onclick="remOpen()" title="நினைவூட்டல்கள்" style="position:relative;background:#ffffff33;border-radius:10px;padding:3px 9px;font-size:16px;cursor:pointer">🔔<span id="bellN" style="display:none;position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:10px;min-width:18px;height:18px;line-height:18px;text-align:center;font-size:11px;font-weight:800;padding:0 4px"></span></span><span class="ver">V9.53</span></span></header>
+<header><div><b>🧵 Sale Profit Book</b><br><small id="hd"></small></div><span style="display:flex;align-items:center;gap:8px"><span id="carBtn" onclick="carxOpen()" title="Car Expense" style="background:#ffffff33;border-radius:10px;padding:3px 9px;font-size:16px;cursor:pointer">🚗</span><span id="bell" onclick="remOpen()" title="நினைவூட்டல்கள்" style="position:relative;background:#ffffff33;border-radius:10px;padding:3px 9px;font-size:16px;cursor:pointer">🔔<span id="bellN" style="display:none;position:absolute;top:-6px;right:-6px;background:#dc2626;color:#fff;border-radius:10px;min-width:18px;height:18px;line-height:18px;text-align:center;font-size:11px;font-weight:800;padding:0 4px"></span></span><span class="ver">V9.54</span></span></header>
 <div id="lock" style="display:none;position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#0f766e,#14a398);color:#fff;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center">
 <div style="font-size:44px">🔒</div><div style="font-size:20px;font-weight:700;margin:6px 0 16px">Sale Profit Book</div>
 <input id="lockPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="PIN" style="max-width:220px;text-align:center;font-size:24px;letter-spacing:6px" onkeydown="if(event.key==='Enter')unlock()">
@@ -1394,25 +1394,26 @@ function remOpen(){
 const CARK='spb_v4_car';
 const CAR_NAME='Wagon R (2016)';
 const CAR_TYPES=[['Oil Change','🛢️'],['Air Filter','🌬️'],['AC Filter','❄️'],['Brake Pad','🛑'],['Tyre','🛞'],['Other','✏️']];
-let carEd=null,carType='Oil Change';
+let carEd=null,carTypes=[];
 const carList=()=>rd(CARK);
+const carTypesOf=x=>(x.types&&x.types.length)?x.types:(x.type?[x.type]:[]);
 const carIcon=t=>(CAR_TYPES.find(x=>x[0]===t)||['','🔧'])[1];
 const carOil=()=>{const v=+localStorage.getItem('spb_car_oil_km');return v>0?v:5000};
-function carxOpen(){tab='car';carEd=null;carType='Oil Change';render();window.scrollTo(0,0)}
-function carLabel(x){return x.type==='Other'?(x.name||'Other'):x.type}
+function carxOpen(){tab='car';carEd=null;carTypes=[];render();window.scrollTo(0,0)}
+function carLabel(x){return carTypesOf(x).map(t=>t==='Other'?(x.name||'Other'):t).join(' + ')}
 function carSummary(){
   const a=carList(),sum=l=>l.reduce((t,x)=>t+N(x.amount),0),yr=today().slice(0,4);
   const kms=a.map(x=>N(x.km)).filter(v=>v>0),cur=kms.length?Math.max(...kms):0;
-  const oils=a.filter(x=>x.type==='Oil Change'&&N(x.km)>0).sort((p,q)=>N(q.km)-N(p.km)),lo=oils[0];
+  const oils=a.filter(x=>carTypesOf(x).includes('Oil Change')&&N(x.km)>0).sort((p,q)=>N(q.km)-N(p.km)),lo=oils[0];
   return{all:sum(a),year:sum(a.filter(x=>String(x.date).startsWith(yr))),cur,lo,n:a.length};
 }
+function carKL(){return carTypes.includes('Oil Change')?'Start Kilometres (Oil Change செய்தபோது Odometer) *':'Odometer KM (விருப்பம்)'}
 function vCar(){
   const ed=carEd!==null?carList().find(x=>String(x.id)===String(carEd)):null;
-  if(ed&&carType!==ed.type&&!window.__carPicked)carType=ed.type;
   const sm=carSummary(),oil=carOil();
   const next=sm.lo?N(sm.lo.km)+oil:0,left=next&&sm.cur?next-sm.cur:null;
-  const chips=CAR_TYPES.map(([n,ic])=>`<button type="button" class="xc${carType===n?' on':''}" data-t="${E(n)}" onclick="carxPick(this)">${ic} ${E(n)}</button>`).join('');
-  const rows=carList().slice().sort((p,q)=>String(q.date).localeCompare(String(p.date))||N(q.id)-N(p.id)).map(x=>`<div class="row"><div><b>${carIcon(x.type)} ${E(carLabel(x))}</b><small>📅 ${fd(x.date)}${N(x.km)>0?' • '+Math.round(N(x.km)).toLocaleString('en-IN')+' km':''}</small>${x.note?`<small>📝 ${E(x.note)}</small>`:''}</div><div style="text-align:right"><b>${N(x.amount)>0?M(x.amount):'—'}</b><br><button class="s" style="padding:4px 10px" onclick="carxEdit('${x.id}')">✏️</button> <button class="s" style="padding:4px 10px" onclick="carxDel('${x.id}')">🗑️</button></div></div>`).join('')||'<small>பதிவு எதுவும் இல்லை.</small>';
+  const chips=CAR_TYPES.map(([n,ic])=>`<button type="button" class="xc${carTypes.includes(n)?' on':''}" data-t="${E(n)}" onclick="carxPick(this)">${ic} ${E(n)}</button>`).join('');
+  const rows=carList().slice().sort((p,q)=>String(q.date).localeCompare(String(p.date))||String(q.id).localeCompare(String(p.id))).map(x=>`<div class="row"><div><b>${carTypesOf(x).map(carIcon).join('')} ${E(carLabel(x))}</b><small>📅 ${fd(x.date)}${N(x.km)>0?' • '+Math.round(N(x.km)).toLocaleString('en-IN')+' km':''}</small>${x.note?`<small>📝 ${E(x.note)}</small>`:''}</div><div style="text-align:right"><b>${N(x.amount)>0?M(x.amount):'—'}</b><br><button class="s" style="padding:4px 10px" onclick="carxEdit('${x.id}')">✏️</button> <button class="s" style="padding:4px 10px" onclick="carxDel('${x.id}')">🗑️</button></div></div>`).join('')||'<small>பதிவு எதுவும் இல்லை.</small>';
   return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:18px">🚗 ${CAR_NAME}</b><button class="s" onclick="tab='home';render()">← Home</button></div>
   <small>Car செலவுகள் தனியாகச் சேமிக்கப்படும். Sale Profit Book Expense-ல் சேராது.</small>
   <div class="row"><div><b>மொத்தச் செலவு</b><small>இந்த ஆண்டு ${M(sm.year)}</small></div><b>${M(sm.all)}</b></div>
@@ -1420,33 +1421,38 @@ function vCar(){
   ${sm.cur?`<small>தற்போதைய KM (கடைசிப் பதிவு): ${Math.round(sm.cur).toLocaleString('en-IN')} km</small><br>`:''}
   <button class="s" onclick="carxOilSet()">⚙️ Oil Change இடைவெளி: ${oil.toLocaleString('en-IN')} km</button></div>
   <div class="card"><b>${ed?'✏️ திருத்து':'➕ புதிய Car செலவு'}</b>
-  <label>வகை</label><div style="display:flex;gap:6px;flex-wrap:wrap">${chips}</div>
-  <div id="cxOW" style="display:${carType==='Other'?'block':'none'}"><label>என்ன செலவு? (Other)</label><input id="cxO" value="${E(ed&&ed.type==='Other'?ed.name||'':'')}" placeholder="Battery, Wiper, Service ..."></div>
+  <label>வகை (ஒன்று அல்லது அதற்கு மேல் தேர்ந்தெடுக்கவும்)</label><div style="display:flex;gap:6px;flex-wrap:wrap">${chips}</div>
+  <small id="cxSel">${carTypes.length?'தேர்ந்தது: '+carTypes.join(', '):''}</small>
+  <div id="cxOW" style="display:${carTypes.includes('Other')?'block':'none'}"><label>என்ன செலவு? (Other)</label><input id="cxO" value="${E(ed&&carTypesOf(ed).includes('Other')?ed.name||'':'')}" placeholder="Battery, Wiper, Service ..."></div>
   <label>தேதி</label><input id="cxD" type="date" value="${ed?ed.date:today()}">
-  <label id="cxKL">${carType==='Oil Change'?'Start Kilometres (Oil Change செய்தபோது Odometer) *':'Odometer KM (விருப்பம்)'}</label><input id="cxK" type="number" inputmode="numeric" value="${ed&&ed.km?E(ed.km):''}" placeholder="45000">
-  <label>தொகை ₹</label><input id="cxA" type="number" inputmode="decimal" value="${ed&&ed.amount?E(ed.amount):''}">
+  <label id="cxKL">${carKL()}</label><input id="cxK" type="number" inputmode="numeric" value="${ed&&ed.km?E(ed.km):''}" placeholder="45000">
+  <label>மொத்தத் தொகை ₹</label><input id="cxA" type="number" inputmode="decimal" value="${ed&&ed.amount?E(ed.amount):''}">
   <label>குறிப்பு (விருப்பம்)</label><input id="cxN" value="${E(ed&&ed.note||'')}" placeholder="Garage, Brand ...">
-  <button onclick="carxSave()">${ed?'Update':'Save'}</button>${ed?'<button class="s" onclick="carEd=null;render()">Cancel</button>':''}</div>
+  <button onclick="carxSave()">${ed?'Update':'Save'}</button>${ed?'<button class="s" onclick="carEd=null;carTypes=[];render()">Cancel</button>':''}</div>
   <div class="card"><b>📋 பதிவுகள் (${sm.n})</b>${rows}</div>`;
 }
 function carxPick(b){
-  carType=b.dataset.t;window.__carPicked=true;
-  document.querySelectorAll('.xc[data-t]').forEach(x=>x.classList.toggle('on',x.dataset.t===carType));
-  const ow=$('cxOW');if(ow)ow.style.display=carType==='Other'?'block':'none';
-  const kl=$('cxKL');if(kl)kl.textContent=carType==='Oil Change'?'Start Kilometres (Oil Change செய்தபோது Odometer) *':'Odometer KM (விருப்பம்)';
+  const t=b.dataset.t,i=carTypes.indexOf(t);
+  if(i>=0)carTypes.splice(i,1);else carTypes.push(t);
+  carTypes.sort((x,y)=>CAR_TYPES.findIndex(c=>c[0]===x)-CAR_TYPES.findIndex(c=>c[0]===y));
+  b.classList.toggle('on',carTypes.includes(t));
+  const ow=$('cxOW');if(ow)ow.style.display=carTypes.includes('Other')?'block':'none';
+  const kl=$('cxKL');if(kl)kl.textContent=carKL();
+  const sl=$('cxSel');if(sl)sl.textContent=carTypes.length?'தேர்ந்தது: '+carTypes.join(', '):'';
 }
 function carxSave(){
-  const type=carType,name=nm(($('cxO')||{}).value||''),km=N($('cxK').value),amount=N($('cxA').value),date=$('cxD').value||today();
-  if(type==='Other'&&!name){alert('என்ன செலவு என்று உள்ளிடவும்.');return}
-  if(type==='Oil Change'&&!(km>0)){alert('Oil Change-க்கு Start Kilometres உள்ளிடவும்.');return}
+  const types=carTypes.slice(),name=nm(($('cxO')||{}).value||''),km=N($('cxK').value),amount=N($('cxA').value),date=$('cxD').value||today();
+  if(!types.length){alert('குறைந்தது ஒரு வகையைத் தேர்ந்தெடுக்கவும்.');return}
+  if(types.includes('Other')&&!name){alert('என்ன செலவு என்று உள்ளிடவும் (Other).');return}
+  if(types.includes('Oil Change')&&!(km>0)){alert('Oil Change-க்கு Start Kilometres உள்ளிடவும்.');return}
   if(!(amount>0)&&!confirm('தொகை உள்ளிடவில்லை. அப்படியே சேமிக்கவா?'))return;
-  const rec={type,name:type==='Other'?name:'',date,km:km>0?km:0,amount:amount>0?amount:0,note:nm($('cxN').value)};
+  const rec={types,type:types[0],name:types.includes('Other')?name:'',date,km:km>0?km:0,amount:amount>0?amount:0,note:nm($('cxN').value)};
   let a=carList();
   if(carEd!==null)a=a.map(x=>String(x.id)===String(carEd)?Object.assign({},x,rec):x);else a.unshift(Object.assign({id:'c'+Date.now()+Math.random().toString(36).slice(2,6)},rec));
   if(!wr(CARK,a))return;
-  carEd=null;window.__carPicked=false;carType='Oil Change';render();
+  carEd=null;carTypes=[];render();
 }
-function carxEdit(id){const x=carList().find(v=>String(v.id)===String(id));if(!x)return;carEd=id;carType=x.type;window.__carPicked=false;render();window.scrollTo(0,0)}
+function carxEdit(id){const x=carList().find(v=>String(v.id)===String(id));if(!x)return;carEd=id;carTypes=carTypesOf(x).slice();render();window.scrollTo(0,0)}
 function carxDel(id){
   const x=carList().find(v=>String(v.id)===String(id));if(!x)return;
   if(!confirm('"'+carLabel(x)+'" ('+fd(x.date)+') Delete செய்யவா?'))return;
